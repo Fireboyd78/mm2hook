@@ -21,42 +21,39 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="targetver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="common.h">
+    <ClInclude Include="src\common.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="main.h">
+    <ClInclude Include="src\main.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="util.h">
+    <ClInclude Include="src\util.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="hook.h">
+    <ClInclude Include="src\hook.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="mm2.h">
+    <ClInclude Include="src\mm2.h">
       <Filter>Source Files\mm2</Filter>
     </ClInclude>
-    <ClInclude Include="AGE.h">
+    <ClInclude Include="src\AGE.h">
       <Filter>Source Files\AGE</Filter>
     </ClInclude>
-    <ClInclude Include="logfile.h">
+    <ClInclude Include="src\logfile.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="util.cpp">
+    <ClCompile Include="src\util.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mm2.cpp">
+    <ClCompile Include="src\mm2.cpp">
       <Filter>Source Files\mm2</Filter>
     </ClCompile>
-    <ClCompile Include="logfile.cpp">
+    <ClCompile Include="src\logfile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
