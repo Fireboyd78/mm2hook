@@ -13,26 +13,50 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\mm2">
+      <UniqueIdentifier>{0ffec7da-4979-40c7-a843-5590bfd6ae61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\AGE">
+      <UniqueIdentifier>{1a5c33ac-ee87-4964-9911-fbd43fd8cccb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="common.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="main.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="util.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hook.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mm2.h">
+      <Filter>Source Files\mm2</Filter>
+    </ClInclude>
+    <ClInclude Include="AGE.h">
+      <Filter>Source Files\AGE</Filter>
+    </ClInclude>
+    <ClInclude Include="logfile.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MM2Hook.cpp">
+    <ClCompile Include="util.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="dllmain.cpp">
+    <ClCompile Include="mm2.cpp">
+      <Filter>Source Files\mm2</Filter>
+    </ClCompile>
+    <ClCompile Include="logfile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
