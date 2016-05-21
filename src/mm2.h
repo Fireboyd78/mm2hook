@@ -29,6 +29,34 @@ static const AGEGameInfo g_mm2_info[MM2_NUM_VERSIONS] = {
 };
 
 namespace MM2 {
+    class Stream {
+    public:
+        static void DumpOpenFiles(void);
+
+        static Stream* Open(LPCSTR filename, bool p1);
+        static Stream* Create(LPCSTR filename);
+
+        int Read(THIS_ LPVOID dstBuf, int size);
+        int Write(THIS_ const LPVOID srcBuf, int size);
+        int GetCh(THIS_ void);
+        int PutCh(THIS_ unsigned char ch);
+        int Seek(THIS_ int offset);
+        int Tell(THIS_ void);
+    };
+
+    class datOutput {
+    public:
+        static bool OpenLog(LPCSTR filename);
+        static void CloseLog(void);
+
+        /* TODO: Add these?
+        static void SetBeforeMsgBoxFunction(void(__cdecl *lpFunc)(void));
+        static void SetAfterMsgBoxFunction(void(__cdecl *lpFunc)(void));
+        */
+
+        static void SetOutputMask(UINT mask);
+    };
+
     void Printf(LPCSTR str, ...);
     void Messagef(LPCSTR str, ...);
     void Displayf(LPCSTR str, ...);

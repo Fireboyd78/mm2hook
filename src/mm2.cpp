@@ -1,5 +1,7 @@
 #include "mm2.h"
 
+using namespace MM2;
+
 #define DEFINE_PRINT_HOOK(x,y) \
 NAKED void x(LPCSTR str, ...) { \
     __asm jmp dword ptr ds:y \
@@ -25,17 +27,45 @@ FnHook<void> lpErrorf;
 FnHook<void> lpQuitf;
 FnHook<void> lpAbortf;
 
+FnHook<void> lpStream_DumpOpenFiles;
+FnHook<Stream *,LPCSTR,bool> lpStream_Open;
+FnHook<Stream *,LPCSTR> lpStream_Create;
+FnHook<int,LPVOID,INT> lpStream_Read;
+FnHook<int,LPVOID,INT> lpStream_Write;
+FnHook<int> lpStream_GetCh;
+FnHook<int,unsigned char> lpStream_PutCh;
+FnHook<int,int> lpStream_Seek;
+FnHook<int> lpStream_Tell;
+
+FnHook<void> lpdatOutput_CloseLog;
+FnHook<bool,LPCSTR> lpdatOutput_OpenLog;
+FnHook<void,UINT> lpdatOutput_SetOutputMask;
+
 static const MM2InitData _funcs_init[] = {
     // IMPORTANT: New versions must be reflected here!
+    // FUNCTION                                 ADDRESS [BETA 1/BETA 2/RETAIL]
 
-    // FUNCTION     ADDRESS [BETA 1/BETA 2/RETAIL]
-    &lpPrintf,      { NULL, NULL, 0x4C9720 },
-    &lpMessagef,    { NULL, NULL, 0x4C9750 },
-    &lpDisplayf,    { NULL, NULL, 0x4C9780 },
-    &lpWarningf,    { NULL, NULL, 0x4C97B0 },
-    &lpErrorf,      { NULL, NULL, 0x4C97E0 },
-    &lpQuitf,       { NULL, NULL, 0x4C9810 },
-    &lpAbortf,      { NULL, NULL, 0x4C9850 },
+    &lpdatOutput_CloseLog,                      { NULL, NULL, 0x4C9530 },
+    &lpdatOutput_SetOutputMask,                 { NULL, NULL, 0x4C9590 },
+    &lpdatOutput_OpenLog,                       { NULL, NULL, 0x4C95A0 },
+
+    &lpPrintf,                                  { NULL, NULL, 0x4C9720 },
+    &lpMessagef,                                { NULL, NULL, 0x4C9750 },
+    &lpDisplayf,                                { NULL, NULL, 0x4C9780 },
+    &lpWarningf,                                { NULL, NULL, 0x4C97B0 },
+    &lpErrorf,                                  { NULL, NULL, 0x4C97E0 },
+    &lpQuitf,                                   { NULL, NULL, 0x4C9810 },
+    &lpAbortf,                                  { NULL, NULL, 0x4C9850 },
+
+    &lpStream_DumpOpenFiles,                    { NULL, NULL, 0x4C9970 },
+    &lpStream_Open,                             { NULL, NULL, 0x4C99C0 },
+    &lpStream_Create,                           { NULL, NULL, 0x4C9A00 },
+    &lpStream_Read,                             { NULL, NULL, 0x4C9AA0 },
+    &lpStream_Write,                            { NULL, NULL, 0x4C9BF0 },
+    &lpStream_GetCh,                            { NULL, NULL, 0x4C9D00 },
+    &lpStream_PutCh,                            { NULL, NULL, 0x4C9D30 },
+    &lpStream_Seek,                             { NULL, NULL, 0x4C9D60 },
+    &lpStream_Tell,                             { NULL, NULL, 0x4C9DB0 },
 
     NULL // must be last
 };
@@ -58,14 +88,6 @@ int InitializeMM2(MM2Version gameVersion) {
     return (nFuncs > 0) ? HOOK_INIT_OK : HOOK_INIT_UNSUPPORTED;
 }
 
-DEFINE_PRINT_HOOK(MM2::Printf, lpPrintf);
-DEFINE_PRINT_HOOK(MM2::Messagef, lpMessagef);
-DEFINE_PRINT_HOOK(MM2::Displayf, lpDisplayf);
-DEFINE_PRINT_HOOK(MM2::Warningf, lpWarningf);
-DEFINE_PRINT_HOOK(MM2::Errorf, lpErrorf);
-DEFINE_PRINT_HOOK(MM2::Quitf, lpQuitf);
-DEFINE_PRINT_HOOK(MM2::Abortf, lpAbortf);
-
 CMidtownMadness2::CMidtownMadness2(int engineVersion)
     : CAGEGame(engineVersion) {
     this->m_gameVersion = EngineVersionToGameVersion(engineVersion);
@@ -83,4 +105,76 @@ CMidtownMadness2::CMidtownMadness2(int engineVersion)
 
 CMidtownMadness2::CMidtownMadness2(LPAGEGameInfo gameEntry)
     : CMidtownMadness2(gameEntry->age_version) {
+}
+
+namespace MM2 {
+    DEFINE_PRINT_HOOK(Printf, lpPrintf);
+    DEFINE_PRINT_HOOK(Messagef, lpMessagef);
+    DEFINE_PRINT_HOOK(Displayf, lpDisplayf);
+    DEFINE_PRINT_HOOK(Warningf, lpWarningf);
+    DEFINE_PRINT_HOOK(Errorf, lpErrorf);
+    DEFINE_PRINT_HOOK(Quitf, lpQuitf);
+    DEFINE_PRINT_HOOK(Abortf, lpAbortf);
+
+    bool datOutput::OpenLog(LPCSTR filename)
+    {
+        return lpdatOutput_OpenLog(filename);
+    }
+
+    void datOutput::CloseLog(void)
+    {
+        lpdatOutput_CloseLog();
+    }
+
+    void datOutput::SetOutputMask(UINT mask)
+    {
+        lpdatOutput_SetOutputMask(mask);
+    }
+
+#pragma region "Stream implementation"
+    void Stream::DumpOpenFiles(void)
+    {
+        lpStream_DumpOpenFiles();
+    }
+
+    Stream * Stream::Open(LPCSTR filename, bool p1)
+    {
+        return lpStream_Open(filename, p1);
+    }
+
+    Stream * Stream::Create(LPCSTR filename)
+    {
+        return lpStream_Create(filename);
+    }
+
+    int Stream::Read(THIS_ LPVOID dstBuf, int size)
+    {
+        return lpStream_Read(this, dstBuf, size);
+    }
+
+    int Stream::Write(THIS_ const LPVOID srcBuf, int size)
+    {
+        return lpStream_Write(this, srcBuf, size);
+    }
+
+    int Stream::GetCh(THIS_ void)
+    {
+        return lpStream_GetCh(this);
+    }
+
+    int Stream::PutCh(THIS_ unsigned char ch)
+    {
+        return lpStream_PutCh(this, ch);
+    }
+
+    int Stream::Seek(THIS_ int offset)
+    {
+        return lpStream_Seek(this, offset);
+    }
+
+    int Stream::Tell(THIS_ void)
+    {
+        return lpStream_Tell(this);
+    }
+#pragma endregion
 }

@@ -80,6 +80,10 @@ bool HandleKeyPress(DWORD vKey)
             //ExitProcess(EXIT_SUCCESS);
             MM2::Quitf("Bye bye from %s!", "MM2Hook");
             return true;
+        case 'f':
+        case 'F':
+            MM2::Stream::DumpOpenFiles();
+            return true;
     }
     return false;
 }
@@ -98,6 +102,13 @@ LRESULT APIENTRY WndProcNew(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 }
 
 void SetupHook() {
+    LogFile::Write("Setting MM2 output log file...");
+
+    if (MM2::datOutput::OpenLog("mm2.log"))
+        LogFile::Write("Done!\n");
+    else
+        LogFile::Write("FAIL!\n");
+
     bool subclassWindow = true;
 
     if (subclassWindow)

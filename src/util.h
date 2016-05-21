@@ -16,6 +16,7 @@
 
 #define NOINLINE                __declspec(noinline)
 #define NOTHROW                 __declspec(nothrow)
+#define NOVTABLE                __declspec(novtable)
 
 // short-hand for NOINLINE
 #define NO_INL                  NOINLINE
