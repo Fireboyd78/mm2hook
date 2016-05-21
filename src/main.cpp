@@ -84,6 +84,12 @@ bool HandleKeyPress(DWORD vKey)
         case 'F':
             MM2::Stream::DumpOpenFiles();
             return true;
+        case 'a':
+        case 'A':
+            LogFile::Write("Dumping AIMAP...");
+            MM2::aiMap::Dump();
+            LogFile::WriteLine("Done!");
+
     }
     return false;
 }

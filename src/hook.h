@@ -57,6 +57,10 @@ public:
         return (lpAddr != NULL) ? *static_cast<DWORD*>(lpAddr) : NULL;
     };
 
+    FORCEINLINE explicit operator LPVOID() const {
+        return lpAddr;
+    };
+
     FORCEINLINE LPVOID ptr() const {
         return lpAddr;
     };

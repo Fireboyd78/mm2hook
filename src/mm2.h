@@ -29,19 +29,17 @@ static const AGEGameInfo g_mm2_info[MM2_NUM_VERSIONS] = {
 };
 
 namespace MM2 {
-    class Stream {
+    void Printf(LPCSTR str, ...);
+    void Messagef(LPCSTR str, ...);
+    void Displayf(LPCSTR str, ...);
+    void Warningf(LPCSTR str, ...);
+    void Errorf(LPCSTR str, ...);
+    void Quitf(LPCSTR str, ...);
+    void Abortf(LPCSTR str, ...);
+
+    class aiMap {
     public:
-        static void DumpOpenFiles(void);
-
-        static Stream* Open(LPCSTR filename, bool p1);
-        static Stream* Create(LPCSTR filename);
-
-        int Read(THIS_ LPVOID dstBuf, int size);
-        int Write(THIS_ const LPVOID srcBuf, int size);
-        int GetCh(THIS_ void);
-        int PutCh(THIS_ unsigned char ch);
-        int Seek(THIS_ int offset);
-        int Tell(THIS_ void);
+        static void Dump(void);
     };
 
     class datOutput {
@@ -57,13 +55,20 @@ namespace MM2 {
         static void SetOutputMask(UINT mask);
     };
 
-    void Printf(LPCSTR str, ...);
-    void Messagef(LPCSTR str, ...);
-    void Displayf(LPCSTR str, ...);
-    void Warningf(LPCSTR str, ...);
-    void Errorf(LPCSTR str, ...);
-    void Quitf(LPCSTR str, ...);
-    void Abortf(LPCSTR str, ...);
+    class Stream {
+    public:
+        static void DumpOpenFiles(void);
+
+        static Stream* Open(LPCSTR filename, bool p1);
+        static Stream* Create(LPCSTR filename);
+
+        int Read(THIS_ LPVOID dstBuf, int size);
+        int Write(THIS_ const LPVOID srcBuf, int size);
+        int GetCh(THIS_ void);
+        int PutCh(THIS_ unsigned char ch);
+        int Seek(THIS_ int offset);
+        int Tell(THIS_ void);
+    };
 };
 
 class CMidtownMadness2 : public CAGEGame {

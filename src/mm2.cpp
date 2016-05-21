@@ -27,6 +27,13 @@ FnPtr<void>     lpErrorf;
 FnPtr<void>     lpQuitf;
 FnPtr<void>     lpAbortf;
 
+PtrHook<aiMap>  lpAIMAP_ptr;
+FnPtr<void>     lpaiMap_Dump;
+
+FnPtr<void>     lpdatOutput_CloseLog;
+FnPtr<bool>     lpdatOutput_OpenLog;
+FnPtr<void>     lpdatOutput_SetOutputMask;
+
 FnPtr<void>     lpStream_DumpOpenFiles;
 FnPtr<Stream*>  lpStream_Open;
 FnPtr<Stream*>  lpStream_Create;
@@ -37,17 +44,9 @@ FnPtr<int>      lpStream_PutCh;
 FnPtr<int>      lpStream_Seek;
 FnPtr<int>      lpStream_Tell;
 
-FnPtr<void>     lpdatOutput_CloseLog;
-FnPtr<bool>     lpdatOutput_OpenLog;
-FnPtr<void>     lpdatOutput_SetOutputMask;
-
-static const MM2InitData _funcs_init[] = {
+static const MM2InitData _hooks_init[] = {
     // IMPORTANT: New versions must be reflected here!
-    // FUNCTION                                 ADDRESS [BETA 1/BETA 2/RETAIL]
-
-    &lpdatOutput_CloseLog,                      { NULL, NULL, 0x4C9530 },
-    &lpdatOutput_SetOutputMask,                 { NULL, NULL, 0x4C9590 },
-    &lpdatOutput_OpenLog,                       { NULL, NULL, 0x4C95A0 },
+    // NAME                                     ADDRESS [BETA 1/BETA 2/RETAIL]
 
     &lpPrintf,                                  { NULL, NULL, 0x4C9720 },
     &lpMessagef,                                { NULL, NULL, 0x4C9750 },
@@ -56,6 +55,13 @@ static const MM2InitData _funcs_init[] = {
     &lpErrorf,                                  { NULL, NULL, 0x4C97E0 },
     &lpQuitf,                                   { NULL, NULL, 0x4C9810 },
     &lpAbortf,                                  { NULL, NULL, 0x4C9850 },
+
+    &lpAIMAP_ptr,                               { NULL, NULL, 0x6B2E10 },
+    &lpaiMap_Dump,                              { NULL, NULL, 0x538840 },
+
+    &lpdatOutput_CloseLog,                      { NULL, NULL, 0x4C9530 },
+    &lpdatOutput_SetOutputMask,                 { NULL, NULL, 0x4C9590 },
+    &lpdatOutput_OpenLog,                       { NULL, NULL, 0x4C95A0 },
 
     &lpStream_DumpOpenFiles,                    { NULL, NULL, 0x4C9970 },
     &lpStream_Open,                             { NULL, NULL, 0x4C99C0 },
@@ -71,21 +77,21 @@ static const MM2InitData _funcs_init[] = {
 };
 
 int InitializeMM2(MM2Version gameVersion) {
-    const MM2InitData *func;
-    int nFuncs = 0;
+    const MM2InitData *hook;
+    int nHooks = 0;
 
     LogFile::WriteLine("Initializing MM2 hooks...");
 
-    for (func = _funcs_init; func->lpHook; func++, nFuncs++) {
-        auto addr = func->addresses[gameVersion];
+    for (hook = _hooks_init; hook->lpHook; hook++, nHooks++) {
+        auto addr = hook->addresses[gameVersion];
 
         if (addr != NULL)
-            *func->lpHook = addr;
+            *hook->lpHook = addr;
     }
 
-    LogFile::Format(" - nFuncs: %d\n", nFuncs);
+    LogFile::Format(" - nHooks: %d\n", nHooks);
 
-    return (nFuncs > 0) ? HOOK_INIT_OK : HOOK_INIT_UNSUPPORTED;
+    return (nHooks > 0) ? HOOK_INIT_OK : HOOK_INIT_UNSUPPORTED;
 }
 
 CMidtownMadness2::CMidtownMadness2(int engineVersion)
@@ -115,6 +121,11 @@ namespace MM2 {
     DEFINE_PRINT_HOOK(Errorf, lpErrorf);
     DEFINE_PRINT_HOOK(Quitf, lpQuitf);
     DEFINE_PRINT_HOOK(Abortf, lpAbortf);
+
+    void aiMap::Dump(void)
+    {
+        lpaiMap_Dump(lpAIMAP_ptr);
+    }
 
     bool datOutput::OpenLog(LPCSTR filename)
     {
