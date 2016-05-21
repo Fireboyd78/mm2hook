@@ -16,3 +16,6 @@
 
 #include "util.h"
 #include "logfile.h"
+
+// Lua 5.3.2 embedded
+#include <lua/lua.hpp>

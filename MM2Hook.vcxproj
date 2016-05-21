@@ -43,6 +43,7 @@
   <PropertyGroup>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);src</IncludePath>
     <SourcePath>$(VC_SourcePath);src</SourcePath>
+    <ASMOutputPath>$(OutDir)asm\</ASMOutputPath>
   </PropertyGroup>
   <PropertyGroup>
     <LinkIncremental>false</LinkIncremental>
@@ -70,7 +71,7 @@
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
-      <AssemblerListingLocation>$(OutDir)asm\</AssemblerListingLocation>
+      <AssemblerListingLocation>$(ASMOutputPath)</AssemblerListingLocation>
       <RemoveUnreferencedCodeData>false</RemoveUnreferencedCodeData>
     </ClCompile>
     <Link>
@@ -121,6 +122,69 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\lua\lapi.h" />
+    <ClInclude Include="src\lua\lauxlib.h" />
+    <ClInclude Include="src\lua\lcode.h" />
+    <ClInclude Include="src\lua\lctype.h" />
+    <ClInclude Include="src\lua\ldebug.h" />
+    <ClInclude Include="src\lua\ldo.h" />
+    <ClInclude Include="src\lua\lfunc.h" />
+    <ClInclude Include="src\lua\lgc.h" />
+    <ClInclude Include="src\lua\llex.h" />
+    <ClInclude Include="src\lua\llimits.h" />
+    <ClInclude Include="src\lua\lmem.h" />
+    <ClInclude Include="src\lua\lobject.h" />
+    <ClInclude Include="src\lua\lopcodes.h" />
+    <ClInclude Include="src\lua\lparser.h" />
+    <ClInclude Include="src\lua\lprefix.h" />
+    <ClInclude Include="src\lua\lstate.h" />
+    <ClInclude Include="src\lua\lstring.h" />
+    <ClInclude Include="src\lua\ltable.h" />
+    <ClInclude Include="src\lua\ltm.h" />
+    <ClInclude Include="src\lua\lua.h" />
+    <ClInclude Include="src\lua\lua.hpp" />
+    <ClInclude Include="src\lua\luaconf.h" />
+    <ClInclude Include="src\lua\lualib.h" />
+    <ClInclude Include="src\lua\lundump.h" />
+    <ClInclude Include="src\lua\lvm.h" />
+    <ClInclude Include="src\lua\lzio.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\lua\lapi.c" />
+    <ClCompile Include="src\lua\lauxlib.c" />
+    <ClCompile Include="src\lua\lbaselib.c" />
+    <ClCompile Include="src\lua\lbitlib.c" />
+    <ClCompile Include="src\lua\lcode.c" />
+    <ClCompile Include="src\lua\lcorolib.c" />
+    <ClCompile Include="src\lua\lctype.c" />
+    <ClCompile Include="src\lua\ldblib.c" />
+    <ClCompile Include="src\lua\ldebug.c" />
+    <ClCompile Include="src\lua\ldo.c" />
+    <ClCompile Include="src\lua\ldump.c" />
+    <ClCompile Include="src\lua\lfunc.c" />
+    <ClCompile Include="src\lua\lgc.c" />
+    <ClCompile Include="src\lua\linit.c" />
+    <ClCompile Include="src\lua\liolib.c" />
+    <ClCompile Include="src\lua\llex.c" />
+    <ClCompile Include="src\lua\lmathlib.c" />
+    <ClCompile Include="src\lua\lmem.c" />
+    <ClCompile Include="src\lua\loadlib.c" />
+    <ClCompile Include="src\lua\lobject.c" />
+    <ClCompile Include="src\lua\lopcodes.c" />
+    <ClCompile Include="src\lua\loslib.c" />
+    <ClCompile Include="src\lua\lparser.c" />
+    <ClCompile Include="src\lua\lstate.c" />
+    <ClCompile Include="src\lua\lstring.c" />
+    <ClCompile Include="src\lua\lstrlib.c" />
+    <ClCompile Include="src\lua\ltable.c" />
+    <ClCompile Include="src\lua\ltablib.c" />
+    <ClCompile Include="src\lua\ltm.c" />
+    <ClCompile Include="src\lua\lundump.c" />
+    <ClCompile Include="src\lua\lutf8lib.c" />
+    <ClCompile Include="src\lua\lvm.c" />
+    <ClCompile Include="src\lua\lzio.c" />
+  </ItemGroup>
+  <ItemGroup>
     <ClInclude Include="src\AGE.h" />
     <ClInclude Include="src\common.h" />
     <ClInclude Include="src\hook.h" />
@@ -133,7 +197,6 @@
     <ClCompile Include="src\logfile.cpp" />
     <ClCompile Include="src\main.cpp">
       <CompileAsManaged>false</CompileAsManaged>
-      <PrecompiledHeader />
     </ClCompile>
     <ClCompile Include="src\mm2.cpp" />
     <ClCompile Include="src\util.cpp" />
@@ -152,12 +215,21 @@
       <TargetFiles Include="$(TargetPath);$(TargetPath_PDB)" />
     </ItemGroup>
     <Error Text="Couldn't find compiled DLL/PDB files!" Condition="'@(TargetFiles)' == ''" />
-    
     <Message Text="Creating DirectInput8 DLL/PDB files:" Importance="high" />
-    <Copy SourceFiles="@(TargetFiles)"
-          DestinationFiles="@(TargetFiles->'$(DITargetDir)$(DITargetName)%(Extension)')">
-        <Output ItemName="Changed" TaskParameter="CopiedFiles" />
+    <Copy SourceFiles="@(TargetFiles)" DestinationFiles="@(TargetFiles->'$(DITargetDir)$(DITargetName)%(Extension)')">
+      <Output ItemName="Changed" TaskParameter="CopiedFiles" />
     </Copy>
     <Message Text="  - %(Changed.Identity)" Importance="high" />
+  </Target>
+  <!-- MSBuild makes this waaaay too difficult, can't this be done some other way? -->
+  <Target Name="MoveLuaASMFiles" AfterTargets="MakeDInputDLL">
+    <ItemGroup>
+      <LuaSources Include="src\lua\*.c" />
+      <LuaASMFiles Include="@(LuaSources->'$(ASMOutputPath)%(Filename).asm')" />
+    </ItemGroup>
+    <Move SourceFiles="@(LuaASMFiles)" DestinationFolder="$(ASMOutputPath)lua\" Condition="Exists('%(Identity)')">
+      <Output ItemName="Moved" TaskParameter="MovedFiles" />
+    </Move>
+    <Message Text="Moved Lua ASM file to '%(Moved.Identity)'" Importance="high" Condition="'%(Moved.Identity)' != ''" />
   </Target>
 </Project>
