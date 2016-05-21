@@ -72,6 +72,34 @@ public:
     };
 };
 
+template<typename TRet>
+struct FnPtr : public IHookPtr {
+public:
+    FORCEINLINE FnPtr() : IHookPtr() {};
+    FORCEINLINE FnPtr(LPVOID lpFunc) : IHookPtr(lpFunc) {};
+    FORCEINLINE FnPtr(DWORD dwAddress) : IHookPtr(dwAddress) {};
+
+    template<typename ...TArgs>
+    FORCEINLINE TRet operator()(TArgs ...args) {
+        return (*(TRet(__cdecl *)(TArgs...))lpAddr)(args...);
+    };
+
+    template<class TThis, typename ...TArgs>
+    FORCEINLINE TRet operator()(TThis &This, TArgs ...args) {
+        return (*(TRet(__thiscall *)(_THIS_ TArgs...))lpAddr)((LPVOID)This, args...);
+    };
+
+    FnPtr& operator=(LPVOID lpData) {
+        IHookPtr::operator=(lpData);
+        return *this;
+    };
+
+    FnPtr& operator=(DWORD dwAddress) {
+        IHookPtr::operator=(dwAddress);
+        return *this;
+    };
+};
+
 template<typename TRet = void, typename ...TArgs>
 struct FnHook : public IHookPtr {
 public:
@@ -81,11 +109,6 @@ public:
 
     FORCEINLINE TRet operator()(TArgs ...args) const {
         return (*(TRet(__cdecl *)(TArgs...))lpAddr)(args...);
-    };
-
-    template<typename ...TArgs2>
-    FORCEINLINE TRet operator()(TArgs ...args, TArgs2 ...args2) const {
-        return (*(TRet(__cdecl *)(TArgs..., TArgs2...))lpAddr)(args..., args2...);
     };
 
     template<class TThis>

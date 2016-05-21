@@ -19,27 +19,27 @@ MM2Version EngineVersionToGameVersion(int engineVersion) {
     return MM2_INVALID;
 }
 
-FnHook<void> lpPrintf;
-FnHook<void> lpMessagef;
-FnHook<void> lpDisplayf;
-FnHook<void> lpWarningf;
-FnHook<void> lpErrorf;
-FnHook<void> lpQuitf;
-FnHook<void> lpAbortf;
+FnPtr<void>     lpPrintf;
+FnPtr<void>     lpMessagef;
+FnPtr<void>     lpDisplayf;
+FnPtr<void>     lpWarningf;
+FnPtr<void>     lpErrorf;
+FnPtr<void>     lpQuitf;
+FnPtr<void>     lpAbortf;
 
-FnHook<void> lpStream_DumpOpenFiles;
-FnHook<Stream *,LPCSTR,bool> lpStream_Open;
-FnHook<Stream *,LPCSTR> lpStream_Create;
-FnHook<int,LPVOID,INT> lpStream_Read;
-FnHook<int,LPVOID,INT> lpStream_Write;
-FnHook<int> lpStream_GetCh;
-FnHook<int,unsigned char> lpStream_PutCh;
-FnHook<int,int> lpStream_Seek;
-FnHook<int> lpStream_Tell;
+FnPtr<void>     lpStream_DumpOpenFiles;
+FnPtr<Stream*>  lpStream_Open;
+FnPtr<Stream*>  lpStream_Create;
+FnPtr<int>      lpStream_Read;
+FnPtr<int>      lpStream_Write;
+FnPtr<int>      lpStream_GetCh;
+FnPtr<int>      lpStream_PutCh;
+FnPtr<int>      lpStream_Seek;
+FnPtr<int>      lpStream_Tell;
 
-FnHook<void> lpdatOutput_CloseLog;
-FnHook<bool,LPCSTR> lpdatOutput_OpenLog;
-FnHook<void,UINT> lpdatOutput_SetOutputMask;
+FnPtr<void>     lpdatOutput_CloseLog;
+FnPtr<bool>     lpdatOutput_OpenLog;
+FnPtr<void>     lpdatOutput_SetOutputMask;
 
 static const MM2InitData _funcs_init[] = {
     // IMPORTANT: New versions must be reflected here!
