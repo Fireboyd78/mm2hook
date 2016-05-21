@@ -101,6 +101,8 @@ LRESULT APIENTRY WndProcNew(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     return CallWindowProc(hProcOld, hWnd, uMsg, wParam, lParam);
 }
 
+bool isHookSetup = false;
+
 void SetupHook() {
     LogFile::Write("Setting MM2 output log file...");
 
@@ -120,6 +122,13 @@ void SetupHook() {
         else
             LogFile::Write("FAIL!\n");
     }
+
+    isHookSetup = true;
+}
+
+void ResetHook(bool restarting) {
+    LogFile::Format("Hook reset request received: the GameLoop %s.\n", (restarting) ? "is restarting" : "was restarted");
+    // TODO: reset stuff here?
 }
 
 PtrHook<BOOL> gameClosing;
@@ -127,10 +136,18 @@ PtrHook<BOOL> gameClosing;
 // replaces VtResumeSampling
 void HookStartup() {
     if (!gameClosing) {
-        LogFile::WriteLine("Hook startup request received.");
-        SetupHook();
+        if (!isHookSetup)
+        {
+            LogFile::WriteLine("Hook startup request received.");
+            SetupHook();
+        }
+        else
+        {
+            // GameLoop was restarted
+            ResetHook(false);
+        }
     } else {
-        LogFile::WriteLine("Hook startup request received, but the game is closing?!");
+        LogFile::WriteLine("WTF: Hook startup request received, but the game is closing!");
     }
 };
 
@@ -138,8 +155,10 @@ void HookStartup() {
 void HookShutdown() {
     if (gameClosing) {
         LogFile::WriteLine("Hook shutdown request received.");
+        // TODO: shutdown stuff here?
     } else {
-        LogFile::WriteLine("Hook shutdown request received, but the game doesn't seem to be closing?");
+        // GameLoop is restarting
+        ResetHook(true);
     }
 };
 
