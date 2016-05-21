@@ -15,12 +15,27 @@ enum MM2Version
     MM2_NUM_VERSIONS
 };
 
-const AGEGameInfo g_mm2_info[MM2_NUM_VERSIONS] = {
+typedef struct MM2InitData {
+    IHookPtr *lpHook;
+    DWORD addresses[MM2_NUM_VERSIONS];
+} *LPMM2InitData;
+
+static const AGEGameInfo g_mm2_info[MM2_NUM_VERSIONS] = {
     // TODO: fill in values
     { 0, MM2_BETA_1, 3323, false, "NOT DEFINED" },
     { 0, MM2_BETA_2, 3366, false, "NOT DEFINED" },
 
     { 0x5C28FC, MM2_RETAIL, 3393, true, "Angel: 3393 / Nov  3 2000 14:34:22" },
+};
+
+namespace MM2 {
+    void Printf(LPCSTR str, ...);
+    void Messagef(LPCSTR str, ...);
+    void Displayf(LPCSTR str, ...);
+    void Warningf(LPCSTR str, ...);
+    void Errorf(LPCSTR str, ...);
+    void Quitf(LPCSTR str, ...);
+    void Abortf(LPCSTR str, ...);
 };
 
 class CMidtownMadness2 : public CAGEGame {
@@ -29,25 +44,22 @@ private:
 protected:
     PtrHook<HWND> hwndParent;
 
-    FnHook<void> lpQuitf; // void Quitf(LPCSTR, ...)
-
-    NOINLINE void Initialize() {
+    int Initialize() {
         switch (m_gameVersion) {
             case MM2_BETA_1:
             {
 
-            } break;
+            } return HOOK_INIT_UNSUPPORTED;
             case MM2_BETA_2:
             {
 
-            } break;
+            } return HOOK_INIT_UNSUPPORTED;
             case MM2_RETAIL:
             {
                 hwndParent = 0x6830B8;
-
-                lpQuitf = 0x4C9810;
-            } break;
+            } return HOOK_INIT_OK;
         }
+        return HOOK_INIT_FAILED;
     };
 public:
     CMidtownMadness2(int engineVersion);
@@ -74,10 +86,5 @@ public:
 
     NOINLINE HWND GetMainWindowHwnd() const {
         return hwndParent;
-    };
-
-    template<typename ...TArgs>
-    __declspec(noreturn) void Quitf(LPCSTR str, TArgs... args) {
-        this->lpQuitf(str, args...);
     };
 };

@@ -37,86 +37,101 @@ public: \
 
 #define END_HOOK_TABLE() };
 
-template<typename TRet = void, typename ...TArgs>
-struct FnHook {
-private:
-    LPVOID lpFunc;
+struct IHookPtr {
+protected:
+    LPVOID lpAddr;
 public:
-    FnHook() {
-        lpFunc = NULL;
+    FORCEINLINE IHookPtr() {
+        this->lpAddr = NULL;
     };
 
-    FnHook(LPVOID lpFunc) {
-        lpFunc = lpFunc;
+    FORCEINLINE IHookPtr(LPVOID lpAddr) {
+        this->lpAddr = lpAddr;
     };
 
-    FnHook(const DWORD dwAddress)
-        : FnHook((LPVOID)dwAddress) {
+    FORCEINLINE IHookPtr(DWORD dwAddress)
+        : IHookPtr((LPVOID)dwAddress) {
     };
+
+    FORCEINLINE DWORD operator *() const {
+        return (lpAddr != NULL) ? *static_cast<DWORD*>(lpAddr) : NULL;
+    };
+
+    FORCEINLINE LPVOID ptr() const {
+        return lpAddr;
+    };
+
+    IHookPtr& operator=(LPVOID lpAddr) {
+        this->lpAddr = lpAddr;
+        return *this;
+    };
+
+    IHookPtr& operator=(DWORD dwAddress) {
+        this->lpAddr = (LPVOID)dwAddress;
+        return *this;
+    };
+};
+
+template<typename TRet = void, typename ...TArgs>
+struct FnHook : public IHookPtr {
+public:
+    FORCEINLINE FnHook() : IHookPtr() {};
+    FORCEINLINE FnHook(LPVOID lpFunc) : IHookPtr(lpFunc) {};
+    FORCEINLINE FnHook(DWORD dwAddress) : IHookPtr(dwAddress) {};
 
     FORCEINLINE TRet operator()(TArgs ...args) const {
-        return (*(TRet(__cdecl *)(TArgs...))lpFunc)(args...);
+        return (*(TRet(__cdecl *)(TArgs...))lpAddr)(args...);
     };
 
     template<typename ...TArgs2>
     FORCEINLINE TRet operator()(TArgs ...args, TArgs2 ...args2) const {
-        return (*(TRet(__cdecl *)(TArgs..., TArgs2...))lpFunc)(args..., args2...);
+        return (*(TRet(__cdecl *)(TArgs..., TArgs2...))lpAddr)(args..., args2...);
     };
 
     template<class TThis>
     FORCEINLINE TRet operator()(TThis &This, TArgs ...args) const {
-        return (*(TRet(__thiscall *)(_THIS_ TArgs...))lpFunc)((LPVOID)This, args...);
+        return (*(TRet(__thiscall *)(_THIS_ TArgs...))lpAddr)((LPVOID)This, args...);
     };
 
-    FnHook& operator=(LPVOID lpFunc) {
-        this->lpFunc = lpFunc;
+    FnHook& operator=(LPVOID lpData) {
+        IHookPtr::operator=(lpData);
         return *this;
     };
 
-    FnHook& operator=(const DWORD dwAddress) {
-        this->lpFunc = (LPVOID)dwAddress;
+    FnHook& operator=(DWORD dwAddress) {
+        IHookPtr::operator=(dwAddress);
         return *this;
     };
 };
 
 template<typename TType>
-struct PtrHook {
-private:
-    LPVOID lpData;
+struct PtrHook : public IHookPtr {
 public:
-    FORCEINLINE PtrHook() {
-        this->lpData = NULL;
-    };
-
-    FORCEINLINE PtrHook(LPVOID lpData) {
-        this->lpData = lpData;
-    };
-
-    FORCEINLINE PtrHook(const DWORD dwAddress)
-        : PtrHook((LPVOID)dwAddress) {
-    };
+    FORCEINLINE PtrHook() : IHookPtr() {};
+    FORCEINLINE PtrHook(LPVOID lpFunc) : IHookPtr(lpFunc) {};
+    FORCEINLINE PtrHook(const DWORD dwAddress) : IHookPtr(dwAddress) {};
 
     FORCEINLINE operator TType() const {
-        if (lpData == NULL)
+        if (lpAddr == NULL)
         {
             //LogFile::WriteLine("PtrHook::get() -- lpData is NULL!\n");
             return NULL;
         }
         else
         {
-            TType ret = *static_cast<TType*>(lpData);
+            TType ret = *static_cast<TType*>(lpAddr);
             //LogFile::Format("PtrHook::get() -- lpData is [%08X] => %08X\n", lpData, ret);
             return ret;
         }
     };
 
     PtrHook& operator=(LPVOID lpData) {
-        this->lpData = lpData;
+        IHookPtr::operator=(lpData);
         return *this;
     };
 
-    PtrHook& operator=(const DWORD dwAddress) {
-        this->lpData = (LPVOID)dwAddress;
+    PtrHook& operator=(DWORD dwAddress) {
+        IHookPtr::operator=(dwAddress);
         return *this;
     };
 };

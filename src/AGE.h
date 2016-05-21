@@ -1,6 +1,10 @@
 #pragma once
 #include "common.h"
 
+//
+// A.G.E. (Angel Game Engine) common includes
+//
+
 typedef struct AGEGameInfo
 {
     DWORD offset;
@@ -14,8 +18,8 @@ class CAGEGame {
 private:
     int m_engineVersion;
 protected:
-    NOINLINE virtual void Initialize() {
-        return;
+    virtual int Initialize() {
+        return HOOK_INIT_OK;
     };
 public:
     CAGEGame(int engineVersion) {

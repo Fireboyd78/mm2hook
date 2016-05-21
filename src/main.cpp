@@ -78,7 +78,7 @@ bool HandleKeyPress(DWORD vKey)
         case VK_OEM_3:
             // close the game!
             //ExitProcess(EXIT_SUCCESS);
-            pMM2->Quitf("Bye bye from %s!", "MM2Hook");
+            MM2::Quitf("Bye bye from %s!", "MM2Hook");
             return true;
     }
     return false;
