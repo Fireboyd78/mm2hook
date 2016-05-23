@@ -1,5 +1,7 @@
 #include "mm2.h"
 
+#define MAX_HOOK_PTRS 4096
+
 using namespace MM2;
 
 #define DEFINE_PRINT_HOOK(x,y) \
@@ -19,79 +21,77 @@ MM2Version EngineVersionToGameVersion(int engineVersion) {
     return MM2_INVALID;
 }
 
-FnPtr<void>     lpPrintf;
-FnPtr<void>     lpMessagef;
-FnPtr<void>     lpDisplayf;
-FnPtr<void>     lpWarningf;
-FnPtr<void>     lpErrorf;
-FnPtr<void>     lpQuitf;
-FnPtr<void>     lpAbortf;
+static int g_hook_idx = 0; // next index to use
+// global hook pool -- used to directly initialize pointers
+static LPVOID g_hook_ptrs[MAX_HOOK_PTRS];
 
-PtrHook<aiMap>  lpAIMAP_ptr;
-FnPtr<void>     lpaiMap_Dump;
+inline IMM2HookPtr::IMM2HookPtr(const MM2AddressData &addressData) {
+    this->addressData = addressData;
 
-FnPtr<void>     lpdatOutput_CloseLog;
-FnPtr<bool>     lpdatOutput_OpenLog;
-FnPtr<void>     lpdatOutput_SetOutputMask;
+    if (g_hook_idx < MAX_HOOK_PTRS) {
+        g_hook_ptrs[g_hook_idx++] = this;
+    }
+    else {
+        MessageBox(NULL, "FATAL ERROR: No more hook pointers available!", "MM2Hook", MB_OK | MB_ICONERROR);
+    }
+}
 
-FnPtr<void>     lpStream_DumpOpenFiles;
-FnPtr<Stream*>  lpStream_Open;
-FnPtr<Stream*>  lpStream_Create;
-FnPtr<int>      lpStream_Read;
-FnPtr<int>      lpStream_Write;
-FnPtr<int>      lpStream_GetCh;
-FnPtr<int>      lpStream_PutCh;
-FnPtr<int>      lpStream_Seek;
-FnPtr<int>      lpStream_Tell;
+inline IMM2HookPtr::~IMM2HookPtr() {
+    if (hook_idx > 0) {
+        g_hook_ptrs[hook_idx] = NULL;
+    }
+}
 
-static const MM2InitData _hooks_init[] = {
-    // IMPORTANT: New versions must be reflected here!
-    // NAME                                     ADDRESS [BETA 1/BETA 2/RETAIL]
+inline void IMM2HookPtr::set_version(MM2Version gameVersion) {
+    IHookPtr::operator=(addressData.addresses[gameVersion]);
+}
 
-    &lpPrintf,                                  { NULL, NULL, 0x4C9720 },
-    &lpMessagef,                                { NULL, NULL, 0x4C9750 },
-    &lpDisplayf,                                { NULL, NULL, 0x4C9780 },
-    &lpWarningf,                                { NULL, NULL, 0x4C97B0 },
-    &lpErrorf,                                  { NULL, NULL, 0x4C97E0 },
-    &lpQuitf,                                   { NULL, NULL, 0x4C9810 },
-    &lpAbortf,                                  { NULL, NULL, 0x4C9850 },
+#define INIT_DATA(b1,b2,r) ( MM2AddressData { b1, b2, r } )
 
-    &lpAIMAP_ptr,                               { NULL, NULL, 0x6B2E10 },
-    &lpaiMap_Dump,                              { NULL, NULL, 0x538840 },
+MM2FnHook<void>     lpPrintf                                INIT_DATA( NULL, NULL, 0x4C9720 );
+MM2FnHook<void>     lpMessagef                              INIT_DATA( NULL, NULL, 0x4C9750 );
+MM2FnHook<void>     lpDisplayf                              INIT_DATA( NULL, NULL, 0x4C9780 );
+MM2FnHook<void>     lpWarningf                              INIT_DATA( NULL, NULL, 0x4C97B0 );
+MM2FnHook<void>     lpErrorf                                INIT_DATA( NULL, NULL, 0x4C97E0 );
+MM2FnHook<void>     lpQuitf                                 INIT_DATA( NULL, NULL, 0x4C9810 );
+MM2FnHook<void>     lpAbortf                                INIT_DATA( NULL, NULL, 0x4C9850 );
 
-    &lpdatOutput_CloseLog,                      { NULL, NULL, 0x4C9530 },
-    &lpdatOutput_SetOutputMask,                 { NULL, NULL, 0x4C9590 },
-    &lpdatOutput_OpenLog,                       { NULL, NULL, 0x4C95A0 },
+MM2FnHook<void>     lpaiMap_Dump                            INIT_DATA( NULL, NULL, 0x538840 );
+MM2PtrHook<aiMap>   lpAIMAP_ptr                             INIT_DATA( NULL, NULL, 0x6B2E10 );
 
-    &lpStream_DumpOpenFiles,                    { NULL, NULL, 0x4C9970 },
-    &lpStream_Open,                             { NULL, NULL, 0x4C99C0 },
-    &lpStream_Create,                           { NULL, NULL, 0x4C9A00 },
-    &lpStream_Read,                             { NULL, NULL, 0x4C9AA0 },
-    &lpStream_Write,                            { NULL, NULL, 0x4C9BF0 },
-    &lpStream_GetCh,                            { NULL, NULL, 0x4C9D00 },
-    &lpStream_PutCh,                            { NULL, NULL, 0x4C9D30 },
-    &lpStream_Seek,                             { NULL, NULL, 0x4C9D60 },
-    &lpStream_Tell,                             { NULL, NULL, 0x4C9DB0 },
+MM2FnHook<void>     lpdatOutput_CloseLog                    INIT_DATA( NULL, NULL, 0x4C9530 );
+MM2FnHook<bool>     lpdatOutput_OpenLog                     INIT_DATA( NULL, NULL, 0x4C9590 );
+MM2FnHook<void>     lpdatOutput_SetOutputMask               INIT_DATA( NULL, NULL, 0x4C95A0 );
 
-    NULL // must be last
-};
+#ifdef IO_EVENT_HOOK
+MM2FnHook<bool>     lpioEventQueue_Pop                      INIT_DATA( NULL, NULL, 0x4BA930 );
+MM2FnHook<bool>     lpioEventQueue_Peek                     INIT_DATA( NULL, NULL, 0x4BA980 );
+MM2FnHook<void>     lpioEventQueue_Queue                    INIT_DATA( NULL, NULL, 0x4BA9D0 );
+MM2FnHook<void>     lpioEventQueue_Command                  INIT_DATA( NULL, NULL, 0x4BAA50 );
+#endif
+
+MM2FnHook<void>     lpStream_DumpOpenFiles                  INIT_DATA( NULL, NULL, 0x4C9970 );
+MM2FnHook<Stream*>  lpStream_Open                           INIT_DATA( NULL, NULL, 0x4C99C0 );
+MM2FnHook<Stream*>  lpStream_Create                         INIT_DATA( NULL, NULL, 0x4C9A00 );
+MM2FnHook<int>      lpStream_Read                           INIT_DATA( NULL, NULL, 0x4C9AA0 );
+MM2FnHook<int>      lpStream_Write                          INIT_DATA( NULL, NULL, 0x4C9BF0 );
+MM2FnHook<int>      lpStream_GetCh                          INIT_DATA( NULL, NULL, 0x4C9D00 );
+MM2FnHook<int>      lpStream_PutCh                          INIT_DATA( NULL, NULL, 0x4C9D30 );
+MM2FnHook<int>      lpStream_Seek                           INIT_DATA( NULL, NULL, 0x4C9D60 );
+MM2FnHook<int>      lpStream_Tell                           INIT_DATA( NULL, NULL, 0x4C9DB0 );
 
 int InitializeMM2(MM2Version gameVersion) {
-    const MM2InitData *hook;
-    int nHooks = 0;
+    IMM2HookPtr *hook;
+    int i = 0;
 
     LogFile::WriteLine("Initializing MM2 hooks...");
 
-    for (hook = _hooks_init; hook->lpHook; hook++, nHooks++) {
-        auto addr = hook->addresses[gameVersion];
+    while ((hook = (IMM2HookPtr*)g_hook_ptrs[i++]) != NULL)
+        hook->set_version(gameVersion);
 
-        if (addr != NULL)
-            *hook->lpHook = addr;
-    }
+    LogFile::Format(" - nHooks: %d\n", i + 1);
 
-    LogFile::Format(" - nHooks: %d\n", nHooks);
-
-    return (nHooks > 0) ? HOOK_INIT_OK : HOOK_INIT_UNSUPPORTED;
+    return (i > 0) ? HOOK_INIT_OK : HOOK_INIT_UNSUPPORTED;
 }
 
 CMidtownMadness2::CMidtownMadness2(int engineVersion)
@@ -122,70 +122,75 @@ namespace MM2 {
     DEFINE_PRINT_HOOK(Quitf, lpQuitf);
     DEFINE_PRINT_HOOK(Abortf, lpAbortf);
 
-    void aiMap::Dump(void)
-    {
-        lpaiMap_Dump(lpAIMAP_ptr);
+    void aiMap::Dump(THIS_ void) {
+        lpaiMap_Dump.ThisCall(lpAIMAP_ptr);
     }
 
-    bool datOutput::OpenLog(LPCSTR filename)
-    {
+    bool datOutput::OpenLog(LPCSTR filename) {
         return lpdatOutput_OpenLog(filename);
     }
 
-    void datOutput::CloseLog(void)
-    {
+    void datOutput::CloseLog(void) {
         lpdatOutput_CloseLog();
     }
 
-    void datOutput::SetOutputMask(UINT mask)
-    {
+    void datOutput::SetOutputMask(UINT mask) {
         lpdatOutput_SetOutputMask(mask);
     }
 
+#if IO_EVENT_HOOK
+    bool ioEventQueue::Pop(ioEvent &outEvent) {
+        return lpioEventQueue_Pop(&outEvent);
+    }
+
+    bool ioEventQueue::Peek(ioEvent &outEvent, int &idx) {
+        return lpioEventQueue_Peek(&outEvent, &idx);
+    }
+
+    void ioEventQueue::Queue(ioEvent::ioEventType type, int x, int y, int value) {
+        lpioEventQueue_Queue(type, x, y, value);
+    }
+
+    void ioEventQueue::Command(void *command) {
+        lpioEventQueue_Command(command);
+    }
+#endif
+
 #pragma region "Stream implementation"
-    void Stream::DumpOpenFiles(void)
-    {
+    void Stream::DumpOpenFiles(void) {
         lpStream_DumpOpenFiles();
     }
 
-    Stream * Stream::Open(LPCSTR filename, bool p1)
-    {
+    Stream * Stream::Open(LPCSTR filename, bool p1) {
         return lpStream_Open(filename, p1);
     }
 
-    Stream * Stream::Create(LPCSTR filename)
-    {
+    Stream * Stream::Create(LPCSTR filename) {
         return lpStream_Create(filename);
     }
 
-    int Stream::Read(THIS_ LPVOID dstBuf, int size)
-    {
-        return lpStream_Read(this, dstBuf, size);
+    int Stream::Read(THIS_ LPVOID dstBuf, int size) {
+        return lpStream_Read.ThisCall(this, dstBuf, size);
     }
 
-    int Stream::Write(THIS_ const LPVOID srcBuf, int size)
-    {
-        return lpStream_Write(this, srcBuf, size);
+    int Stream::Write(THIS_ const LPVOID srcBuf, int size) {
+        return lpStream_Write.ThisCall(this, srcBuf, size);
     }
 
-    int Stream::GetCh(THIS_ void)
-    {
-        return lpStream_GetCh(this);
+    int Stream::GetCh(THIS_ void) {
+        return lpStream_GetCh.ThisCall(this);
     }
 
-    int Stream::PutCh(THIS_ unsigned char ch)
-    {
-        return lpStream_PutCh(this, ch);
+    int Stream::PutCh(THIS_ unsigned char ch) {
+        return lpStream_PutCh.ThisCall(this, ch);
     }
 
-    int Stream::Seek(THIS_ int offset)
-    {
-        return lpStream_Seek(this, offset);
+    int Stream::Seek(THIS_ int offset) {
+        return lpStream_Seek.ThisCall(this, offset);
     }
 
-    int Stream::Tell(THIS_ void)
-    {
-        return lpStream_Tell(this);
+    int Stream::Tell(THIS_ void) {
+        return lpStream_Tell.ThisCall(this);
     }
 #pragma endregion
 }

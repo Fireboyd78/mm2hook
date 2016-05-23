@@ -65,12 +65,12 @@ public:
         return lpAddr;
     };
 
-    IHookPtr& operator=(LPVOID lpAddr) {
+    FORCEINLINE IHookPtr& operator=(LPVOID lpAddr) {
         this->lpAddr = lpAddr;
         return *this;
     };
 
-    IHookPtr& operator=(DWORD dwAddress) {
+    FORCEINLINE IHookPtr& operator=(DWORD dwAddress) {
         this->lpAddr = (LPVOID)dwAddress;
         return *this;
     };

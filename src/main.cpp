@@ -76,20 +76,36 @@ bool HandleKeyPress(DWORD vKey)
     switch (vKey) {
         // '~'
         case VK_OEM_3:
+        {
             // close the game!
             //ExitProcess(EXIT_SUCCESS);
-            MM2::Quitf("Bye bye from %s!", "MM2Hook");
-            return true;
+            //MM2::Quitf("Bye bye from %s!", "MM2Hook");
+
+            MM2PtrHook<LPVOID> lpmmGameManager_Instance{ MM2_RETAIL, 0x5E0D08 };
+            MM2FnHook<void> lpmmPopup_ProcessChat{ MM2_RETAIL, 0x42A400 };
+
+            auto mgr = *lpmmGameManager_Instance;
+            auto srPtr = *(DWORD*)((BYTE*)mgr + 0x188);
+
+            LogFile::Format("mgr: %08X, srPtr: %08X", mgr, srPtr);
+
+            if (srPtr == NULL) {
+                LogFile::Format("\n");
+            } else {
+                auto popup = *(DWORD*)((BYTE*)srPtr + 0x94);
+
+                LogFile::Format(", popup: %08X\n", popup);
+
+                if (popup != NULL) {
+                    (*(void(__thiscall *)(THIS_ LPVOID))lpmmPopup_ProcessChat.ptr())((LPVOID)popup);
+                }
+            }
+
+        } return true;
         case 'f':
         case 'F':
             MM2::Stream::DumpOpenFiles();
             return true;
-        case 'a':
-        case 'A':
-            LogFile::Write("Dumping AIMAP...");
-            MM2::aiMap::Dump();
-            LogFile::WriteLine("Done!");
-
     }
     return false;
 }
@@ -98,12 +114,12 @@ LRESULT APIENTRY WndProcNew(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg) {
         case WM_KEYUP:
+        case WM_SYSKEYUP:
         {
             if (HandleKeyPress((DWORD)wParam))
                 return 0;
         } break;
     }
-
     return CallWindowProc(hProcOld, hWnd, uMsg, wParam, lParam);
 }
 

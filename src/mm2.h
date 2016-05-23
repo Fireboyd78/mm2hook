@@ -15,17 +15,78 @@ enum MM2Version
     MM2_NUM_VERSIONS
 };
 
-typedef struct MM2InitData {
-    IHookPtr *lpHook;
-    DWORD addresses[MM2_NUM_VERSIONS];
-} *LPMM2InitData;
-
 static const AGEGameInfo g_mm2_info[MM2_NUM_VERSIONS] = {
     // TODO: fill in values
     { 0, MM2_BETA_1, 3323, false, "NOT DEFINED" },
     { 0, MM2_BETA_2, 3366, false, "NOT DEFINED" },
 
     { 0x5C28FC, MM2_RETAIL, 3393, true, "Angel: 3393 / Nov  3 2000 14:34:22" },
+};
+
+typedef struct MM2AddressData {
+    DWORD addresses[MM2_NUM_VERSIONS];
+} *LPMM2AddressData;
+
+class IMM2HookPtr : public IHookPtr {
+private:
+    int hook_idx = -1;
+protected:
+    MM2AddressData addressData;
+public:
+    inline IMM2HookPtr(const MM2AddressData &addressData);
+    inline IMM2HookPtr(MM2Version gameVersion, DWORD dwAddress) {
+        IHookPtr::operator=(addressData.addresses[gameVersion] = dwAddress);
+    };
+    inline ~IMM2HookPtr();
+
+    inline void set_version(MM2Version gameVersion);
+};
+
+template<typename TRet>
+class MM2FnHook : public IMM2HookPtr {
+public:
+    inline MM2FnHook(const MM2AddressData &addressData)
+        : IMM2HookPtr(addressData) {};
+
+    inline MM2FnHook(MM2Version gameVersion, DWORD dwAddress)
+        : IMM2HookPtr(gameVersion, dwAddress) {};
+
+    template<typename ...TArgs>
+    FORCEINLINE TRet operator()(TArgs ...args) {
+        return (*(TRet(__cdecl *)(TArgs...))lpAddr)(args...);
+    };
+
+    template<typename ...TArgs>
+    FORCEINLINE TRet ThisCall(LPVOID This, TArgs ...args) {
+        return (*(TRet(__thiscall *)(_THIS_ TArgs...))lpAddr)(This, args...);
+    };
+
+    template<class TThis, typename ...TArgs>
+    FORCEINLINE TRet ThisCall(TThis &This, TArgs ...args) {
+        return ThisCall((LPVOID)This, args...);
+    };
+};
+
+template<typename TType>
+class MM2PtrHook : public IMM2HookPtr {
+public:
+    inline MM2PtrHook(const MM2AddressData &addressData)
+        : IMM2HookPtr(addressData) {};
+
+    inline MM2PtrHook(MM2Version gameVersion, DWORD dwAddress)
+        : IMM2HookPtr(gameVersion, dwAddress) {};
+
+    FORCEINLINE operator TType() const {
+        if (lpAddr == NULL)
+        {
+            return NULL;
+        }
+        else
+        {
+            TType ret = *static_cast<TType*>(lpAddr);
+            return ret;
+        }
+    };
 };
 
 namespace MM2 {
@@ -53,6 +114,43 @@ namespace MM2 {
         */
 
         static void SetOutputMask(UINT mask);
+    };
+
+#ifdef IO_EVENT_HOOK
+    struct ioEvent {
+        enum ioEventType
+        {
+            IO_EVENT_DESTROY        = 0,
+            IO_EVENT_CREATE         = 1,
+            IO_EVENT_LBUTTONUP      = 2,
+            IO_EVENT_RBUTTONDOWN    = 3,
+            IO_EVENT_RBUTTONUP      = 4,
+            IO_EVENT_MBUTTONDOWN    = 5,
+            IO_EVENT_MBUTTONUP      = 6,
+            IO_EVENT_KEYDOWN        = 7,
+            IO_EVENT_CHAR           = 8,
+            IO_EVENT_INPUT          = 9,
+            IO_EVENT_COMMAND        = 10, /* Not handled by default, maybe implement a custom handler? */
+        };
+    public:
+        ioEventType type;
+        int x;
+        int y;
+        int value;
+    };
+
+    class ioEventQueue {
+    public:
+        static bool Pop(ioEvent &outEvent);
+        static bool Peek(ioEvent &outEvent, int &idx);
+        static void Queue(ioEvent::ioEventType type, int x, int y, int value);
+        static void Command(void *command);
+    };
+#endif
+
+    class mmInput {
+    public:
+
     };
 
     class Stream {
