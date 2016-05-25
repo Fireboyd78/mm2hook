@@ -88,10 +88,6 @@ bool HandleKeyPress(DWORD vKey)
             // tell the game to open a chat box,
             // and then use a local variable to check if it's open
 
-            // don't try opening it again if it's already open
-            if (isConsoleOpen)
-                return true;
-
             auto mgr = *MM2::mmGameManager::Instance();
             auto srPtr = *(DWORD*)((BYTE*)mgr + 0x188);
 
@@ -100,6 +96,10 @@ bool HandleKeyPress(DWORD vKey)
                 auto popup = (MM2::mmPopup*)(*(DWORD*)((BYTE*)srPtr + 0x94));
 
                 if (popup != NULL) {
+                    // don't try opening it again if it's already open
+                    if (popup->IsEnabled() && isConsoleOpen)
+                        return true;
+
                     popup->ProcessChat();
                     isConsoleOpen = true;
                 }
@@ -292,6 +292,14 @@ void InstallPatches(MM2Version gameVersion) {
 
             // send mmGame::SendChatMessage to our handler instead of returning
             LogFile::Write("Installing chat handler...");
+
+            BYTE patch[] = { 80 };
+
+            // try increasing the label buffer sizes
+            InstallPatch(0x50BBCF, patch, 1);
+            InstallPatch(0x4E68B5, patch, 1);
+            InstallPatch(0x4E68B9, patch, 1);
+
             LogFile::WriteLine((InstallJmpHook(0x414EB6, *(DWORD*)&chatHandler)) ? "Done!" : "FAIL!");
         } break;
     }
