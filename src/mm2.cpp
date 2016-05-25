@@ -25,7 +25,7 @@ static int g_hook_idx = 0; // next index to use
 // global hook pool -- used to directly initialize pointers
 static LPVOID g_hook_ptrs[MAX_HOOK_PTRS];
 
-inline IMM2HookPtr::IMM2HookPtr(const MM2AddressData &addressData) {
+NOTHROW inline IMM2HookPtr::IMM2HookPtr(const MM2AddressData &addressData) {
     this->addressData = addressData;
 
     if (g_hook_idx < MAX_HOOK_PTRS) {
@@ -36,7 +36,7 @@ inline IMM2HookPtr::IMM2HookPtr(const MM2AddressData &addressData) {
     }
 }
 
-inline IMM2HookPtr::~IMM2HookPtr() {
+NOTHROW inline IMM2HookPtr::~IMM2HookPtr() {
     if (hook_idx > 0) {
         g_hook_ptrs[hook_idx] = NULL;
     }
@@ -63,6 +63,9 @@ MM2FnHook<void>     lpdatOutput_CloseLog                    INIT_DATA( NULL, NUL
 MM2FnHook<bool>     lpdatOutput_OpenLog                     INIT_DATA( NULL, NULL, 0x4C9590 );
 MM2FnHook<void>     lpdatOutput_SetOutputMask               INIT_DATA( NULL, NULL, 0x4C95A0 );
 
+MM2PtrHook<mmGameManager *>
+                    lpmmGameManager_Instance                INIT_DATA( NULL, NULL, 0x5E0D08 );
+
 #ifdef IO_EVENT_HOOK
 MM2FnHook<bool>     lpioEventQueue_Pop                      INIT_DATA( NULL, NULL, 0x4BA930 );
 MM2FnHook<bool>     lpioEventQueue_Peek                     INIT_DATA( NULL, NULL, 0x4BA980 );
@@ -79,6 +82,9 @@ MM2FnHook<int>      lpStream_GetCh                          INIT_DATA( NULL, NUL
 MM2FnHook<int>      lpStream_PutCh                          INIT_DATA( NULL, NULL, 0x4C9D30 );
 MM2FnHook<int>      lpStream_Seek                           INIT_DATA( NULL, NULL, 0x4C9D60 );
 MM2FnHook<int>      lpStream_Tell                           INIT_DATA( NULL, NULL, 0x4C9DB0 );
+MM2FnHook<int>      lpStream_Close                          INIT_DATA( NULL, NULL, 0x4C9DC0 );
+MM2FnHook<int>      lpStream_Size                           INIT_DATA( NULL, NULL, 0x4C9E00 );
+MM2FnHook<int>      lpStream_Flush                          INIT_DATA( NULL, NULL, 0x4C9E60 );
 
 int InitializeMM2(MM2Version gameVersion) {
     IMM2HookPtr *hook;
@@ -156,6 +162,11 @@ namespace MM2 {
     }
 #endif
 
+    MM2PtrHook<mmGameManager*> mmGameManager::Instance(void)
+    {
+        return lpmmGameManager_Instance;
+    }
+
 #pragma region "Stream implementation"
     void Stream::DumpOpenFiles(void) {
         lpStream_DumpOpenFiles();
@@ -191,6 +202,18 @@ namespace MM2 {
 
     int Stream::Tell(THIS_ void) {
         return lpStream_Tell.ThisCall(this);
+    }
+
+    int Stream::Close(THIS_ void) {
+        return lpStream_Close();
+    }
+
+    int Stream::Size(THIS_ void) {
+        return lpStream_Size();
+    }
+
+    int Stream::Flush(THIS_ void) {
+        return lpStream_Flush();
     }
 #pragma endregion
 }

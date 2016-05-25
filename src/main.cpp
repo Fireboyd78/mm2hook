@@ -81,10 +81,9 @@ bool HandleKeyPress(DWORD vKey)
             //ExitProcess(EXIT_SUCCESS);
             //MM2::Quitf("Bye bye from %s!", "MM2Hook");
 
-            MM2PtrHook<LPVOID> lpmmGameManager_Instance{ MM2_RETAIL, 0x5E0D08 };
             MM2FnHook<void> lpmmPopup_ProcessChat{ MM2_RETAIL, 0x42A400 };
 
-            auto mgr = *lpmmGameManager_Instance;
+            auto mgr = *MM2::mmGameManager::Instance();
             auto srPtr = *(DWORD*)((BYTE*)mgr + 0x188);
 
             LogFile::Format("mgr: %08X, srPtr: %08X", mgr, srPtr);
@@ -149,7 +148,8 @@ void SetupHook() {
 }
 
 void ResetHook(bool restarting) {
-    LogFile::Format("Hook reset request received: the GameLoop %s.\n", (restarting) ? "is restarting" : "was restarted");
+    LogFile::Write("Hook reset request received: ");
+    LogFile::WriteLine((restarting) ? "leaving GameLoop" : "entering GameLoop");
     // TODO: reset stuff here?
 }
 
@@ -184,7 +184,7 @@ void HookShutdown() {
     }
 };
 
-void HookFramework(MM2Version gameVersion) {
+bool HookFramework(MM2Version gameVersion) {
     switch (gameVersion)
     {
         case MM2_RETAIL:
@@ -193,10 +193,9 @@ void HookFramework(MM2Version gameVersion) {
             *(DWORD*)0x5E0CD8 = (DWORD)&HookShutdown;
 
             gameClosing = 0x6B1708;
-        } break;
+        } return true;
     }
-
-    LogFile::WriteLine("Successfully hooked into the framework!");
+    return false;
 };
 
 void InstallPatches(MM2Version gameVersion) {
@@ -214,7 +213,14 @@ void InstallPatches(MM2Version gameVersion) {
 //
 void Initialize(MM2Version gameVersion) {
     // first hook into the framework
-    HookFramework(gameVersion);
+    LogFile::Write("Hooking into the framework...");
+
+    if (HookFramework(gameVersion)) {
+        LogFile::Write("Done!\n");
+    } else {
+        LogFile::Write("FAIL!\n");
+    }
+
     InstallPatches(gameVersion);
 }
 
@@ -224,6 +230,9 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 	{
         case DLL_PROCESS_ATTACH:
         {
+            // Initialize the log file
+            debug("initializing...");
+            LogFile::Initialize("mm2hook.log", "--<< MM2Hook log file >>--\n");
             LogFile::WriteLine("MM2Hook initialized.");
 
             HMODULE hDIModule = NULL;
@@ -270,7 +279,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 	case DLL_THREAD_ATTACH:
 	case DLL_THREAD_DETACH:
 	case DLL_PROCESS_DETACH:
-		break;
+        break;
 	}
 	return TRUE;
 }

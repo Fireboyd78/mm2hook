@@ -33,11 +33,11 @@ private:
 protected:
     MM2AddressData addressData;
 public:
-    inline IMM2HookPtr(const MM2AddressData &addressData);
-    inline IMM2HookPtr(MM2Version gameVersion, DWORD dwAddress) {
+    NOTHROW inline IMM2HookPtr(const MM2AddressData &addressData);
+    NOTHROW inline IMM2HookPtr(MM2Version gameVersion, DWORD dwAddress) {
         IHookPtr::operator=(addressData.addresses[gameVersion] = dwAddress);
     };
-    inline ~IMM2HookPtr();
+    NOTHROW inline ~IMM2HookPtr();
 
     inline void set_version(MM2Version gameVersion);
 };
@@ -45,24 +45,24 @@ public:
 template<typename TRet>
 class MM2FnHook : public IMM2HookPtr {
 public:
-    inline MM2FnHook(const MM2AddressData &addressData)
+    NOTHROW inline MM2FnHook(const MM2AddressData &addressData)
         : IMM2HookPtr(addressData) {};
 
-    inline MM2FnHook(MM2Version gameVersion, DWORD dwAddress)
+    NOTHROW inline MM2FnHook(MM2Version gameVersion, DWORD dwAddress)
         : IMM2HookPtr(gameVersion, dwAddress) {};
 
     template<typename ...TArgs>
-    FORCEINLINE TRet operator()(TArgs ...args) {
+    inline TRet operator()(TArgs ...args) {
         return (*(TRet(__cdecl *)(TArgs...))lpAddr)(args...);
     };
 
     template<typename ...TArgs>
-    FORCEINLINE TRet ThisCall(LPVOID This, TArgs ...args) {
+    inline TRet ThisCall(LPVOID This, TArgs ...args) {
         return (*(TRet(__thiscall *)(_THIS_ TArgs...))lpAddr)(This, args...);
     };
 
     template<class TThis, typename ...TArgs>
-    FORCEINLINE TRet ThisCall(TThis &This, TArgs ...args) {
+    inline TRet ThisCall(TThis &This, TArgs ...args) {
         return ThisCall((LPVOID)This, args...);
     };
 };
@@ -70,13 +70,13 @@ public:
 template<typename TType>
 class MM2PtrHook : public IMM2HookPtr {
 public:
-    inline MM2PtrHook(const MM2AddressData &addressData)
+    NOTHROW inline MM2PtrHook(const MM2AddressData &addressData)
         : IMM2HookPtr(addressData) {};
 
-    inline MM2PtrHook(MM2Version gameVersion, DWORD dwAddress)
+    NOTHROW inline MM2PtrHook(MM2Version gameVersion, DWORD dwAddress)
         : IMM2HookPtr(gameVersion, dwAddress) {};
 
-    FORCEINLINE operator TType() const {
+    inline operator TType() const {
         if (lpAddr == NULL)
         {
             return NULL;
@@ -148,9 +148,20 @@ namespace MM2 {
     };
 #endif
 
-    class mmInput {
+    class mmGameManager {
     public:
+        /* TODO?
+        mmGameManager::mmGameManager(void)
+        mmGameManager::~mmGameManager(void)
+        virtual void mmGameManager::Cull(void)
+        virtual void mmGameManager::Update(void)
+        virtual void mmGameManager::Reset(void)
+        void mmGameManager::BeDone(void)
+        void mmGameManager::ForcePopupUI(void)
+        void mmGameManager::ForceReplayUI(void)
+        */
 
+        static MM2PtrHook<mmGameManager*> Instance(void);
     };
 
     class Stream {
@@ -166,6 +177,30 @@ namespace MM2 {
         int PutCh(THIS_ unsigned char ch);
         int Seek(THIS_ int offset);
         int Tell(THIS_ void);
+        int Close(THIS_ void);
+        int Size(THIS_ void);
+        int Flush(THIS_ void);
+    };
+
+    struct Vector2 {
+    public:
+        float X;
+        float Y;
+    };
+
+    struct Vector3 {
+    public:
+        float X;
+        float Y;
+        float Z;
+    };
+
+    struct Vector4 {
+    public:
+        float X;
+        float Y;
+        float Z;
+        float W;
     };
 };
 
