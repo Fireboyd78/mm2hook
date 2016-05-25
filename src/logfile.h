@@ -22,6 +22,7 @@ public:
     static LogFileStream* Open(LPCSTR filename);
 
     void Close(void);
+    void Flush(bool force);
 
     void AppendLine(void);
 
@@ -42,6 +43,7 @@ namespace LogFile {
     void Initialize(LPCSTR filename, LPCSTR title);
 
     void Close(void);
+    void Flush(void);
 
     void AppendLine(void);
 

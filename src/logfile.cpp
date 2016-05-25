@@ -42,10 +42,20 @@ LogFileStream* LogFileStream::Open(LPCSTR filename)
     return new LogFileStream(filename, true);
 }
 
+void LogFileStream::Flush(bool force)
+{
+    if (force) {
+        Close();
+        SetAppendMode(true);
+    } else {
+        fflush(m_file);
+    }
+}
+
 void LogFileStream::AppendLine(void)
 {
-    fprintf(m_file, "\n");
-    fflush(m_file);
+    fputs("\n", m_file);
+    Flush(true);
 }
 
 void LogFileStream::Write(LPCSTR str)
@@ -59,8 +69,8 @@ void LogFileStream::Write(LPCSTR str)
 
     if (strLen > 0)
     {
-        fwrite(str, 1, strLen, m_file);
-        fflush(m_file);
+        fputs(str, m_file);
+        Flush(false);
     }
 }
 
@@ -104,4 +114,5 @@ void LogFile::Format(LPCSTR format, ...) {
     va_end(va);
 
     g_logfile->Write(g_logfile_buffer);
+    g_logfile->Flush(true);
 };
