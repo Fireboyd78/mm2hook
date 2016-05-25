@@ -40,21 +40,27 @@ void SetJmpDest(LPVOID patch, DWORD jmpOffset, LPVOID jmpDest, LPDWORD jmpStorag
     *(DWORD*)((BYTE*)patch + jmpOffset) = (DWORD)jmpStorage;
 };
 
-void InstallJmpHook(DWORD dwAddress, DWORD jmpDest) {
+bool InstallJmpHook(DWORD dwAddress, DWORD jmpDest) {
     const LPVOID lpAddr = (LPVOID)dwAddress;
     const DWORD dwSize = 5; // size of jmp instruction
     DWORD relOffset = dwAddress + dwSize;
+
+    int relJmpDest = (int)(jmpDest - relOffset);
+
+    // hopefully this is good enough error checking
+    // otherwise we're going to have some serious problems!
+    if ((relOffset + relJmpDest) != jmpDest)
+        return false;
 
     DWORD flOldProtect;
 
     VirtualProtect(lpAddr, dwSize, PAGE_EXECUTE_READWRITE, &flOldProtect);
 
-    // This can be extremely fatal if the target is too far away!
-    // Should probably implement some error checking...
     *(BYTE*)lpAddr = 0xE9; // 'JMP REL32'
-    *(int*)((BYTE*)lpAddr + 1) = (int)(jmpDest - relOffset);
+    *(int*)((BYTE*)lpAddr + 1) = relJmpDest;
 
     VirtualProtect(lpAddr, dwSize, flOldProtect, &flOldProtect);
+    return true;
 };
 
 bool SubclassGameWindow(HWND gameWnd, WNDPROC pWndProcNew, WNDPROC *ppWndProcOld)
@@ -71,35 +77,33 @@ bool SubclassGameWindow(HWND gameWnd, WNDPROC pWndProcNew, WNDPROC *ppWndProcOld
     return false;
 }
 
+bool isConsoleOpen = false;
+
 bool HandleKeyPress(DWORD vKey)
 {
     switch (vKey) {
         // '~'
         case VK_OEM_3:
         {
-            // close the game!
-            //ExitProcess(EXIT_SUCCESS);
-            //MM2::Quitf("Bye bye from %s!", "MM2Hook");
+            // tell the game to open a chat box,
+            // and then use a local variable to check if it's open
 
-            MM2FnHook<void> lpmmPopup_ProcessChat{ MM2_RETAIL, 0x42A400 };
+            // don't try opening it again if it's already open
+            if (isConsoleOpen)
+                return true;
 
             auto mgr = *MM2::mmGameManager::Instance();
             auto srPtr = *(DWORD*)((BYTE*)mgr + 0x188);
 
-            LogFile::Format("mgr: %08X, srPtr: %08X", mgr, srPtr);
-
-            if (srPtr == NULL) {
-                LogFile::Format("\n");
-            } else {
-                auto popup = *(DWORD*)((BYTE*)srPtr + 0x94);
-
-                LogFile::Format(", popup: %08X\n", popup);
+            if (srPtr != NULL)
+            {
+                auto popup = (MM2::mmPopup*)(*(DWORD*)((BYTE*)srPtr + 0x94));
 
                 if (popup != NULL) {
-                    (*(void(__thiscall *)(THIS_ LPVOID))lpmmPopup_ProcessChat.ptr())((LPVOID)popup);
+                    popup->ProcessChat();
+                    isConsoleOpen = true;
                 }
             }
-
         } return true;
         case 'f':
         case 'F':
@@ -122,9 +126,90 @@ LRESULT APIENTRY WndProcNew(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     return CallWindowProc(hProcOld, hWnd, uMsg, wParam, lParam);
 }
 
+// needed to put this in a class for proper stack cleanup
+// not meant to be initialized directly!
+class ChatHandler {
+public:
+    void Process(char *message) {
+        if (isConsoleOpen) {
+            luaL_dostring(L, message);
+
+            // return normal chatbox behavior
+            isConsoleOpen = false;
+        }
+        else {
+            LogFile::Format("Got chat message: %s\n", message);
+        }
+    }
+};
+
+static int l_Quitf(lua_State *L) {
+    auto message = luaL_checkstring(L, 1);
+
+    MM2::Quitf(message);
+    return 0;
+};
+
+static int l_LogFile_Write(lua_State *L) {
+    if (lua_gettop(L) == 0)
+        luaL_error(L, "LogFile.Write -- no argument given");
+
+    auto message = luaL_checkstring(L, 1);
+
+    LogFile::Write(message);
+    return 0;
+};
+
+static int l_LogFile_WriteLine(lua_State *L) {
+    auto message = (lua_gettop(L) != 0) ? luaL_checkstring(L, 1) : "\n";
+
+    LogFile::WriteLine(message);
+    return 0;
+};
+
+static const luaL_Reg mm2_lib[] = {
+    { "Quitf", &l_Quitf },
+
+    { NULL, NULL }
+};
+
+static const luaL_Reg logfile_lib[] = {
+    { "Write", &l_LogFile_Write },
+    { "WriteLine", &l_LogFile_WriteLine },
+
+    { NULL, NULL }
+};
+
+static const struct {
+    LPCSTR map_name;
+    const luaL_Reg *map_reg;
+} map_libs[] = {
+    { "MM2", mm2_lib },
+    { "LogFile", logfile_lib },
+};
+
+void InitializeLua() {
+    LogFile::WriteLine("Initializing Lua...");
+
+    L = luaL_newstate();
+
+    luaL_openlibs(L);
+
+    for (auto lib : map_libs)
+    {
+        lua_newtable(L);
+        luaL_setfuncs(L, lib.map_reg, 0);
+        lua_setglobal(L, lib.map_name);
+
+        LogFile::Format(" - Registered lib: '%s'\n", lib.map_name);
+    }
+}
+
 bool isHookSetup = false;
 
 void SetupHook() {
+    InitializeLua();
+
     LogFile::Write("Setting MM2 output log file...");
 
     if (MM2::datOutput::OpenLog("mm2.log"))
@@ -177,7 +262,7 @@ void HookStartup() {
 void HookShutdown() {
     if (gameClosing) {
         LogFile::WriteLine("Hook shutdown request received.");
-        // TODO: shutdown stuff here?
+        LogFile::Close();
     } else {
         // GameLoop is restarting
         ResetHook(true);
@@ -203,7 +288,11 @@ void InstallPatches(MM2Version gameVersion) {
     {
         case MM2_RETAIL:
         {
-            
+            auto chatHandler = &ChatHandler::Process;
+
+            // send mmGame::SendChatMessage to our handler instead of returning
+            LogFile::Write("Installing chat handler...");
+            LogFile::WriteLine((InstallJmpHook(0x414EB6, *(DWORD*)&chatHandler)) ? "Done!" : "FAIL!");
         } break;
     }
 };

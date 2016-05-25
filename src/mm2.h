@@ -164,6 +164,16 @@ namespace MM2 {
         static MM2PtrHook<mmGameManager*> Instance(void);
     };
 
+    class mmPopup {
+    public:
+        int IsEnabled(THIS_ void);
+
+        void Lock(THIS_ void);
+        void Unlock(THIS_ void);
+        
+        void ProcessChat(THIS_ void);
+    };
+
     class Stream {
     public:
         static void DumpOpenFiles(void);

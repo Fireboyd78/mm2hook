@@ -66,6 +66,11 @@ MM2FnHook<void>     lpdatOutput_SetOutputMask               INIT_DATA( NULL, NUL
 MM2PtrHook<mmGameManager *>
                     lpmmGameManager_Instance                INIT_DATA( NULL, NULL, 0x5E0D08 );
 
+MM2FnHook<int>      lpmmPopup_IsEnabled                     INIT_DATA( NULL, NULL, 0x42A280 );
+MM2FnHook<void>     lpmmPopup_Lock                          INIT_DATA( NULL, NULL, 0x42B4F0 );
+MM2FnHook<void>     lpmmPopup_Unlock                        INIT_DATA( NULL, NULL, 0x42B500 );
+MM2FnHook<void>     lpmmPopup_ProcessChat                   INIT_DATA( NULL, NULL, 0x42A400 );
+
 #ifdef IO_EVENT_HOOK
 MM2FnHook<bool>     lpioEventQueue_Pop                      INIT_DATA( NULL, NULL, 0x4BA930 );
 MM2FnHook<bool>     lpioEventQueue_Peek                     INIT_DATA( NULL, NULL, 0x4BA980 );
@@ -162,9 +167,24 @@ namespace MM2 {
     }
 #endif
 
-    MM2PtrHook<mmGameManager*> mmGameManager::Instance(void)
-    {
+    MM2PtrHook<mmGameManager*> mmGameManager::Instance(void) {
         return lpmmGameManager_Instance;
+    }
+
+    int mmPopup::IsEnabled(THIS_ void) {
+        return lpmmPopup_IsEnabled.ThisCall(this);
+    }
+
+    void mmPopup::Lock(THIS_ void) {
+        lpmmPopup_Lock.ThisCall(this);
+    }
+
+    void mmPopup::Unlock(THIS_ void) {
+        lpmmPopup_Unlock.ThisCall(this);
+    }
+
+    void mmPopup::ProcessChat(THIS_ void) {
+        lpmmPopup_ProcessChat.ThisCall(this);
     }
 
 #pragma region "Stream implementation"
