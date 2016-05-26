@@ -83,6 +83,7 @@ bool HandleKeyPress(DWORD vKey)
 {
     switch (vKey) {
         // '~'
+		case VK_OEM_2:
         case VK_OEM_3:
         {
             // tell the game to open a chat box,
