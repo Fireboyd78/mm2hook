@@ -132,6 +132,8 @@ class ChatHandler {
 public:
     void Process(char *message) {
         if (isConsoleOpen) {
+            LogFile::Format("> [Lua]: %s\n", message);
+
             luaL_dostring(L, message);
 
             // return normal chatbox behavior
@@ -143,66 +145,133 @@ public:
     }
 };
 
-static int l_Quitf(lua_State *L) {
-    auto message = luaL_checkstring(L, 1);
+void luaAddModule_LogFile(lua_State* L)
+{
+    LuaBinding(L)
+        .beginModule("LogFile")
+            .addFunction("AppendLine", &LogFile::AppendLine)
+            .addFunction("Write", &LogFile::Write)
+            .addFunction("WriteLine", &LogFile::WriteLine)
+        .endModule();
+}
 
-    MM2::Quitf(message);
-    return 0;
-};
+void luaAddModule_Window(lua_State* L)
+{
+    using namespace MM2;
+    typedef void(__cdecl *printer_type)(LPCSTR);
 
-static int l_LogFile_Write(lua_State *L) {
-    if (lua_gettop(L) == 0)
-        luaL_error(L, "LogFile.Write -- no argument given");
+    LuaBinding(L)
+        .beginModule("window")
+            .addFunction("Printf", (printer_type)&Printf)
+            .addFunction("Messagef", (printer_type)&Messagef)
+            .addFunction("Displayf", (printer_type)&Displayf)
+            .addFunction("Warningf", (printer_type)&Warningf)
+            .addFunction("Errorf", (printer_type)&Errorf)
+            .addFunction("Quitf", (printer_type)&Quitf)
+            .addFunction("Abortf", (printer_type)&Abortf)
+        .endModule();
+}
 
-    auto message = luaL_checkstring(L, 1);
+LUAMOD_API int luaopen_MM2(lua_State* L)
+{
+    using namespace MM2;
 
-    LogFile::Write(message);
-    return 0;
-};
+    LogFile::Write(" - Registering MM2 library...");
 
-static int l_LogFile_WriteLine(lua_State *L) {
-    auto message = (lua_gettop(L) != 0) ? luaL_checkstring(L, 1) : "\n";
+    LuaRef mod = LuaRef::createTable(L);
 
-    LogFile::WriteLine(message);
-    return 0;
-};
+    luaAddModule_LogFile(mod.state());
+    luaAddModule_Window(mod.state());
 
-static const luaL_Reg mm2_lib[] = {
-    { "Quitf", &l_Quitf },
+     LuaBinding(L)
+        .beginClass<datOutput>("datOutput")
+            .addStaticFunction("OpenLog", &datOutput::OpenLog)
+            .addStaticFunction("CloseLog", &datOutput::CloseLog)
+            .addStaticFunction("SetOutputMask", &datOutput::SetOutputMask)
+        .endClass()
 
-    { NULL, NULL }
-};
+        .beginClass<mmPopup>("mmPopup")
+            .addFactory([]() { return new mmPopup; })
+            .addFunction("IsEnabled", &mmPopup::IsEnabled)
+            .addFunction("Lock", &mmPopup::Lock)
+            .addFunction("Unlock", &mmPopup::Unlock)
+            .addFunction("ProcessChat", &mmPopup::ProcessChat)
+        .endClass()
 
-static const luaL_Reg logfile_lib[] = {
-    { "Write", &l_LogFile_Write },
-    { "WriteLine", &l_LogFile_WriteLine },
+        .beginClass<Stream>("Stream")
+            .addFactory([]() { return new Stream; })
+            .addStaticFunction("DumpOpenFiles", &Stream::DumpOpenFiles)
 
-    { NULL, NULL }
-};
+            .addStaticFunction("Open", &Stream::Open)
+            .addStaticFunction("Create", LUA_FN(Stream*, Stream::Create, LPCSTR))
 
-static const struct {
-    LPCSTR map_name;
-    const luaL_Reg *map_reg;
-} map_libs[] = {
-    { "MM2", mm2_lib },
-    { "LogFile", logfile_lib },
-};
+            .addFunction("Read", &Stream::Read)
+            .addFunction("Write", &Stream::Write)
+            .addFunction("GetCh", &Stream::GetCh)
+            .addFunction("PutCh", &Stream::PutCh)
+            .addFunction("Seek", &Stream::Seek)
+            .addFunction("Tell", &Stream::Tell)
+            .addFunction("Close", &Stream::Close)
+            .addFunction("Size", &Stream::Size)
+            .addFunction("Flush", &Stream::Flush)
+        .endClass()
+
+        .beginClass<Vector2>("Vector2")
+            .addFactory([](float x = 0.0, float y = 0.0) {
+                auto vec = new Vector2;
+                vec->X = x;
+                vec->Y = y;
+                return vec;
+            }, LUA_ARGS(_opt<float>, _opt<float>))
+            .addVariableRef("x", &Vector2::X)
+            .addVariableRef("y", &Vector2::Y)
+        .endClass()
+
+        .beginClass<Vector3>("Vector3")
+            .addFactory([](float x = 0.0, float y = 0.0, float z = 0.0) {
+                auto vec = new Vector3;
+                vec->X = x;
+                vec->Y = y;
+                vec->Z = z;
+                return vec;
+            }, LUA_ARGS(_opt<float>, _opt<float>, _opt<float>))
+            .addVariableRef("x", &Vector3::X)
+            .addVariableRef("y", &Vector3::Y)
+            .addVariableRef("z", &Vector3::Z)
+        .endClass()
+
+        .beginClass<Vector4>("Vector4")
+            .addFactory([](float x = 0.0, float y = 0.0, float z = 0.0, float w = 0.0) {
+                auto vec = new Vector4;
+                vec->X = x;
+                vec->Y = y;
+                vec->Z = z;
+                vec->W = w;
+                return vec;
+            }, LUA_ARGS(_opt<float>, _opt<float>, _opt<float>, _opt<float>))
+            .addVariableRef("x", &Vector4::X)
+            .addVariableRef("y", &Vector4::Y)
+            .addVariableRef("z", &Vector4::Z)
+            .addVariableRef("w", &Vector4::W)
+        .endClass();
+    
+    mod.pushToStack();
+
+    LogFile::WriteLine("Done!");
+
+    return 1;
+}
 
 void InitializeLua() {
+    using namespace MM2;
+    typedef void(__cdecl *printer_type)(LPCSTR);
+
     LogFile::WriteLine("Initializing Lua...");
 
-    L = luaL_newstate();
+    L = LuaState::newState();
 
-    luaL_openlibs(L);
-
-    for (auto lib : map_libs)
-    {
-        lua_newtable(L);
-        luaL_setfuncs(L, lib.map_reg, 0);
-        lua_setglobal(L, lib.map_name);
-
-        LogFile::Format(" - Registered lib: '%s'\n", lib.map_name);
-    }
+    L.require("MM2", luaopen_MM2);
+    L.pop();
 }
 
 bool isHookSetup = false;

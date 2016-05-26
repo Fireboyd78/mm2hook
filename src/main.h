@@ -11,9 +11,11 @@
 // dinput hooking
 #include <dinput.h>
 
+using namespace LuaIntf;
+
 typedef HRESULT(WINAPI *LPFNDIRECTINPUTCREATE)(HINSTANCE, DWORD, LPVOID *, LPUNKNOWN);
 
 EXTERN_C LPFNDIRECTINPUTCREATE lpDICreate;
 EXTERN_C HRESULT DirectInputCreateA_Impl(HINSTANCE hinst, DWORD dwVersion, LPVOID *ppDI, LPUNKNOWN punkOuter);
 
-lua_State *L;
+LuaState L;

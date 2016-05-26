@@ -20,5 +20,7 @@
 // Lua 5.3.2 embedded
 #include <lua/lua.hpp>
 
+#include <LuaIntf/LuaIntf.h>
+
 //  warning C4091: '__declspec(novtable)': ignored on left of 'x' when no variable is declared
 #pragma warning (disable : 4091)

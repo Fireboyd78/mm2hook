@@ -41,8 +41,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);src</IncludePath>
-    <SourcePath>$(VC_SourcePath);src</SourcePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);src;src\lua</IncludePath>
+    <SourcePath>$(VC_SourcePath);src;src\lua</SourcePath>
     <ASMOutputPath>$(OutDir)asm\</ASMOutputPath>
   </PropertyGroup>
   <PropertyGroup>
@@ -123,6 +123,9 @@
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
+  <!--
+    Lua 5.3.2 files
+  -->
   <ItemGroup>
     <ClInclude Include="src\lua\lapi.h" />
     <ClInclude Include="src\lua\lauxlib.h" />
@@ -186,6 +189,19 @@
     <ClCompile Include="src\lua\lvm.c" />
     <ClCompile Include="src\lua\lzio.c" />
   </ItemGroup>
+  <!--
+    LuaIntf files
+  -->
+  <ItemGroup>
+    <ClInclude Include="src\LuaIntf\LuaState.h" />
+    <ClInclude Include="src\LuaIntf\LuaCompat.h" />
+    <ClInclude Include="src\LuaIntf\LuaContext.h" />
+    <ClInclude Include="src\LuaIntf\LuaIntf.h" />
+    <ClInclude Include="src\LuaIntf\LuaRef.h" />
+  </ItemGroup>
+  <!--
+    MM2Hook files
+  -->
   <ItemGroup>
     <ClInclude Include="src\AGE.h" />
     <ClInclude Include="src\common.h" />
@@ -230,8 +246,18 @@
       <LuaASMFiles Include="@(LuaSources->'$(ASMOutputPath)%(Filename).asm')" />
     </ItemGroup>
     <Move SourceFiles="@(LuaASMFiles)" DestinationFolder="$(ASMOutputPath)lua\" Condition="Exists('%(Identity)')">
-      <Output ItemName="Moved" TaskParameter="MovedFiles" />
+      <Output ItemName="LuaMoved" TaskParameter="MovedFiles" />
     </Move>
-    <Message Text="Moved Lua ASM file to '%(Moved.Identity)'" Importance="high" Condition="'%(Moved.Identity)' != ''" />
+    <Message Text="Moved Lua ASM file to '%(LuaMoved.Identity)'" Importance="high" Condition="'%(LuaMoved.Identity)' != ''" />
+  </Target>
+  <Target Name="MoveLuaIntfASMFiles" AfterTargets="MakeDInputDLL">
+    <ItemGroup>
+      <LuaIntfSources Include="src\LuaIntf\src\*.cpp" />
+      <LuaIntfASMFiles Include="@(LuaSources->'$(ASMOutputPath)%(Filename).asm')" />
+    </ItemGroup>
+    <Move SourceFiles="@(LuaIntfASMFiles)" DestinationFolder="$(ASMOutputPath)LuaIntf\" Condition="Exists('%(Identity)')">
+      <Output ItemName="LuaIntfMoved" TaskParameter="MovedFiles" />
+    </Move>
+    <Message Text="Moved LuaIntf ASM file to '%(LuaIntfMoved.Identity)'" Importance="high" Condition="'%(LuaIntfMoved.Identity)' != ''" />
   </Target>
 </Project>

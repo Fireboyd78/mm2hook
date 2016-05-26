@@ -5,10 +5,6 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
@@ -21,6 +17,15 @@
     </Filter>
     <Filter Include="Lua 5.3.2 Files">
       <UniqueIdentifier>{da0eedae-3c74-4c1d-aae6-31b655a60e08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LuaIntf Files">
+      <UniqueIdentifier>{b0c16bd0-bdcf-4493-8c8d-9e34ef7c0253}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LuaIntf Files\Source">
+      <UniqueIdentifier>{b90e59c9-bd56-42e8-b407-116e96c027a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LuaIntf Files\Impl">
+      <UniqueIdentifier>{a99b7382-616c-4eac-8ae8-478144440ebc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -101,6 +106,48 @@
     </ClInclude>
     <ClInclude Include="src\lua\lzio.h">
       <Filter>Lua 5.3.2 Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\LuaCompat.h">
+      <Filter>LuaIntf Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\LuaContext.h">
+      <Filter>LuaIntf Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\LuaIntf.h">
+      <Filter>LuaIntf Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\LuaRef.h">
+      <Filter>LuaIntf Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\LuaState.h">
+      <Filter>LuaIntf Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\QtLuaIntf.h">
+      <Filter>LuaIntf Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\impl\CppArg.h">
+      <Filter>LuaIntf Files\Impl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\impl\CppBindClass.h">
+      <Filter>LuaIntf Files\Impl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\impl\CppBindModule.h">
+      <Filter>LuaIntf Files\Impl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\impl\CppFunction.h">
+      <Filter>LuaIntf Files\Impl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\impl\CppInvoke.h">
+      <Filter>LuaIntf Files\Impl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\impl\CppObject.h">
+      <Filter>LuaIntf Files\Impl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\impl\LuaException.h">
+      <Filter>LuaIntf Files\Impl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\impl\LuaType.h">
+      <Filter>LuaIntf Files\Impl</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -202,6 +249,30 @@
     </ClCompile>
     <ClCompile Include="src\lua\lzio.c">
       <Filter>Lua 5.3.2 Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LuaIntf\src\CppBindClass.cpp">
+      <Filter>LuaIntf Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LuaIntf\src\CppBindModule.cpp">
+      <Filter>LuaIntf Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LuaIntf\src\CppFunction.cpp">
+      <Filter>LuaIntf Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LuaIntf\src\CppObject.cpp">
+      <Filter>LuaIntf Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LuaIntf\src\LuaCompat.cpp">
+      <Filter>LuaIntf Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LuaIntf\src\LuaRef.cpp">
+      <Filter>LuaIntf Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LuaIntf\src\LuaState.cpp">
+      <Filter>LuaIntf Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LuaIntf\src\QtLuaIntf.cpp">
+      <Filter>LuaIntf Files\Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
