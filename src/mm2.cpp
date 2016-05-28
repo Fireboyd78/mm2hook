@@ -192,8 +192,8 @@ namespace MM2 {
         lpStream_DumpOpenFiles();
     }
 
-    Stream * Stream::Open(LPCSTR filename, bool p1) {
-        return lpStream_Open(filename, p1);
+    Stream * Stream::Open(LPCSTR filename, bool isZipFile) {
+        return lpStream_Open(filename, isZipFile);
     }
 
     Stream * Stream::Create(LPCSTR filename) {

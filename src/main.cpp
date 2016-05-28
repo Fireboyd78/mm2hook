@@ -191,7 +191,6 @@ LUAMOD_API int luaopen_MM2(lua_State* L)
         .endClass()
 
         .beginClass<mmPopup>("mmPopup")
-            .addFactory([]() { return new mmPopup; })
             .addFunction("IsEnabled", &mmPopup::IsEnabled)
             .addFunction("Lock", &mmPopup::Lock)
             .addFunction("Unlock", &mmPopup::Unlock)
@@ -199,7 +198,10 @@ LUAMOD_API int luaopen_MM2(lua_State* L)
         .endClass()
 
         .beginClass<Stream>("Stream")
-            .addFactory([]() { return new Stream; })
+            .addFactory([](LPCSTR filename, bool createFile = false) {
+                auto stream = (createFile) ? Stream::Create(filename) : Stream::Open(filename, false);
+                return stream;
+            }, LUA_ARGS(LPCSTR, _opt<bool>))
             .addStaticFunction("DumpOpenFiles", &Stream::DumpOpenFiles)
 
             .addStaticFunction("Open", &Stream::Open)
@@ -397,7 +399,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
         case DLL_PROCESS_ATTACH:
         {
             // Initialize the log file
-            debug("initializing...");
+            debug("Initializing MM2Hook...");
             LogFile::Initialize("mm2hook.log", "--<< MM2Hook log file >>--\n");
             LogFile::WriteLine("MM2Hook initialized.");
 

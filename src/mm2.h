@@ -178,7 +178,7 @@ namespace MM2 {
     public:
         static void DumpOpenFiles(void);
 
-        static Stream* Open(LPCSTR filename, bool p1);
+        static Stream* Open(LPCSTR filename, bool isZipFile);
         static Stream* Create(LPCSTR filename);
 
         int Read(THIS_ LPVOID dstBuf, int size);
