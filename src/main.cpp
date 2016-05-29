@@ -156,21 +156,19 @@ void luaAddModule_LogFile(lua_State* L)
         .endModule();
 }
 
-void luaAddModule_Window(lua_State* L)
+void luaAddGlobals(lua_State* L)
 {
     using namespace MM2;
     typedef void(__cdecl *printer_type)(LPCSTR);
 
     LuaBinding(L)
-        .beginModule("window")
-            .addFunction("Printf", (printer_type)&Printf)
-            .addFunction("Messagef", (printer_type)&Messagef)
-            .addFunction("Displayf", (printer_type)&Displayf)
-            .addFunction("Warningf", (printer_type)&Warningf)
-            .addFunction("Errorf", (printer_type)&Errorf)
-            .addFunction("Quitf", (printer_type)&Quitf)
-            .addFunction("Abortf", (printer_type)&Abortf)
-        .endModule();
+        .addFunction("Printf", (printer_type)&Printf)
+        .addFunction("Messagef", (printer_type)&Messagef)
+        .addFunction("Displayf", (printer_type)&Displayf)
+        .addFunction("Warningf", (printer_type)&Warningf)
+        .addFunction("Errorf", (printer_type)&Errorf)
+        .addFunction("Quitf", (printer_type)&Quitf)
+        .addFunction("Abortf", (printer_type)&Abortf)
 }
 
 LUAMOD_API int luaopen_MM2(lua_State* L)
@@ -182,7 +180,7 @@ LUAMOD_API int luaopen_MM2(lua_State* L)
     LuaRef mod = LuaRef::createTable(L);
 
     luaAddModule_LogFile(mod.state());
-    luaAddModule_Window(mod.state());
+    luaAddGlobals(mod.state());
 
      LuaBinding(L)
         .beginClass<datOutput>("datOutput")
