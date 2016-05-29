@@ -56,12 +56,20 @@ MM2FnHook<void>     lpErrorf                                INIT_DATA( NULL, NUL
 MM2FnHook<void>     lpQuitf                                 INIT_DATA( NULL, NULL, 0x4C9810 );
 MM2FnHook<void>     lpAbortf                                INIT_DATA( NULL, NULL, 0x4C9850 );
 
+MM2FnHook<char *>   lpAngelReadString                       INIT_DATA( NULL, NULL, 0x534790 );
+
 MM2FnHook<void>     lpaiMap_Dump                            INIT_DATA( NULL, NULL, 0x538840 );
 MM2PtrHook<aiMap>   lpAIMAP_ptr                             INIT_DATA( NULL, NULL, 0x6B2E10 );
+
+MM2FnHook<void>     lpdatAssetManager_FullPath              INIT_DATA( NULL, NULL, 0x4C55E0 );
+MM2FnHook<void>     lpdatAssetManager_FullPath_             INIT_DATA( NULL, NULL, 0x4C56F0 );
 
 MM2FnHook<void>     lpdatOutput_CloseLog                    INIT_DATA( NULL, NULL, 0x4C9530 );
 MM2FnHook<bool>     lpdatOutput_OpenLog                     INIT_DATA( NULL, NULL, 0x4C9590 );
 MM2FnHook<void>     lpdatOutput_SetOutputMask               INIT_DATA( NULL, NULL, 0x4C95A0 );
+
+MM2FnHook<void>     lpdatTimeManager_Reset                  INIT_DATA( NULL, NULL, 0x4C6300 );
+MM2FnHook<void>     lpdatTimeManager_Update                 INIT_DATA( NULL, NULL, 0x4C6340 );
 
 MM2PtrHook<mmGameManager *>
                     lpmmGameManager_Instance                INIT_DATA( NULL, NULL, 0x5E0D08 );
@@ -133,8 +141,20 @@ namespace MM2 {
     DEFINE_PRINT_HOOK(Quitf, lpQuitf);
     DEFINE_PRINT_HOOK(Abortf, lpAbortf);
 
+    char * AngelReadString(UINT stringId) {
+        return lpAngelReadString(stringId);
+    }
+
     void aiMap::Dump(THIS_ void) {
         lpaiMap_Dump.ThisCall(lpAIMAP_ptr);
+    }
+
+    void datAssetManager::FullPath(char * buffer, int length, LPCSTR directory, LPCSTR filename) {
+        lpdatAssetManager_FullPath(buffer, length, directory, filename);
+    }
+
+    void datAssetManager::FullPath(char * buffer, int length, LPCSTR directory, LPCSTR filename, LPCSTR extension) {
+        lpdatAssetManager_FullPath_(buffer, length, directory, filename, extension);
     }
 
     bool datOutput::OpenLog(LPCSTR filename) {
@@ -148,6 +168,15 @@ namespace MM2 {
     void datOutput::SetOutputMask(UINT mask) {
         lpdatOutput_SetOutputMask(mask);
     }
+
+    void datTimeManager::Reset(void) {
+        lpdatTimeManager_Reset();
+
+    }
+    void datTimeManager::Update(void) {
+        lpdatTimeManager_Update();
+    }
+}
 
 #if IO_EVENT_HOOK
     bool ioEventQueue::Pop(ioEvent &outEvent) {
@@ -236,4 +265,3 @@ namespace MM2 {
         return lpStream_Flush();
     }
 #pragma endregion
-}

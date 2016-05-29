@@ -98,9 +98,28 @@ namespace MM2 {
     void Quitf(LPCSTR str, ...);
     void Abortf(LPCSTR str, ...);
 
+    char * AngelReadString(UINT stringId);
+
     class aiMap {
     public:
         static void Dump(void);
+    };
+
+    class datAssetManager {
+    public:
+        /* TODO?
+        static Stream * Open(char const *,char const *,bool,bool);
+        static Stream * Open(char const *,char const *,char const *,bool,bool);
+        static Stream * Create(char const *,char const *,bool);
+        static Stream * Create(char const *,char const *,char const *,bool);
+
+        // these don't work for files outside of archives
+        static bool Exists(LPCSTR directory, LPCSTR filename);
+        static bool Exists(LPCSTR directory, LPCSTR filename, LPCSTR extension);
+        */
+
+        static void FullPath(char *buffer, int length, LPCSTR directory, LPCSTR filename);
+        static void FullPath(char *buffer, int length, LPCSTR directory, LPCSTR filename, LPCSTR extension);
     };
 
     class datOutput {
@@ -114,6 +133,12 @@ namespace MM2 {
         */
 
         static void SetOutputMask(UINT mask);
+    };
+
+    class datTimeManager {
+    public:
+        static void Reset(void);
+        static void Update(void);
     };
 
 #ifdef IO_EVENT_HOOK

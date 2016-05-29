@@ -85,3 +85,11 @@ bool    ReturnFalse(void);
 
 bool LoadSystemLibrary(LPCSTR lpDllName, HMODULE *out);
 bool GetHookProcAddress(HMODULE hModule, LPCSTR lpProcName, FARPROC *out);
+
+inline bool file_exists(LPCSTR filename) {
+    if (auto file = fopen(filename, "r")) {
+        fclose(file);
+        return true;
+    }
+    return false;
+}
