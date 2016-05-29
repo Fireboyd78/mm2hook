@@ -168,7 +168,7 @@ void luaAddGlobals(lua_State* L)
         .addFunction("Warningf", (printer_type)&Warningf)
         .addFunction("Errorf", (printer_type)&Errorf)
         .addFunction("Quitf", (printer_type)&Quitf)
-        .addFunction("Abortf", (printer_type)&Abortf)
+        .addFunction("Abortf", (printer_type)&Abortf);
 }
 
 LUAMOD_API int luaopen_MM2(lua_State* L)
