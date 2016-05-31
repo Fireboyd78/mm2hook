@@ -91,6 +91,20 @@ void luaAddModule_LogFile(lua_State* L)
         .endModule();
 }
 
+void luaSetGlobals()
+{
+    using namespace MM2;
+
+    mmGameManager *gameMgr = mmGameManager::Instance();
+
+    auto pGame = (gameMgr != NULL) ? gameMgr->getGame() : NULL;
+    auto pPlayer = (pGame != NULL) ? pGame->getPlayer() : NULL;
+    auto pHUD = (pPlayer != NULL) ? pPlayer->getHUD() : NULL;
+
+    if (pHUD != NULL)
+        Lua::setGlobal(L, "hud", pHUD);
+}
+
 LUAMOD_API int luaopen_MM2(lua_State* L)
 {
     using namespace MM2;
@@ -102,11 +116,17 @@ LUAMOD_API int luaopen_MM2(lua_State* L)
     luaAddGlobals(mod.state());
     luaAddModule_LogFile(mod.state());
 
-     LuaBinding(L)
+    LuaBinding(L)
         .beginClass<datOutput>("datOutput")
             .addStaticFunction("OpenLog", &datOutput::OpenLog)
             .addStaticFunction("CloseLog", &datOutput::CloseLog)
             .addStaticFunction("SetOutputMask", &datOutput::SetOutputMask)
+        .endClass()
+
+        .beginClass<mmHUD>("mmHUD")
+            .addFunction("SetMessage", &mmHUD::SetMessage, LUA_ARGS(LPCSTR, _opt<float>, _opt<int>))
+            .addFunction("SetMessage", &mmHUD::SetMessage2, LUA_ARGS(LPCSTR))
+            .addFunction("PostChatMessage", &mmHUD::PostChatMessage)
         .endClass()
 
         .beginClass<mmPopup>("mmPopup")
@@ -246,12 +266,12 @@ bool HandleKeyPress(DWORD vKey)
             // tell the game to open a chat box,
             // and then use a local variable to check if it's open
 
-            auto mgr = *MM2::mmGameManager::Instance();
-            auto srPtr = *(DWORD*)((BYTE*)mgr + 0x188);
+            MM2::mmGameManager *mgr = MM2::mmGameManager::Instance();
+            auto gamePtr = mgr->getGame();
 
-            if (srPtr != NULL)
+            if (gamePtr != NULL)
             {
-                auto popup = (MM2::mmPopup*)(*(DWORD*)((BYTE*)srPtr + 0x94));
+                auto popup = gamePtr->getPopup();
 
                 if (popup != NULL) {
                     // don't try opening it again if it's already open
@@ -268,6 +288,11 @@ bool HandleKeyPress(DWORD vKey)
             // try reloading Lua
             LogFile::WriteLine("Reloading main script...");
             LoadMainScript();
+
+            auto hud = Lua::getGlobal<MM2::mmHUD *>(L, "hud");
+
+            if (hud != NULL)
+                hud->SetMessage("Lua script reloaded.", 3.5, 0);
         } return true;
     }
     return false;
@@ -382,6 +407,7 @@ void HookStartup() {
         {
             // GameLoop was restarted
             ResetHook(false);
+            luaSetGlobals();
         }
     } else {
         LogFile::WriteLine("WTF: Hook startup request received, but the game is closing!");

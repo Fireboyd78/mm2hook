@@ -41,6 +41,9 @@
 
 #define _OFFPTR(p,o)            (*_PTR(p) + o)
 
+#define PTR(p)                  (DWORD*)p
+#define PTR_(p,o)               PTR(((BYTE*)p + o))
+
 //
 // Pointer macros for assembler directives
 //

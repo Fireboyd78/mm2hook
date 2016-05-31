@@ -71,6 +71,10 @@ MM2FnHook<void>     lpdatOutput_SetOutputMask               INIT_DATA( NULL, NUL
 MM2FnHook<void>     lpdatTimeManager_Reset                  INIT_DATA( NULL, NULL, 0x4C6300 );
 MM2FnHook<void>     lpdatTimeManager_Update                 INIT_DATA( NULL, NULL, 0x4C6340 );
 
+MM2FnHook<void>     lpmmHUD_SetMessage                      INIT_DATA( NULL, NULL, 0x42E1F0 );
+MM2FnHook<void>     lpmmHUD_SetMessage2                     INIT_DATA( NULL, NULL, 0x42E240 );
+MM2FnHook<void>     lpmmHUD_PostChatMessage                 INIT_DATA( NULL, NULL, 0x42D280 );
+
 MM2PtrHook<mmGameManager *>
                     lpmmGameManager_Instance                INIT_DATA( NULL, NULL, 0x5E0D08 );
 
@@ -198,6 +202,18 @@ namespace MM2 {
 
     MM2PtrHook<mmGameManager*> mmGameManager::Instance(void) {
         return lpmmGameManager_Instance;
+    }
+
+    void mmHUD::SetMessage(THIS_ LPCSTR message, float duration, int p2) {
+        lpmmHUD_SetMessage.ThisCall(this, message, duration, p2);
+    }
+
+    void mmHUD::SetMessage2(THIS_ LPCSTR message) {
+        lpmmHUD_SetMessage2.ThisCall(this, message);
+    }
+
+    void mmHUD::PostChatMessage(THIS_ LPCSTR message) {
+        lpmmHUD_PostChatMessage.ThisCall(this, message);
     }
 
     int mmPopup::IsEnabled(THIS_ void) {
