@@ -14,6 +14,10 @@ CMidtownMadness2 *pMM2;
 WNDPROC hProcOld;
 LRESULT APIENTRY WndProcNew(HWND, UINT, WPARAM, LPARAM);
 
+/*
+    Patching utilities/structs (TODO: Move these to another file)
+*/
+
 void InstallVTHook(DWORD dwHookAddr, DWORD dwNewAddr) {
     DWORD flOldProtect;
 
@@ -63,6 +67,99 @@ bool InstallJmpHook(DWORD dwAddress, DWORD jmpDest, bool useCall = false) {
     VirtualProtect(lpAddr, dwSize, flOldProtect, &flOldProtect);
     return true;
 };
+
+enum CB_HOOK_TYPE {
+    HOOK_JMP,
+    HOOK_CALL
+};
+
+template<int size = 1>
+struct CB_INSTALL_INFO {
+    static const int length = size;
+
+    LPVOID cb_proc;
+    struct {
+        MM2AddressData addr_data;
+        CB_HOOK_TYPE type;
+    } cb_data[size];
+};
+
+template<int size = 1, int count = 1>
+struct PATCH_INSTALL_INFO {
+    static const int length = count;
+    static const int buffer_size = size;
+
+    const char buffer[size];
+    MM2AddressData addrData[count];
+};
+
+bool install_patch(LPCSTR name, MM2Version gameVersion, LPVOID lpData) {
+    LogFile::Format(" - Installing patch: '%s'...\n", name);
+
+    auto *info = (PATCH_INSTALL_INFO<>*)lpData;
+
+    if (info->length == 0 || info->buffer_size == 0) {
+        LogFile::WriteLine(" - ERROR! Data is empty!");
+        return false;
+    }
+
+    int count = info->length;
+    int progress = 0;
+
+    for (int i = 0; i < count; i++) {
+        auto addr = info->addrData[i].addresses[gameVersion];
+        
+        LogFile::Format("  - [%d] %08X => %08X : ", (i + 1), addr, (BYTE*)info->buffer);
+
+        if (addr != NULL)
+        {
+            InstallPatch(addr, (BYTE*)info->buffer, info->length);
+            LogFile::WriteLine("OK");
+
+            progress++;
+        } else LogFile::WriteLine("Not supported");
+    }
+
+    bool success = (progress > 0);
+    return success;
+};
+
+bool install_callback(LPCSTR cb_name, MM2Version gameVersion, LPVOID lpCallback) {
+    LogFile::Format(" - Installing callback: '%s'...\n", cb_name);
+
+    auto *cb_info = (CB_INSTALL_INFO<>*)lpCallback;
+
+    if (cb_info->length == 0) {
+        LogFile::WriteLine(" - ERROR! Address data is empty!");
+        return false;
+    }
+
+    const DWORD cb = reinterpret_cast<DWORD>(cb_info->cb_proc);
+    int count = cb_info->length;
+    int progress = 0;
+
+    for (int i = 0; i < count; i++) {
+        auto data = cb_info->cb_data[i];
+        auto addr = data.addr_data.addresses[gameVersion];
+
+        LogFile::Format("  - [%d]: %08X => %08X : ", (i + 1), addr, cb);
+
+        if (addr != NULL && InstallJmpHook(addr, cb, (data.type == HOOK_CALL)))
+        {
+            LogFile::WriteLine("OK");
+            progress++;
+        } else LogFile::WriteLine("Not supported");
+    }
+
+    bool success = (progress > 0);
+    return success;
+};
+/*
+    ===========================================================================
+*/
+/*
+    Lua initialization (TODO: Move these to another file?)
+*/
 
 void luaAddGlobals(lua_State* L)
 {
@@ -124,8 +221,8 @@ LUAMOD_API int luaopen_MM2(lua_State* L)
         .endClass()
 
         .beginClass<mmHUD>("mmHUD")
-            .addFunction("SetMessage", &mmHUD::SetMessage, LUA_ARGS(LPCSTR, _opt<float>, _opt<int>))
-            .addFunction("SetMessage", &mmHUD::SetMessage2, LUA_ARGS(LPCSTR))
+            .addFunction("SetMessage", &mmHUD::SetMessage)
+            .addFunction("SetMessage2", &mmHUD::SetMessage2)
             .addFunction("PostChatMessage", &mmHUD::PostChatMessage)
         .endClass()
 
@@ -239,6 +336,9 @@ void LoadMainScript() {
         MM2::Abortf("[Lua] Error -- %s", L.toString(-1));
     }
 }
+/*
+    ===========================================================================
+*/
 
 bool SubclassGameWindow(HWND gameWnd, WNDPROC pWndProcNew, WNDPROC *ppWndProcOld)
 {
@@ -310,6 +410,9 @@ LRESULT APIENTRY WndProcNew(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     return CallWindowProc(hProcOld, hWnd, uMsg, wParam, lParam);
 }
+/*
+    ===========================================================================
+*/
 
 class TickHandler {
 public:
@@ -352,6 +455,87 @@ public:
     }
 };
 
+FILE *ageLog;
+
+LPCSTR ageLogFile = "AGE.log";
+bool ageDebugEnabled = false;
+char ageDebug_buffer[1024] = { NULL };
+
+class CallbackHandler {
+public:
+    bool LoadAmbientSFX(LPCSTR name) {
+        LPCSTR szAmbientSFX = NULL;
+
+        auto city = (LPCSTR)MM2::szCityName;
+
+        if ((_strcmpi(city, "sf") == 0) && (_strcmpi(city, "london") == 0))
+        {
+            char ambientSFX[80] = { NULL };
+
+            sprintf(ambientSFX, "%sambience", city);
+
+            bool exists = !(MM2::datAssetManager::Exists("aud\\dmusic\\csv_files", ambientSFX, "csv"));
+
+            // default to 'sfambience' instead of 'londonambience'
+            szAmbientSFX = (exists) ? ambientSFX : "sfambience";
+        }
+        else
+        {
+            szAmbientSFX = name;
+        }
+
+        LogFile::Format("AmbientSFX: %s\n", szAmbientSFX);
+
+        // pass to MM2
+        return ((MM2::mmGameMusicData*)this)->LoadAmbientSFX(szAmbientSFX);
+    };
+
+    static void SetSirenCSVName(LPCSTR name) {
+        char siren_name[80] = { NULL };
+
+        sprintf(siren_name, "%spolicesiren", (LPCSTR)MM2::szCityName);
+
+        bool useDefault = !(MM2::datAssetManager::Exists("aud\\cardata\\player", siren_name, "csv"));
+
+        LPCSTR szSirenName = (useDefault) ? name : siren_name;
+
+        LogFile::Format("SirenCSVName: %s\n", szSirenName);
+
+        // pass to MM2
+        MM2::vehCarAudioContainer::SetSirenCSVName(szSirenName);
+    };
+
+    static void ageDebug(int enabled, LPCSTR format, ...) {
+        // this makes the game load up reeeeeally slow if enabled!
+        if (ageDebugEnabled || (ageDebugEnabled = MM2::datArgParser::Get("age_debug")))
+        {
+            va_list va;
+            va_start(va, format);
+            vsprintf(ageDebug_buffer, format, va);
+            va_end(va);
+
+            // 'LogFile::WriteLine' seems to be causing crashes upon exiting?
+            if (ageLog == NULL)
+            {
+                FILE *logFile = fopen(ageLogFile, "w");
+                
+                fputs("--<< A.G.E. Log file >>--\n\n", logFile);
+                fclose(logFile);
+            }
+
+            ageLog = fopen(ageLogFile, "a+");
+
+            fputs(ageDebug_buffer, ageLog);
+            fputs("\n", ageLog);
+
+            fclose(ageLog);
+        }
+    };
+};
+/*
+    ===========================================================================
+*/
+
 void SetupHook() {
     InitializeLua();
 
@@ -365,17 +549,8 @@ void SetupHook() {
     else
         LogFile::Write("FAIL!\n");
 
-    bool subclassWindow = true;
-
-    if (subclassWindow)
-    {
-        LogFile::Write("Subclassing window...");
-
-        if (SubclassGameWindow(pMM2->GetMainWindowHwnd(), WndProcNew, &hProcOld))
-            LogFile::Write("Done!\n");
-        else
-            LogFile::Write("FAIL!\n");
-    }
+    LogFile::Write("Subclassing window...");
+    LogFile::WriteLine(SubclassGameWindow(pMM2->GetMainWindowHwnd(), WndProcNew, &hProcOld) ? "Done!" : "FAIL!");
 
     isHookSetup = true;
 }
@@ -448,50 +623,70 @@ bool HookFramework(MM2Version gameVersion) {
     return false;
 };
 
-void InstallTickHandler(MM2Version gameVersion) {
-    auto tickHandler = &TickHandler::Update;
-
-    switch (gameVersion)
-    {
-        case MM2_RETAIL:
-        {
-            LogFile::Write("Installing tick handler...");
-            LogFile::WriteLine((InstallJmpHook(0x401A2F, *(DWORD*)&tickHandler, true)) ? "Done!" : "FAIL!");
-        } break;
-    }
-};
-
-void InstallChatHandler(MM2Version gameVersion) {
-    auto chatHandler = &ChatHandler::Process;
-
-    switch (gameVersion)
-    {
-        case MM2_RETAIL:
-        {
-            // send mmGame::SendChatMessage to our handler instead of returning
-            LogFile::Write("Installing chat handler...");
-
-            BYTE patch[] = { 80 };
-
-            // try increasing the label buffer sizes
-            InstallPatch(0x50BBCF, patch, 1);
-            InstallPatch(0x4E68B5, patch, 1);
-            InstallPatch(0x4E68B9, patch, 1);
-
-            LogFile::WriteLine((InstallJmpHook(0x414EB6, *(DWORD*)&chatHandler)) ? "Done!" : "FAIL!");
-        } break;
+const PATCH_INSTALL_INFO<1, 3> chatSize_patch{
+    { 80 }, {
+        { NULL, NULL, 0x4E68B5 },
+        { NULL, NULL, 0x4E68B9 },
+        { NULL, NULL, 0x50BBCF }
     }
 };
 
 void InstallPatches(MM2Version gameVersion) {
-    switch (gameVersion)
+    LogFile::WriteLine("Installing patches...");
+
+    install_patch("Increase chat buffer size", gameVersion, (LPVOID)&chatSize_patch);
+};
+
+const auto tickHandler = &TickHandler::Update;
+const auto chatHandler = &ChatHandler::Process;
+
+const CB_INSTALL_INFO<1> tick_CB {
+    (LPVOID)(*(DWORD*)&tickHandler),
     {
-        case MM2_RETAIL:
-        {
-            InstallTickHandler(gameVersion);
-            InstallChatHandler(gameVersion);
-        } break;
+        {{ NULL, NULL, 0x401A2F }, HOOK_CALL }
     }
+};
+
+const CB_INSTALL_INFO<1> ageDebug_CB{
+    &CallbackHandler::ageDebug,
+    {
+        {{ NULL, NULL, 0x402630 }, HOOK_JMP }
+    }
+};
+
+const CB_INSTALL_INFO<1> sendChatMsg_CB {
+    (LPVOID)(*(DWORD*)&chatHandler),
+    {
+        {{ NULL, NULL, 0x414EB6 }, HOOK_JMP }
+    }
+};
+
+const auto loadAmbSFXHandler = &CallbackHandler::LoadAmbientSFX;
+
+const CB_INSTALL_INFO<1> loadAmbientSFX_CB {
+    (LPVOID)(*(DWORD*)&loadAmbSFXHandler),
+    {
+        {{ NULL, NULL, 0x433F93 }, HOOK_CALL }
+    }
+};
+
+const CB_INSTALL_INFO<2> sirenCSV_CB {
+    &CallbackHandler::SetSirenCSVName,
+    {
+        {{ NULL, NULL, 0x412783 }, HOOK_CALL },
+        {{ NULL, NULL, 0x412772 }, HOOK_CALL },
+    }
+};
+
+void InstallCallbacks(MM2Version gameVersion) {
+    LogFile::WriteLine("Installing callbacks...");
+
+    install_callback("Tick", gameVersion, (LPVOID)&tick_CB);
+    install_callback("ageDebug", gameVersion, (LPVOID)&ageDebug_CB);
+
+    install_callback("LoadAmbientSFX", gameVersion, (LPVOID)&loadAmbientSFX_CB);
+    install_callback("SendChatMessage", gameVersion, (LPVOID)&sendChatMsg_CB);
+    install_callback("SetSirenCSVName", gameVersion, (LPVOID)&sirenCSV_CB);
 };
 
 //
@@ -500,15 +695,15 @@ void InstallPatches(MM2Version gameVersion) {
 void Initialize(MM2Version gameVersion) {
     // first hook into the framework
     LogFile::Write("Hooking into the framework...");
-
-    if (HookFramework(gameVersion)) {
-        LogFile::Write("Done!\n");
-    } else {
-        LogFile::Write("FAIL!\n");
-    }
-
+    LogFile::WriteLine(HookFramework(gameVersion) ? "Done!" : "FAIL!");
+    
+    InstallCallbacks(gameVersion);
     InstallPatches(gameVersion);
 }
+
+/*
+    ===========================================================================
+*/
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
 {
@@ -516,8 +711,9 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 	{
         case DLL_PROCESS_ATTACH:
         {
-            // Initialize the log file
             debug("Initializing MM2Hook...");
+
+            // Initialize the log file
             LogFile::Initialize("mm2hook.log", "--<< MM2Hook log file >>--\n");
             LogFile::WriteLine("MM2Hook initialized.");
 

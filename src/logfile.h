@@ -43,8 +43,7 @@ namespace LogFile {
     void Initialize(LPCSTR filename, LPCSTR title);
 
     void Close(void);
-    void Flush(void);
-
+    
     void AppendLine(void);
 
     void Write(LPCSTR str);

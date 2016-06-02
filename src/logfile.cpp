@@ -60,17 +60,17 @@ void LogFileStream::AppendLine(void)
 
 void LogFileStream::Write(LPCSTR str)
 {
-#ifndef LOGFILE_NO_DEBUG
-    // also output a debug message
-    OutputDebugStringA(str);
-#endif
-
     int strLen = strlen(str);
 
     if (strLen > 0)
     {
         fputs(str, m_file);
         Flush(false);
+
+#ifndef LOGFILE_NO_DEBUG
+        // also output a debug message
+        OutputDebugStringA(str);
+#endif
     }
 }
 

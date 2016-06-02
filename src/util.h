@@ -45,6 +45,20 @@
 #define PTR_(p,o)               PTR(((BYTE*)p + o))
 
 //
+// Pointer templates
+//
+
+template <typename TR = void>
+constexpr inline TR* getPtr(LPVOID p, int offset) {
+    return (TR*)((BYTE*)p + offset);
+};
+
+template <typename TR = void, class TC>
+constexpr inline TR* getPtr(const TC *p, int offset) {
+    return (TR*)getPtr((LPVOID)p, offset);
+};
+
+//
 // Pointer macros for assembler directives
 //
 

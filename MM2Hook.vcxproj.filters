@@ -21,12 +21,6 @@
     <Filter Include="LuaIntf Files">
       <UniqueIdentifier>{b0c16bd0-bdcf-4493-8c8d-9e34ef7c0253}</UniqueIdentifier>
     </Filter>
-    <Filter Include="LuaIntf Files\Source">
-      <UniqueIdentifier>{b90e59c9-bd56-42e8-b407-116e96c027a7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="LuaIntf Files\Impl">
-      <UniqueIdentifier>{a99b7382-616c-4eac-8ae8-478144440ebc}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\lua\lapi.h">
@@ -121,33 +115,6 @@
     </ClInclude>
     <ClInclude Include="src\LuaIntf\LuaState.h">
       <Filter>LuaIntf Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\LuaIntf\QtLuaIntf.h">
-      <Filter>LuaIntf Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\LuaIntf\impl\CppArg.h">
-      <Filter>LuaIntf Files\Impl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\LuaIntf\impl\CppBindClass.h">
-      <Filter>LuaIntf Files\Impl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\LuaIntf\impl\CppBindModule.h">
-      <Filter>LuaIntf Files\Impl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\LuaIntf\impl\CppFunction.h">
-      <Filter>LuaIntf Files\Impl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\LuaIntf\impl\CppInvoke.h">
-      <Filter>LuaIntf Files\Impl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\LuaIntf\impl\CppObject.h">
-      <Filter>LuaIntf Files\Impl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\LuaIntf\impl\LuaException.h">
-      <Filter>LuaIntf Files\Impl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\LuaIntf\impl\LuaType.h">
-      <Filter>LuaIntf Files\Impl</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -250,32 +217,17 @@
     <ClCompile Include="src\lua\lzio.c">
       <Filter>Lua 5.3.2 Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\LuaIntf\src\CppBindClass.cpp">
-      <Filter>LuaIntf Files\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="src\LuaIntf\src\CppBindModule.cpp">
-      <Filter>LuaIntf Files\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="src\LuaIntf\src\CppFunction.cpp">
-      <Filter>LuaIntf Files\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="src\LuaIntf\src\CppObject.cpp">
-      <Filter>LuaIntf Files\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="src\LuaIntf\src\LuaCompat.cpp">
-      <Filter>LuaIntf Files\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="src\LuaIntf\src\LuaRef.cpp">
-      <Filter>LuaIntf Files\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="src\LuaIntf\src\LuaState.cpp">
-      <Filter>LuaIntf Files\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="src\LuaIntf\src\QtLuaIntf.cpp">
-      <Filter>LuaIntf Files\Source</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\AGE.h">
+      <Filter>Source Files\AGE</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mm2.h">
+      <Filter>Source Files\mm2</Filter>
+    </ClInclude>
+    <ClInclude Include="src\stream.h">
+      <Filter>Source Files\mm2</Filter>
+    </ClInclude>
     <ClInclude Include="src\common.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -288,25 +240,22 @@
     <ClInclude Include="src\hook.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\mm2.h">
-      <Filter>Source Files\mm2</Filter>
-    </ClInclude>
-    <ClInclude Include="src\AGE.h">
-      <Filter>Source Files\AGE</Filter>
-    </ClInclude>
     <ClInclude Include="src\logfile.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\mm2.cpp">
+      <Filter>Source Files\mm2</Filter>
+    </ClCompile>
+    <ClCompile Include="src\stream.cpp">
+      <Filter>Source Files\mm2</Filter>
+    </ClCompile>
     <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\util.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\mm2.cpp">
-      <Filter>Source Files\mm2</Filter>
     </ClCompile>
     <ClCompile Include="src\logfile.cpp">
       <Filter>Source Files</Filter>

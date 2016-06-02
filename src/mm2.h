@@ -4,6 +4,8 @@
 
 #include "AGE.h"
 
+#include "stream.h"
+
 enum MM2Version
 {
     MM2_INVALID = -1,
@@ -42,6 +44,12 @@ public:
     inline void set_version(MM2Version gameVersion);
 };
 
+// for passing 'this' calls
+typedef struct _This {} *LPTHIS;
+
+#define _this (LPTHIS)this
+#define _this_(x) (LPTHIS)x
+
 template<typename TRet>
 class MM2FnHook : public IMM2HookPtr {
 public:
@@ -53,17 +61,12 @@ public:
 
     template<typename ...TArgs>
     inline TRet operator()(TArgs ...args) {
-        return (*(TRet(__cdecl *)(TArgs...))lpAddr)(args...);
+        return static_cast<TRet(__cdecl *)(TArgs...)>(lpAddr)(args...);
     };
 
-    template<typename ...TArgs>
-    inline TRet ThisCall(LPVOID This, TArgs ...args) {
-        return (*(TRet(__thiscall *)(_THIS_ TArgs...))lpAddr)(This, args...);
-    };
-
-    template<class TThis, typename ...TArgs>
-    inline TRet ThisCall(TThis &This, TArgs ...args) {
-        return ThisCall((LPVOID)This, args...);
+    template<typename ...TArgs, class TThis>
+    inline TRet operator()(const TThis &&This, TArgs ...args) {
+        return static_cast<TRet(__thiscall *)(const TThis, TArgs...)>(lpAddr)(This, args...);
     };
 };
 
@@ -75,6 +78,10 @@ public:
 
     NOTHROW inline MM2PtrHook(MM2Version gameVersion, DWORD dwAddress)
         : IMM2HookPtr(gameVersion, dwAddress) {};
+
+    inline operator TType*() const {
+        return (TType*)lpAddr;
+    };
 
     inline operator TType() const {
         if (lpAddr == NULL)
@@ -88,6 +95,8 @@ public:
         }
     };
 };
+
+#define INIT_DATA(b1,b2,r) ( MM2AddressData { b1, b2, r } )
 
 namespace MM2 {
     void Printf(LPCSTR str, ...);
@@ -105,6 +114,14 @@ namespace MM2 {
         static void Dump(void);
     };
 
+    class datArgParser {
+    public:
+        static bool Get(LPCSTR arg);
+        static bool Get(LPCSTR arg, UINT index, int *out);
+        static bool Get(LPCSTR arg, UINT index, float *out);
+        static bool Get(LPCSTR arg, UINT index, LPCSTR *out);
+    };
+
     class datAssetManager {
     public:
         /* TODO?
@@ -112,14 +129,14 @@ namespace MM2 {
         static Stream * Open(char const *,char const *,char const *,bool,bool);
         static Stream * Create(char const *,char const *,bool);
         static Stream * Create(char const *,char const *,char const *,bool);
-
-        // these don't work for files outside of archives
-        static bool Exists(LPCSTR directory, LPCSTR filename);
-        static bool Exists(LPCSTR directory, LPCSTR filename, LPCSTR extension);
         */
 
         static void FullPath(char *buffer, int length, LPCSTR directory, LPCSTR filename);
         static void FullPath(char *buffer, int length, LPCSTR directory, LPCSTR filename, LPCSTR extension);
+
+        // these don't work for files outside of archives
+        static bool Exists(LPCSTR directory, LPCSTR filename);
+        static bool Exists(LPCSTR directory, LPCSTR filename, LPCSTR extension);
     };
 
     class datOutput {
@@ -166,8 +183,8 @@ namespace MM2 {
 
     class ioEventQueue {
     public:
-        static bool Pop(ioEvent &outEvent);
-        static bool Peek(ioEvent &outEvent, int &idx);
+        static bool Pop(ioEvent *outEvent);
+        static bool Peek(ioEvent *outEvent, int *idx);
         static void Queue(ioEvent::ioEventType type, int x, int y, int value);
         static void Command(void *command);
     };
@@ -190,11 +207,11 @@ namespace MM2 {
     class mmGame {
     public:
         inline mmPlayer* getPlayer(void) const {
-            return *(mmPlayer**)PTR_(this, 0x48);
+            return *getPtr<mmPlayer*>(this, 0x48);
         };
 
         inline mmPopup* getPopup(void) const {
-            return *(mmPopup**)PTR_(this, 0x94);
+            return *getPtr<mmPopup*>(this, 0x94);
         };
     };
 
@@ -213,7 +230,7 @@ namespace MM2 {
         byte _buffer[0x1B8];
     public:
         inline mmGame* getGame(void) const {
-            return *(mmGame**)PTR_(this, 0x188);
+            return *getPtr<mmGame*>(this, 0x188);
         };
 
         /* TODO?
@@ -228,6 +245,11 @@ namespace MM2 {
         */
 
         static MM2PtrHook<mmGameManager*> Instance(void);
+    };
+
+    class mmGameMusicData {
+    public:
+        bool LoadAmbientSFX(LPCSTR name);
     };
 
     class mmHUD {
@@ -245,11 +267,11 @@ namespace MM2 {
         byte _buffer[0x23A4];
     public:
         inline mmCar* getCar(void) const {
-            return (mmCar*)PTR_(this, 0x2C);
+            return getPtr<mmCar>(this, 0x2C);
         };
 
         inline mmHUD* getHUD(void) const {
-            return (mmHUD*)PTR_(this, 0x288);
+            return getPtr<mmHUD>(this, 0x288);
         };
     };
 
@@ -262,7 +284,7 @@ namespace MM2 {
         byte _buffer[0x60];
     public:
         inline mmGame* getGame(void) const {
-            return *(mmGame**)PTR_(this, 0x18);
+            return *getPtr<mmGame*>(this, 0x18);
         };
 
         int IsEnabled(THIS_ void);
@@ -273,22 +295,12 @@ namespace MM2 {
         void ProcessChat(THIS_ void);
     };
 
-    class Stream {
+    extern MM2PtrHook<char>  szCityName;
+    extern MM2PtrHook<char>  szCityName2;
+
+    class vehCarAudioContainer {
     public:
-        static void DumpOpenFiles(void);
-
-        static Stream* Open(LPCSTR filename, bool isZipFile);
-        static Stream* Create(LPCSTR filename);
-
-        int Read(THIS_ LPVOID dstBuf, int size);
-        int Write(THIS_ const LPVOID srcBuf, int size);
-        int GetCh(THIS_ void);
-        int PutCh(THIS_ unsigned char ch);
-        int Seek(THIS_ int offset);
-        int Tell(THIS_ void);
-        int Close(THIS_ void);
-        int Size(THIS_ void);
-        int Flush(THIS_ void);
+        static void SetSirenCSVName(LPCSTR name);
     };
 
     struct Vector2 {
