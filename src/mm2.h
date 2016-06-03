@@ -44,12 +44,6 @@ public:
     inline void set_version(MM2Version gameVersion);
 };
 
-// for passing 'this' calls
-typedef struct _This {} *LPTHIS;
-
-#define _this (LPTHIS)this
-#define _this_(x) (LPTHIS)x
-
 template<typename TRet>
 class MM2FnHook : public IMM2HookPtr {
 public:
