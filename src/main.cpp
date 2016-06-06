@@ -745,7 +745,16 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
                 else
                 {
                     LogFile::WriteLine("Unsupported game version! Terminating...");
-                    MessageBox(NULL, "Sorry, this version of MM2 is unsupported. Please remove MM2Hook to launch the game.", "MM2Hook", MB_OK | MB_ICONERROR);
+
+                    if (gameInfo.version == MM2_BETA_2_PETITE)
+                    {
+                        MessageBox(NULL, "Sorry, this version of Beta 2 was compressed with PeTite -- you'll need an unpacked version.\n\nOtherwise, please remove MM2Hook to launch the game.", "MM2Hook", MB_OK | MB_ICONERROR);
+
+                    }
+                    else
+                    {
+                        MessageBox(NULL, "Sorry, this version of MM2 is unsupported. Please remove MM2Hook to launch the game.", "MM2Hook", MB_OK | MB_ICONERROR);
+                    }
 
                     ExitProcess(EXIT_FAILURE);
                 }

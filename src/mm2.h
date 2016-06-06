@@ -14,15 +14,21 @@ enum MM2Version
     MM2_BETA_2  = 1,
     MM2_RETAIL  = 2,
 
-    MM2_NUM_VERSIONS
+    MM2_NUM_VERSIONS,
+
+    // versions that cannot load
+    MM2_BETA_2_PETITE
 };
 
-static const AGEGameInfo g_mm2_info[MM2_NUM_VERSIONS] = {
+static const AGEGameInfo g_mm2_info[] = {
     // TODO: fill in values
     { 0x5AB7F8, MM2_BETA_1, 3323, false, "Angel: 3323 / Jun 29 2000 11:52:28" },
-    { 0x5C18EC, MM2_BETA_2, 3366, false, "Angel: 3366 / Aug  8 2000 10:08:04" }, // F$%^ing PEtite
+    { 0x5C18EC, MM2_BETA_2, 3366, false, "Angel: 3366 / Aug  8 2000 10:08:04" },
 
     { 0x5C28FC, MM2_RETAIL, 3393, true, "Angel: 3393 / Nov  3 2000 14:34:22" },
+
+    // PEtite'd Beta 2...
+    { 0x6B602D, MM2_BETA_2_PETITE, 3366, false, "ERROR!" },
 };
 
 typedef struct MM2AddressData {
