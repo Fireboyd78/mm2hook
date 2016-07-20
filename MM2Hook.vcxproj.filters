@@ -116,6 +116,12 @@
     <ClInclude Include="src\LuaIntf\LuaState.h">
       <Filter>LuaIntf Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\patch.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mm2_lua.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
@@ -216,6 +222,12 @@
     </ClCompile>
     <ClCompile Include="src\lua\lzio.c">
       <Filter>Lua 5.3.2 Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\patch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mm2_lua.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

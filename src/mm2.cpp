@@ -124,11 +124,7 @@ CMidtownMadness2::CMidtownMadness2(int engineVersion)
     // try to initialize manager and hooks
     if (this->Initialize() != HOOK_INIT_OK ||
         InitializeMM2(this->m_gameVersion) != HOOK_INIT_OK) {
-        LogFile::WriteLine("Failed to initialize the hook system! Terminating...");
-
-        MessageBox(NULL, "A fatal error occurred while trying to initialize MM2Hook. Please remove MM2Hook to launch the game.", "MM2Hook", MB_OK | MB_ICONERROR);
-
-        ExitProcess(EXIT_FAILURE);
+        LogFile::WriteLine("WARNING: No supported hooks were found for this game version. Crashes may occur.");
     }
 }
 

@@ -5,8 +5,10 @@
 
 #include "common.h"
 #include "hook.h"
+#include "patch.h"
 
 #include "mm2.h"
+#include "mm2_lua.h"
 
 // dinput hooking
 #include <dinput.h>

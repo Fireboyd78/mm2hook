@@ -22,8 +22,8 @@ enum MM2Version
 
 static const AGEGameInfo g_mm2_info[] = {
     // TODO: fill in values
-    { 0x5AB7F8, MM2_BETA_1, 3323, false, "Angel: 3323 / Jun 29 2000 11:52:28" },
-    { 0x5C18EC, MM2_BETA_2, 3366, false, "Angel: 3366 / Aug  8 2000 10:08:04" },
+    { 0x5AB7F8, MM2_BETA_1, 3323, true, "Angel: 3323 / Jun 29 2000 11:52:28" },
+    { 0x5C18EC, MM2_BETA_2, 3366, true, "Angel: 3366 / Aug  8 2000 10:08:04" },
 
     { 0x5C28FC, MM2_RETAIL, 3393, true, "Angel: 3393 / Nov  3 2000 14:34:22" },
 
@@ -78,6 +78,11 @@ public:
 
     NOTHROW inline MM2PtrHook(MM2Version gameVersion, DWORD dwAddress)
         : IMM2HookPtr(gameVersion, dwAddress) {};
+
+    inline void set_ptr(TType value)
+    {
+        *static_cast<TType*>(lpAddr) = value;
+    }
 
     inline operator TType*() const {
         return (TType*)lpAddr;

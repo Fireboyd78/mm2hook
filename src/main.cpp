@@ -15,69 +15,37 @@ WNDPROC hProcOld;
 LRESULT APIENTRY WndProcNew(HWND, UINT, WPARAM, LPARAM);
 
 /*
-    Patching utilities/structs (TODO: Move these to another file)
+    Game patching functions
 */
-
-void InstallVTHook(DWORD dwHookAddr, DWORD dwNewAddr) {
-    DWORD flOldProtect;
-
-    VirtualProtect((LPVOID)dwHookAddr, 4, PAGE_EXECUTE_READWRITE, &flOldProtect);
-    *(DWORD*)dwHookAddr = dwNewAddr;
-    VirtualProtect((LPVOID)dwHookAddr, 4, flOldProtect, &flOldProtect);
-}
-
-void InstallVTHook(DWORD dwHookAddr, DWORD dwNewAddr, LPDWORD lpdwOldAddr) {
-    *lpdwOldAddr = *(DWORD*)dwHookAddr;
-    InstallVTHook(dwHookAddr, dwNewAddr);
-}
-
-void InstallPatch(DWORD dwAddress, BYTE *patchData, DWORD dwSize) {
-    DWORD flOldProtect;
-
-    VirtualProtect((LPVOID)dwAddress, dwSize, PAGE_EXECUTE_READWRITE, &flOldProtect);
-    memcpy((LPVOID)dwAddress, patchData, dwSize);
-    VirtualProtect((LPVOID)dwAddress, dwSize, flOldProtect, &flOldProtect);
-};
-
-void SetJmpDest(LPVOID patch, DWORD jmpOffset, LPVOID jmpDest, LPDWORD jmpStorage) {
-    *jmpStorage = (DWORD)jmpDest;
-    *(DWORD*)((BYTE*)patch + jmpOffset) = (DWORD)jmpStorage;
-};
-
-// TODO: separate these into separate functions
-bool InstallJmpHook(DWORD dwAddress, DWORD jmpDest, bool useCall = false) {
-    const LPVOID lpAddr = (LPVOID)dwAddress;
-    const DWORD dwSize = 5; // size of jmp instruction
-    DWORD relOffset = dwAddress + dwSize;
-
-    int relJmpDest = (int)(jmpDest - relOffset);
-
-    // hopefully this is good enough error checking
-    // otherwise we're going to have some serious problems!
-    if ((relOffset + relJmpDest) != jmpDest)
-        return false;
-
-    DWORD flOldProtect;
-
-    VirtualProtect(lpAddr, dwSize, PAGE_EXECUTE_READWRITE, &flOldProtect);
-
-    *(BYTE*)lpAddr = (useCall) ? 0xE8 : 0xE9; // '[CALL/JMP] REL32'
-    *(int*)((BYTE*)lpAddr + 1) = relJmpDest;
-
-    VirtualProtect(lpAddr, dwSize, flOldProtect, &flOldProtect);
-    return true;
-};
 
 enum CB_HOOK_TYPE {
     HOOK_JMP,
     HOOK_CALL
 };
 
+struct CB_HANDLER {
+    const LPVOID lpHandler;
+
+    template<typename T>
+    constexpr CB_HANDLER(T *test) : lpHandler((LPVOID)(*(DWORD*)&test)) {};
+
+    template<class TT, typename T>
+    constexpr CB_HANDLER(T(TT::*test)) : lpHandler((LPVOID)(*(DWORD*)&test)) {};
+
+    constexpr operator LPVOID() const {
+        return lpHandler;
+    };
+
+    constexpr operator DWORD() const {
+        return reinterpret_cast<DWORD>(lpHandler);
+    };
+};
+
 template<int size = 1>
 struct CB_INSTALL_INFO {
     static const int length = size;
 
-    LPVOID cb_proc;
+    CB_HANDLER cb_proc;
     struct {
         MM2AddressData addr_data;
         CB_HOOK_TYPE type;
@@ -93,7 +61,7 @@ struct PATCH_INSTALL_INFO {
     MM2AddressData addrData[count];
 };
 
-bool install_patch(LPCSTR name, MM2Version gameVersion, LPVOID lpData) {
+bool InstallGamePatch(LPCSTR name, MM2Version gameVersion, LPVOID lpData) {
     LogFile::Format(" - Installing patch: '%s'...\n", name);
 
     auto *info = (PATCH_INSTALL_INFO<>*)lpData;
@@ -108,7 +76,7 @@ bool install_patch(LPCSTR name, MM2Version gameVersion, LPVOID lpData) {
 
     for (int i = 0; i < count; i++) {
         auto addr = info->addrData[i].addresses[gameVersion];
-        
+
         LogFile::Format("  - [%d] %08X => %08X : ", (i + 1), addr, (BYTE*)info->buffer);
 
         if (addr != NULL)
@@ -122,9 +90,9 @@ bool install_patch(LPCSTR name, MM2Version gameVersion, LPVOID lpData) {
 
     bool success = (progress > 0);
     return success;
-};
+}
 
-bool install_callback(LPCSTR cb_name, MM2Version gameVersion, LPVOID lpCallback) {
+bool InstallGameCallback(LPCSTR cb_name, MM2Version gameVersion, LPVOID lpCallback) {
     LogFile::Format(" - Installing callback: '%s'...\n", cb_name);
 
     auto *cb_info = (CB_INSTALL_INFO<>*)lpCallback;
@@ -134,7 +102,7 @@ bool install_callback(LPCSTR cb_name, MM2Version gameVersion, LPVOID lpCallback)
         return false;
     }
 
-    const DWORD cb = reinterpret_cast<DWORD>(cb_info->cb_proc);
+    const DWORD cb = cb_info->cb_proc;
     int count = cb_info->length;
     int progress = 0;
 
@@ -144,7 +112,7 @@ bool install_callback(LPCSTR cb_name, MM2Version gameVersion, LPVOID lpCallback)
 
         LogFile::Format("  - [%d]: %08X => %08X : ", (i + 1), addr, cb);
 
-        if (addr != NULL && InstallJmpHook(addr, cb, (data.type == HOOK_CALL)))
+        if (addr != NULL && InstallCallbackHook(addr, cb, (data.type == HOOK_CALL)))
         {
             LogFile::WriteLine("OK");
             progress++;
@@ -153,192 +121,14 @@ bool install_callback(LPCSTR cb_name, MM2Version gameVersion, LPVOID lpCallback)
 
     bool success = (progress > 0);
     return success;
-};
+}
+
 /*
     ===========================================================================
 */
-/*
-    Lua initialization (TODO: Move these to another file?)
-*/
-
-void luaAddGlobals(lua_State* L)
-{
-    using namespace MM2;
-    typedef void(__cdecl *printer_type)(LPCSTR);
-
-    LuaBinding(L)
-        .addFunction("Printf", (printer_type)&Printf)
-        .addFunction("Messagef", (printer_type)&Messagef)
-        .addFunction("Displayf", (printer_type)&Displayf)
-        .addFunction("Warningf", (printer_type)&Warningf)
-        .addFunction("Errorf", (printer_type)&Errorf)
-        .addFunction("Quitf", (printer_type)&Quitf)
-        .addFunction("Abortf", (printer_type)&Abortf)
-
-        .addFunction("AngelReadString", &AngelReadString);
-}
-
-void luaAddModule_LogFile(lua_State* L)
-{
-    LuaBinding(L)
-        .beginModule("LogFile")
-            .addFunction("AppendLine", &LogFile::AppendLine)
-            .addFunction("Write", &LogFile::Write)
-            .addFunction("WriteLine", &LogFile::WriteLine)
-        .endModule();
-}
-
-void luaSetGlobals()
-{
-    using namespace MM2;
-
-    mmGameManager *gameMgr = mmGameManager::Instance();
-
-    auto pGame = (gameMgr != NULL) ? gameMgr->getGame() : NULL;
-    auto pPlayer = (pGame != NULL) ? pGame->getPlayer() : NULL;
-    auto pHUD = (pPlayer != NULL) ? pPlayer->getHUD() : NULL;
-
-    if (pHUD != NULL)
-        Lua::setGlobal(L, "hud", pHUD);
-}
-
-LUAMOD_API int luaopen_MM2(lua_State* L)
-{
-    using namespace MM2;
-
-    LogFile::Write(" - Registering MM2 library...");
-
-    LuaRef mod = LuaRef::createTable(L);
-
-    luaAddGlobals(mod.state());
-    luaAddModule_LogFile(mod.state());
-
-    LuaBinding(L)
-        .beginClass<datOutput>("datOutput")
-            .addStaticFunction("OpenLog", &datOutput::OpenLog)
-            .addStaticFunction("CloseLog", &datOutput::CloseLog)
-            .addStaticFunction("SetOutputMask", &datOutput::SetOutputMask)
-        .endClass()
-
-        .beginClass<mmHUD>("mmHUD")
-            .addFunction("SetMessage", &mmHUD::SetMessage)
-            .addFunction("SetMessage2", &mmHUD::SetMessage2)
-            .addFunction("PostChatMessage", &mmHUD::PostChatMessage)
-        .endClass()
-
-        .beginClass<mmPopup>("mmPopup")
-            .addFunction("IsEnabled", &mmPopup::IsEnabled)
-            .addFunction("Lock", &mmPopup::Lock)
-            .addFunction("Unlock", &mmPopup::Unlock)
-            .addFunction("ProcessChat", &mmPopup::ProcessChat)
-        .endClass()
-
-        .beginClass<Stream>("Stream")
-            .addFactory([](LPCSTR filename, bool createFile = false) {
-                auto stream = (createFile) ? Stream::Create(filename) : Stream::Open(filename, false);
-                return stream;
-            }, LUA_ARGS(LPCSTR, _opt<bool>))
-            .addStaticFunction("DumpOpenFiles", &Stream::DumpOpenFiles)
-
-            .addStaticFunction("Open", &Stream::Open)
-            .addStaticFunction("Create", LUA_FN(Stream*, Stream::Create, LPCSTR))
-
-            .addFunction("Read", &Stream::Read)
-            .addFunction("Write", &Stream::Write)
-            .addFunction("GetCh", &Stream::GetCh)
-            .addFunction("PutCh", &Stream::PutCh)
-            .addFunction("Seek", &Stream::Seek)
-            .addFunction("Tell", &Stream::Tell)
-            .addFunction("Close", &Stream::Close)
-            .addFunction("Size", &Stream::Size)
-            .addFunction("Flush", &Stream::Flush)
-        .endClass()
-
-        .beginClass<Vector2>("Vector2")
-            .addFactory([](float x = 0.0, float y = 0.0) {
-                auto vec = new Vector2;
-                vec->X = x;
-                vec->Y = y;
-                return vec;
-            }, LUA_ARGS(_opt<float>, _opt<float>))
-            .addVariableRef("x", &Vector2::X)
-            .addVariableRef("y", &Vector2::Y)
-        .endClass()
-
-        .beginClass<Vector3>("Vector3")
-            .addFactory([](float x = 0.0, float y = 0.0, float z = 0.0) {
-                auto vec = new Vector3;
-                vec->X = x;
-                vec->Y = y;
-                vec->Z = z;
-                return vec;
-            }, LUA_ARGS(_opt<float>, _opt<float>, _opt<float>))
-            .addVariableRef("x", &Vector3::X)
-            .addVariableRef("y", &Vector3::Y)
-            .addVariableRef("z", &Vector3::Z)
-        .endClass()
-
-        .beginClass<Vector4>("Vector4")
-            .addFactory([](float x = 0.0, float y = 0.0, float z = 0.0, float w = 0.0) {
-                auto vec = new Vector4;
-                vec->X = x;
-                vec->Y = y;
-                vec->Z = z;
-                vec->W = w;
-                return vec;
-            }, LUA_ARGS(_opt<float>, _opt<float>, _opt<float>, _opt<float>))
-            .addVariableRef("x", &Vector4::X)
-            .addVariableRef("y", &Vector4::Y)
-            .addVariableRef("z", &Vector4::Z)
-            .addVariableRef("w", &Vector4::W)
-        .endClass();
-    
-    mod.pushToStack();
-
-    LogFile::WriteLine("Done!");
-
-    return 1;
-}
-
-void InitializeLua() {
-    using namespace MM2;
-    typedef void(__cdecl *printer_type)(LPCSTR);
-
-    LogFile::WriteLine("Initializing Lua...");
-
-    L = LuaState::newState();
-
-    L.openLibs();
-    L.require("MM2", luaopen_MM2);
-    L.pop();
-}
 
 bool isHookSetup = false;
 bool isConsoleOpen = false;
-bool isMainLuaLoaded = false;
-
-void LoadMainScript() {
-    char lua_file[MAX_PATH];
-    MM2::datAssetManager::FullPath(lua_file, sizeof(lua_file), "lua", "main", "lua");
-
-    if (file_exists(lua_file))
-    {
-        int status = L.loadFile(lua_file) || L.pcall(0, 0, 0);
-
-        if (isMainLuaLoaded = (status == LUA_OK))
-        {
-            LogFile::Format(" - Loaded script file: %s\n", lua_file);
-
-            L.getGlobal("init");
-            if (L.pcall(0, 0, 0) == LUA_OK)
-                return;
-        }
-        MM2::Abortf("[Lua] Error -- %s", L.toString(-1));
-    }
-}
-/*
-    ===========================================================================
-*/
 
 bool SubclassGameWindow(HWND gameWnd, WNDPROC pWndProcNew, WNDPROC *ppWndProcOld)
 {
@@ -356,7 +146,8 @@ bool SubclassGameWindow(HWND gameWnd, WNDPROC pWndProcNew, WNDPROC *ppWndProcOld
 
 bool HandleKeyPress(DWORD vKey)
 {
-    Lua::setGlobal(L, "lastKey", vKey);
+    // Inform Lua of any changes beforehand
+    MM2Lua::OnKeyPress(vKey);
 
     switch (vKey) {
         // '~'
@@ -383,17 +174,6 @@ bool HandleKeyPress(DWORD vKey)
                 }
             }
         } return true;
-        case VK_F5:
-        {
-            // try reloading Lua
-            LogFile::WriteLine("Reloading main script...");
-            LoadMainScript();
-
-            auto hud = Lua::getGlobal<MM2::mmHUD *>(L, "hud");
-
-            if (hud != NULL)
-                hud->SetMessage("Lua script reloaded.", 3.5, 0);
-        } return true;
     }
     return false;
 }
@@ -410,9 +190,6 @@ LRESULT APIENTRY WndProcNew(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     return CallWindowProc(hProcOld, hWnd, uMsg, wParam, lParam);
 }
-/*
-    ===========================================================================
-*/
 
 class TickHandler {
 public:
@@ -421,16 +198,7 @@ public:
     }
 
     static void Update(void) {
-        if (isMainLuaLoaded)
-        {
-            // don't do any errors since this is called EVERY tick
-            // testing should be done in the lua script (if needed)
-            L.getGlobal("tick");
-            L.pcall(0, 0, 0);
-        }
-
-        // reset lastKey
-        Lua::setGlobal(L, "lastKey", -1);
+        MM2Lua::OnTick();
 
         // pass control back to MM2
         MM2::datTimeManager::Update();
@@ -443,9 +211,7 @@ class ChatHandler {
 public:
     void Process(char *message) {
         if (isConsoleOpen) {
-            LogFile::Format("> [Lua]: %s\n", message);
-
-            luaL_dostring(L, message);
+            MM2Lua::SendCommand(message);
 
             // return normal chatbox behavior
             isConsoleOpen = false;
@@ -536,18 +302,31 @@ public:
     ===========================================================================
 */
 
+void InitializeLua() {
+    if (pMM2->GetGameVersion() == MM2_RETAIL)
+    {
+        MM2Lua::Initialize();
+    } else
+    {
+        // no lua support for betas yet
+        MessageBox(NULL, "NOTE: This game version does not currently support Lua scripting.", "MM2Hook", MB_OK | MB_ICONINFORMATION);
+        return;
+    }
+}
+
 void SetupHook() {
+    // initialize the Lua engine
     InitializeLua();
+    
+    if (pMM2->GetGameVersion() == MM2_RETAIL)
+    {
+        LogFile::Write("Setting MM2 output log file...");
 
-    LogFile::WriteLine("Loading main script...");
-    LoadMainScript();
-
-    LogFile::Write("Setting MM2 output log file...");
-
-    if (MM2::datOutput::OpenLog("mm2.log"))
-        LogFile::Write("Done!\n");
-    else
-        LogFile::Write("FAIL!\n");
+        if (MM2::datOutput::OpenLog("mm2.log"))
+            LogFile::Write("Done!\n");
+        else
+            LogFile::Write("FAIL!\n");
+    }
 
     LogFile::Write("Subclassing window...");
     LogFile::WriteLine(SubclassGameWindow(pMM2->GetMainWindowHwnd(), WndProcNew, &hProcOld) ? "Done!" : "FAIL!");
@@ -558,17 +337,14 @@ void SetupHook() {
 void ResetHook(bool restarting) {
     LogFile::Write("Hook reset request received: ");
     LogFile::WriteLine((restarting) ? "leaving GameLoop" : "entering GameLoop");
-    // TODO: reset stuff here?
 
-    if (restarting && isMainLuaLoaded)
-    {
-        L.getGlobal("restart");
-        if (L.pcall(0, 0, 0) != LUA_OK)
-            MM2::Abortf("[Lua] Error -- %s", L.toString(-1));
-    }
+    if (restarting)
+        MM2Lua::OnRestart();
+
+    MM2Lua::Reset();
 }
 
-PtrHook<BOOL> gameClosing;
+MM2PtrHook<BOOL> gameClosing INIT_DATA( 0x667DEC, 0x6B0150, 0x6B1708 );
 
 // replaces VtResumeSampling
 void HookStartup() {
@@ -582,7 +358,6 @@ void HookStartup() {
         {
             // GameLoop was restarted
             ResetHook(false);
-            luaSetGlobals();
         }
     } else {
         LogFile::WriteLine("WTF: Hook startup request received, but the game is closing!");
@@ -594,13 +369,6 @@ void HookShutdown() {
     if (gameClosing) {
         LogFile::WriteLine("Hook shutdown request received.");
 
-        if (isMainLuaLoaded)
-        {
-            L.getGlobal("shutdown");
-            if (L.pcall(0, 0, 0) != LUA_OK)
-                MM2::Abortf("[Lua] Error -- %s", L.toString(-1));
-        }
-
         LogFile::Close();
         L.close(); // release Lua
     } else {
@@ -609,18 +377,23 @@ void HookShutdown() {
     }
 };
 
-bool HookFramework(MM2Version gameVersion) {
-    switch (gameVersion)
-    {
-        case MM2_RETAIL:
-        {
-            *(DWORD*)0x5E0CC4 = (DWORD)&HookStartup;
-            *(DWORD*)0x5E0CD8 = (DWORD)&HookShutdown;
+MM2PtrHook<DWORD> vtResumeSampling    INIT_DATA( 0x5C86B8, 0x5DF710, 0x5E0CC4 );
+MM2PtrHook<DWORD> vtPauseSampling     INIT_DATA( 0x5C86C8, 0x5DF724, 0x5E0CD8 );
 
-            gameClosing = 0x6B1708;
-        } return true;
-    }
-    return false;
+bool HookFramework(MM2Version gameVersion) {
+    if (gameVersion == MM2_INVALID || gameVersion > MM2_NUM_VERSIONS)
+        return false;
+
+    //const DWORD vtResumeSampling = MM2AddressData { 0x5C86B8, 0x5DF710, 0x5E0CC4 }.addresses[gameVersion];
+    //const DWORD vtPauseSampling = MM2AddressData { 0x5C86C8, 0x5DF724, 0x5E0CD8 }.addresses[gameVersion];
+    //
+    //*(DWORD*)vtResumeSampling = (DWORD)&HookStartup;
+    //*(DWORD*)vtPauseSampling = (DWORD)&HookShutdown;
+
+    vtResumeSampling.set_ptr((DWORD)&HookStartup);
+    vtPauseSampling.set_ptr((DWORD)&HookShutdown);
+
+    return true;
 };
 
 const PATCH_INSTALL_INFO<1, 3> chatSize_patch{
@@ -634,20 +407,17 @@ const PATCH_INSTALL_INFO<1, 3> chatSize_patch{
 void InstallPatches(MM2Version gameVersion) {
     LogFile::WriteLine("Installing patches...");
 
-    install_patch("Increase chat buffer size", gameVersion, (LPVOID)&chatSize_patch);
+    InstallGamePatch("Increase chat buffer size", gameVersion, (LPVOID)&chatSize_patch);
 };
 
-const auto tickHandler = &TickHandler::Update;
-const auto chatHandler = &ChatHandler::Process;
-
 const CB_INSTALL_INFO<1> tick_CB {
-    (LPVOID)(*(DWORD*)&tickHandler),
+    &TickHandler::Update,
     {
         {{ NULL, NULL, 0x401A2F }, HOOK_CALL }
     }
 };
 
-const CB_INSTALL_INFO<1> ageDebug_CB{
+const CB_INSTALL_INFO<1> ageDebug_CB {
     &CallbackHandler::ageDebug,
     {
         {{ NULL, NULL, 0x402630 }, HOOK_JMP }
@@ -655,16 +425,14 @@ const CB_INSTALL_INFO<1> ageDebug_CB{
 };
 
 const CB_INSTALL_INFO<1> sendChatMsg_CB {
-    (LPVOID)(*(DWORD*)&chatHandler),
+    &ChatHandler::Process,
     {
         {{ NULL, NULL, 0x414EB6 }, HOOK_JMP }
     }
 };
 
-const auto loadAmbSFXHandler = &CallbackHandler::LoadAmbientSFX;
-
 const CB_INSTALL_INFO<1> loadAmbientSFX_CB {
-    (LPVOID)(*(DWORD*)&loadAmbSFXHandler),
+    &CallbackHandler::LoadAmbientSFX,
     {
         {{ NULL, NULL, 0x433F93 }, HOOK_CALL }
     }
@@ -681,12 +449,29 @@ const CB_INSTALL_INFO<2> sirenCSV_CB {
 void InstallCallbacks(MM2Version gameVersion) {
     LogFile::WriteLine("Installing callbacks...");
 
-    install_callback("Tick", gameVersion, (LPVOID)&tick_CB);
-    install_callback("ageDebug", gameVersion, (LPVOID)&ageDebug_CB);
+    switch (gameVersion)
+    {
+        case MM2_BETA_1:
+        case MM2_BETA_2:
+        {
+            // Make sure the betas never expire
+            const CB_INSTALL_INFO<1> trialTimeExpired_CB {
+                &ReturnNullOrZero,
+                {
+                    {{ 0x4011B0, 0x4012AC, NULL }, HOOK_CALL }
+                }
+            };
 
-    install_callback("LoadAmbientSFX", gameVersion, (LPVOID)&loadAmbientSFX_CB);
-    install_callback("SendChatMessage", gameVersion, (LPVOID)&sendChatMsg_CB);
-    install_callback("SetSirenCSVName", gameVersion, (LPVOID)&sirenCSV_CB);
+            InstallGameCallback("TrialTimeExpired", gameVersion, (LPVOID)&trialTimeExpired_CB);
+        } break;
+    }
+
+    InstallGameCallback("Tick", gameVersion, (LPVOID)&tick_CB);
+    InstallGameCallback("ageDebug", gameVersion, (LPVOID)&ageDebug_CB);
+
+    InstallGameCallback("LoadAmbientSFX", gameVersion, (LPVOID)&loadAmbientSFX_CB);
+    InstallGameCallback("SendChatMessage", gameVersion, (LPVOID)&sendChatMsg_CB);
+    InstallGameCallback("SetSirenCSVName", gameVersion, (LPVOID)&sirenCSV_CB);
 };
 
 //
@@ -700,10 +485,6 @@ void Initialize(MM2Version gameVersion) {
     InstallCallbacks(gameVersion);
     InstallPatches(gameVersion);
 }
-
-/*
-    ===========================================================================
-*/
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
 {
@@ -749,7 +530,6 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
                     if (gameInfo.version == MM2_BETA_2_PETITE)
                     {
                         MessageBox(NULL, "Sorry, this version of Beta 2 was compressed with PeTite -- you'll need an unpacked version.\n\nOtherwise, please remove MM2Hook to launch the game.", "MM2Hook", MB_OK | MB_ICONERROR);
-
                     }
                     else
                     {
