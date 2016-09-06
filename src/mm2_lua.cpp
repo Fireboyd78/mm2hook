@@ -151,8 +151,10 @@ LUAMOD_API int luaopen_MM2(lua_State * L)
 }
 
 void LoadMainScript() {
-    char lua_file[MAX_PATH];
-    MM2::datAssetManager::FullPath(lua_file, sizeof(lua_file), "lua", "main", "lua");
+    //char lua_file[MAX_PATH];
+    //MM2::datAssetManager::FullPath(lua_file, sizeof(lua_file), "lua", "main", "lua");
+
+    LPCSTR lua_file = ".\\lua\\main.lua";
 
     if (file_exists(lua_file))
     {
@@ -162,12 +164,19 @@ void LoadMainScript() {
         {
             LogFile::Format(" - Loaded script file: %s\n", lua_file);
 
+            // this is kinda important, no?
+            luaSetGlobals();
+
             L.getGlobal("init");
             if (L.pcall(0, 0, 0) == LUA_OK)
                 return;
         }
 
         mm2L_error(L.toString(-1));
+    }
+    else
+    {
+        LogFile::Format(" - COULD NOT FIND FILE '%s'!!!\n", lua_file);
     }
 }
 
@@ -177,10 +186,15 @@ void ReloadScript()
     LogFile::WriteLine("Reloading main script...");
     LoadMainScript();
 
+    LogFile::WriteLine("Lua script reloaded.");
+
+    /*
+    ** Disabled until I can fix this on the main menu **
     auto hud = Lua::getGlobal<MM2::mmHUD *>(L, "hud");
 
     if (hud != NULL)
         hud->SetMessage("Lua script reloaded.", 3.5, 0);
+    */
 }
 
 bool MM2Lua::IsLoaded()
