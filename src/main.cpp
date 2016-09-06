@@ -61,17 +61,21 @@ struct PATCH_INSTALL_INFO {
     MM2AddressData addrData[count];
 };
 
-bool InstallGamePatch(LPCSTR name, MM2Version gameVersion, LPVOID lpData) {
+template<int size, int count>
+inline bool InstallGamePatch(LPCSTR name, MM2Version gameVersion, const PATCH_INSTALL_INFO<size, count> &data) {
+    return InstallGamePatch(name, gameVersion, (LPVOID)&data, data.buffer_size, data.length);
+}
+
+bool InstallGamePatch(LPCSTR name, MM2Version gameVersion, LPVOID lpData, int buffer_size, int count) {
     LogFile::Format(" - Installing patch: '%s'...\n", name);
 
     auto *info = (PATCH_INSTALL_INFO<>*)lpData;
 
-    if (info->length == 0 || info->buffer_size == 0) {
+    if (count == 0 || buffer_size == 0) {
         LogFile::WriteLine(" - ERROR! Data is empty!");
         return false;
     }
 
-    int count = info->length;
     int progress = 0;
 
     for (int i = 0; i < count; i++) {
@@ -92,25 +96,29 @@ bool InstallGamePatch(LPCSTR name, MM2Version gameVersion, LPVOID lpData) {
     return success;
 }
 
-bool InstallGameCallback(LPCSTR cb_name, MM2Version gameVersion, LPVOID lpCallback) {
+template<int size>
+inline bool InstallGameCallback(LPCSTR cb_name, MM2Version gameVersion, const CB_INSTALL_INFO<size> &cb) {
+    return InstallGameCallback(cb_name, gameVersion, (LPVOID)&cb, cb.length);
+}
+
+bool InstallGameCallback(LPCSTR cb_name, MM2Version gameVersion, LPVOID lpCallback, int count) {
     LogFile::Format(" - Installing callback: '%s'...\n", cb_name);
 
-    auto *cb_info = (CB_INSTALL_INFO<>*)lpCallback;
-
-    if (cb_info->length == 0) {
+    if (count == 0) {
         LogFile::WriteLine(" - ERROR! Address data is empty!");
         return false;
     }
 
+    auto cb_info = (CB_INSTALL_INFO<>*)lpCallback;
+
     const DWORD cb = cb_info->cb_proc;
-    int count = cb_info->length;
     int progress = 0;
 
     for (int i = 0; i < count; i++) {
         auto data = cb_info->cb_data[i];
         auto addr = data.addr_data.addresses[gameVersion];
 
-        LogFile::Format("  - [%d]: %08X => %08X : ", (i + 1), addr, cb);
+        LogFile::Format("  - [%d/%d]: %08X => %08X : ", (i + 1), count, addr, cb);
 
         if (addr != NULL && InstallCallbackHook(addr, cb, (data.type == HOOK_CALL)))
         {
@@ -127,7 +135,7 @@ bool InstallGameCallback(LPCSTR cb_name, MM2Version gameVersion, LPVOID lpCallba
     ===========================================================================
 */
 
-bool isHookSetup = false;
+bool isWindowSubclassed = false;
 bool isConsoleOpen = false;
 
 bool SubclassGameWindow(HWND gameWnd, WNDPROC pWndProcNew, WNDPROC *ppWndProcOld)
@@ -297,12 +305,152 @@ public:
             fclose(ageLog);
         }
     };
+
+    static LPCSTR AngelReadString(UINT stringId) {
+        // currently this overrides the old AngelReadString function
+        // and provides no backwards compat. for MMLANG.DLL
+        auto str = "";
+        L.getGlobal("GetLocaleString");
+        L.push(stringId);
+        if (L.pcall(1, 1, 0) == LUA_OK)
+        {
+            str = L.toString(-1);
+        }
+        else
+        {
+            LogFile::Format("[LUA] ERROR: %s\n", stringId, L.toString(-1));
+            str = "???";
+        }   
+        L.pop(1);
+        return str;
+    }
 };
+
+MM2PtrHook<int> cityCurrentTime INIT_DATA(NULL, NULL, 0x62B068);
+MM2PtrHook<LPVOID> TIMEWEATHER INIT_DATA(NULL, NULL, 0x6299A8);
+
+MM2PtrHook<UINT32*> sdlLightTable INIT_DATA(NULL, NULL, 0x62B0A0);
+
+MM2FnHook<UINT32> sdlPage16__GetShadedColor INIT_DATA(NULL, NULL, 0x450880);
+
+MM2FnHook<void> vglBegin INIT_DATA(NULL, NULL, 0x4A5500);
+MM2FnHook<void> vglEnd   INIT_DATA(NULL, NULL, 0x4A5A90);
+MM2PtrHook<UINT32> vglCurrentColor INIT_DATA(NULL, NULL, 0x661974);
+
+MM2::cityTimeWeatherLighting * getTimeWeather(int time) {
+    auto addr = (DWORD)TIMEWEATHER.ptr() + (time * sizeof(MM2::cityTimeWeatherLighting));
+    return (MM2::cityTimeWeatherLighting *)addr;
+};
+
+MM2::cityTimeWeatherLighting * getCurrentTimeWeather(void) {
+    return getTimeWeather(cityCurrentTime);
+};
+
+UINT32 vglColor;
+UINT32 vglCalculatedColor = 0xFFFFFFFF;
+
+MM2::Vector3 vglAmbient;
+MM2::Vector3 vglKeyColor;
+MM2::Vector3 vglFill1Color;
+MM2::Vector3 vglFill2Color;
+MM2::Vector3 vglShadedColor;
+
+// IMPORTANT: ARGB as 4 bytes!
+struct {
+    char b;
+    char g;
+    char r;
+    char a;
+} vglResultColor = {
+    (char)0,
+    (char)0,
+    (char)0,
+    (char)255,
+};
+
+const double cosNum = 1.570796;
+
+MM2::Vector3 addPitch(MM2::Vector3 *vec, float pitch) {
+    bool pitchIsZero = (pitch >= 0.0f);
+
+    return {
+        (float)((!pitchIsZero) ? vec->X * cos(pitch + cosNum) : 0.0f),
+        (float)((!pitchIsZero) ? vec->Y * cos(pitch + cosNum) : 0.0f),
+        (float)((!pitchIsZero) ? vec->Z * cos(pitch + cosNum) : 0.0f),
+    };
+}
+
+void normalize(float *value) {
+    if (*value >= 2.0f)
+        *value = 1.0f;
+    if (*value > 1.0f)
+        *value = (*value - (*value - 1.0f));
+};
+
+void normalizeVector(MM2::Vector3 *vec) {
+    normalize(&vec->X);
+    normalize(&vec->Y);
+    normalize(&vec->Z);
+}
+
+UINT32 CalculateShading(MM2::cityTimeWeatherLighting *timeWeather) {
+    auto ambientColor = timeWeather->Ambient;
+
+    // convert the ambient to a vector3 for better accuracy
+    vglAmbient = {
+        (float)((char)((ambientColor & 0xFF0000) >> 16) / 256.0),
+        (float)((char)((ambientColor & 0xFF00) >> 8) / 256.0),
+        (float)((char)((ambientColor & 0xFF)) / 256.0),
+    };
+
+    vglKeyColor = addPitch(&timeWeather->KeyColor, timeWeather->KeyPitch);
+    vglFill1Color = addPitch(&timeWeather->Fill1Color, timeWeather->Fill1Pitch);
+    vglFill2Color = addPitch(&timeWeather->Fill2Color, timeWeather->Fill2Pitch);
+
+    // compute le values
+    vglShadedColor = {
+        ((vglKeyColor.X + vglFill1Color.X + vglFill2Color.X) + vglAmbient.X),
+        ((vglKeyColor.Y + vglFill1Color.Y + vglFill2Color.Y) + vglAmbient.Y),
+        ((vglKeyColor.Z + vglFill1Color.Z + vglFill2Color.Z) + vglAmbient.Z),
+    };
+
+    normalizeVector(&vglShadedColor);
+
+    vglResultColor.r = (char)(vglShadedColor.X * 255.999);
+    vglResultColor.g = (char)(vglShadedColor.Y * 255.999);
+    vglResultColor.b = (char)(vglShadedColor.Z * 255.999);
+
+    return *(int*)&vglResultColor;
+}
+
+class GraphicsCallbackHandler
+{
+public:
+    static void vglSDLBegin(int gfxMode, int p1) {
+        vglColor = vglCurrentColor;
+        vglCalculatedColor = CalculateShading(getCurrentTimeWeather());
+
+        // shade shit bruh
+        vglCalculatedColor = sdlPage16__GetShadedColor(vglColor, vglCalculatedColor);
+
+        // hijack current color
+        vglCurrentColor.set_ptr(vglCalculatedColor);
+        vglBegin(gfxMode, p1);
+    }
+
+    static void vglSDLEnd(void) {
+        // restore color
+        vglCurrentColor.set_ptr(vglColor);
+        vglEnd();
+    }
+};
+
 /*
     ===========================================================================
 */
 
 void InitializeLua() {
+    // Guaranteed to be loaded before anything vital is called (e.g. AngelReadString)
     if (pMM2->GetGameVersion() == MM2_RETAIL)
     {
         MM2Lua::Initialize();
@@ -314,7 +462,7 @@ void InitializeLua() {
     }
 }
 
-void SetupHook() {
+void InitializeHook(int, char**) {
     // initialize the Lua engine
     InitializeLua();
     
@@ -327,11 +475,6 @@ void SetupHook() {
         else
             LogFile::Write("FAIL!\n");
     }
-
-    LogFile::Write("Subclassing window...");
-    LogFile::WriteLine(SubclassGameWindow(pMM2->GetMainWindowHwnd(), WndProcNew, &hProcOld) ? "Done!" : "FAIL!");
-
-    isHookSetup = true;
 }
 
 void ResetHook(bool restarting) {
@@ -349,16 +492,16 @@ MM2PtrHook<BOOL> gameClosing INIT_DATA( 0x667DEC, 0x6B0150, 0x6B1708 );
 // replaces VtResumeSampling
 void HookStartup() {
     if (!gameClosing) {
-        if (!isHookSetup)
+        if (!isWindowSubclassed)
         {
-            LogFile::WriteLine("Hook startup request received.");
-            SetupHook();
+            LogFile::Write("Subclassing window...");
+            LogFile::WriteLine(SubclassGameWindow(pMM2->GetMainWindowHwnd(), WndProcNew, &hProcOld) ? "Done!" : "FAIL!");
+
+            isWindowSubclassed = true;
         }
-        else
-        {
-            // GameLoop was restarted
-            ResetHook(false);
-        }
+        
+        // GameLoop was restarted
+        ResetHook(false);
     } else {
         LogFile::WriteLine("WTF: Hook startup request received, but the game is closing!");
     }
@@ -407,7 +550,16 @@ const PATCH_INSTALL_INFO<1, 3> chatSize_patch{
 void InstallPatches(MM2Version gameVersion) {
     LogFile::WriteLine("Installing patches...");
 
-    InstallGamePatch("Increase chat buffer size", gameVersion, (LPVOID)&chatSize_patch);
+    InstallGamePatch("Increase chat buffer size", gameVersion, chatSize_patch);
+};
+
+// Replaces a call to ArchInit (a null function) just before ExceptMain
+// This is PERFECT for initializing everything before the game even starts!
+const CB_INSTALL_INFO<1> archInit_CB {
+    &InitializeHook,
+    {
+        {{ NULL, NULL, 0x4023DB }, HOOK_CALL }
+    }
 };
 
 const CB_INSTALL_INFO<1> tick_CB {
@@ -421,6 +573,14 @@ const CB_INSTALL_INFO<1> ageDebug_CB {
     &CallbackHandler::ageDebug,
     {
         {{ NULL, NULL, 0x402630 }, HOOK_JMP }
+    }
+};
+
+const CB_INSTALL_INFO<1> angelReadString_CB{
+    &CallbackHandler::AngelReadString,
+    {
+        // NOTE: Completely overrides AngelReadString!
+        {{ NULL, NULL, 0x534790 }, HOOK_JMP }
     }
 };
 
@@ -446,6 +606,154 @@ const CB_INSTALL_INFO<2> sirenCSV_CB {
     }
 };
 
+const CB_INSTALL_INFO<64> vglSDLBegin_CB{
+    &GraphicsCallbackHandler::vglSDLBegin,
+    {
+        {{ NULL, NULL, 0x448424 }, HOOK_CALL },
+        {{ NULL, NULL, 0x448697 }, HOOK_CALL },
+        {{ NULL, NULL, 0x448903 }, HOOK_CALL },
+        {{ NULL, NULL, 0x448BFD }, HOOK_CALL },
+        {{ NULL, NULL, 0x448DE4 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44902A }, HOOK_CALL },
+        {{ NULL, NULL, 0x4492A4 }, HOOK_CALL },
+        {{ NULL, NULL, 0x4494C3 }, HOOK_CALL },
+        {{ NULL, NULL, 0x4496A5 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44986B }, HOOK_CALL },
+        {{ NULL, NULL, 0x449A13 }, HOOK_CALL },
+        {{ NULL, NULL, 0x449BD9 }, HOOK_CALL },
+        {{ NULL, NULL, 0x449D82 }, HOOK_CALL },
+        {{ NULL, NULL, 0x449F67 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44A21C }, HOOK_CALL },
+        {{ NULL, NULL, 0x44A444 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44A629 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44A7EF }, HOOK_CALL },
+        {{ NULL, NULL, 0x44A997 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44AB5D }, HOOK_CALL },
+        {{ NULL, NULL, 0x44AD06 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44AECA }, HOOK_CALL },
+        {{ NULL, NULL, 0x44B0EC }, HOOK_CALL },
+        {{ NULL, NULL, 0x44B24B }, HOOK_CALL },
+        {{ NULL, NULL, 0x44B3B6 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44B557 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44B6F3 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44B8F1 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44BA8A }, HOOK_CALL },
+        {{ NULL, NULL, 0x44BC29 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44BE9C }, HOOK_CALL },
+        {{ NULL, NULL, 0x44C136 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44C40C }, HOOK_CALL },
+        {{ NULL, NULL, 0x44C64A }, HOOK_CALL },
+        {{ NULL, NULL, 0x44C7C0 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44CAD6 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44CCF5 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44CF6D }, HOOK_CALL },
+        {{ NULL, NULL, 0x44D0D4 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44D5F7 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44D789 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44DC55 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44E050 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44E14B }, HOOK_CALL },
+        {{ NULL, NULL, 0x44E2A3 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44E69D }, HOOK_CALL },
+        {{ NULL, NULL, 0x44E79E }, HOOK_CALL },
+        {{ NULL, NULL, 0x44EAA0 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44EBA5 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44EFD0 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44F0DC }, HOOK_CALL },
+        {{ NULL, NULL, 0x44F588 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44F7E2 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44FC1E }, HOOK_CALL },
+        {{ NULL, NULL, 0x44FDD4 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44FF10 }, HOOK_CALL },
+        {{ NULL, NULL, 0x450085 }, HOOK_CALL },
+        {{ NULL, NULL, 0x450269 }, HOOK_CALL },
+        // ------------------------------------
+        {{ NULL, NULL, 0x443B9D }, HOOK_CALL }, // dgRoadDecalInstance
+        {{ NULL, NULL, 0x57AC4A }, HOOK_CALL }, // ped LODs
+
+        // some multiplayer object
+        {{ NULL, NULL, 0x43DA66 }, HOOK_CALL },
+        {{ NULL, NULL, 0x43DAB9 }, HOOK_CALL },
+        {{ NULL, NULL, 0x43DB2F }, HOOK_CALL },
+        {{ NULL, NULL, 0x43DBD6 }, HOOK_CALL },
+        // ----------------------------------
+    }
+};
+
+const CB_INSTALL_INFO<64> vglSDLEnd_CB{
+    &GraphicsCallbackHandler::vglSDLEnd,
+    {
+        {{ NULL, NULL, 0x4485D3 }, HOOK_CALL },
+        {{ NULL, NULL, 0x448B82 }, HOOK_CALL },
+        {{ NULL, NULL, 0x448D8C }, HOOK_CALL },
+        {{ NULL, NULL, 0x448FB7 }, HOOK_CALL },
+        {{ NULL, NULL, 0x449219 }, HOOK_CALL },
+        {{ NULL, NULL, 0x449480 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44963E }, HOOK_CALL },
+        {{ NULL, NULL, 0x44983C }, HOOK_CALL },
+        {{ NULL, NULL, 0x4499D4 }, HOOK_CALL },
+        {{ NULL, NULL, 0x449BAA }, HOOK_CALL },
+        {{ NULL, NULL, 0x449D42 }, HOOK_CALL },
+        {{ NULL, NULL, 0x449F5A }, HOOK_CALL },
+        {{ NULL, NULL, 0x44A146 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44A3F8 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44A5BF }, HOOK_CALL },
+        {{ NULL, NULL, 0x44A7C0 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44A958 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44AB2E }, HOOK_CALL },
+        {{ NULL, NULL, 0x44ACC6 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44AEBC }, HOOK_CALL },
+        {{ NULL, NULL, 0x44B083 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44B23D }, HOOK_CALL },
+        {{ NULL, NULL, 0x44B394 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44B531 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44B6E1 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44B895 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44BA7C }, HOOK_CALL },
+        {{ NULL, NULL, 0x44BC03 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44BE8E }, HOOK_CALL },
+        {{ NULL, NULL, 0x44C118 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44C3EA }, HOOK_CALL },
+        {{ NULL, NULL, 0x44C638 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44C77A }, HOOK_CALL },
+        {{ NULL, NULL, 0x44C989 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44CC44 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44CE63 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44D04E }, HOOK_CALL },
+        {{ NULL, NULL, 0x44D403 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44D780 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44D8E9 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44E014 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44E131 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44E22C }, HOOK_CALL },
+        {{ NULL, NULL, 0x44E661 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44E785 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44E886 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44EB82 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44EDC3 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44F0B9 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44F316 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44F64C }, HOOK_CALL },
+        {{ NULL, NULL, 0x44FB9D }, HOOK_CALL },
+        {{ NULL, NULL, 0x44FD30 }, HOOK_CALL },
+        {{ NULL, NULL, 0x44FE4E }, HOOK_CALL },
+        {{ NULL, NULL, 0x44FFB3 }, HOOK_CALL },
+        {{ NULL, NULL, 0x450162 }, HOOK_CALL },
+        {{ NULL, NULL, 0x450390 }, HOOK_CALL },
+        {{ NULL, NULL, 0x45078C }, HOOK_CALL },
+        // ------------------------------------
+        {{ NULL, NULL, 0x443DCC }, HOOK_CALL }, // road decals
+        {{ NULL, NULL, 0x57AD41 }, HOOK_CALL }, // ped LODs
+
+        // some multiplayer object
+        {{ NULL, NULL, 0x43DAB0 }, HOOK_CALL },
+        {{ NULL, NULL, 0x43DB03 }, HOOK_CALL },
+        {{ NULL, NULL, 0x43DBB7 }, HOOK_CALL },
+        {{ NULL, NULL, 0x43DC61 }, HOOK_CALL },
+        // ----------------------------------
+    }
+};
+
 void InstallCallbacks(MM2Version gameVersion) {
     LogFile::WriteLine("Installing callbacks...");
 
@@ -462,16 +770,25 @@ void InstallCallbacks(MM2Version gameVersion) {
                 }
             };
 
-            InstallGameCallback("TrialTimeExpired", gameVersion, (LPVOID)&trialTimeExpired_CB);
+            InstallGameCallback("TrialTimeExpired", gameVersion, trialTimeExpired_CB);
         } break;
     }
 
-    InstallGameCallback("Tick", gameVersion, (LPVOID)&tick_CB);
-    InstallGameCallback("ageDebug", gameVersion, (LPVOID)&ageDebug_CB);
+    InstallGameCallback("ArchInit", gameVersion, archInit_CB);
+    InstallGameCallback("Tick", gameVersion, tick_CB);
+    InstallGameCallback("ageDebug", gameVersion, ageDebug_CB);
 
-    InstallGameCallback("LoadAmbientSFX", gameVersion, (LPVOID)&loadAmbientSFX_CB);
-    InstallGameCallback("SendChatMessage", gameVersion, (LPVOID)&sendChatMsg_CB);
-    InstallGameCallback("SetSirenCSVName", gameVersion, (LPVOID)&sirenCSV_CB);
+    // not supported for betas yet
+    if (gameVersion == MM2_RETAIL)
+    {
+        InstallGameCallback("AngelReadString", gameVersion, angelReadString_CB);
+    }
+
+    InstallGameCallback("LoadAmbientSFX", gameVersion, loadAmbientSFX_CB);
+    InstallGameCallback("SendChatMessage", gameVersion, sendChatMsg_CB);
+    InstallGameCallback("SetSirenCSVName", gameVersion, sirenCSV_CB);
+    InstallGameCallback("vglBegin (PSDL)", gameVersion, vglSDLBegin_CB);
+    InstallGameCallback("vglEnd (PSDL)", gameVersion, vglSDLEnd_CB);
 };
 
 //
