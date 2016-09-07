@@ -57,9 +57,14 @@ struct PATCH_INSTALL_INFO {
     static const int length = count;
     static const int buffer_size = size;
 
-    const char buffer[size];
+    char buffer[size];
     MM2AddressData addrData[count];
 };
+
+#define INIT_CB_DATA(type, addr1, addr2, addr3) {{ addr1, addr2, addr3 }, type }
+
+#define INIT_CB_CALL(addr1, addr2, addr3) INIT_CB_DATA(HOOK_CALL, addr1, addr2, addr3)
+#define INIT_CB_JUMP(addr1, addr2, addr3) INIT_CB_DATA(HOOK_JMP, addr1, addr2, addr3)
 
 template<int size, int count>
 inline bool InstallGamePatch(LPCSTR name, MM2Version gameVersion, const PATCH_INSTALL_INFO<size, count> &data) {
@@ -69,7 +74,7 @@ inline bool InstallGamePatch(LPCSTR name, MM2Version gameVersion, const PATCH_IN
 bool InstallGamePatch(LPCSTR name, MM2Version gameVersion, LPVOID lpData, int buffer_size, int count) {
     LogFile::Format(" - Installing patch: '%s'...\n", name);
 
-    auto *info = (PATCH_INSTALL_INFO<>*)lpData;
+    auto info = (PATCH_INSTALL_INFO<>*)lpData;
 
     if (count == 0 || buffer_size == 0) {
         LogFile::WriteLine(" - ERROR! Data is empty!");
@@ -81,11 +86,11 @@ bool InstallGamePatch(LPCSTR name, MM2Version gameVersion, LPVOID lpData, int bu
     for (int i = 0; i < count; i++) {
         auto addr = info->addrData[i].addresses[gameVersion];
 
-        LogFile::Format("  - [%d] %08X => %08X : ", (i + 1), addr, (BYTE*)info->buffer);
+        LogFile::Format("  - [%d] %08X => %08X : ", (i + 1), addr, (BYTE*)&info->buffer);
 
         if (addr != NULL)
         {
-            InstallPatch(addr, (BYTE*)info->buffer, info->length);
+            InstallPatch(addr, (BYTE*)&info->buffer, buffer_size);
             LogFile::WriteLine("OK");
 
             progress++;
@@ -326,25 +331,16 @@ public:
     }
 };
 
-MM2PtrHook<int> cityCurrentTime INIT_DATA(NULL, NULL, 0x62B068);
-MM2PtrHook<LPVOID> TIMEWEATHER INIT_DATA(NULL, NULL, 0x6299A8);
+MM2PtrHook<int> cityCurrentTime ( NULL, NULL, 0x62B068 );
+MM2PtrHook<MM2::cityTimeWeatherLighting> 
+                TIMEWEATHER     ( NULL, NULL, 0x6299A8 );
 
-MM2PtrHook<UINT32*> sdlLightTable INIT_DATA(NULL, NULL, 0x62B0A0);
+MM2PtrHook<UINT32> vglCurrentColor ( NULL, NULL, 0x661974 );
 
-MM2FnHook<UINT32> sdlPage16__GetShadedColor INIT_DATA(NULL, NULL, 0x450880);
+MM2FnHook<void> pfnvglBegin     ( NULL, NULL, 0x4A5500 );
+MM2FnHook<void> pfnvglEnd       ( NULL, NULL, 0x4A5A90 );
 
-MM2FnHook<void> vglBegin INIT_DATA(NULL, NULL, 0x4A5500);
-MM2FnHook<void> vglEnd   INIT_DATA(NULL, NULL, 0x4A5A90);
-MM2PtrHook<UINT32> vglCurrentColor INIT_DATA(NULL, NULL, 0x661974);
-
-MM2::cityTimeWeatherLighting * getTimeWeather(int time) {
-    auto addr = (DWORD)TIMEWEATHER.ptr() + (time * sizeof(MM2::cityTimeWeatherLighting));
-    return (MM2::cityTimeWeatherLighting *)addr;
-};
-
-MM2::cityTimeWeatherLighting * getCurrentTimeWeather(void) {
-    return getTimeWeather(cityCurrentTime);
-};
+MM2FnHook<UINT32> pfnsdlPage16_GetShadedColor ( NULL, NULL, 0x450880 );
 
 UINT32 vglColor;
 UINT32 vglCalculatedColor = 0xFFFFFFFF;
@@ -371,6 +367,7 @@ struct {
 const double cosNum = 1.570796;
 
 MM2::Vector3 addPitch(MM2::Vector3 *vec, float pitch) {
+    float p = (float)fmod(pitch, 3.14159);
     bool pitchIsZero = (pitch >= 0.0f);
 
     return {
@@ -380,68 +377,81 @@ MM2::Vector3 addPitch(MM2::Vector3 *vec, float pitch) {
     };
 }
 
-void normalize(float *value) {
-    if (*value >= 2.0f)
-        *value = 1.0f;
-    if (*value > 1.0f)
-        *value = (*value - (*value - 1.0f));
+float normalize(float value) {
+    if (value >= 2.0f)
+        value = 1.0f;
+
+    return (value > 1.0f) ? (value - (value - 1.0f)) : value;
 };
 
-void normalizeVector(MM2::Vector3 *vec) {
-    normalize(&vec->X);
-    normalize(&vec->Y);
-    normalize(&vec->Z);
+MM2::Vector3 intToColor(int value) {
+    return {
+        (float)((char)((value & 0xFF0000) >> 16) / 256.0),
+        (float)((char)((value & 0xFF00) >> 8) / 256.0),
+        (float)((char)((value & 0xFF)) / 256.0),
+    };
 }
 
-UINT32 CalculateShading(MM2::cityTimeWeatherLighting *timeWeather) {
-    auto ambientColor = timeWeather->Ambient;
-
-    // convert the ambient to a vector3 for better accuracy
-    vglAmbient = {
-        (float)((char)((ambientColor & 0xFF0000) >> 16) / 256.0),
-        (float)((char)((ambientColor & 0xFF00) >> 8) / 256.0),
-        (float)((char)((ambientColor & 0xFF)) / 256.0),
-    };
+UINT32 CalculateShadedColor(int color) {
+    auto timeWeather = TIMEWEATHER[cityCurrentTime];
 
     vglKeyColor = addPitch(&timeWeather->KeyColor, timeWeather->KeyPitch);
     vglFill1Color = addPitch(&timeWeather->Fill1Color, timeWeather->Fill1Pitch);
     vglFill2Color = addPitch(&timeWeather->Fill2Color, timeWeather->Fill2Pitch);
 
+    // convert the ambient to a vector3 for better accuracy
+    vglAmbient = intToColor(timeWeather->Ambient);
+
     // compute le values
     vglShadedColor = {
-        ((vglKeyColor.X + vglFill1Color.X + vglFill2Color.X) + vglAmbient.X),
-        ((vglKeyColor.Y + vglFill1Color.Y + vglFill2Color.Y) + vglAmbient.Y),
-        ((vglKeyColor.Z + vglFill1Color.Z + vglFill2Color.Z) + vglAmbient.Z),
+        normalize((vglKeyColor.X + vglFill1Color.X + vglFill2Color.X) + vglAmbient.X),
+        normalize((vglKeyColor.Y + vglFill1Color.Y + vglFill2Color.Y) + vglAmbient.Y),
+        normalize((vglKeyColor.Z + vglFill1Color.Z + vglFill2Color.Z) + vglAmbient.Z),
     };
-
-    normalizeVector(&vglShadedColor);
 
     vglResultColor.r = (char)(vglShadedColor.X * 255.999);
     vglResultColor.g = (char)(vglShadedColor.Y * 255.999);
     vglResultColor.b = (char)(vglShadedColor.Z * 255.999);
 
-    return *(int*)&vglResultColor;
+    return pfnsdlPage16_GetShadedColor(color, *(int*)&vglResultColor);
 }
 
 class GraphicsCallbackHandler
 {
 public:
-    static void vglSDLBegin(int gfxMode, int p1) {
+    static void vglBegin(int gfxMode, int p1) {
         vglColor = vglCurrentColor;
-        vglCalculatedColor = CalculateShading(getCurrentTimeWeather());
 
-        // shade shit bruh
-        vglCalculatedColor = sdlPage16__GetShadedColor(vglColor, vglCalculatedColor);
-
-        // hijack current color
+        // calculate a nice shaded color ;)
+        vglCalculatedColor = CalculateShadedColor(vglColor);
         vglCurrentColor.set_ptr(vglCalculatedColor);
-        vglBegin(gfxMode, p1);
+
+        pfnvglBegin(gfxMode, p1);
     }
 
     static void vglSDLEnd(void) {
         // restore color
         vglCurrentColor.set_ptr(vglColor);
-        vglEnd();
+        pfnvglEnd();
+    }
+};
+
+MM2FnHook<void> pfndgBangerInstance_Draw ( NULL, NULL, 0x4415E0 );
+
+class BridgeFerryCallbackHandler
+{
+public:
+    int IsVisible() {
+        return (int)*getPtr<char>(this, 0x1B);
+    }
+
+    void Cull(int lod) {
+        // wtf
+        setPtr(this, 0x1B, (char)++lod);
+    }
+
+    void Draw(int lod) {
+        pfndgBangerInstance_Draw(this, lod);
     }
 };
 
@@ -487,7 +497,7 @@ void ResetHook(bool restarting) {
     MM2Lua::Reset();
 }
 
-MM2PtrHook<BOOL> gameClosing INIT_DATA( 0x667DEC, 0x6B0150, 0x6B1708 );
+MM2PtrHook<BOOL> gameClosing ( 0x667DEC, 0x6B0150, 0x6B1708 );
 
 // replaces VtResumeSampling
 void HookStartup() {
@@ -520,18 +530,12 @@ void HookShutdown() {
     }
 };
 
-MM2PtrHook<DWORD> vtResumeSampling    INIT_DATA( 0x5C86B8, 0x5DF710, 0x5E0CC4 );
-MM2PtrHook<DWORD> vtPauseSampling     INIT_DATA( 0x5C86C8, 0x5DF724, 0x5E0CD8 );
+MM2PtrHook<DWORD> vtResumeSampling    ( 0x5C86B8, 0x5DF710, 0x5E0CC4 );
+MM2PtrHook<DWORD> vtPauseSampling     ( 0x5C86C8, 0x5DF724, 0x5E0CD8 );
 
 bool HookFramework(MM2Version gameVersion) {
     if (gameVersion == MM2_INVALID || gameVersion > MM2_NUM_VERSIONS)
         return false;
-
-    //const DWORD vtResumeSampling = MM2AddressData { 0x5C86B8, 0x5DF710, 0x5E0CC4 }.addresses[gameVersion];
-    //const DWORD vtPauseSampling = MM2AddressData { 0x5C86C8, 0x5DF724, 0x5E0CD8 }.addresses[gameVersion];
-    //
-    //*(DWORD*)vtResumeSampling = (DWORD)&HookStartup;
-    //*(DWORD*)vtPauseSampling = (DWORD)&HookShutdown;
 
     vtResumeSampling.set_ptr((DWORD)&HookStartup);
     vtPauseSampling.set_ptr((DWORD)&HookShutdown);
@@ -539,7 +543,7 @@ bool HookFramework(MM2Version gameVersion) {
     return true;
 };
 
-const PATCH_INSTALL_INFO<1, 3> chatSize_patch{
+const PATCH_INSTALL_INFO<1, 3> chatSize_patch = {
     { 80 }, {
         { NULL, NULL, 0x4E68B5 },
         { NULL, NULL, 0x4E68B9 },
@@ -547,210 +551,233 @@ const PATCH_INSTALL_INFO<1, 3> chatSize_patch{
     }
 };
 
+// stop bridges/ferrys from culling (TEMPORARY HACK VERY BAD!!!)
+//const PATCH_INSTALL_INFO<3, 2> bridgeFerryCull_patch = {
+//    {   (char)0xC2,
+//        (char)0x04,
+//        (char)0x00
+//    }, {
+//        { NULL, NULL, 0x577940 }, // gizBridge::Cull
+//        { NULL, NULL, 0x579540 } // gizFerry::Cull
+//    }
+//};
+
+CB_INSTALL_INFO<2> bridgeFerryCull_CB = {
+    &BridgeFerryCallbackHandler::Cull, {
+        INIT_CB_CALL( NULL, NULL, 0x5780BC ), // gizBridgeMgr::Cull
+        INIT_CB_CALL( NULL, NULL, 0x5798F0 ), // gizFerryMgr::Cull
+    }
+};
+
+PATCH_INSTALL_INFO<4, 2> bridgeFerryDraw_patch = {
+    { 0 }, {
+        { NULL, NULL, 0x5B5FB8 }, // gizBridge::Draw
+        { NULL, NULL, 0x5B61AC } // gizFerry::Draw
+    } 
+};
+
+PATCH_INSTALL_INFO<4, 2> bridgeFerryIsVisible_patch = {
+    { 0 },{
+        { NULL, NULL, 0x5B5F94 }, // gizBridge::IsVisible
+        { NULL, NULL, 0x5B6188 } // gizFerry::IsVisible
+    }
+};
+
 void InstallPatches(MM2Version gameVersion) {
     LogFile::WriteLine("Installing patches...");
 
     InstallGamePatch("Increase chat buffer size", gameVersion, chatSize_patch);
+
+    // Angel somehow f$%!ed this up in the retail, but was fine in beta1/2...LOL
+    if (gameVersion == MM2_RETAIL)
+    {
+        // compiler forces me to do this crap :/
+        auto fnBridgeFerryDraw = &BridgeFerryCallbackHandler::Draw;
+        auto fnBridgeFerryIsVisible = &BridgeFerryCallbackHandler::IsVisible;
+
+        *(DWORD*)bridgeFerryDraw_patch.buffer = *(DWORD*)&fnBridgeFerryDraw;
+        *(DWORD*)bridgeFerryIsVisible_patch.buffer = *(DWORD*)&fnBridgeFerryIsVisible;
+
+        InstallGamePatch("Fix bridge/ferry rendering [1/2]", gameVersion, bridgeFerryDraw_patch);
+        InstallGamePatch("Fix bridge/ferry rendering [2/2]", gameVersion, bridgeFerryIsVisible_patch);
+    }
 };
 
 // Replaces a call to ArchInit (a null function) just before ExceptMain
 // This is PERFECT for initializing everything before the game even starts!
-const CB_INSTALL_INFO<1> archInit_CB {
-    &InitializeHook,
-    {
-        {{ NULL, NULL, 0x4023DB }, HOOK_CALL }
+const CB_INSTALL_INFO<1> archInit_CB = {
+    &InitializeHook, {
+        INIT_CB_CALL( NULL, NULL, 0x4023DB ),
     }
 };
 
-const CB_INSTALL_INFO<1> tick_CB {
-    &TickHandler::Update,
-    {
-        {{ NULL, NULL, 0x401A2F }, HOOK_CALL }
+const CB_INSTALL_INFO<1> tick_CB = {
+    &TickHandler::Update, {
+        INIT_CB_CALL( NULL, NULL, 0x401A2F ),
     }
 };
 
-const CB_INSTALL_INFO<1> ageDebug_CB {
-    &CallbackHandler::ageDebug,
-    {
-        {{ NULL, NULL, 0x402630 }, HOOK_JMP }
+const CB_INSTALL_INFO<1> ageDebug_CB = {
+    &CallbackHandler::ageDebug, {
+        INIT_CB_JUMP( NULL, NULL, 0x402630 ),
     }
 };
 
-const CB_INSTALL_INFO<1> angelReadString_CB{
-    &CallbackHandler::AngelReadString,
-    {
+const CB_INSTALL_INFO<1> angelReadString_CB = {
+    &CallbackHandler::AngelReadString, {
         // NOTE: Completely overrides AngelReadString!
-        {{ NULL, NULL, 0x534790 }, HOOK_JMP }
+        INIT_CB_JUMP( NULL, NULL, 0x534790 ),
     }
 };
 
-const CB_INSTALL_INFO<1> sendChatMsg_CB {
-    &ChatHandler::Process,
-    {
-        {{ NULL, NULL, 0x414EB6 }, HOOK_JMP }
+const CB_INSTALL_INFO<1> sendChatMsg_CB = {
+    &ChatHandler::Process, {
+        INIT_CB_JUMP( NULL, NULL, 0x414EB6 ),
     }
 };
 
-const CB_INSTALL_INFO<1> loadAmbientSFX_CB {
-    &CallbackHandler::LoadAmbientSFX,
-    {
-        {{ NULL, NULL, 0x433F93 }, HOOK_CALL }
+const CB_INSTALL_INFO<1> loadAmbientSFX_CB = {
+    &CallbackHandler::LoadAmbientSFX, {
+        INIT_CB_CALL( NULL, NULL, 0x433F93 ),
     }
 };
 
-const CB_INSTALL_INFO<2> sirenCSV_CB {
-    &CallbackHandler::SetSirenCSVName,
-    {
-        {{ NULL, NULL, 0x412783 }, HOOK_CALL },
-        {{ NULL, NULL, 0x412772 }, HOOK_CALL },
+const CB_INSTALL_INFO<2> sirenCSV_CB = {
+    &CallbackHandler::SetSirenCSVName, {
+        INIT_CB_CALL( NULL, NULL, 0x412783 ),
+        INIT_CB_CALL( NULL, NULL, 0x412772 ),
     }
 };
 
-const CB_INSTALL_INFO<64> vglSDLBegin_CB{
-    &GraphicsCallbackHandler::vglSDLBegin,
-    {
-        {{ NULL, NULL, 0x448424 }, HOOK_CALL },
-        {{ NULL, NULL, 0x448697 }, HOOK_CALL },
-        {{ NULL, NULL, 0x448903 }, HOOK_CALL },
-        {{ NULL, NULL, 0x448BFD }, HOOK_CALL },
-        {{ NULL, NULL, 0x448DE4 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44902A }, HOOK_CALL },
-        {{ NULL, NULL, 0x4492A4 }, HOOK_CALL },
-        {{ NULL, NULL, 0x4494C3 }, HOOK_CALL },
-        {{ NULL, NULL, 0x4496A5 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44986B }, HOOK_CALL },
-        {{ NULL, NULL, 0x449A13 }, HOOK_CALL },
-        {{ NULL, NULL, 0x449BD9 }, HOOK_CALL },
-        {{ NULL, NULL, 0x449D82 }, HOOK_CALL },
-        {{ NULL, NULL, 0x449F67 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44A21C }, HOOK_CALL },
-        {{ NULL, NULL, 0x44A444 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44A629 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44A7EF }, HOOK_CALL },
-        {{ NULL, NULL, 0x44A997 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44AB5D }, HOOK_CALL },
-        {{ NULL, NULL, 0x44AD06 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44AECA }, HOOK_CALL },
-        {{ NULL, NULL, 0x44B0EC }, HOOK_CALL },
-        {{ NULL, NULL, 0x44B24B }, HOOK_CALL },
-        {{ NULL, NULL, 0x44B3B6 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44B557 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44B6F3 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44B8F1 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44BA8A }, HOOK_CALL },
-        {{ NULL, NULL, 0x44BC29 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44BE9C }, HOOK_CALL },
-        {{ NULL, NULL, 0x44C136 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44C40C }, HOOK_CALL },
-        {{ NULL, NULL, 0x44C64A }, HOOK_CALL },
-        {{ NULL, NULL, 0x44C7C0 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44CAD6 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44CCF5 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44CF6D }, HOOK_CALL },
-        {{ NULL, NULL, 0x44D0D4 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44D5F7 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44D789 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44DC55 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44E050 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44E14B }, HOOK_CALL },
-        {{ NULL, NULL, 0x44E2A3 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44E69D }, HOOK_CALL },
-        {{ NULL, NULL, 0x44E79E }, HOOK_CALL },
-        {{ NULL, NULL, 0x44EAA0 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44EBA5 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44EFD0 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44F0DC }, HOOK_CALL },
-        {{ NULL, NULL, 0x44F588 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44F7E2 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44FC1E }, HOOK_CALL },
-        {{ NULL, NULL, 0x44FDD4 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44FF10 }, HOOK_CALL },
-        {{ NULL, NULL, 0x450085 }, HOOK_CALL },
-        {{ NULL, NULL, 0x450269 }, HOOK_CALL },
+const CB_INSTALL_INFO<60> vglBegin_CB = {
+    &GraphicsCallbackHandler::vglBegin, {
+        INIT_CB_CALL( NULL, NULL, 0x448424 ), 
+        INIT_CB_CALL( NULL, NULL, 0x448697 ), 
+        INIT_CB_CALL( NULL, NULL, 0x448903 ), 
+        INIT_CB_CALL( NULL, NULL, 0x448BFD ), 
+        INIT_CB_CALL( NULL, NULL, 0x448DE4 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44902A ), 
+        INIT_CB_CALL( NULL, NULL, 0x4492A4 ), 
+        INIT_CB_CALL( NULL, NULL, 0x4494C3 ), 
+        INIT_CB_CALL( NULL, NULL, 0x4496A5 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44986B ), 
+        INIT_CB_CALL( NULL, NULL, 0x449A13 ), 
+        INIT_CB_CALL( NULL, NULL, 0x449BD9 ), 
+        INIT_CB_CALL( NULL, NULL, 0x449D82 ), 
+        INIT_CB_CALL( NULL, NULL, 0x449F67 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44A21C ), 
+        INIT_CB_CALL( NULL, NULL, 0x44A444 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44A629 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44A7EF ), 
+        INIT_CB_CALL( NULL, NULL, 0x44A997 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44AB5D ), 
+        INIT_CB_CALL( NULL, NULL, 0x44AD06 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44AECA ), 
+        INIT_CB_CALL( NULL, NULL, 0x44B0EC ), 
+        INIT_CB_CALL( NULL, NULL, 0x44B24B ), 
+        INIT_CB_CALL( NULL, NULL, 0x44B3B6 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44B557 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44B6F3 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44B8F1 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44BA8A ), 
+        INIT_CB_CALL( NULL, NULL, 0x44BC29 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44BE9C ), 
+        INIT_CB_CALL( NULL, NULL, 0x44C136 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44C40C ), 
+        INIT_CB_CALL( NULL, NULL, 0x44C64A ), 
+        INIT_CB_CALL( NULL, NULL, 0x44C7C0 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44CAD6 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44CCF5 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44CF6D ), 
+        INIT_CB_CALL( NULL, NULL, 0x44D0D4 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44D5F7 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44D789 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44DC55 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44E050 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44E14B ), 
+        INIT_CB_CALL( NULL, NULL, 0x44E2A3 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44E69D ), 
+        INIT_CB_CALL( NULL, NULL, 0x44E79E ), 
+        INIT_CB_CALL( NULL, NULL, 0x44EAA0 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44EBA5 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44EFD0 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44F0DC ), 
+        INIT_CB_CALL( NULL, NULL, 0x44F588 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44F7E2 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44FC1E ), 
+        INIT_CB_CALL( NULL, NULL, 0x44FDD4 ), 
+        INIT_CB_CALL( NULL, NULL, 0x44FF10 ), 
+        INIT_CB_CALL( NULL, NULL, 0x450085 ), 
+        INIT_CB_CALL( NULL, NULL, 0x450269 ), 
         // ------------------------------------
-        {{ NULL, NULL, 0x443B9D }, HOOK_CALL }, // dgRoadDecalInstance
-        {{ NULL, NULL, 0x57AC4A }, HOOK_CALL }, // ped LODs
-
-        // some multiplayer object
-        {{ NULL, NULL, 0x43DA66 }, HOOK_CALL },
-        {{ NULL, NULL, 0x43DAB9 }, HOOK_CALL },
-        {{ NULL, NULL, 0x43DB2F }, HOOK_CALL },
-        {{ NULL, NULL, 0x43DBD6 }, HOOK_CALL },
-        // ----------------------------------
+        INIT_CB_CALL( NULL, NULL, 0x443B9D ), // dgRoadDecalInstance
+        INIT_CB_CALL( NULL, NULL, 0x57AC4A ), // ped LODs
     }
 };
 
-const CB_INSTALL_INFO<64> vglSDLEnd_CB{
-    &GraphicsCallbackHandler::vglSDLEnd,
-    {
-        {{ NULL, NULL, 0x4485D3 }, HOOK_CALL },
-        {{ NULL, NULL, 0x448B82 }, HOOK_CALL },
-        {{ NULL, NULL, 0x448D8C }, HOOK_CALL },
-        {{ NULL, NULL, 0x448FB7 }, HOOK_CALL },
-        {{ NULL, NULL, 0x449219 }, HOOK_CALL },
-        {{ NULL, NULL, 0x449480 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44963E }, HOOK_CALL },
-        {{ NULL, NULL, 0x44983C }, HOOK_CALL },
-        {{ NULL, NULL, 0x4499D4 }, HOOK_CALL },
-        {{ NULL, NULL, 0x449BAA }, HOOK_CALL },
-        {{ NULL, NULL, 0x449D42 }, HOOK_CALL },
-        {{ NULL, NULL, 0x449F5A }, HOOK_CALL },
-        {{ NULL, NULL, 0x44A146 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44A3F8 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44A5BF }, HOOK_CALL },
-        {{ NULL, NULL, 0x44A7C0 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44A958 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44AB2E }, HOOK_CALL },
-        {{ NULL, NULL, 0x44ACC6 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44AEBC }, HOOK_CALL },
-        {{ NULL, NULL, 0x44B083 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44B23D }, HOOK_CALL },
-        {{ NULL, NULL, 0x44B394 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44B531 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44B6E1 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44B895 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44BA7C }, HOOK_CALL },
-        {{ NULL, NULL, 0x44BC03 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44BE8E }, HOOK_CALL },
-        {{ NULL, NULL, 0x44C118 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44C3EA }, HOOK_CALL },
-        {{ NULL, NULL, 0x44C638 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44C77A }, HOOK_CALL },
-        {{ NULL, NULL, 0x44C989 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44CC44 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44CE63 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44D04E }, HOOK_CALL },
-        {{ NULL, NULL, 0x44D403 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44D780 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44D8E9 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44E014 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44E131 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44E22C }, HOOK_CALL },
-        {{ NULL, NULL, 0x44E661 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44E785 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44E886 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44EB82 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44EDC3 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44F0B9 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44F316 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44F64C }, HOOK_CALL },
-        {{ NULL, NULL, 0x44FB9D }, HOOK_CALL },
-        {{ NULL, NULL, 0x44FD30 }, HOOK_CALL },
-        {{ NULL, NULL, 0x44FE4E }, HOOK_CALL },
-        {{ NULL, NULL, 0x44FFB3 }, HOOK_CALL },
-        {{ NULL, NULL, 0x450162 }, HOOK_CALL },
-        {{ NULL, NULL, 0x450390 }, HOOK_CALL },
-        {{ NULL, NULL, 0x45078C }, HOOK_CALL },
+const CB_INSTALL_INFO<60> vglSDLEnd_CB = {
+    &GraphicsCallbackHandler::vglSDLEnd, {
+        INIT_CB_CALL( NULL, NULL, 0x4485D3 ),
+        INIT_CB_CALL( NULL, NULL, 0x448B82 ),
+        INIT_CB_CALL( NULL, NULL, 0x448D8C ),
+        INIT_CB_CALL( NULL, NULL, 0x448FB7 ),
+        INIT_CB_CALL( NULL, NULL, 0x449219 ),
+        INIT_CB_CALL( NULL, NULL, 0x449480 ),
+        INIT_CB_CALL( NULL, NULL, 0x44963E ),
+        INIT_CB_CALL( NULL, NULL, 0x44983C ),
+        INIT_CB_CALL( NULL, NULL, 0x4499D4 ),
+        INIT_CB_CALL( NULL, NULL, 0x449BAA ),
+        INIT_CB_CALL( NULL, NULL, 0x449D42 ),
+        INIT_CB_CALL( NULL, NULL, 0x449F5A ),
+        INIT_CB_CALL( NULL, NULL, 0x44A146 ),
+        INIT_CB_CALL( NULL, NULL, 0x44A3F8 ),
+        INIT_CB_CALL( NULL, NULL, 0x44A5BF ),
+        INIT_CB_CALL( NULL, NULL, 0x44A7C0 ),
+        INIT_CB_CALL( NULL, NULL, 0x44A958 ),
+        INIT_CB_CALL( NULL, NULL, 0x44AB2E ),
+        INIT_CB_CALL( NULL, NULL, 0x44ACC6 ),
+        INIT_CB_CALL( NULL, NULL, 0x44AEBC ),
+        INIT_CB_CALL( NULL, NULL, 0x44B083 ),
+        INIT_CB_CALL( NULL, NULL, 0x44B23D ),
+        INIT_CB_CALL( NULL, NULL, 0x44B394 ),
+        INIT_CB_CALL( NULL, NULL, 0x44B531 ),
+        INIT_CB_CALL( NULL, NULL, 0x44B6E1 ),
+        INIT_CB_CALL( NULL, NULL, 0x44B895 ),
+        INIT_CB_CALL( NULL, NULL, 0x44BA7C ),
+        INIT_CB_CALL( NULL, NULL, 0x44BC03 ),
+        INIT_CB_CALL( NULL, NULL, 0x44BE8E ),
+        INIT_CB_CALL( NULL, NULL, 0x44C118 ),
+        INIT_CB_CALL( NULL, NULL, 0x44C3EA ),
+        INIT_CB_CALL( NULL, NULL, 0x44C638 ),
+        INIT_CB_CALL( NULL, NULL, 0x44C77A ),
+        INIT_CB_CALL( NULL, NULL, 0x44C989 ),
+        INIT_CB_CALL( NULL, NULL, 0x44CC44 ),
+        INIT_CB_CALL( NULL, NULL, 0x44CE63 ),
+        INIT_CB_CALL( NULL, NULL, 0x44D04E ),
+        INIT_CB_CALL( NULL, NULL, 0x44D403 ),
+        INIT_CB_CALL( NULL, NULL, 0x44D780 ),
+        INIT_CB_CALL( NULL, NULL, 0x44D8E9 ),
+        INIT_CB_CALL( NULL, NULL, 0x44E014 ),
+        INIT_CB_CALL( NULL, NULL, 0x44E131 ),
+        INIT_CB_CALL( NULL, NULL, 0x44E22C ),
+        INIT_CB_CALL( NULL, NULL, 0x44E661 ),
+        INIT_CB_CALL( NULL, NULL, 0x44E785 ),
+        INIT_CB_CALL( NULL, NULL, 0x44E886 ),
+        INIT_CB_CALL( NULL, NULL, 0x44EB82 ),
+        INIT_CB_CALL( NULL, NULL, 0x44EDC3 ),
+        INIT_CB_CALL( NULL, NULL, 0x44F0B9 ),
+        INIT_CB_CALL( NULL, NULL, 0x44F316 ),
+        INIT_CB_CALL( NULL, NULL, 0x44F64C ),
+        INIT_CB_CALL( NULL, NULL, 0x44FB9D ),
+        INIT_CB_CALL( NULL, NULL, 0x44FD30 ),
+        INIT_CB_CALL( NULL, NULL, 0x44FE4E ),
+        INIT_CB_CALL( NULL, NULL, 0x44FFB3 ),
+        INIT_CB_CALL( NULL, NULL, 0x450162 ),
+        INIT_CB_CALL( NULL, NULL, 0x450390 ),
+        INIT_CB_CALL( NULL, NULL, 0x45078C ),
         // ------------------------------------
-        {{ NULL, NULL, 0x443DCC }, HOOK_CALL }, // road decals
-        {{ NULL, NULL, 0x57AD41 }, HOOK_CALL }, // ped LODs
-
-        // some multiplayer object
-        {{ NULL, NULL, 0x43DAB0 }, HOOK_CALL },
-        {{ NULL, NULL, 0x43DB03 }, HOOK_CALL },
-        {{ NULL, NULL, 0x43DBB7 }, HOOK_CALL },
-        {{ NULL, NULL, 0x43DC61 }, HOOK_CALL },
-        // ----------------------------------
+        INIT_CB_CALL( NULL, NULL, 0x443DCC ), // road decals
+        INIT_CB_CALL( NULL, NULL, 0x57AD41 ), // ped LODs
     }
 };
 
@@ -763,10 +790,9 @@ void InstallCallbacks(MM2Version gameVersion) {
         case MM2_BETA_2:
         {
             // Make sure the betas never expire
-            const CB_INSTALL_INFO<1> trialTimeExpired_CB {
-                &ReturnNullOrZero,
-                {
-                    {{ 0x4011B0, 0x4012AC, NULL }, HOOK_CALL }
+            const CB_INSTALL_INFO<1> trialTimeExpired_CB = {
+                &ReturnNullOrZero, {
+                    INIT_CB_CALL( 0x4011B0, 0x4012AC, NULL ),
                 }
             };
 
@@ -775,20 +801,27 @@ void InstallCallbacks(MM2Version gameVersion) {
     }
 
     InstallGameCallback("ArchInit", gameVersion, archInit_CB);
-    InstallGameCallback("Tick", gameVersion, tick_CB);
     InstallGameCallback("ageDebug", gameVersion, ageDebug_CB);
 
     // not supported for betas yet
-    if (gameVersion == MM2_RETAIL)
-    {
+    if (gameVersion == MM2_RETAIL) {
         InstallGameCallback("AngelReadString", gameVersion, angelReadString_CB);
     }
 
-    InstallGameCallback("LoadAmbientSFX", gameVersion, loadAmbientSFX_CB);
-    InstallGameCallback("SendChatMessage", gameVersion, sendChatMsg_CB);
-    InstallGameCallback("SetSirenCSVName", gameVersion, sirenCSV_CB);
-    InstallGameCallback("vglBegin (PSDL)", gameVersion, vglSDLBegin_CB);
-    InstallGameCallback("vglEnd (PSDL)", gameVersion, vglSDLEnd_CB);
+    InstallGameCallback("vglBegin", gameVersion, vglBegin_CB);
+    InstallGameCallback("vglEnd", gameVersion, vglSDLEnd_CB);
+
+    InstallGameCallback("datTimeManager::Update", gameVersion, tick_CB);
+
+    InstallGameCallback("mmGame::SendChatMessage", gameVersion, sendChatMsg_CB);
+    InstallGameCallback("mmGameMusicData::LoadAmbientSFX", gameVersion, loadAmbientSFX_CB);
+
+    InstallGameCallback("vehCarAudioContainer::SetSirenCSVName", gameVersion, sirenCSV_CB);
+
+    // bridge/ferry fix for retail only
+    if (gameVersion == MM2_RETAIL) {
+        InstallGameCallback("gizBridge/gizFerry::Cull", gameVersion, bridgeFerryCull_CB);
+    }
 };
 
 //

@@ -47,7 +47,9 @@ public:
     };
     NOTHROW inline ~IMM2HookPtr();
 
-    inline void set_version(MM2Version gameVersion);
+    inline void set_version(MM2Version gameVersion) {
+        IHookPtr::operator=(addressData.addresses[gameVersion]);
+    };
 };
 
 template<typename TRet>
@@ -55,7 +57,8 @@ class MM2FnHook : public IMM2HookPtr {
 public:
     NOTHROW inline MM2FnHook(const MM2AddressData &addressData)
         : IMM2HookPtr(addressData) {};
-
+    NOTHROW inline MM2FnHook(DWORD addrBeta1, DWORD addrBeta2, DWORD addrRetail)
+        : IMM2HookPtr(MM2AddressData{ addrBeta1, addrBeta2, addrRetail }) {};
     NOTHROW inline MM2FnHook(MM2Version gameVersion, DWORD dwAddress)
         : IMM2HookPtr(gameVersion, dwAddress) {};
 
@@ -75,12 +78,12 @@ class MM2PtrHook : public IMM2HookPtr {
 public:
     NOTHROW inline MM2PtrHook(const MM2AddressData &addressData)
         : IMM2HookPtr(addressData) {};
-
+    NOTHROW inline MM2PtrHook(DWORD addrBeta1, DWORD addrBeta2, DWORD addrRetail)
+        : IMM2HookPtr(MM2AddressData{ addrBeta1, addrBeta2, addrRetail }) {};
     NOTHROW inline MM2PtrHook(MM2Version gameVersion, DWORD dwAddress)
         : IMM2HookPtr(gameVersion, dwAddress) {};
 
-    inline void set_ptr(TType value)
-    {
+    inline void set_ptr(TType value) {
         *static_cast<TType*>(lpAddr) = value;
     }
 
@@ -99,9 +102,11 @@ public:
             return ret;
         }
     };
-};
 
-#define INIT_DATA(b1,b2,r) ( MM2AddressData { b1, b2, r } )
+    inline TType* operator[](int index) const {
+        return &*(TType*)((char *)lpAddr + (index * sizeof(TType)));
+    };
+};
 
 namespace MM2 {
     void Printf(LPCSTR str, ...);
@@ -356,25 +361,7 @@ class CMidtownMadness2 : public CAGEGame {
 private:
     MM2Version m_gameVersion;
 protected:
-    PtrHook<HWND> hwndParent;
-
-    int Initialize() {
-        switch (m_gameVersion) {
-            case MM2_BETA_1:
-            {
-
-            } return HOOK_INIT_UNSUPPORTED;
-            case MM2_BETA_2:
-            {
-
-            } return HOOK_INIT_UNSUPPORTED;
-            case MM2_RETAIL:
-            {
-                hwndParent = 0x6830B8;
-            } return HOOK_INIT_OK;
-        }
-        return HOOK_INIT_FAILED;
-    };
+     MM2PtrHook<HWND> hwndParent = MM2PtrHook<HWND>( NULL, NULL, 0x6830B8 );
 public:
     CMidtownMadness2(int engineVersion);
     CMidtownMadness2(LPAGEGameInfo gameInfo);

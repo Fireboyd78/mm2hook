@@ -21,12 +21,24 @@ MM2Version EngineVersionToGameVersion(int engineVersion) {
     return MM2_INVALID;
 }
 
+static MM2Version g_game_version = MM2_INVALID; // current game version
+
 static int g_hook_idx = 0; // next index to use
 // global hook pool -- used to directly initialize pointers
 static LPVOID g_hook_ptrs[MAX_HOOK_PTRS];
 
+// sets the version to the proper game version
+static bool reset_hook(IMM2HookPtr *hook) {
+    if (g_game_version != MM2_INVALID) {
+        hook->set_version(g_game_version);
+        return true;
+    }
+    return false;
+};
+
 static void alloc_hook(IMM2HookPtr *hook) {
     if (g_hook_idx < MAX_HOOK_PTRS) {
+        reset_hook(hook); // try to update pointer
         g_hook_ptrs[g_hook_idx++] = hook;
     } else {
         MessageBox(NULL, "FATAL ERROR: No more hook pointers available!", "MM2Hook", MB_OK | MB_ICONERROR);
@@ -46,85 +58,83 @@ NOTHROW inline IMM2HookPtr::~IMM2HookPtr() {
     dealloc_hook(hook_idx);
 }
 
-inline void IMM2HookPtr::set_version(MM2Version gameVersion) {
-    IHookPtr::operator=(addressData.addresses[gameVersion]);
-}
+MM2FnHook<void>     lpPrintf                                ( NULL, NULL, 0x4C9720 );
+MM2FnHook<void>     lpMessagef                              ( NULL, NULL, 0x4C9750 );
+MM2FnHook<void>     lpDisplayf                              ( NULL, NULL, 0x4C9780 );
+MM2FnHook<void>     lpWarningf                              ( NULL, NULL, 0x4C97B0 );
+MM2FnHook<void>     lpErrorf                                ( NULL, NULL, 0x4C97E0 );
+MM2FnHook<void>     lpQuitf                                 ( NULL, NULL, 0x4C9810 );
+MM2FnHook<void>     lpAbortf                                ( NULL, NULL, 0x4C9850 );
 
-MM2FnHook<void>     lpPrintf                                INIT_DATA( NULL, NULL, 0x4C9720 );
-MM2FnHook<void>     lpMessagef                              INIT_DATA( NULL, NULL, 0x4C9750 );
-MM2FnHook<void>     lpDisplayf                              INIT_DATA( NULL, NULL, 0x4C9780 );
-MM2FnHook<void>     lpWarningf                              INIT_DATA( NULL, NULL, 0x4C97B0 );
-MM2FnHook<void>     lpErrorf                                INIT_DATA( NULL, NULL, 0x4C97E0 );
-MM2FnHook<void>     lpQuitf                                 INIT_DATA( NULL, NULL, 0x4C9810 );
-MM2FnHook<void>     lpAbortf                                INIT_DATA( NULL, NULL, 0x4C9850 );
+MM2FnHook<char *>   lpAngelReadString                       ( NULL, NULL, 0x534790 );
 
-MM2FnHook<char *>   lpAngelReadString                       INIT_DATA( NULL, NULL, 0x534790 );
+MM2FnHook<void>     lpaiMap_Dump                            ( NULL, NULL, 0x538840 );
+MM2PtrHook<aiMap>   lpAIMAP_ptr                             ( NULL, NULL, 0x6B2E10 );
 
-MM2FnHook<void>     lpaiMap_Dump                            INIT_DATA( NULL, NULL, 0x538840 );
-MM2PtrHook<aiMap>   lpAIMAP_ptr                             INIT_DATA( NULL, NULL, 0x6B2E10 );
+MM2FnHook<bool>     lpdatArgParser_Get                      ( NULL, NULL, 0x4C6190 );
+MM2FnHook<bool>     lpdatArgParser_Get_1                    ( NULL, NULL, 0x4C61C0 );
+MM2FnHook<bool>     lpdatArgParser_Get_2                    ( NULL, NULL, 0x4C6210 );
+MM2FnHook<bool>     lpdatArgParser_Get_3                    ( NULL, NULL, 0x4C6260 );
 
-MM2FnHook<bool>     lpdatArgParser_Get                      INIT_DATA( NULL, NULL, 0x4C6190 );
-MM2FnHook<bool>     lpdatArgParser_Get_1                    INIT_DATA( NULL, NULL, 0x4C61C0 );
-MM2FnHook<bool>     lpdatArgParser_Get_2                    INIT_DATA( NULL, NULL, 0x4C6210 );
-MM2FnHook<bool>     lpdatArgParser_Get_3                    INIT_DATA( NULL, NULL, 0x4C6260 );
+MM2FnHook<void>     lpdatAssetManager_FullPath              ( NULL, NULL, 0x4C55E0 );
+MM2FnHook<void>     lpdatAssetManager_FullPath_             ( NULL, NULL, 0x4C56F0 );
+MM2FnHook<bool>     lpdatAssetManager_Exists                ( NULL, NULL, 0x4C59B0 );
+MM2FnHook<bool>     lpdatAssetManager_Exists_               ( NULL, NULL, 0x4C59E0 );
 
-MM2FnHook<void>     lpdatAssetManager_FullPath              INIT_DATA( NULL, NULL, 0x4C55E0 );
-MM2FnHook<void>     lpdatAssetManager_FullPath_             INIT_DATA( NULL, NULL, 0x4C56F0 );
-MM2FnHook<bool>     lpdatAssetManager_Exists                INIT_DATA( NULL, NULL, 0x4C59B0 );
-MM2FnHook<bool>     lpdatAssetManager_Exists_               INIT_DATA( NULL, NULL, 0x4C59E0 );
+MM2FnHook<void>     lpdatOutput_CloseLog                    ( NULL, NULL, 0x4C9530 );
+MM2FnHook<bool>     lpdatOutput_OpenLog                     ( NULL, NULL, 0x4C9590 );
+MM2FnHook<void>     lpdatOutput_SetOutputMask               ( NULL, NULL, 0x4C95A0 );
 
-MM2FnHook<void>     lpdatOutput_CloseLog                    INIT_DATA( NULL, NULL, 0x4C9530 );
-MM2FnHook<bool>     lpdatOutput_OpenLog                     INIT_DATA( NULL, NULL, 0x4C9590 );
-MM2FnHook<void>     lpdatOutput_SetOutputMask               INIT_DATA( NULL, NULL, 0x4C95A0 );
+MM2FnHook<void>     lpdatTimeManager_Reset                  ( NULL, NULL, 0x4C6300 );
+MM2FnHook<void>     lpdatTimeManager_Update                 ( NULL, NULL, 0x4C6340 );
 
-MM2FnHook<void>     lpdatTimeManager_Reset                  INIT_DATA( NULL, NULL, 0x4C6300 );
-MM2FnHook<void>     lpdatTimeManager_Update                 INIT_DATA( NULL, NULL, 0x4C6340 );
-
-MM2FnHook<void>     lpmmHUD_SetMessage                      INIT_DATA( NULL, NULL, 0x42E1F0 );
-MM2FnHook<void>     lpmmHUD_SetMessage2                     INIT_DATA( NULL, NULL, 0x42E240 );
-MM2FnHook<void>     lpmmHUD_PostChatMessage                 INIT_DATA( NULL, NULL, 0x42D280 );
+MM2FnHook<void>     lpmmHUD_SetMessage                      ( NULL, NULL, 0x42E1F0 );
+MM2FnHook<void>     lpmmHUD_SetMessage2                     ( NULL, NULL, 0x42E240 );
+MM2FnHook<void>     lpmmHUD_PostChatMessage                 ( NULL, NULL, 0x42D280 );
 
 MM2PtrHook<mmGameManager *>
-                    lpmmGameManager_Instance                INIT_DATA( NULL, NULL, 0x5E0D08 );
+                    lpmmGameManager_Instance                ( NULL, NULL, 0x5E0D08 );
 
-MM2FnHook<bool>     lpmmGameMusicData_LoadAmbientSFX        INIT_DATA( NULL, NULL, 0x434060 );
+MM2FnHook<bool>     lpmmGameMusicData_LoadAmbientSFX        ( NULL, NULL, 0x434060 );
 
-MM2FnHook<int>      lpmmPopup_IsEnabled                     INIT_DATA( NULL, NULL, 0x42A280 );
-MM2FnHook<void>     lpmmPopup_Lock                          INIT_DATA( NULL, NULL, 0x42B4F0 );
-MM2FnHook<void>     lpmmPopup_Unlock                        INIT_DATA( NULL, NULL, 0x42B500 );
-MM2FnHook<void>     lpmmPopup_ProcessChat                   INIT_DATA( NULL, NULL, 0x42A400 );
+MM2FnHook<int>      lpmmPopup_IsEnabled                     ( NULL, NULL, 0x42A280 );
+MM2FnHook<void>     lpmmPopup_Lock                          ( NULL, NULL, 0x42B4F0 );
+MM2FnHook<void>     lpmmPopup_Unlock                        ( NULL, NULL, 0x42B500 );
+MM2FnHook<void>     lpmmPopup_ProcessChat                   ( NULL, NULL, 0x42A400 );
 
 #ifdef IO_EVENT_HOOK
-MM2FnHook<bool>     lpioEventQueue_Pop                      INIT_DATA( NULL, NULL, 0x4BA930 );
-MM2FnHook<bool>     lpioEventQueue_Peek                     INIT_DATA( NULL, NULL, 0x4BA980 );
-MM2FnHook<void>     lpioEventQueue_Queue                    INIT_DATA( NULL, NULL, 0x4BA9D0 );
-MM2FnHook<void>     lpioEventQueue_Command                  INIT_DATA( NULL, NULL, 0x4BAA50 );
+MM2FnHook<bool>     lpioEventQueue_Pop                      ( NULL, NULL, 0x4BA930 );
+MM2FnHook<bool>     lpioEventQueue_Peek                     ( NULL, NULL, 0x4BA980 );
+MM2FnHook<void>     lpioEventQueue_Queue                    ( NULL, NULL, 0x4BA9D0 );
+MM2FnHook<void>     lpioEventQueue_Command                  ( NULL, NULL, 0x4BAA50 );
 #endif
 
-MM2FnHook<void>     lpvehCarAudioCtr_SetSirenCSVName        INIT_DATA( NULL, NULL, 0x4D0C80 );
-
-int InitializeMM2(MM2Version gameVersion) {
-    IMM2HookPtr *hook;
-    int i = 0;
-
-    LogFile::WriteLine("Initializing MM2 hooks...");
-
-    while ((hook = (IMM2HookPtr*)g_hook_ptrs[i++]) != NULL)
-        hook->set_version(gameVersion);
-
-    LogFile::Format(" - nHooks: %d\n", i + 1);
-
-    return (i > 0) ? HOOK_INIT_OK : HOOK_INIT_UNSUPPORTED;
-}
+MM2FnHook<void>     lpvehCarAudioCtr_SetSirenCSVName        ( NULL, NULL, 0x4D0C80 );
 
 CMidtownMadness2::CMidtownMadness2(int engineVersion)
     : CAGEGame(engineVersion) {
     this->m_gameVersion = EngineVersionToGameVersion(engineVersion);
+
+    // game version for hook system to use
+    g_game_version = m_gameVersion;
     
-    // try to initialize manager and hooks
-    if (this->Initialize() != HOOK_INIT_OK ||
-        InitializeMM2(this->m_gameVersion) != HOOK_INIT_OK) {
-        LogFile::WriteLine("WARNING: No supported hooks were found for this game version. Crashes may occur.");
+    // try to initialize hooks
+    IMM2HookPtr *hook;
+
+    int i = 0;
+    int numHooks = 0;
+
+    LogFile::WriteLine("Initializing MM2 hooks...");
+
+    while ((hook = (IMM2HookPtr*)g_hook_ptrs[i++]) != NULL) {
+        if (reset_hook(hook))
+            ++numHooks;
+    }
+
+    LogFile::Format(" - numHooks: %d\n", numHooks);
+
+    if (numHooks == 0) {
+        LogFile::WriteLine("WARNING: No supported hooks were found for this game version. Crashes may occur!");
     }
 }
 
@@ -133,8 +143,8 @@ CMidtownMadness2::CMidtownMadness2(LPAGEGameInfo gameEntry)
 
 namespace MM2
 {
-    MM2PtrHook<char>  szCityName                            INIT_DATA(NULL, NULL, 0x6B167C);
-    MM2PtrHook<char>  szCityName2                           INIT_DATA(NULL, NULL, 0x6B16A4);
+    MM2PtrHook<char>  szCityName                            ( NULL, NULL, 0x6B167C );
+    MM2PtrHook<char>  szCityName2                           ( NULL, NULL, 0x6B16A4 );
 
     DEFINE_PRINT_HOOK(Printf, lpPrintf);
     DEFINE_PRINT_HOOK(Messagef, lpMessagef);
