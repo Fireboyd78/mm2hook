@@ -58,6 +58,16 @@ constexpr inline TR* getPtr(const TC *p, int offset) {
     return (TR*)getPtr((LPVOID)p, offset);
 };
 
+template <typename TV>
+constexpr inline void setPtr(LPVOID p, int offset, TV value) {
+    *(TV*)((BYTE*)p + offset) = value;
+};
+
+template <class TC, typename TV>
+constexpr inline void setPtr(const TC *p, int offset, TV value) {
+    *(TV*)((BYTE*)p + offset) = value;
+};
+
 //
 // Pointer macros for assembler directives
 //
