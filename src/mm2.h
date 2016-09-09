@@ -83,7 +83,11 @@ public:
     NOTHROW inline MM2PtrHook(MM2Version gameVersion, DWORD dwAddress)
         : IMM2HookPtr(gameVersion, dwAddress) {};
 
-    inline void set_ptr(TType value) {
+    inline bool is_null(void) const {
+        return (lpAddr == nullptr);
+    }
+
+    inline void set(TType value) {
         *static_cast<TType*>(lpAddr) = value;
     }
 
@@ -92,15 +96,8 @@ public:
     };
 
     inline operator TType() const {
-        if (lpAddr == NULL)
-        {
-            return NULL;
-        }
-        else
-        {
-            TType ret = *static_cast<TType*>(lpAddr);
-            return ret;
-        }
+        // used to check for null, but there should be a check instead.
+        return *static_cast<TType*>(lpAddr);
     };
 
     inline TType* operator[](int index) const {
@@ -311,6 +308,47 @@ namespace MM2 {
     class vehCarAudioContainer {
     public:
         static void SetSirenCSVName(LPCSTR name);
+    };
+
+    struct Matrix34 {
+    public:
+        float m11;
+        float m12;
+        float m13;
+        float m14;
+
+        float m21;
+        float m22;
+        float m23;
+        float m24;
+
+        float m31;
+        float m32;
+        float m33;
+        float m34;
+    };
+
+    struct Matrix44 {
+    public:
+        float m11;
+        float m12;
+        float m13;
+        float m14;
+
+        float m21;
+        float m22;
+        float m23;
+        float m24;
+
+        float m31;
+        float m32;
+        float m33;
+        float m34;
+
+        float m41;
+        float m42;
+        float m43;
+        float m44;
     };
 
     struct Vector2 {

@@ -2,8 +2,10 @@
 
 LPFNDIRECTINPUTCREATE lpDICreate;
 
-// Export as 'DirectInputCreateA' so we can hook into MM2
+// Export as 'DirectInputCreateA/W' so we can hook into MM2
+// (Apparently DirectInputCreateW gets called sometimes...)
 #pragma comment(linker, "/EXPORT:DirectInputCreateA=_DirectInputCreateA_Impl")
+#pragma comment(linker, "/EXPORT:DirectInputCreateW=_DirectInputCreateA_Impl")
 HRESULT NAKED DirectInputCreateA_Impl(HINSTANCE hinst, DWORD dwVersion, LPVOID *ppDI, LPUNKNOWN punkOuter)
 {
     _asm jmp DWORD PTR ds:lpDICreate
@@ -61,10 +63,53 @@ struct PATCH_INSTALL_INFO {
     MM2AddressData addrData[count];
 };
 
+template<int count = 1>
+struct VT_INSTALL_INFO {
+    static const int length = count;
+
+    CB_HANDLER dwHookAddr;
+    MM2AddressData addrData[count];
+};
+
 #define INIT_CB_DATA(type, addr1, addr2, addr3) {{ addr1, addr2, addr3 }, type }
 
 #define INIT_CB_CALL(addr1, addr2, addr3) INIT_CB_DATA(HOOK_CALL, addr1, addr2, addr3)
 #define INIT_CB_JUMP(addr1, addr2, addr3) INIT_CB_DATA(HOOK_JMP, addr1, addr2, addr3)
+
+template<int count>
+inline bool InstallVTableHook(LPCSTR name, MM2Version gameVersion, const VT_INSTALL_INFO<count> &data) {
+    return InstallVTableHook(name, gameVersion, (LPVOID)&data, data.length);
+}
+
+bool InstallVTableHook(LPCSTR name, MM2Version gameVersion, LPVOID lpData, int count) {
+    LogFile::Format(" - Installing V-Table hook: '%s'...\n", name);
+
+    auto info = (VT_INSTALL_INFO<>*)lpData;
+
+    if (count == 0) {
+        LogFile::WriteLine(" - ERROR! Data is empty!");
+        return false;
+    }
+
+    int progress = 0;
+
+    for (int i = 0; i < count; i++) {
+        auto addr = info->addrData[i].addresses[gameVersion];
+
+        LogFile::Format("  - [%d] %08X => %08X : ", (i + 1), addr, info->dwHookAddr);
+
+        if (addr != NULL)
+        {
+            InstallVTHook(addr, info->dwHookAddr);
+            LogFile::WriteLine("OK");
+
+            progress++;
+        } else LogFile::WriteLine("Not supported");
+    }
+
+    bool success = (progress > 0);
+    return success;
+}
 
 template<int size, int count>
 inline bool InstallGamePatch(LPCSTR name, MM2Version gameVersion, const PATCH_INSTALL_INFO<size, count> &data) {
@@ -123,7 +168,7 @@ bool InstallGameCallback(LPCSTR cb_name, MM2Version gameVersion, LPVOID lpCallba
         auto data = cb_info->cb_data[i];
         auto addr = data.addr_data.addresses[gameVersion];
 
-        LogFile::Format("  - [%d/%d]: %08X => %08X : ", (i + 1), count, addr, cb);
+        LogFile::Format("  - [%d]: %08X => %08X : ", (i + 1), addr, cb);
 
         if (addr != NULL && InstallCallbackHook(addr, cb, (data.type == HOOK_CALL)))
         {
@@ -337,10 +382,10 @@ MM2PtrHook<MM2::cityTimeWeatherLighting>
 
 MM2PtrHook<UINT32> vglCurrentColor ( NULL, NULL, 0x661974 );
 
-MM2FnHook<void> pfnvglBegin     ( NULL, NULL, 0x4A5500 );
-MM2FnHook<void> pfnvglEnd       ( NULL, NULL, 0x4A5A90 );
+MM2FnHook<void> $vglBegin     ( NULL, NULL, 0x4A5500 );
+MM2FnHook<void> $vglEnd       ( NULL, NULL, 0x4A5A90 );
 
-MM2FnHook<UINT32> pfnsdlPage16_GetShadedColor ( NULL, NULL, 0x450880 );
+MM2FnHook<UINT32> $sdlPage16_GetShadedColor ( NULL, NULL, 0x450880 );
 
 UINT32 vglColor;
 UINT32 vglCalculatedColor = 0xFFFFFFFF;
@@ -413,7 +458,7 @@ UINT32 CalculateShadedColor(int color) {
     vglResultColor.g = (char)(vglShadedColor.Y * 255.999);
     vglResultColor.b = (char)(vglShadedColor.Z * 255.999);
 
-    return pfnsdlPage16_GetShadedColor(color, *(int*)&vglResultColor);
+    return $sdlPage16_GetShadedColor(color, *(int*)&vglResultColor);
 }
 
 class GraphicsCallbackHandler
@@ -424,19 +469,19 @@ public:
 
         // calculate a nice shaded color ;)
         vglCalculatedColor = CalculateShadedColor(vglColor);
-        vglCurrentColor.set_ptr(vglCalculatedColor);
+        vglCurrentColor.set(vglCalculatedColor);
 
-        pfnvglBegin(gfxMode, p1);
+        $vglBegin(gfxMode, p1);
     }
 
-    static void vglSDLEnd(void) {
+    static void vglEnd(void) {
         // restore color
-        vglCurrentColor.set_ptr(vglColor);
-        pfnvglEnd();
+        vglCurrentColor.set(vglColor);
+        $vglEnd();
     }
 };
 
-MM2FnHook<void> pfndgBangerInstance_Draw ( NULL, NULL, 0x4415E0 );
+MM2FnHook<void> $dgBangerInstance_Draw ( NULL, NULL, 0x4415E0 );
 
 class BridgeFerryCallbackHandler
 {
@@ -451,8 +496,38 @@ public:
     }
 
     void Draw(int lod) {
-        pfndgBangerInstance_Draw(this, lod);
+        $dgBangerInstance_Draw(this, lod);
     }
+};
+
+MM2FnHook<void> $asLinearCS_Update ( NULL, NULL, 0x4A3370);
+
+static MM2::Matrix34 sm_DashOffset;
+
+class mmDashViewCallbackHandler
+{
+public:
+    void UpdateCS() {
+        auto dashCam = getPtr<MM2::Matrix34>(this, 0x18);
+
+        // apply an offset (mainly doing this from CheatEngine, etc.)
+        dashCam->m11 += sm_DashOffset.m11;
+        dashCam->m12 += sm_DashOffset.m12;
+        dashCam->m13 += sm_DashOffset.m13;
+        dashCam->m14 += sm_DashOffset.m14;
+
+        dashCam->m21 += sm_DashOffset.m21;
+        dashCam->m22 += sm_DashOffset.m22;
+        dashCam->m23 += sm_DashOffset.m23;
+        dashCam->m24 += sm_DashOffset.m24;
+
+        dashCam->m31 += sm_DashOffset.m31;
+        dashCam->m32 += sm_DashOffset.m32;
+        dashCam->m33 += sm_DashOffset.m33;
+        dashCam->m34 += sm_DashOffset.m34;
+
+        $asLinearCS_Update(this);
+    };
 };
 
 /*
@@ -537,8 +612,8 @@ bool HookFramework(MM2Version gameVersion) {
     if (gameVersion == MM2_INVALID || gameVersion > MM2_NUM_VERSIONS)
         return false;
 
-    vtResumeSampling.set_ptr((DWORD)&HookStartup);
-    vtPauseSampling.set_ptr((DWORD)&HookShutdown);
+    vtResumeSampling.set((DWORD)&HookStartup);
+    vtPauseSampling.set((DWORD)&HookShutdown);
 
     return true;
 };
@@ -551,57 +626,15 @@ const PATCH_INSTALL_INFO<1, 3> chatSize_patch = {
     }
 };
 
-// stop bridges/ferrys from culling (TEMPORARY HACK VERY BAD!!!)
-//const PATCH_INSTALL_INFO<3, 2> bridgeFerryCull_patch = {
-//    {   (char)0xC2,
-//        (char)0x04,
-//        (char)0x00
-//    }, {
-//        { NULL, NULL, 0x577940 }, // gizBridge::Cull
-//        { NULL, NULL, 0x579540 } // gizFerry::Cull
-//    }
-//};
-
-CB_INSTALL_INFO<2> bridgeFerryCull_CB = {
-    &BridgeFerryCallbackHandler::Cull, {
-        INIT_CB_CALL( NULL, NULL, 0x5780BC ), // gizBridgeMgr::Cull
-        INIT_CB_CALL( NULL, NULL, 0x5798F0 ), // gizFerryMgr::Cull
-    }
-};
-
-PATCH_INSTALL_INFO<4, 2> bridgeFerryDraw_patch = {
-    { 0 }, {
-        { NULL, NULL, 0x5B5FB8 }, // gizBridge::Draw
-        { NULL, NULL, 0x5B61AC } // gizFerry::Draw
-    } 
-};
-
-PATCH_INSTALL_INFO<4, 2> bridgeFerryIsVisible_patch = {
-    { 0 },{
-        { NULL, NULL, 0x5B5F94 }, // gizBridge::IsVisible
-        { NULL, NULL, 0x5B6188 } // gizFerry::IsVisible
-    }
-};
-
 void InstallPatches(MM2Version gameVersion) {
     LogFile::WriteLine("Installing patches...");
 
     InstallGamePatch("Increase chat buffer size", gameVersion, chatSize_patch);
-
-    // Angel somehow f$%!ed this up in the retail, but was fine in beta1/2...LOL
-    if (gameVersion == MM2_RETAIL)
-    {
-        // compiler forces me to do this crap :/
-        auto fnBridgeFerryDraw = &BridgeFerryCallbackHandler::Draw;
-        auto fnBridgeFerryIsVisible = &BridgeFerryCallbackHandler::IsVisible;
-
-        *(DWORD*)bridgeFerryDraw_patch.buffer = *(DWORD*)&fnBridgeFerryDraw;
-        *(DWORD*)bridgeFerryIsVisible_patch.buffer = *(DWORD*)&fnBridgeFerryIsVisible;
-
-        InstallGamePatch("Fix bridge/ferry rendering [1/2]", gameVersion, bridgeFerryDraw_patch);
-        InstallGamePatch("Fix bridge/ferry rendering [2/2]", gameVersion, bridgeFerryIsVisible_patch);
-    }
 };
+
+/*
+    Callbacks
+*/
 
 // Replaces a call to ArchInit (a null function) just before ExceptMain
 // This is PERFECT for initializing everything before the game even starts!
@@ -715,8 +748,8 @@ const CB_INSTALL_INFO<60> vglBegin_CB = {
     }
 };
 
-const CB_INSTALL_INFO<60> vglSDLEnd_CB = {
-    &GraphicsCallbackHandler::vglSDLEnd, {
+const CB_INSTALL_INFO<60> vglEnd_CB = {
+    &GraphicsCallbackHandler::vglEnd, {
         INIT_CB_CALL( NULL, NULL, 0x4485D3 ),
         INIT_CB_CALL( NULL, NULL, 0x448B82 ),
         INIT_CB_CALL( NULL, NULL, 0x448D8C ),
@@ -781,8 +814,39 @@ const CB_INSTALL_INFO<60> vglSDLEnd_CB = {
     }
 };
 
+const CB_INSTALL_INFO<2> bridgeFerryCull_CB = {
+    &BridgeFerryCallbackHandler::Cull,{
+        INIT_CB_CALL(NULL, NULL, 0x5780BC), // gizBridgeMgr::Cull
+        INIT_CB_CALL(NULL, NULL, 0x5798F0), // gizFerryMgr::Cull
+    }
+};
+
+const CB_INSTALL_INFO<1> mmDashView_UpdateCS_CB = {
+    &mmDashViewCallbackHandler::UpdateCS ,{
+        INIT_CB_CALL( NULL, NULL, 0x430F87 ), // replaces call to asLinearCS::Update
+    }
+};
+
+/*
+    Virtual Table hooks
+*/
+
+const VT_INSTALL_INFO<2> bridgeFerryDraw_VT = {
+    &BridgeFerryCallbackHandler::Draw,{
+        { NULL, NULL, 0x5B5FB8 }, // gizBridge::Draw
+        { NULL, NULL, 0x5B61AC } // gizFerry::Draw
+    }
+};
+
+const VT_INSTALL_INFO<2> bridgeFerryIsVisible_VT = {
+    &BridgeFerryCallbackHandler::IsVisible,{
+        { NULL, NULL, 0x5B5F94 }, // gizBridge::IsVisible
+        { NULL, NULL, 0x5B6188 } // gizFerry::IsVisible
+    }
+};
+
 void InstallCallbacks(MM2Version gameVersion) {
-    LogFile::WriteLine("Installing callbacks...");
+    LogFile::WriteLine("Installing callbacks / virtual tables...");
 
     switch (gameVersion)
     {
@@ -809,7 +873,7 @@ void InstallCallbacks(MM2Version gameVersion) {
     }
 
     InstallGameCallback("vglBegin", gameVersion, vglBegin_CB);
-    InstallGameCallback("vglEnd", gameVersion, vglSDLEnd_CB);
+    InstallGameCallback("vglEnd", gameVersion, vglEnd_CB);
 
     InstallGameCallback("datTimeManager::Update", gameVersion, tick_CB);
 
@@ -820,8 +884,14 @@ void InstallCallbacks(MM2Version gameVersion) {
 
     // bridge/ferry fix for retail only
     if (gameVersion == MM2_RETAIL) {
-        InstallGameCallback("gizBridge/gizFerry::Cull", gameVersion, bridgeFerryCull_CB);
+        InstallGameCallback("Bridge/Ferry: Cull", gameVersion, bridgeFerryCull_CB);
+
+        InstallVTableHook("Bridge/Ferry: IsVisible", gameVersion, bridgeFerryIsVisible_VT);
+        InstallVTableHook("Bridge/Ferry: Draw", gameVersion, bridgeFerryDraw_VT);
     }
+
+    // dashboard testing
+    InstallGameCallback("mmDashView::Update", gameVersion, mmDashView_UpdateCS_CB);
 };
 
 //
