@@ -878,7 +878,7 @@ void InstallCallbacks(MM2Version gameVersion) {
     }
 
     // dashboard testing
-    InstallGameCallback("mmDashView::Update", gameVersion, mmDashView_UpdateCS_CB);
+    InstallGameCallback("mmDashView::Update [EXPERIMENTAL]", gameVersion, mmDashView_UpdateCS_CB);
 };
 
 //
