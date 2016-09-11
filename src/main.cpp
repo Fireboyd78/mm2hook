@@ -486,13 +486,9 @@ MM2FnHook<void> $dgBangerInstance_Draw ( NULL, NULL, 0x4415E0 );
 class BridgeFerryCallbackHandler
 {
 public:
-    int IsVisible() {
-        return (int)*getPtr<char>(this, 0x1B);
-    }
-
     void Cull(int lod) {
         // wtf
-        setPtr(this, 0x1B, (char)++lod);
+        //setPtr(this, 0x1B, (char)++lod);
     }
 
     void Draw(int lod) {
@@ -838,13 +834,6 @@ const VT_INSTALL_INFO<2> bridgeFerryDraw_VT = {
     }
 };
 
-const VT_INSTALL_INFO<2> bridgeFerryIsVisible_VT = {
-    &BridgeFerryCallbackHandler::IsVisible,{
-        { NULL, NULL, 0x5B5F94 }, // gizBridge::IsVisible
-        { NULL, NULL, 0x5B6188 } // gizFerry::IsVisible
-    }
-};
-
 void InstallCallbacks(MM2Version gameVersion) {
     LogFile::WriteLine("Installing callbacks / virtual tables...");
 
@@ -885,8 +874,6 @@ void InstallCallbacks(MM2Version gameVersion) {
     // bridge/ferry fix for retail only
     if (gameVersion == MM2_RETAIL) {
         InstallGameCallback("Bridge/Ferry: Cull", gameVersion, bridgeFerryCull_CB);
-
-        InstallVTableHook("Bridge/Ferry: IsVisible", gameVersion, bridgeFerryIsVisible_VT);
         InstallVTableHook("Bridge/Ferry: Draw", gameVersion, bridgeFerryDraw_VT);
     }
 
