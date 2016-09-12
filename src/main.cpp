@@ -25,14 +25,14 @@ enum CB_HOOK_TYPE {
     HOOK_CALL
 };
 
-struct CB_HANDLER {
+struct FN_PTR {
     const LPVOID lpHandler;
 
     template<typename T>
-    constexpr CB_HANDLER(T *test) : lpHandler((LPVOID)(*(DWORD*)&test)) {};
+    constexpr FN_PTR(T *test) : lpHandler((LPVOID)(*(DWORD*)&test)) {};
 
     template<class TT, typename T>
-    constexpr CB_HANDLER(T(TT::*test)) : lpHandler((LPVOID)(*(DWORD*)&test)) {};
+    constexpr FN_PTR(T(TT::*test)) : lpHandler((LPVOID)(*(DWORD*)&test)) {};
 
     constexpr operator LPVOID() const {
         return lpHandler;
@@ -47,7 +47,7 @@ template<int size = 1>
 struct CB_INSTALL_INFO {
     static const int length = size;
 
-    CB_HANDLER cb_proc;
+    FN_PTR cb_proc;
     struct {
         MM2AddressData addr_data;
         CB_HOOK_TYPE type;
@@ -67,7 +67,7 @@ template<int count = 1>
 struct VT_INSTALL_INFO {
     static const int length = count;
 
-    CB_HANDLER dwHookAddr;
+    FN_PTR dwHookAddr;
     MM2AddressData addrData[count];
 };
 
