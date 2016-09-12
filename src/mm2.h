@@ -63,12 +63,12 @@ public:
         : IMM2HookPtr(gameVersion, dwAddress) {};
 
     template<typename ...TArgs>
-    inline TRet operator()(TArgs ...args) {
+    inline TRet operator()(TArgs ...args) const {
         return static_cast<TRet(__cdecl *)(TArgs...)>(lpAddr)(args...);
     };
 
     template<typename ...TArgs, class TThis>
-    inline TRet operator()(const TThis &&This, TArgs ...args) {
+    inline TRet operator()(const TThis &&This, TArgs ...args) const {
         return static_cast<TRet(__thiscall *)(const TThis, TArgs...)>(lpAddr)(This, args...);
     };
 };
@@ -117,19 +117,46 @@ namespace MM2 {
     char * AngelReadString(UINT stringId);
 
     class aiMap {
+    protected:
+        static MM2FnHook<void>     $Dump;
+        static MM2PtrHook<aiMap>   $AIMAP;
     public:
-        static void Dump(void);
+        static void Dump(void) {
+            const aiMap* This = $AIMAP;
+            $Dump(&*This);
+        };
     };
 
     class datArgParser {
+    protected:
+        static MM2FnHook<bool> $Get_$1;
+        static MM2FnHook<bool> $Get_$2;
+        static MM2FnHook<bool> $Get_$3;
+        static MM2FnHook<bool> $Get_$4;
     public:
-        static bool Get(LPCSTR arg);
-        static bool Get(LPCSTR arg, UINT index, int *out);
-        static bool Get(LPCSTR arg, UINT index, float *out);
-        static bool Get(LPCSTR arg, UINT index, LPCSTR *out);
+        static bool Get(LPCSTR arg) {
+            return $Get_$1(arg);
+        };
+
+        static bool Get(LPCSTR arg, UINT index, int *out) {
+            return $Get_$2(arg, index, out);
+        };
+
+        static bool Get(LPCSTR arg, UINT index, float *out) {
+            return $Get_$3(arg, index, out);
+        };
+
+        static bool Get(LPCSTR arg, UINT index, LPCSTR *out) {
+            return $Get_$4(arg, index, out);
+        };
     };
 
     class datAssetManager {
+    protected:
+        static MM2FnHook<void> $FullPath_$1;
+        static MM2FnHook<void> $FullPath_$2;
+        static MM2FnHook<bool> $Exists_$1;
+        static MM2FnHook<bool> $Exists_$2;
     public:
         /* TODO?
         static Stream * Open(char const *,char const *,bool,bool);
@@ -138,34 +165,62 @@ namespace MM2 {
         static Stream * Create(char const *,char const *,char const *,bool);
         */
 
-        static void FullPath(char *buffer, int length, LPCSTR directory, LPCSTR filename);
-        static void FullPath(char *buffer, int length, LPCSTR directory, LPCSTR filename, LPCSTR extension);
+        static void FullPath(char *buffer, int length, LPCSTR directory, LPCSTR filename) {
+            $FullPath_$1(buffer, length, directory, filename);
+        };
+
+        static void FullPath(char *buffer, int length, LPCSTR directory, LPCSTR filename, LPCSTR extension) {
+            $FullPath_$2(buffer, length, directory, filename, extension);
+        };
 
         // these don't work for files outside of archives
-        static bool Exists(LPCSTR directory, LPCSTR filename);
-        static bool Exists(LPCSTR directory, LPCSTR filename, LPCSTR extension);
+        static bool Exists(LPCSTR directory, LPCSTR filename) {
+            return $Exists_$1(directory, filename);
+        };
+
+        static bool Exists(LPCSTR directory, LPCSTR filename, LPCSTR extension) {
+            return $Exists_$2(directory, filename, extension);
+        };
     };
 
     class datOutput {
+    protected:
+        static MM2FnHook<void> $CloseLog;
+        static MM2FnHook<bool> $OpenLog;
+        static MM2FnHook<void> $SetOutputMask;
     public:
-        static bool OpenLog(LPCSTR filename);
-        static void CloseLog(void);
+        static bool OpenLog(LPCSTR filename) {
+            return $OpenLog(filename);
+        };
+
+        static void CloseLog(void) {
+            $CloseLog();
+        };
 
         /* TODO: Add these?
         static void SetBeforeMsgBoxFunction(void(__cdecl *lpFunc)(void));
         static void SetAfterMsgBoxFunction(void(__cdecl *lpFunc)(void));
         */
 
-        static void SetOutputMask(UINT mask);
+        static void SetOutputMask(UINT mask) {
+            $SetOutputMask(mask);
+        };
     };
 
     class datTimeManager {
+    protected:
+        static MM2FnHook<void> $Reset;
+        static MM2FnHook<void> $Update;
     public:
-        static void Reset(void);
-        static void Update(void);
+        static void Reset(void) {
+            $Reset();
+        };
+
+        static void Update(void) {
+            $Update();
+        };
     };
 
-#ifdef IO_EVENT_HOOK
     struct ioEvent {
         enum ioEventType
         {
@@ -189,13 +244,28 @@ namespace MM2 {
     };
 
     class ioEventQueue {
+    protected:
+        static MM2FnHook<bool> $Pop;
+        static MM2FnHook<bool> $Peek;
+        static MM2FnHook<void> $Queue;
+        static MM2FnHook<void> $Command;
     public:
-        static bool Pop(ioEvent *outEvent);
-        static bool Peek(ioEvent *outEvent, int *idx);
-        static void Queue(ioEvent::ioEventType type, int x, int y, int value);
-        static void Command(void *command);
+        static bool Pop(ioEvent *outEvent) {
+            $Pop(outEvent);
+        };
+
+        static bool Peek(ioEvent *outEvent, int *idx) {
+            $Peek(outEvent, idx);
+        };
+
+        static void Queue(ioEvent::ioEventType type, int x, int y, int value) {
+            $Queue(type, x, y, value);
+        };
+
+        static void Command(void *command) {
+            $Command(command);
+        };
     };
-#endif
 
     // forward declarations
     extern class mmCar;
@@ -255,18 +325,33 @@ namespace MM2 {
     };
 
     class mmGameMusicData {
+    protected:
+        static MM2FnHook<bool> $LoadAmbientSFX;
     public:
-        bool LoadAmbientSFX(LPCSTR name);
+        bool LoadAmbientSFX(LPCSTR name) {
+            return $LoadAmbientSFX(this, name);
+        };
     };
 
     class mmHUD {
     private:
         byte _buffer[0xB9C]; // unconfirmed
+    protected:
+        static MM2FnHook<void> $SetMessage;
+        static MM2FnHook<void> $SetMessage2;
+        static MM2FnHook<void> $PostChatMessage;
     public:
-        void SetMessage(THIS_ LPCSTR message, float duration, int p2);
-        void SetMessage2(THIS_ LPCSTR message);
+        void SetMessage(THIS_ LPCSTR message, float duration, int p2) {
+            $SetMessage(this, message, duration, p2);
+        };
 
-        void PostChatMessage(THIS_ LPCSTR message);
+        void SetMessage2(THIS_ LPCSTR message) {
+            $SetMessage2(this, message);
+        };
+
+        void PostChatMessage(THIS_ LPCSTR message) {
+            $PostChatMessage(this, message);
+        };
     };
 
     class mmPlayer {
@@ -289,25 +374,43 @@ namespace MM2 {
         // TODO...
     private:
         byte _buffer[0x60];
+    protected:
+        static MM2FnHook<int>  $IsEnabled;
+        static MM2FnHook<void> $Lock;
+        static MM2FnHook<void> $Unlock;
+        static MM2FnHook<void> $ProcessChat;
     public:
         inline mmGame* getGame(void) const {
             return *getPtr<mmGame*>(this, 0x18);
         };
 
-        int IsEnabled(THIS_ void);
+        int IsEnabled(THIS_ void) {
+            return $IsEnabled(this);
+        };
 
-        void Lock(THIS_ void);
-        void Unlock(THIS_ void);
+        void Lock(THIS_ void) {
+            $Lock(this);
+        };
+
+        void Unlock(THIS_ void) {
+            $Unlock(this);
+        };
         
-        void ProcessChat(THIS_ void);
+        void ProcessChat(THIS_ void) {
+            $ProcessChat(this);
+        };
     };
 
     extern MM2PtrHook<char>  szCityName;
     extern MM2PtrHook<char>  szCityName2;
 
     class vehCarAudioContainer {
+    protected:
+        static MM2FnHook<void> $SetSirenCSVName;
     public:
-        static void SetSirenCSVName(LPCSTR name);
+        static void SetSirenCSVName(LPCSTR name) {
+            $SetSirenCSVName(name);
+        };
     };
 
     struct Matrix34 {
@@ -399,7 +502,7 @@ class CMidtownMadness2 : public CAGEGame {
 private:
     MM2Version m_gameVersion;
 protected:
-     MM2PtrHook<HWND> hwndParent = MM2PtrHook<HWND>( NULL, NULL, 0x6830B8 );
+    MM2PtrHook<HWND> hwndParent = { 0x64993C, 0x681B00, 0x6830B8 };
 public:
     CMidtownMadness2(int engineVersion);
     CMidtownMadness2(LPAGEGameInfo gameInfo);

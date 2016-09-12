@@ -812,8 +812,8 @@ const CB_INSTALL_INFO<60> vglEnd_CB = {
 
 const CB_INSTALL_INFO<2> bridgeFerryCull_CB = {
     &BridgeFerryCallbackHandler::Cull,{
-        INIT_CB_CALL(NULL, NULL, 0x5780BC), // gizBridgeMgr::Cull
-        INIT_CB_CALL(NULL, NULL, 0x5798F0), // gizFerryMgr::Cull
+        INIT_CB_CALL( NULL, NULL, 0x5780BC ), // gizBridgeMgr::Cull
+        INIT_CB_CALL( NULL, NULL, 0x5798F0 ), // gizFerryMgr::Cull
     }
 };
 
