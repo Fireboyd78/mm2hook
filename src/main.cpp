@@ -279,6 +279,8 @@ public:
     }
 };
 
+MM2FnHook<void> $CreateGameMutex ( NULL, NULL, 0x402180 );
+
 FILE *ageLog;
 
 LPCSTR ageLogFile = "AGE.log";
@@ -287,6 +289,15 @@ char ageDebug_buffer[1024] = { NULL };
 
 class CallbackHandler {
 public:
+    static void CreateGameMutex(LPCSTR lpName) {
+        if (MM2::datArgParser::Get("nomutex")) {
+            LogFile::WriteLine("Game mutex disabled.");
+            return;
+        }
+
+        $CreateGameMutex(lpName);
+    };
+
     bool LoadAmbientSFX(LPCSTR name) {
         LPCSTR szAmbientSFX = NULL;
 
@@ -765,6 +776,12 @@ const CB_INSTALL_INFO<1> mmDashView_UpdateCS_CB = {
     }
 };
 
+const CB_INSTALL_INFO<1> createGameMutex_CB = {
+    &CallbackHandler::CreateGameMutex, {
+        INIT_CB_CALL( NULL, NULL, 0x40128D ),
+    }
+};
+
 /*
     Virtual Table hooks
 */
@@ -792,6 +809,11 @@ void InstallCallbacks(MM2Version gameVersion) {
             };
 
             InstallGameCallback("TrialTimeExpired", gameVersion, trialTimeExpired_CB);
+        } break;
+        case MM2_RETAIL:
+        {
+            // mutex was introduced in retail
+            InstallGameCallback("CreateGameMutex", gameVersion, createGameMutex_CB);
         } break;
     }
 
