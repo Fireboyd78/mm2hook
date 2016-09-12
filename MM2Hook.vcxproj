@@ -233,6 +233,7 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
+  <!-- Get MM2 directory if config file present -->
   <Target Name="GetMM2Dir" BeforeTargets="MakeDInputDLL">
     <PropertyGroup>
       <CfgFilename>mm2.cfg</CfgFilename>
@@ -247,7 +248,6 @@
     <PropertyGroup>
       <TargetPath_PDB>$(TargetDir)$(TargetName).pdb</TargetPath_PDB>
       <DITargetDir>$(OutDir)out\</DITargetDir>
-      <DITargetDir Condition="'$(MM2Directory)' != ''">$(MM2Directory)</DITargetDir>
       <DITargetName>dinput</DITargetName>
     </PropertyGroup>
     <ItemGroup>
@@ -260,7 +260,14 @@
       <Output ItemName="Changed" TaskParameter="CopiedFiles" />
     </Copy>
     <Message Text="  - %(Changed.Identity)" Importance="high" />
-    <Message Text="Files copied to Midtown Madness 2 directory." Importance="high" Condition="'$(MM2Directory)' != ''" />
+  </Target>
+  <!-- Move compiled files to MM2 directory (if applicable) -->
+  <Target Name="CopyDInputFiles" AfterTargets="MakeDInputDLL" Condition="'$(MM2Directory)' != ''">
+    <ItemGroup>
+      <DITargetFiles Include="$(DITargetDir)*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(DITargetFiles)" DestinationFiles="@(DITargetFiles->'$(MM2Directory)%(Filename)%(Extension)')" />
+    <Message Text="Sucessfully copied files to Midtown Madness 2 directory ($(MM2Directory))" Importance="high" />
   </Target>
   <!-- MSBuild makes this waaaay too difficult, can't this be done some other way? -->
   <Target Name="MoveLuaASMFiles" AfterTargets="MakeDInputDLL">
