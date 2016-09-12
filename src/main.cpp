@@ -615,7 +615,7 @@ bool HookFramework(MM2Version gameVersion) {
 };
 
 const PATCH_INSTALL_INFO<1, 3> chatSize_patch = {
-    { 80 }, {
+    { 60 }, {
         { NULL, NULL, 0x4E68B5 },
         { NULL, NULL, 0x4E68B9 },
         { NULL, NULL, 0x50BBCF }
