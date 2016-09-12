@@ -811,14 +811,14 @@ const CB_INSTALL_INFO<60> vglEnd_CB = {
 };
 
 const CB_INSTALL_INFO<2> bridgeFerryCull_CB = {
-    &BridgeFerryCallbackHandler::Cull,{
+    &BridgeFerryCallbackHandler::Cull, {
         INIT_CB_CALL( NULL, NULL, 0x5780BC ), // gizBridgeMgr::Cull
         INIT_CB_CALL( NULL, NULL, 0x5798F0 ), // gizFerryMgr::Cull
     }
 };
 
 const CB_INSTALL_INFO<1> mmDashView_UpdateCS_CB = {
-    &mmDashViewCallbackHandler::UpdateCS ,{
+    &mmDashViewCallbackHandler::UpdateCS, {
         INIT_CB_CALL( NULL, NULL, 0x430F87 ), // replaces call to asLinearCS::Update
     }
 };
@@ -828,7 +828,7 @@ const CB_INSTALL_INFO<1> mmDashView_UpdateCS_CB = {
 */
 
 const VT_INSTALL_INFO<2> bridgeFerryDraw_VT = {
-    &BridgeFerryCallbackHandler::Draw,{
+    &BridgeFerryCallbackHandler::Draw, {
         { NULL, NULL, 0x5B5FB8 }, // gizBridge::Draw
         { NULL, NULL, 0x5B61AC } // gizFerry::Draw
     }
