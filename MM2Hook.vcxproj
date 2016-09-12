@@ -233,11 +233,21 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
+  <Target Name="GetMM2Dir" BeforeTargets="MakeDInputDLL">
+    <PropertyGroup>
+      <CfgFilename>mm2.cfg</CfgFilename>
+    </PropertyGroup>
+    <ReadLinesFromFile File="$(CfgFilename)" Condition="Exists('$(CfgFilename)')">
+      <Output PropertyName="MM2Directory" TaskParameter="Lines" />
+    </ReadLinesFromFile>
+    <Message Text="Found directory configuration file." Importance="high" Condition="'$(MM2Directory)' != ''" />
+  </Target>
   <!-- DirectInput target settings -->
   <Target Name="MakeDInputDLL" AfterTargets="Build">
     <PropertyGroup>
       <TargetPath_PDB>$(TargetDir)$(TargetName).pdb</TargetPath_PDB>
       <DITargetDir>$(OutDir)out\</DITargetDir>
+      <DITargetDir Condition="'$(MM2Directory)' != ''">$(MM2Directory)</DITargetDir>
       <DITargetName>dinput</DITargetName>
     </PropertyGroup>
     <ItemGroup>
@@ -250,6 +260,7 @@
       <Output ItemName="Changed" TaskParameter="CopiedFiles" />
     </Copy>
     <Message Text="  - %(Changed.Identity)" Importance="high" />
+    <Message Text="Files copied to Midtown Madness 2 directory." Importance="high" Condition="'$(MM2Directory)' != ''" />
   </Target>
   <!-- MSBuild makes this waaaay too difficult, can't this be done some other way? -->
   <Target Name="MoveLuaASMFiles" AfterTargets="MakeDInputDLL">
