@@ -117,6 +117,21 @@
     </Link>
   </ItemDefinitionGroup>
   <!--
+    Shared files
+  -->
+  <ItemGroup>
+    <ClInclude Include="src\common.h" />
+    <ClInclude Include="src\hook.h" />
+    <ClInclude Include="src\logfile.h" />
+    <ClInclude Include="src\patch.h" />
+    <ClInclude Include="src\util.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\logfile.cpp" />
+    <ClCompile Include="src\patch.cpp" />
+    <ClCompile Include="src\util.cpp" />
+  </ItemGroup>
+  <!--
     MM2HookLoader files
   -->
   <ItemGroup>

@@ -17,10 +17,11 @@
 #include "util.h"
 #include "logfile.h"
 
-// Lua 5.3.2 embedded
-#include <lua/lua.hpp>
-
-#include <LuaIntf/LuaIntf.h>
+#ifdef _LUA_EMBED
+  // Lua 5.3.2 embedded
+  #include <lua/lua.hpp>
+  #include <LuaIntf/LuaIntf.h>
+#endif // !_LUA_EMBED
 
 //  warning C4091: '__declspec(novtable)': ignored on left of 'x' when no variable is declared
 #pragma warning (disable : 4091)
