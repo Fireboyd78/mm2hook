@@ -58,56 +58,15 @@ NOTHROW inline IMM2HookPtr::~IMM2HookPtr() {
     dealloc_hook(hook_idx);
 }
 
-MM2FnHook<void>     $Printf                                 { NULL, NULL, 0x4C9720 };
-MM2FnHook<void>     $Messagef                               { NULL, NULL, 0x4C9750 };
-MM2FnHook<void>     $Displayf                               { NULL, NULL, 0x4C9780 };
-MM2FnHook<void>     $Warningf                               { NULL, NULL, 0x4C97B0 };
-MM2FnHook<void>     $Errorf                                 { NULL, NULL, 0x4C97E0 };
-MM2FnHook<void>     $Quitf                                  { NULL, NULL, 0x4C9810 };
-MM2FnHook<void>     $Abortf                                 { NULL, NULL, 0x4C9850 };
+MM2FnHook<void> $Printf                 ( NULL, NULL, 0x4C9720 );
+MM2FnHook<void> $Messagef               ( NULL, NULL, 0x4C9750 );
+MM2FnHook<void> $Displayf               ( NULL, NULL, 0x4C9780 );
+MM2FnHook<void> $Warningf               ( NULL, NULL, 0x4C97B0 );
+MM2FnHook<void> $Errorf                 ( NULL, NULL, 0x4C97E0 );
+MM2FnHook<void> $Quitf                  ( NULL, NULL, 0x4C9810 );
+MM2FnHook<void> $Abortf                 ( NULL, NULL, 0x4C9850 );
 
-MM2FnHook<char *>   $AngelReadString                        { NULL, NULL, 0x534790 };
-
-MM2FnHook<void>     aiMap::$Dump                            { NULL, NULL, 0x538840 };
-MM2PtrHook<aiMap>   aiMap::$AIMAP                           { NULL, NULL, 0x6B2E10 };
-
-MM2FnHook<bool>     datArgParser::$Get_$1                   { NULL, NULL, 0x4C6190 };
-MM2FnHook<bool>     datArgParser::$Get_$2                   { NULL, NULL, 0x4C61C0 };
-MM2FnHook<bool>     datArgParser::$Get_$3                   { NULL, NULL, 0x4C6210 };
-MM2FnHook<bool>     datArgParser::$Get_$4                   { NULL, NULL, 0x4C6260 };
-
-MM2FnHook<void>     datAssetManager::$FullPath_$1           { NULL, NULL, 0x4C55E0 };
-MM2FnHook<void>     datAssetManager::$FullPath_$2           { NULL, NULL, 0x4C56F0 };
-MM2FnHook<bool>     datAssetManager::$Exists_$1             { NULL, NULL, 0x4C59B0 };
-MM2FnHook<bool>     datAssetManager::$Exists_$2             { NULL, NULL, 0x4C59E0 };
-
-MM2FnHook<void>     datOutput::$CloseLog                    { NULL, NULL, 0x4C9530 };
-MM2FnHook<bool>     datOutput::$OpenLog                     { NULL, NULL, 0x4C9590 };
-MM2FnHook<void>     datOutput::$SetOutputMask               { NULL, NULL, 0x4C95A0 };
-
-MM2FnHook<void>     datTimeManager::$Reset                  { NULL, NULL, 0x4C6300 };
-MM2FnHook<void>     datTimeManager::$Update                 { NULL, NULL, 0x4C6340 };
-
-MM2FnHook<void>     mmHUD::$SetMessage                      { NULL, NULL, 0x42E1F0 };
-MM2FnHook<void>     mmHUD::$SetMessage2                     { NULL, NULL, 0x42E240 };
-MM2FnHook<void>     mmHUD::$PostChatMessage                 { NULL, NULL, 0x42D280 };
-
-MM2PtrHook<mmGameManager *>
-                    lpmmGameManager_Instance                { NULL, NULL, 0x5E0D08 };
-
-MM2FnHook<bool>     mmGameMusicData::$LoadAmbientSFX        { NULL, NULL, 0x434060 };
-
-MM2FnHook<int>      mmPopup::$IsEnabled                     { NULL, NULL, 0x42A280 };
-MM2FnHook<void>     mmPopup::$Lock                          { NULL, NULL, 0x42B4F0 };
-MM2FnHook<void>     mmPopup::$Unlock                        { NULL, NULL, 0x42B500 };
-MM2FnHook<void>     mmPopup::$ProcessChat                   { NULL, NULL, 0x42A400 };
-
-MM2FnHook<bool>     ioEventQueue::$Pop                      { NULL, NULL, 0x4BA930 };
-MM2FnHook<bool>     ioEventQueue::$Peek                     { NULL, NULL, 0x4BA980 };
-MM2FnHook<void>     ioEventQueue::$Queue                    { NULL, NULL, 0x4BA9D0 };
-MM2FnHook<void>     ioEventQueue::$Command                  { NULL, NULL, 0x4BAA50 };
-
-MM2FnHook<void>     vehCarAudioContainer::$SetSirenCSVName  { NULL, NULL, 0x4D0C80 };
+MM2FnHook<char *>   $AngelReadString    ( NULL, NULL, 0x534790 );
 
 CMidtownMadness2::CMidtownMadness2(int engineVersion)
     : CAGEGame(engineVersion) {
@@ -155,8 +114,4 @@ namespace MM2
     char * AngelReadString(UINT stringId) {
         return $AngelReadString(stringId);
     }
-}
-
-MM2PtrHook<mmGameManager*> mmGameManager::Instance(void) {
-    return lpmmGameManager_Instance;
 }
