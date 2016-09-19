@@ -4,9 +4,9 @@ LPFNDIRECTINPUTCREATE lpDICreate;
 
 // Export as 'DirectInputCreateA/W' so we can hook into MM2
 // (Apparently DirectInputCreateW gets called sometimes...)
-#pragma comment(linker, "/EXPORT:DirectInputCreateA=_DirectInputCreateA_Impl")
-#pragma comment(linker, "/EXPORT:DirectInputCreateW=_DirectInputCreateA_Impl")
-HRESULT NAKED DirectInputCreateA_Impl(HINSTANCE hinst, DWORD dwVersion, LPVOID *ppDI, LPUNKNOWN punkOuter)
+#pragma comment(linker, "/EXPORT:DirectInputCreateA=_DirectInputCreateImpl")
+#pragma comment(linker, "/EXPORT:DirectInputCreateW=_DirectInputCreateImpl")
+HRESULT NAKED DirectInputCreateImpl(HINSTANCE hinst, DWORD dwVersion, LPVOID *ppDI, LPUNKNOWN punkOuter)
 {
     _asm jmp dword ptr ds:lpDICreate
 }
@@ -41,11 +41,6 @@ struct ClassRegistration
     };
 };
 
-template<class T>
-ClassRegistration<T>& RegisterHookClass(LPCSTR name) {
-    return ClassRegistration<T>(name);
-};
-
 struct MyTestClass {
 public:
     void MyTestThing(int p1, bool p2) {
@@ -75,7 +70,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
                 LogFile::WriteLine("Loader has successfully injected into DirectInputCreateA.");
 
                 // TESTING
-                RegisterHookClass<MyTestClass>("MyTestClass")
+                ClassRegistration<MyTestClass>("MyTestClass")
                     .AddFunction(&MyTestClass::MyTestThing, "MyTestThing");
 
                 /*

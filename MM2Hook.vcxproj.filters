@@ -119,8 +119,14 @@
     <ClInclude Include="src\patch.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\mm2_utils.h">
+      <Filter>Source Files\mm2</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mm2_stream.h">
+      <Filter>Source Files\mm2</Filter>
+    </ClInclude>
     <ClInclude Include="src\mm2_lua.h">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\mm2</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -226,8 +232,11 @@
     <ClCompile Include="src\patch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\mm2_stream.cpp">
+      <Filter>Source Files\mm2</Filter>
+    </ClCompile>
     <ClCompile Include="src\mm2_lua.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\mm2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -235,9 +244,6 @@
       <Filter>Source Files\AGE</Filter>
     </ClInclude>
     <ClInclude Include="src\mm2.h">
-      <Filter>Source Files\mm2</Filter>
-    </ClInclude>
-    <ClInclude Include="src\stream.h">
       <Filter>Source Files\mm2</Filter>
     </ClInclude>
     <ClInclude Include="src\common.h">
@@ -258,9 +264,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\mm2.cpp">
-      <Filter>Source Files\mm2</Filter>
-    </ClCompile>
-    <ClCompile Include="src\stream.cpp">
       <Filter>Source Files\mm2</Filter>
     </ClCompile>
     <ClCompile Include="src\main.cpp">

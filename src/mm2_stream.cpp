@@ -1,4 +1,4 @@
-#include "stream.h"
+#include "mm2_stream.h"
 
 MM2FnHook<void>     lpStream_DumpOpenFiles                  ( NULL, NULL, 0x4C9970 );
 MM2FnHook<Stream*>  lpStream_Open                           ( NULL, NULL, 0x4C99C0 );

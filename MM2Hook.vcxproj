@@ -214,8 +214,9 @@
     <ClInclude Include="src\main.h" />
     <ClInclude Include="src\mm2.h" />
     <ClInclude Include="src\mm2_lua.h" />
+    <ClInclude Include="src\mm2_utils.h" />
+    <ClInclude Include="src\mm2_stream.h" />
     <ClInclude Include="src\patch.h" />
-    <ClInclude Include="src\stream.h" />
     <ClInclude Include="src\util.h" />
   </ItemGroup>
   <ItemGroup>
@@ -225,8 +226,8 @@
     </ClCompile>
     <ClCompile Include="src\mm2.cpp" />
     <ClCompile Include="src\mm2_lua.cpp" />
+    <ClCompile Include="src\mm2_stream.cpp" />
     <ClCompile Include="src\patch.cpp" />
-    <ClCompile Include="src\stream.cpp" />
     <ClCompile Include="src\util.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
