@@ -507,7 +507,7 @@ public:
     }
 };
 
-MM2FnHook<void> $asLinearCS_Update ( NULL, NULL, 0x4A3370);
+MM2FnHook<void> $asLinearCS_Update ( NULL, NULL, 0x4A3370 );
 
 static MM2::Matrix34 sm_DashOffset;
 
@@ -534,6 +534,25 @@ public:
         dashCam->m34 += sm_DashOffset.m34;
 
         $asLinearCS_Update(this);
+    };
+};
+
+MM2FnHook<void> $memSafeHeap_Init ( NULL, NULL, 0x577210 );
+
+int g_heapSize = 128;
+
+class memSafeHeapCallbackHandler
+{
+public:
+    void Init(void *memAllocator, unsigned int heapSize, bool p3, bool p4, bool checkAlloc) {
+        MM2::datArgParser::Get("heapsize", 0, &g_heapSize);
+
+        // fast way of expanding to the proper size
+        // same as ((g_heapSize * 1024) * 1024)
+        heapSize = (g_heapSize << 20);
+
+        LogFile::Format("memSafeHeap::Init -- Allocating %dMB heap (%d bytes)\n", g_heapSize, heapSize);
+        return $memSafeHeap_Init(this, memAllocator, heapSize, p3, p4, checkAlloc);
     };
 };
 
@@ -667,6 +686,12 @@ const CB_INSTALL_INFO<1> angelReadString_CB = {
     &CallbackHandler::AngelReadString, {
         // NOTE: Completely overrides AngelReadString!
         INIT_CB_JUMP( NULL, NULL, 0x534790 ),
+    }
+};
+
+const CB_INSTALL_INFO<1> memSafeHeapInit_CB = {
+    &memSafeHeapCallbackHandler::Init, {
+        INIT_CB_CALL( NULL, NULL, 0x4015DD ),
     }
 };
 
@@ -819,6 +844,8 @@ void InstallCallbacks(MM2Version gameVersion) {
 
     InstallGameCallback("ArchInit", gameVersion, archInit_CB);
     InstallGameCallback("ageDebug", gameVersion, ageDebug_CB);
+
+    InstallGameCallback("memSafeHeap::Init [Heap fix]", gameVersion, memSafeHeapInit_CB);
 
     // not supported for betas yet
     if (gameVersion == MM2_RETAIL) {
