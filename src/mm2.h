@@ -50,16 +50,12 @@ class CMidtownMadness2 : public CAGEGame {
 private:
     MM2Version m_gameVersion;
 protected:
-    MM2PtrHook<HWND> hwndParent = { 0x64993C, 0x681B00, 0x6830B8 };
+    MM2PtrHook<HWND> hwndMain { 0x64993C, 0x681B00, 0x6830B8 };
 public:
     CMidtownMadness2(int engineVersion);
     CMidtownMadness2(LPAGEGameInfo gameInfo);
 
-    NOINLINE MM2Version GetGameVersion() const {
-        return m_gameVersion;
-    };
-
-    NOINLINE static bool GetGameInfo(AGEGameInfo &ppGameInfo) {
+    static bool GetGameInfo(AGEGameInfo &ppGameInfo) {
         for (auto info : g_mm2_info)
         {
             if (info.offset == 0)
@@ -74,7 +70,11 @@ public:
         return false;
     };
 
-    NOINLINE HWND GetMainWindowHwnd() const {
-        return hwndParent;
+    MM2Version GetGameVersion() const {
+        return m_gameVersion;
+    };
+
+    HWND GetMainWindowHwnd() const {
+        return hwndMain;
     };
 };
