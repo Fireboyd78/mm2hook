@@ -14,6 +14,14 @@
 
 #include <ShlObj.h>
 
+/*
+    Yeah because it's not like GetClassName would ever be used anywhere...*stares at Microsoft*
+*/
+#ifdef GetClassName
+#define WINUSER_GetClassName GetClassName
+#undef GetClassName
+#endif
+
 #include "util.h"
 #include "logfile.h"
 

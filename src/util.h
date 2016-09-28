@@ -33,6 +33,15 @@
 #define FNPTR_THISCALL(t,m)     FNPTR_(t,__thiscall,m)
 
 //
+// Macros for classes with virtual tables
+//
+
+#define PUSH_VTABLE_(x)         DWORD x = *(DWORD*)this
+#define POP_VTABLE_(x)          *(DWORD*)this = x
+#define PUSH_VTABLE()           PUSH_VTABLE_(vtbl)
+#define POP_VTABLE()            POP_VTABLE_(vtbl)
+
+//
 // Pointer macros for data types
 //
 

@@ -75,6 +75,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <CompileAs>Default</CompileAs>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -234,6 +235,7 @@
     </ClCompile>
     <ClCompile Include="src\mm2.cpp" />
     <ClCompile Include="src\mm2_ai.cpp" />
+    <ClCompile Include="src\mm2_base.cpp" />
     <ClCompile Include="src\mm2_city.cpp" />
     <ClCompile Include="src\mm2_data.cpp" />
     <ClCompile Include="src\mm2_game.cpp" />
