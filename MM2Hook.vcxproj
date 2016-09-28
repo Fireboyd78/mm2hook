@@ -240,6 +240,7 @@
     <ClCompile Include="src\mm2_input.cpp" />
     <ClCompile Include="src\mm2_lua.cpp" />
     <ClCompile Include="src\mm2_stream.cpp" />
+    <ClCompile Include="src\mm2_utils.cpp" />
     <ClCompile Include="src\mm2_vehicle.cpp" />
     <ClCompile Include="src\patch.cpp" />
     <ClCompile Include="src\util.cpp" />

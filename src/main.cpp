@@ -16,180 +16,102 @@ CMidtownMadness2 *pMM2;
 WNDPROC hProcOld;
 LRESULT APIENTRY WndProcNew(HWND, UINT, WPARAM, LPARAM);
 
+bool isWindowSubclassed = false;
+bool isConsoleOpen = false;
+
+// ==========================
+// Game-related properties
+// ==========================
+
+/* AGE Debugging */
+
+FILE *ageLog;
+
+LPCSTR ageLogFile = "AGE.log";
+bool ageDebugEnabled = false;
+char ageDebug_buffer[1024] = { NULL };
+
+/* Heap fix */
+
+int g_heapSize = 128;
+
+/* PSDL shading fix */
+
+const double cosNum = 1.570796;
+
+UINT32 vglColor;
+UINT32 vglCalculatedColor = 0xFFFFFFFF;
+
+MM2::Vector3 vglAmbient;
+MM2::Vector3 vglKeyColor;
+MM2::Vector3 vglFill1Color;
+MM2::Vector3 vglFill2Color;
+MM2::Vector3 vglShadedColor;
+
+/* ARGB color */
+struct {
+    char b;
+    char g;
+    char r;
+    char a;
+} vglResultColor = {
+    (char)0,
+    (char)0,
+    (char)0,
+    (char)255,
+};
+
+/* Dashboard experiment */
+
+static MM2::Matrix34 sm_DashOffset;
+
+// ==========================
+// Function hooks
+// ==========================
+
+MM2FnHook<void> $CreateGameMutex            ( NULL, NULL, 0x402180 );
+
+MM2FnHook<void> $dgBangerInstance_Draw      ( NULL, NULL, 0x4415E0 );
+
+MM2FnHook<UINT32> $sdlPage16_GetShadedColor ( NULL, NULL, 0x450880 );
+
+MM2FnHook<void> $asLinearCS_Update          ( NULL, NULL, 0x4A3370 );
+
 /*
-    Game patching functions
+    TODO: Move VGL stuff to a separate file?
 */
 
-enum CB_HOOK_TYPE {
-    HOOK_JMP,
-    HOOK_CALL
-};
+MM2FnHook<void> $vglBegin                   ( NULL, NULL, 0x4A5500 );
+MM2FnHook<void> $vglEnd                     ( NULL, NULL, 0x4A5A90 );
 
-struct FN_PTR {
-    const LPVOID lpHandler;
+MM2FnHook<void> $memSafeHeap_Init           ( NULL, NULL, 0x577210 );
 
-    template<typename T>
-    constexpr FN_PTR(T *test) : lpHandler((LPVOID)(*(DWORD*)&test)) {};
+// ==========================
+// Pointer hooks
+// ==========================
 
-    template<class TT, typename T>
-    constexpr FN_PTR(T(TT::*test)) : lpHandler((LPVOID)(*(DWORD*)&test)) {};
+MM2PtrHook<MM2::cityTimeWeatherLighting> 
+                $TIMEWEATHER                ( NULL, NULL, 0x6299A8 );
 
-    constexpr operator LPVOID() const {
-        return lpHandler;
-    };
+MM2PtrHook<int> $timeOfDay                  ( NULL, NULL, 0x62B068 );
 
-    constexpr operator DWORD() const {
-        return reinterpret_cast<DWORD>(lpHandler);
-    };
-};
+MM2PtrHook<UINT32> $vglCurrentColor         ( NULL, NULL, 0x661974 );
 
-template<int size = 1>
-struct CB_INSTALL_INFO {
-    static const int length = size;
+/*
+    !! THESE ARE ABSOLUTELY CRITICAL TO THE HOOK WORKING PROPERLY !!
+*/
 
-    FN_PTR cb_proc;
-    struct {
-        MM2AddressData addr_data;
-        CB_HOOK_TYPE type;
-    } cb_data[size];
-};
-
-template<int size = 1, int count = 1>
-struct PATCH_INSTALL_INFO {
-    static const int length = count;
-    static const int buffer_size = size;
-
-    char buffer[size];
-    MM2AddressData addrData[count];
-};
-
-template<int count = 1>
-struct VT_INSTALL_INFO {
-    static const int length = count;
-
-    FN_PTR dwHookAddr;
-    MM2AddressData addrData[count];
-};
-
-#define INIT_CB_DATA(type, addr1, addr2, addr3) {{ addr1, addr2, addr3 }, type }
-
-#define INIT_CB_CALL(addr1, addr2, addr3) INIT_CB_DATA(HOOK_CALL, addr1, addr2, addr3)
-#define INIT_CB_JUMP(addr1, addr2, addr3) INIT_CB_DATA(HOOK_JMP, addr1, addr2, addr3)
-
-template<int count>
-inline bool InstallVTableHook(LPCSTR name, MM2Version gameVersion, const VT_INSTALL_INFO<count> &data) {
-    return InstallVTableHook(name, gameVersion, (LPVOID)&data, data.length);
-}
-
-bool InstallVTableHook(LPCSTR name, MM2Version gameVersion, LPVOID lpData, int count) {
-    LogFile::Format(" - Installing V-Table hook: '%s'...\n", name);
-
-    auto info = (VT_INSTALL_INFO<>*)lpData;
-
-    if (count == 0) {
-        LogFile::WriteLine(" - ERROR! Data is empty!");
-        return false;
-    }
-
-    int progress = 0;
-
-    for (int i = 0; i < count; i++) {
-        auto addr = info->addrData[i].addresses[gameVersion];
-
-        LogFile::Format("  - [%d] %08X => %08X : ", (i + 1), addr, info->dwHookAddr);
-
-        if (addr != NULL)
-        {
-            InstallVTHook(addr, info->dwHookAddr);
-            LogFile::WriteLine("OK");
-
-            progress++;
-        } else LogFile::WriteLine("Not supported");
-    }
-
-    bool success = (progress > 0);
-    return success;
-}
-
-template<int size, int count>
-inline bool InstallGamePatch(LPCSTR name, MM2Version gameVersion, const PATCH_INSTALL_INFO<size, count> &data) {
-    return InstallGamePatch(name, gameVersion, (LPVOID)&data, data.buffer_size, data.length);
-}
-
-bool InstallGamePatch(LPCSTR name, MM2Version gameVersion, LPVOID lpData, int buffer_size, int count) {
-    LogFile::Format(" - Installing patch: '%s'...\n", name);
-
-    auto info = (PATCH_INSTALL_INFO<>*)lpData;
-
-    if (count == 0 || buffer_size == 0) {
-        LogFile::WriteLine(" - ERROR! Data is empty!");
-        return false;
-    }
-
-    int progress = 0;
-
-    for (int i = 0; i < count; i++) {
-        auto addr = info->addrData[i].addresses[gameVersion];
-
-        LogFile::Format("  - [%d] %08X => %08X : ", (i + 1), addr, (BYTE*)&info->buffer);
-
-        if (addr != NULL)
-        {
-            InstallPatch(addr, (BYTE*)&info->buffer, buffer_size);
-            LogFile::WriteLine("OK");
-
-            progress++;
-        } else LogFile::WriteLine("Not supported");
-    }
-
-    bool success = (progress > 0);
-    return success;
-}
-
-template<int size>
-inline bool InstallGameCallback(LPCSTR cb_name, MM2Version gameVersion, const CB_INSTALL_INFO<size> &cb) {
-    return InstallGameCallback(cb_name, gameVersion, (LPVOID)&cb, cb.length);
-}
-
-bool InstallGameCallback(LPCSTR cb_name, MM2Version gameVersion, LPVOID lpCallback, int count) {
-    LogFile::Format(" - Installing callback: '%s'...\n", cb_name);
-
-    if (count == 0) {
-        LogFile::WriteLine(" - ERROR! Address data is empty!");
-        return false;
-    }
-
-    auto cb_info = (CB_INSTALL_INFO<>*)lpCallback;
-
-    const DWORD cb = cb_info->cb_proc;
-    int progress = 0;
-
-    for (int i = 0; i < count; i++) {
-        auto data = cb_info->cb_data[i];
-        auto addr = data.addr_data.addresses[gameVersion];
-
-        LogFile::Format("  - [%d]: %08X => %08X : ", (i + 1), addr, cb);
-
-        if (addr != NULL && InstallCallbackHook(addr, cb, (data.type == HOOK_CALL)))
-        {
-            LogFile::WriteLine("OK");
-            progress++;
-        } else LogFile::WriteLine("Not supported");
-    }
-
-    bool success = (progress > 0);
-    return success;
-}
+MM2PtrHook<DWORD> $__VtResumeSampling       ( 0x5C86B8, 0x5DF710, 0x5E0CC4 );
+MM2PtrHook<DWORD> $__VtPauseSampling        ( 0x5C86C8, 0x5DF724, 0x5E0CD8 );
+MM2PtrHook<BOOL> $gameClosing               ( 0x667DEC, 0x6B0150, 0x6B1708 );
 
 /*
     ===========================================================================
 */
 
-bool isWindowSubclassed = false;
-bool isConsoleOpen = false;
-
 bool SubclassGameWindow(HWND gameWnd, WNDPROC pWndProcNew, WNDPROC *ppWndProcOld)
 {
+    LogFile::Write("Subclassing window...");
     if (gameWnd != NULL)
     {
         WNDPROC hProcOld = (WNDPROC)GetWindowLong(gameWnd, GWL_WNDPROC);
@@ -197,8 +119,12 @@ bool SubclassGameWindow(HWND gameWnd, WNDPROC pWndProcNew, WNDPROC *ppWndProcOld
         *ppWndProcOld = hProcOld;
 
         if (hProcOld != NULL && SetWindowLong(gameWnd, GWL_WNDPROC, (LONG)pWndProcNew))
+        {
+            LogFile::WriteLine("Done!");
             return true;
+        }
     }
+    LogFile::WriteLine("FAIL!");
     return false;
 }
 
@@ -249,6 +175,108 @@ LRESULT APIENTRY WndProcNew(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     return CallWindowProc(hProcOld, hWnd, uMsg, wParam, lParam);
 }
 
+// ==========================
+// Generic functions
+// ==========================
+
+MM2::Vector3 addPitch(MM2::Vector3 *vec, float pitch) {
+    float p = (float)fmod(pitch, 3.14159);
+    bool pitchIsZero = (pitch >= 0.0f);
+
+    return{
+        (float)((!pitchIsZero) ? vec->X * cos(pitch + cosNum) : 0.0f),
+        (float)((!pitchIsZero) ? vec->Y * cos(pitch + cosNum) : 0.0f),
+        (float)((!pitchIsZero) ? vec->Z * cos(pitch + cosNum) : 0.0f),
+    };
+}
+
+float normalize(float value) {
+    if (value >= 2.0f)
+        value = 1.0f;
+
+    return (value > 1.0f) ? (value - (value - 1.0f)) : value;
+};
+
+MM2::Vector3 intToColor(int value) {
+    return{
+        (float)((char)((value & 0xFF0000) >> 16) / 256.0),
+        (float)((char)((value & 0xFF00) >> 8) / 256.0),
+        (float)((char)((value & 0xFF)) / 256.0),
+    };
+}
+
+// ==========================
+// Callback handlers
+// ==========================
+
+class HookSystemHandler {
+private:
+    static void InitializeLua() {
+        // Guaranteed to be loaded before anything vital is called (e.g. AngelReadString)
+        if (pMM2->GetGameVersion() == MM2_RETAIL)
+        {
+            MM2Lua::Initialize();
+        } else
+        {
+            // no lua support for betas yet
+            MessageBox(NULL, "NOTE: This game version does not currently support Lua scripting.", "MM2Hook", MB_OK | MB_ICONINFORMATION);
+            return;
+        }
+    }
+public:
+    static void Initialize(int, char**) {
+        // initialize the Lua engine
+        InitializeLua();
+
+        if (pMM2->GetGameVersion() == MM2_RETAIL)
+        {
+            LogFile::Write("Setting MM2 output log file...");
+
+            if (MM2::datOutput::OpenLog("mm2.log"))
+                LogFile::Write("Done!\n");
+            else
+                LogFile::Write("FAIL!\n");
+        }
+    }
+
+    static void Reset(bool restarting) {
+        LogFile::Write("Hook reset request received: ");
+        LogFile::WriteLine((restarting) ? "leaving GameLoop" : "entering GameLoop");
+
+        if (restarting)
+            MM2Lua::OnRestart();
+
+        MM2Lua::Reset();
+    }
+
+    static void Start() {
+        if (!$gameClosing) {
+            if (!isWindowSubclassed)
+            {
+                SubclassGameWindow(pMM2->GetMainWindowHwnd(), WndProcNew, &hProcOld);
+                isWindowSubclassed = true;
+            }
+
+            // GameLoop was restarted
+            Reset(false);
+        } else {
+            LogFile::WriteLine("WTF: Hook startup request received, but the game is closing!");
+        }
+    }
+
+    static void Stop() {
+        if ($gameClosing) {
+            LogFile::WriteLine("Hook shutdown request received.");
+
+            LogFile::Close();
+            L.close(); // release Lua
+        } else {
+            // GameLoop is restarting
+            Reset(true);
+        }
+    }
+};
+
 class TickHandler {
 public:
     static void Reset(void) {
@@ -263,8 +291,6 @@ public:
     }
 };
 
-// needed to put this in a class for proper stack cleanup
-// not meant to be initialized directly!
 class ChatHandler {
 public:
     void Process(char *message) {
@@ -278,14 +304,6 @@ public:
         }
     }
 };
-
-MM2FnHook<void> $CreateGameMutex ( NULL, NULL, 0x402180 );
-
-FILE *ageLog;
-
-LPCSTR ageLogFile = "AGE.log";
-bool ageDebugEnabled = false;
-char ageDebug_buffer[1024] = { NULL };
 
 class CallbackHandler {
 public:
@@ -387,112 +405,49 @@ public:
     }
 };
 
-MM2PtrHook<int> cityCurrentTime ( NULL, NULL, 0x62B068 );
-MM2PtrHook<MM2::cityTimeWeatherLighting> 
-                TIMEWEATHER     ( NULL, NULL, 0x6299A8 );
-
-MM2PtrHook<UINT32> vglCurrentColor ( NULL, NULL, 0x661974 );
-
-MM2FnHook<void> $vglBegin     ( NULL, NULL, 0x4A5500 );
-MM2FnHook<void> $vglEnd       ( NULL, NULL, 0x4A5A90 );
-
-MM2FnHook<UINT32> $sdlPage16_GetShadedColor ( NULL, NULL, 0x450880 );
-
-UINT32 vglColor;
-UINT32 vglCalculatedColor = 0xFFFFFFFF;
-
-MM2::Vector3 vglAmbient;
-MM2::Vector3 vglKeyColor;
-MM2::Vector3 vglFill1Color;
-MM2::Vector3 vglFill2Color;
-MM2::Vector3 vglShadedColor;
-
-// IMPORTANT: ARGB as 4 bytes!
-struct {
-    char b;
-    char g;
-    char r;
-    char a;
-} vglResultColor = {
-    (char)0,
-    (char)0,
-    (char)0,
-    (char)255,
-};
-
-const double cosNum = 1.570796;
-
-MM2::Vector3 addPitch(MM2::Vector3 *vec, float pitch) {
-    float p = (float)fmod(pitch, 3.14159);
-    bool pitchIsZero = (pitch >= 0.0f);
-
-    return {
-        (float)((!pitchIsZero) ? vec->X * cos(pitch + cosNum) : 0.0f),
-        (float)((!pitchIsZero) ? vec->Y * cos(pitch + cosNum) : 0.0f),
-        (float)((!pitchIsZero) ? vec->Z * cos(pitch + cosNum) : 0.0f),
-    };
-}
-
-float normalize(float value) {
-    if (value >= 2.0f)
-        value = 1.0f;
-
-    return (value > 1.0f) ? (value - (value - 1.0f)) : value;
-};
-
-MM2::Vector3 intToColor(int value) {
-    return {
-        (float)((char)((value & 0xFF0000) >> 16) / 256.0),
-        (float)((char)((value & 0xFF00) >> 8) / 256.0),
-        (float)((char)((value & 0xFF)) / 256.0),
-    };
-}
-
-UINT32 CalculateShadedColor(int color) {
-    auto timeWeather = TIMEWEATHER[cityCurrentTime];
-
-    vglKeyColor = addPitch(&timeWeather->KeyColor, timeWeather->KeyPitch);
-    vglFill1Color = addPitch(&timeWeather->Fill1Color, timeWeather->Fill1Pitch);
-    vglFill2Color = addPitch(&timeWeather->Fill2Color, timeWeather->Fill2Pitch);
-
-    // convert the ambient to a vector3 for better accuracy
-    vglAmbient = intToColor(timeWeather->Ambient);
-
-    // compute le values
-    vglShadedColor = {
-        normalize((vglKeyColor.X + vglFill1Color.X + vglFill2Color.X) + vglAmbient.X),
-        normalize((vglKeyColor.Y + vglFill1Color.Y + vglFill2Color.Y) + vglAmbient.Y),
-        normalize((vglKeyColor.Z + vglFill1Color.Z + vglFill2Color.Z) + vglAmbient.Z),
-    };
-
-    vglResultColor.r = (char)(vglShadedColor.X * 255.999);
-    vglResultColor.g = (char)(vglShadedColor.Y * 255.999);
-    vglResultColor.b = (char)(vglShadedColor.Z * 255.999);
-
-    return $sdlPage16_GetShadedColor(color, *(int*)&vglResultColor);
-}
-
 class GraphicsCallbackHandler
 {
+private:
+    static UINT32 CalculateShadedColor(int color) {
+        auto timeWeather = $TIMEWEATHER[$timeOfDay];
+
+        vglKeyColor = addPitch(&timeWeather->KeyColor, timeWeather->KeyPitch);
+        vglFill1Color = addPitch(&timeWeather->Fill1Color, timeWeather->Fill1Pitch);
+        vglFill2Color = addPitch(&timeWeather->Fill2Color, timeWeather->Fill2Pitch);
+
+        // convert the ambient to a vector3 for better accuracy
+        vglAmbient = intToColor(timeWeather->Ambient);
+
+        // compute le values
+        vglShadedColor = {
+            normalize((vglKeyColor.X + vglFill1Color.X + vglFill2Color.X) + vglAmbient.X),
+            normalize((vglKeyColor.Y + vglFill1Color.Y + vglFill2Color.Y) + vglAmbient.Y),
+            normalize((vglKeyColor.Z + vglFill1Color.Z + vglFill2Color.Z) + vglAmbient.Z),
+        };
+
+        vglResultColor.r = (char)(vglShadedColor.X * 255.999);
+        vglResultColor.g = (char)(vglShadedColor.Y * 255.999);
+        vglResultColor.b = (char)(vglShadedColor.Z * 255.999);
+
+        return $sdlPage16_GetShadedColor(color, *(int*)&vglResultColor);
+    }
 public:
     static void vglBegin(int gfxMode, int p1) {
-        vglColor = vglCurrentColor;
+        vglColor = $vglCurrentColor;
 
         // calculate a nice shaded color ;)
         vglCalculatedColor = CalculateShadedColor(vglColor);
-        vglCurrentColor.set(vglCalculatedColor);
+        $vglCurrentColor.set(vglCalculatedColor);
 
         $vglBegin(gfxMode, p1);
     }
 
     static void vglEnd(void) {
         // restore color
-        vglCurrentColor.set(vglColor);
+        $vglCurrentColor.set(vglColor);
         $vglEnd();
     }
 };
-
-MM2FnHook<void> $dgBangerInstance_Draw ( NULL, NULL, 0x4415E0 );
 
 class BridgeFerryCallbackHandler
 {
@@ -506,10 +461,6 @@ public:
         $dgBangerInstance_Draw(this, lod);
     }
 };
-
-MM2FnHook<void> $asLinearCS_Update ( NULL, NULL, 0x4A3370 );
-
-static MM2::Matrix34 sm_DashOffset;
 
 class mmDashViewCallbackHandler
 {
@@ -537,10 +488,6 @@ public:
     };
 };
 
-MM2FnHook<void> $memSafeHeap_Init ( NULL, NULL, 0x577210 );
-
-int g_heapSize = 128;
-
 class memSafeHeapCallbackHandler
 {
 public:
@@ -560,89 +507,9 @@ public:
     ===========================================================================
 */
 
-void InitializeLua() {
-    // Guaranteed to be loaded before anything vital is called (e.g. AngelReadString)
-    if (pMM2->GetGameVersion() == MM2_RETAIL)
-    {
-        MM2Lua::Initialize();
-    } else
-    {
-        // no lua support for betas yet
-        MessageBox(NULL, "NOTE: This game version does not currently support Lua scripting.", "MM2Hook", MB_OK | MB_ICONINFORMATION);
-        return;
-    }
-}
-
-void InitializeHook(int, char**) {
-    // initialize the Lua engine
-    InitializeLua();
-    
-    if (pMM2->GetGameVersion() == MM2_RETAIL)
-    {
-        LogFile::Write("Setting MM2 output log file...");
-
-        if (MM2::datOutput::OpenLog("mm2.log"))
-            LogFile::Write("Done!\n");
-        else
-            LogFile::Write("FAIL!\n");
-    }
-}
-
-void ResetHook(bool restarting) {
-    LogFile::Write("Hook reset request received: ");
-    LogFile::WriteLine((restarting) ? "leaving GameLoop" : "entering GameLoop");
-
-    if (restarting)
-        MM2Lua::OnRestart();
-
-    MM2Lua::Reset();
-}
-
-MM2PtrHook<BOOL> gameClosing ( 0x667DEC, 0x6B0150, 0x6B1708 );
-
-// replaces VtResumeSampling
-void HookStartup() {
-    if (!gameClosing) {
-        if (!isWindowSubclassed)
-        {
-            LogFile::Write("Subclassing window...");
-            LogFile::WriteLine(SubclassGameWindow(pMM2->GetMainWindowHwnd(), WndProcNew, &hProcOld) ? "Done!" : "FAIL!");
-
-            isWindowSubclassed = true;
-        }
-        
-        // GameLoop was restarted
-        ResetHook(false);
-    } else {
-        LogFile::WriteLine("WTF: Hook startup request received, but the game is closing!");
-    }
-};
-
-// replaces VtPauseSampling
-void HookShutdown() {
-    if (gameClosing) {
-        LogFile::WriteLine("Hook shutdown request received.");
-
-        LogFile::Close();
-        L.close(); // release Lua
-    } else {
-        // GameLoop is restarting
-        ResetHook(true);
-    }
-};
-
-MM2PtrHook<DWORD> vtResumeSampling    ( 0x5C86B8, 0x5DF710, 0x5E0CC4 );
-MM2PtrHook<DWORD> vtPauseSampling     ( 0x5C86C8, 0x5DF724, 0x5E0CD8 );
-
-bool HookFramework(MM2Version gameVersion) {
-    if (gameVersion == MM2_INVALID || gameVersion > MM2_NUM_VERSIONS)
-        return false;
-
-    vtResumeSampling.set((DWORD)&HookStartup);
-    vtPauseSampling.set((DWORD)&HookShutdown);
-
-    return true;
-};
+// ==========================
+// Patch definitions
+// ==========================
 
 const PATCH_INSTALL_INFO<1, 3> chatSize_patch = {
     { 60 }, {
@@ -652,20 +519,14 @@ const PATCH_INSTALL_INFO<1, 3> chatSize_patch = {
     }
 };
 
-void InstallPatches(MM2Version gameVersion) {
-    LogFile::WriteLine("Installing patches...");
-
-    InstallGamePatch("Increase chat buffer size", gameVersion, chatSize_patch);
-};
-
-/*
-    Callbacks
-*/
+// ==========================
+// Callback hook definitions
+// ==========================
 
 // Replaces a call to ArchInit (a null function) just before ExceptMain
 // This is PERFECT for initializing everything before the game even starts!
 const CB_INSTALL_INFO<1> archInit_CB = {
-    &InitializeHook, {
+    &HookSystemHandler::Initialize, {
         INIT_CB_CALL( NULL, NULL, 0x4023DB ),
     }
 };
@@ -807,15 +668,40 @@ const CB_INSTALL_INFO<1> createGameMutex_CB = {
     }
 };
 
-/*
-    Virtual Table hooks
-*/
+// ==========================
+// VTable hook definitions
+// ==========================
 
 const VT_INSTALL_INFO<2> bridgeFerryDraw_VT = {
     &BridgeFerryCallbackHandler::Draw, {
         { NULL, NULL, 0x5B5FB8 }, // gizBridge::Draw
         { NULL, NULL, 0x5B61AC } // gizFerry::Draw
     }
+};
+
+/*
+    ===========================================================================
+*/
+bool InitializeFramework(MM2Version gameVersion) {
+    LogFile::Write("Hooking into the framework...");
+
+    if (gameVersion == MM2_INVALID || gameVersion > MM2_NUM_VERSIONS)
+    {
+        LogFile::WriteLine("FAIL!");
+        return false;
+    }
+
+    $__VtResumeSampling.set((DWORD)&HookSystemHandler::Start);
+    $__VtPauseSampling.set((DWORD)&HookSystemHandler::Stop);
+
+    LogFile::WriteLine("Done!");
+    return true;
+};
+
+void InstallPatches(MM2Version gameVersion) {
+    LogFile::WriteLine("Installing patches...");
+
+    InstallGamePatch("Increase chat buffer size", gameVersion, chatSize_patch);
 };
 
 void InstallCallbacks(MM2Version gameVersion) {
@@ -876,12 +762,30 @@ void InstallCallbacks(MM2Version gameVersion) {
 // Initialize all the important stuff prior to MM2 starting up
 //
 void Initialize(MM2Version gameVersion) {
-    // first hook into the framework
-    LogFile::Write("Hooking into the framework...");
-    LogFile::WriteLine(HookFramework(gameVersion) ? "Done!" : "FAIL!");
-    
-    InstallCallbacks(gameVersion);
-    InstallPatches(gameVersion);
+    if (InitializeFramework(gameVersion)) {
+        InstallCallbacks(gameVersion);
+        InstallPatches(gameVersion);
+    } else {
+        MessageBox(NULL, "MM2Hook was unable to initialize properly. The game will proceed normally.", "MM2Hook", MB_OK);
+    }
+}
+
+bool IsGameSupported(AGEGameInfo &gameInfo) {
+    LogFile::WriteLine("Checking for known MM2 versions...");
+
+    if (CMidtownMadness2::GetGameInfo(gameInfo))
+    {
+        LogFile::Format(" - Detected game version %d\n", gameInfo.age_version);
+        return gameInfo.isSupported;
+    }
+    else
+    {
+        LogFile::WriteLine("Unknown module detected! Terminating...");
+        MessageBox(NULL, "Unknown module! MM2Hook will now terminate the process.", "MM2Hook", MB_OK | MB_ICONERROR);
+
+        ExitProcess(EXIT_FAILURE);
+    }
+    return false;
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
@@ -894,53 +798,40 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 
             // Initialize the log file
             LogFile::Initialize("mm2hook.log", "--<< MM2Hook log file >>--\n");
-            LogFile::WriteLine("MM2Hook initialized.");
+            LogFile::WriteLine("Initializing...");
 
             HMODULE hDIModule = NULL;
             AGEGameInfo gameInfo;
 
-            LogFile::WriteLine("Checking for known MM2 versions...");
-
-            if (CMidtownMadness2::GetGameInfo(gameInfo))
+            if (IsGameSupported(gameInfo))
             {
-                LogFile::Format(" - Detected game version %d\n", gameInfo.age_version);
-
-                if (gameInfo.isSupported)
+                if (LoadSystemLibrary("dinput.dll", &hDIModule) &&
+                    GetHookProcAddress(hDIModule, "DirectInputCreateA", (FARPROC*)&lpDICreate))
                 {
-                    if (LoadSystemLibrary("dinput.dll", &hDIModule) &&
-                        GetHookProcAddress(hDIModule, "DirectInputCreateA", (FARPROC*)&lpDICreate))
-                    {
-                        // initialize game manager
-                        pMM2 = new CMidtownMadness2(&gameInfo);
+                    LogFile::WriteLine("Injected into the game process successfully.");
 
-                        LogFile::WriteLine("Successfully injected into MM2!");
-                        Initialize(pMM2->GetGameVersion());
-                    }
-                    else
-                    {
-                        LogFile::WriteLine("Failed to inject into MM2!");
-                    }
+                    // initialize game manager
+                    pMM2 = new CMidtownMadness2(&gameInfo);
+
+                    Initialize(pMM2->GetGameVersion());
                 }
                 else
                 {
-                    LogFile::WriteLine("Unsupported game version! Terminating...");
-
-                    if (gameInfo.version == MM2_BETA_2_PETITE)
-                    {
-                        MessageBox(NULL, "Sorry, this version of Beta 2 was compressed with PeTite -- you'll need an unpacked version.\n\nOtherwise, please remove MM2Hook to launch the game.", "MM2Hook", MB_OK | MB_ICONERROR);
-                    }
-                    else
-                    {
-                        MessageBox(NULL, "Sorry, this version of MM2 is unsupported. Please remove MM2Hook to launch the game.", "MM2Hook", MB_OK | MB_ICONERROR);
-                    }
-
-                    ExitProcess(EXIT_FAILURE);
+                    LogFile::WriteLine("Failed to inject into the game process.");
+                    MessageBox(NULL, "Could not inject into the game process. Unknown errors may occur.", "MM2Hook", MB_OK | MB_ICONWARNING);
                 }
             }
             else
             {
-                LogFile::WriteLine("Unknown module detected! Terminating...");
-                MessageBox(NULL, "Unknown module! MM2Hook will now terminate the process.", "MM2Hook", MB_OK | MB_ICONERROR);
+                LogFile::WriteLine("Unsupported game version -- terminating...");
+
+                if (gameInfo.version == MM2_BETA_2_PETITE)
+                {
+                    MessageBox(NULL, "Sorry, this version of Beta 2 was compressed with PeTite -- you'll need an unpacked version.\n\nOtherwise, please remove MM2Hook to launch the game.", "MM2Hook", MB_OK | MB_ICONERROR);
+                } else
+                {
+                    MessageBox(NULL, "Sorry, this version of MM2 is unsupported. Please remove MM2Hook to launch the game.", "MM2Hook", MB_OK | MB_ICONERROR);
+                }
 
                 ExitProcess(EXIT_FAILURE);
             }
