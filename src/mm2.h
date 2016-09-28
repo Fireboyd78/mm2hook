@@ -14,6 +14,7 @@
     Class definitions
 */
 #include "mm2_ai.h"
+#include "mm2_base.h"
 #include "mm2_city.h"
 #include "mm2_data.h"
 #include "mm2_game.h"
