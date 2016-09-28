@@ -66,7 +66,7 @@ MM2FnHook<void> $Errorf                 ( NULL, NULL, 0x4C97E0 );
 MM2FnHook<void> $Quitf                  ( NULL, NULL, 0x4C9810 );
 MM2FnHook<void> $Abortf                 ( NULL, NULL, 0x4C9850 );
 
-MM2FnHook<char *>   $AngelReadString    ( NULL, NULL, 0x534790 );
+MM2FnHook<char *> $AngelReadString      ( NULL, NULL, 0x534790 );
 
 CMidtownMadness2::CMidtownMadness2(int engineVersion)
     : CAGEGame(engineVersion) {
@@ -100,8 +100,8 @@ CMidtownMadness2::CMidtownMadness2(LPAGEGameInfo gameEntry)
 
 namespace MM2
 {
-    MM2PtrHook<char>  szCityName                            ( NULL, NULL, 0x6B167C );
-    MM2PtrHook<char>  szCityName2                           ( NULL, NULL, 0x6B16A4 );
+    MM2PtrHook<char>  szCityName    ( NULL, NULL, 0x6B167C );
+    MM2PtrHook<char>  szCityName2   ( NULL, NULL, 0x6B16A4 );
 
     DEFINE_PRINT_HOOK(Printf);
     DEFINE_PRINT_HOOK(Messagef);
