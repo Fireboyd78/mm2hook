@@ -27,9 +27,7 @@ protected:
     MM2AddressData addressData;
 public:
     NOTHROW inline IMM2HookPtr(const MM2AddressData &addressData);
-    NOTHROW inline IMM2HookPtr(MM2Version gameVersion, DWORD dwAddress) {
-        IHookPtr::operator=(addressData.addresses[gameVersion] = dwAddress);
-    };
+
     NOTHROW inline ~IMM2HookPtr();
 
     inline void set_version(MM2Version gameVersion) {
@@ -44,9 +42,7 @@ public:
         : IMM2HookPtr(addressData) {};
     NOTHROW inline MM2FnHook(DWORD addrBeta1, DWORD addrBeta2, DWORD addrRetail)
         : IMM2HookPtr(MM2AddressData{ addrBeta1, addrBeta2, addrRetail }) {};
-    NOTHROW inline MM2FnHook(MM2Version gameVersion, DWORD dwAddress)
-        : IMM2HookPtr(gameVersion, dwAddress) {};
-
+    
     template<typename ...TArgs>
     inline TRet operator()(TArgs ...args) const {
         return static_cast<TRet(__cdecl *)(TArgs...)>(lpAddr)(args...);
@@ -65,8 +61,6 @@ public:
         : IMM2HookPtr(addressData) {};
     NOTHROW inline MM2PtrHook(DWORD addrBeta1, DWORD addrBeta2, DWORD addrRetail)
         : IMM2HookPtr(MM2AddressData{ addrBeta1, addrBeta2, addrRetail }) {};
-    NOTHROW inline MM2PtrHook(MM2Version gameVersion, DWORD dwAddress)
-        : IMM2HookPtr(gameVersion, dwAddress) {};
 
     inline bool is_null(void) const {
         return (lpAddr == nullptr);
