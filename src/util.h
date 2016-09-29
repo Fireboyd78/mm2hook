@@ -57,6 +57,24 @@
 // Pointer templates
 //
 
+struct fn_ptr {
+    const LPVOID lpHandler;
+
+    template<typename T>
+    constexpr fn_ptr(T *fn) : lpHandler((LPVOID)(*(DWORD*)&fn)) {};
+
+    template<class TT, typename T>
+    constexpr fn_ptr(T(TT::*fn)) : lpHandler((LPVOID)(*(DWORD*)&fn)) {};
+
+    constexpr operator LPVOID() const {
+        return lpHandler;
+    };
+
+    constexpr operator DWORD() const {
+        return reinterpret_cast<DWORD>(lpHandler);
+    };
+};
+
 template <typename TR = void>
 constexpr inline TR* getPtr(LPVOID p, int offset) {
     return (TR*)((BYTE*)p + offset);

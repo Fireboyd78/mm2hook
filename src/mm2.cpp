@@ -49,12 +49,12 @@ static void dealloc_hook(int hook_idx) {
     if (hook_idx > 0) g_hook_ptrs[hook_idx] = NULL;
 };
 
-NOTHROW inline IMM2HookPtr::IMM2HookPtr(const MM2AddressData &addressData) {
+inline IMM2HookPtr::IMM2HookPtr(const MM2AddressData &addressData) {
     this->addressData = addressData;
     alloc_hook(this);
 }
 
-NOTHROW inline IMM2HookPtr::~IMM2HookPtr() {
+inline IMM2HookPtr::~IMM2HookPtr() {
     dealloc_hook(hook_idx);
 }
 
