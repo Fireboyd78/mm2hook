@@ -97,6 +97,8 @@ MM2PtrHook<int> $timeOfDay                  ( NULL, NULL, 0x62B068 );
 
 MM2PtrHook<UINT32> $vglCurrentColor         ( NULL, NULL, 0x661974 );
 
+MM2PtrHook<MM2::asNode> $ROOT               ( NULL, NULL, 0x661738 );
+
 /*
     !! THESE ARE ABSOLUTELY CRITICAL TO THE HOOK WORKING PROPERLY !!
 */
