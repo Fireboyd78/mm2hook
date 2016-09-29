@@ -14,29 +14,32 @@ HRESULT NAKED DirectInputCreateImpl(HINSTANCE hinst, DWORD dwVersion, LPVOID *pp
 template<class T>
 struct ClassRegistration
 {
-    template<class T>
+    using TClass = T;
+
+    template<typename TT = void, typename ...TArgs>
     struct MemberData
     {
-        int (T::*pFunction)();
+        TT (TClass::*pFunction)(TArgs...);
         LPCSTR name;
 
-        template<class TT>
-        MemberData(TT(T::*pFunc), LPCSTR name) : pFunction((int(T::*)())pFunc), name(name) {};
+        MemberData(decltype(pFunction) pFunc, LPCSTR name) : pFunction(pFunc), name(name) {};
     };
 
     LPCSTR name;
 
-    int numMembers = 0;
+    ClassRegistration(LPCSTR name) : name(name) {};
 
-    MemberData<T>** pFunctions = { NULL };
+    template<typename TT = void, typename ...TArgs>
+    ClassRegistration<T>& AddFunction(TT (TClass::*pFunc)(TArgs...), LPCSTR name) {
+        auto member = new MemberData<TT, TArgs...>(pFunc, name);
+        
+        /*
+            TODO: Register the function somehow?
+        */
 
-    ClassRegistration(LPCSTR name) {
-        pFunctions = new MemberData<T>*[64];
-    };
-
-    template<class TT>
-    ClassRegistration<T>& AddFunction(TT(T::*pFunc), LPCSTR name) {
-        pFunctions[numMembers++] = new MemberData<T>(pFunc, name);
+        // number of arguments
+        int x = sizeof...(TArgs);
+        
         return *this;
     };
 };
