@@ -1,5 +1,6 @@
 #pragma once
 #include "mm2_common.h"
+#include "mm2_base.h"
 
 namespace MM2
 {
@@ -12,14 +13,54 @@ namespace MM2
     extern class mmPlayer;
     extern class mmPopup;
 
+    // External declarations
+    extern class asNode;
+
     class mmCar {
         // vehCarSim: 0xB8 (size: ~0x1560)
     private:
         byte _buffer[0x25C];
     };
 
-    class mmGame {
+    class mmGame : public asNode {
+    protected:
+        static MM2FnHook<void> $$ctor;
+        static MM2FnHook<void> $$dtor;
+
+        /*
+            overrides
+        */
+        static MM2FnHook<void> $Update;
+        static MM2FnHook<void> $UpdatePaused;
+        static MM2FnHook<void> $Reset;
+        
+        /*
+            virtuals
+        */
+        static MM2FnHook<int> $Init;
+
+        static MM2FnHook<void> $InitGameStrings;
+        static MM2FnHook<void> $InitOtherPlayers;
+
+        static MM2FnHook<void> $HitWaterHandler;
+
+        static MM2FnHook<void> $DropThruCityHandler;
+        static MM2FnHook<void> $SendChatMessage;
+
+        static MM2FnHook<void> $BeDone;
     public:
+        mmGame(void) {
+            PUSH_VTABLE();
+            $$ctor(this);
+            POP_VTABLE();
+        };
+
+        virtual ~mmGame(void) {
+            PUSH_VTABLE();
+            $$dtor(this);
+            POP_VTABLE();
+        };
+
         inline mmPlayer* getPlayer(void) const {
             return *getPtr<mmPlayer*>(this, 0x48);
         };
@@ -27,6 +68,47 @@ namespace MM2
         inline mmPopup* getPopup(void) const {
             return *getPtr<mmPopup*>(this, 0x94);
         };
+
+        virtual int Init(void) {
+            $Init(this);
+        };
+
+        virtual void InitGameStrings(void) {
+            $InitGameStrings(this);
+        };
+
+        virtual void InitMyPlayer(void) PURE;
+
+        virtual void InitOtherPlayers(void) {
+            $InitOtherPlayers(this);
+        };
+
+        virtual void InitGameObjects(void) PURE;
+        virtual void InitHUD(void) PURE;
+        virtual void UpdateGameInput(int) PURE;
+        virtual void UpdateDebugKeyInput(int) PURE;
+        virtual void UpdateGame(void) PURE;
+        virtual void NextRace(void) PURE;
+
+        virtual void HitWaterHandler(void) {
+            $HitWaterHandler(this);
+        };
+
+        virtual void DropThruCityHandler(void) {
+            $DropThruCityHandler(this);
+        };
+
+        virtual void SendChatMessage(char *message) {
+            $SendChatMessage(this, message);
+        };
+
+        virtual void SwitchState(int) PURE;
+
+        virtual void BeDone(int) {
+
+        };
+
+        virtual void * GetWaypoints(void) PURE;
     };
 
     class mmGameManager {
