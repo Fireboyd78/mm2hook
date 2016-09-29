@@ -1,14 +1,5 @@
 #pragma once
-#include "common.h"
-#include "hook.h"
-
-#include "AGE.h"
-
-/*
-    Shared resources
-*/
-#include "mm2_utils.h"
-#include "mm2_vector.h"
+#include "mm2_common.h"
 
 /*
     Class definitions
@@ -30,21 +21,6 @@ static const AGEGameInfo g_mm2_info[] = {
 
     // PEtite'd Beta 2...
     { 0x6B602D, MM2_BETA_2_PETITE, 3366, false, "ERROR!" },
-};
-
-namespace MM2 {
-    void Printf(LPCSTR str, ...);
-    void Messagef(LPCSTR str, ...);
-    void Displayf(LPCSTR str, ...);
-    void Warningf(LPCSTR str, ...);
-    void Errorf(LPCSTR str, ...);
-    void Quitf(LPCSTR str, ...);
-    void Abortf(LPCSTR str, ...);
-
-    char * AngelReadString(UINT stringId);
-
-    extern MM2PtrHook<char> szCityName;
-    extern MM2PtrHook<char> szCityName2;
 };
 
 class CMidtownMadness2 : public CAGEGame {
