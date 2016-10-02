@@ -79,6 +79,8 @@ MM2FnHook<UINT32> $sdlPage16_GetShadedColor ( NULL, NULL, 0x450880 );
 
 MM2FnHook<void> $asLinearCS_Update          ( NULL, NULL, 0x4A3370 );
 
+MM2FnHook<bool> $gfxAutoDetect              ( NULL, NULL, 0x4ABE00 );
+
 /*
     TODO: Move VGL stuff to a separate file?
 */
@@ -357,6 +359,50 @@ public:
     }
 };
 
+class gfxHandler {
+private:
+    static void InstallAutoDetectPatch() {
+        const IMM2HookPtr addr_jmp1 = { NULL, NULL, 0x4AC2EE };
+        const IMM2HookPtr addr_jmp2 = { NULL, NULL, 0x4AC392 };
+
+        if (addr_jmp1.is_null() || addr_jmp2.is_null())
+            return;
+
+        const CB_INSTALL_INFO<1> gfxAutoDetectPatch1_CB = {
+            { addr_jmp1.ptr() },{
+                INIT_CB_JUMP(NULL, NULL, 0x4AC14A),
+            }
+        };
+
+        const CB_INSTALL_INFO<1> gfxAutoDetectPatch2_CB = {
+            { addr_jmp2.ptr() },{
+                INIT_CB_JUMP(NULL, NULL, 0x4AC318),
+            }
+        };
+
+        const PATCH_INSTALL_INFO<4, 2> gfxAutoDetectResPatch = {
+            { 0 },{
+                { NULL, NULL, 0x4AC2EF },
+                { NULL, NULL, 0x4AC2F4 },
+            }
+        };
+
+        InstallGameCallback("AutoDetectCallback: disable [1/2]", gameVersion, gfxAutoDetectPatch1_CB);
+        InstallGameCallback("AutoDetectCallback: disable [2/2]", gameVersion, gfxAutoDetectPatch2_CB);
+
+        InstallGamePatch("AutoDetectCallback: MaxRes = 0", gameVersion, gfxAutoDetectResPatch);
+    };
+public:
+    static bool gfxAutoDetect(bool *p1) {
+        if (MM2::datArgParser::Get("-noautodetect")) {
+            LogFile::WriteLine("Disabling AutoDetect.");
+            InstallAutoDetectPatch();
+        }
+
+        return $gfxAutoDetect(p1);
+    };
+};
+
 class CallbackHandler {
 public:
     static void CreateGameMutex(LPCSTR lpName) {
@@ -602,6 +648,12 @@ const CB_INSTALL_INFO<1> angelReadString_CB = {
     }
 };
 
+const CB_INSTALL_INFO<1> gfxAutoDetect_CB = {
+    &gfxHandler::gfxAutoDetect, {
+        INIT_CB_CALL( NULL, NULL, 0x401440 ),
+    }
+};
+
 const CB_INSTALL_INFO<1> memSafeHeapInit_CB = {
     &memSafeHeapCallbackHandler::Init, {
         INIT_CB_CALL( NULL, NULL, 0x4015DD ),
@@ -786,6 +838,8 @@ void InstallCallbacks(MM2Version gameVersion) {
 
     InstallGameCallback("ArchInit", gameVersion, archInit_CB);
     InstallGameCallback("ageDebug", gameVersion, ageDebug_CB);
+
+    InstallGameCallback("gfxAutoDetect", gameVersion, gfxAutoDetect_CB);
 
     InstallGameCallback("memSafeHeap::Init [Heap fix]", gameVersion, memSafeHeapInit_CB);
 
