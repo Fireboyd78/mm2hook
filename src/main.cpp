@@ -86,6 +86,9 @@ MM2FnHook<void> $vglEnd                     ( NULL, NULL, 0x4A5A90 );
 
 MM2FnHook<void> $memSafeHeap_Init           ( NULL, NULL, 0x577210 );
 
+MM2FnHook<void> $DefaultPrintString         ( NULL, NULL, 0x4C9510 );
+MM2FnHook<void> $DefaultPrinter             ( NULL, NULL, 0x4C95F0 );
+
 // ==========================
 // Pointer hooks
 // ==========================
@@ -98,6 +101,11 @@ MM2PtrHook<int> $timeOfDay                  ( NULL, NULL, 0x62B068 );
 MM2PtrHook<UINT32> $vglCurrentColor         ( NULL, NULL, 0x661974 );
 
 MM2PtrHook<MM2::asNode> $ROOT               ( NULL, NULL, 0x661738 );
+
+MM2PtrHook<void (*)(LPCSTR)>
+                    $PrintString            ( NULL, NULL, 0x5CECF0 );
+MM2PtrHook<void (*)(int, LPCSTR, char *)>
+                    $Printer                ( NULL, NULL, 0x5CED24);
 
 /*
     !! THESE ARE ABSOLUTELY CRITICAL TO THE HOOK WORKING PROPERLY !!
@@ -211,6 +219,41 @@ MM2::Vector3 intToColor(int value) {
 // Callback handlers
 // ==========================
 
+#define FOREGROUND_PINK (FOREGROUND_BLUE | FOREGROUND_RED)
+#define FOREGROUND_TEAL (FOREGROUND_BLUE | FOREGROUND_GREEN)
+#define FOREGROUND_YELLOW (FOREGROUND_RED | FOREGROUND_GREEN)
+#define FOREGROUND_WHITE (FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE)
+
+#define BACKGROUND_PINK (BACKGROUND_BLUE | BACKGROUND_RED)
+#define BACKGROUND_TEAL (BACKGROUND_BLUE | BACKGROUND_GREEN)
+#define BACKGROUND_YELLOW (BACKGROUND_RED | BACKGROUND_GREEN)
+#define BACKGROUND_WHITE (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE)
+
+short printer_types[] = {
+    FOREGROUND_INTENSITY, // print
+    FOREGROUND_INTENSITY, // message
+    FOREGROUND_INTENSITY, // display
+    FOREGROUND_YELLOW | FOREGROUND_INTENSITY, // warning
+    FOREGROUND_RED | FOREGROUND_INTENSITY, // error
+    FOREGROUND_RED | FOREGROUND_INTENSITY, // quit/abort
+};
+
+class PrinterHandler {
+public:
+    static void PrintString(LPCSTR message) {
+        // TODO: redirect to a log file?
+        $DefaultPrintString(message);
+    };
+
+    static void Print(int level, LPCSTR message, char *va_args) {
+        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+        SetConsoleTextAttribute(hConsole, printer_types[level]);
+        $DefaultPrinter(level, message, va_args);
+        SetConsoleTextAttribute(hConsole, FOREGROUND_WHITE);
+    };
+};
+
 class HookSystemHandler {
 private:
     static void InitializeLua() {
@@ -218,26 +261,31 @@ private:
         if (pMM2->GetGameVersion() == MM2_RETAIL)
         {
             MM2Lua::Initialize();
-        } else
-        {
+        } else {
             // no lua support for betas yet
             MessageBox(NULL, "NOTE: This game version does not currently support Lua scripting.", "MM2Hook", MB_OK | MB_ICONINFORMATION);
             return;
         }
     }
 public:
-    static void Initialize(int, char**) {
+    static void Initialize(int argv, char **argc) {
         // initialize the Lua engine
         InitializeLua();
 
         if (pMM2->GetGameVersion() == MM2_RETAIL)
         {
-            LogFile::Write("Setting MM2 output log file...");
+            // hook into the printer
+            $Printer.set(&PrinterHandler::Print);
+            $PrintString.set(&PrinterHandler::PrintString);
+
+            /* Won't write to the log file for some reason :(
+            LogFile::Write("Redirecting MM2 output...");
 
             if (MM2::datOutput::OpenLog("mm2.log"))
                 LogFile::Write("Done!\n");
             else
                 LogFile::Write("FAIL!\n");
+            */
         }
     }
 
