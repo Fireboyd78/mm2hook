@@ -2,6 +2,11 @@
 #include "common.h"
 #include "hook.h"
 
+#define MAX_HOOK_PTRS 4096
+
+extern class MM2HookMgr;
+extern class IMM2HookPtr;
+
 enum MM2Version
 {
     MM2_INVALID = -1,
@@ -20,14 +25,28 @@ struct MM2AddressData {
     DWORD addresses[MM2_NUM_VERSIONS];
 };
 
+class MM2HookMgr {
+public:
+    static void alloc(IMM2HookPtr *hook);
+    static void free(int hook_idx);
+    static bool reset(IMM2HookPtr *hook);
+
+    static int Initialize(MM2Version version);
+};
+
 class IMM2HookPtr : public IHookPtr {
 private:
     int hook_idx = -1;
 protected:
     MM2AddressData addressData;
 public:
-    inline IMM2HookPtr(const MM2AddressData &addressData);
-    inline ~IMM2HookPtr();
+    IMM2HookPtr::IMM2HookPtr(const MM2AddressData &addressData) : addressData(addressData) {
+        MM2HookMgr::alloc(this);
+    };
+
+    virtual IMM2HookPtr::~IMM2HookPtr() {
+        MM2HookMgr::free(hook_idx);
+    };
 
     inline IMM2HookPtr( DWORD addrBeta1,
                         DWORD addrBeta2,

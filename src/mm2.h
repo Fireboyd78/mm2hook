@@ -13,45 +13,40 @@
 #include "mm2_stream.h"
 #include "mm2_vehicle.h"
 
-static const AGEGameInfo g_mm2_info[] = {
-    { 0x5AB7F8, MM2_BETA_1, 3323, true, "Angel: 3323 / Jun 29 2000 11:52:28" },
-    { 0x5C18EC, MM2_BETA_2, 3366, true, "Angel: 3366 / Aug  8 2000 10:08:04" },
-
-    { 0x5C28FC, MM2_RETAIL, 3393, true, "Angel: 3393 / Nov  3 2000 14:34:22" },
+static const ageInfoLookup g_mm2_info[] = {
+    { 0x5AB7F8, true, { MM2_BETA_1, 3323, "Angel: 3323 / Jun 29 2000 11:52:28" }},
+    { 0x5C18EC, true, { MM2_BETA_2, 3366, "Angel: 3366 / Aug  8 2000 10:08:04" }},
+    { 0x5C28FC, true, { MM2_RETAIL, 3393, "Angel: 3393 / Nov  3 2000 14:34:22" }},
 
     // PEtite'd Beta 2...
-    { 0x6B602D, MM2_BETA_2_PETITE, 3366, false, "ERROR!" },
+    { 0x6B602D, false, { MM2_BETA_2_PETITE, 3366, "ERROR!" }},
+    { NULL },
 };
 
-class CMidtownMadness2 : public CAGEGame {
-private:
-    MM2Version m_gameVersion;
+class CMidtownMadness2 : public ageGame {
 protected:
-    MM2PtrHook<HWND> hwndMain { 0x64993C, 0x681B00, 0x6830B8 };
+    static MM2PtrHook<HWND> $hwndMain;
 public:
-    CMidtownMadness2(int engineVersion);
-    CMidtownMadness2(LPAGEGameInfo gameInfo);
+    CMidtownMadness2(const ageInfo &gameInfo)
+        : ageGame(gameInfo) {};
+    CMidtownMadness2(short gameVersion, short engineVersion)
+        : ageGame(gameVersion, engineVersion) {};
+    CMidtownMadness2(short gameVersion, short engineVersion, LPCSTR versionString)
+        : ageGame(gameVersion, engineVersion, versionString) {};
 
-    static bool GetGameInfo(AGEGameInfo &ppGameInfo) {
-        for (auto info : g_mm2_info)
-        {
-            if (info.offset == 0)
-                continue;
-
-            if (strcmp((LPCSTR)info.offset, info.age_string) == 0)
-            {
-                ppGameInfo = info;
-                return true;
-            }
-        }
-        return false;
+    static bool GetGameInfo(ageInfoLookup &outInfo) {
+        return GetAGEInfo(g_mm2_info, outInfo);
     };
 
-    MM2Version GetGameVersion() const {
-        return m_gameVersion;
+    MM2Version GetVersion() const {
+        return (MM2Version)m_info.gameVersion;
     };
 
-    HWND GetMainWindowHwnd() const {
-        return hwndMain;
+    virtual HWND GetMainWindowHwnd() const {
+        return $hwndMain;
+    };
+
+    virtual void Initialize() {
+        MM2HookMgr::Initialize(GetVersion());
     };
 };

@@ -1,6 +1,67 @@
 #include "mm2_utils.h"
 #include "patch.h"
 
+// current game version
+static MM2Version g_version = MM2_INVALID;
+
+// next index to use
+static int g_hook_idx = 0;
+
+// global hook pool -- used to directly initialize pointers
+static IMM2HookPtr *g_hooks[MAX_HOOK_PTRS] = { NULL };
+
+void MM2HookMgr::alloc(IMM2HookPtr *hook) {
+    if (g_hook_idx < MAX_HOOK_PTRS) {
+        reset(hook); // try to update pointer
+        g_hooks[g_hook_idx++] = hook;
+    } else {
+        MessageBox(NULL, "FATAL ERROR: No more hook pointers available!", "MM2Hook", MB_OK | MB_ICONERROR);
+    }
+};
+
+void MM2HookMgr::free(int hook_idx) {
+    if (hook_idx > 0)
+        g_hooks[hook_idx] = NULL;
+};
+
+bool MM2HookMgr::reset(IMM2HookPtr *hook) {
+    if (g_version != MM2_INVALID) {
+        hook->set_version(g_version);
+        return true;
+    }
+    return false;
+};
+
+int MM2HookMgr::Initialize(MM2Version version) {
+    g_version = version;
+    g_hook_idx = 0;
+
+    if (g_version == MM2_INVALID)
+        return HOOK_INIT_FAILED;
+
+    // try to initialize hooks
+    IMM2HookPtr *hook;
+
+    int i = 0;
+    int numHooks = 0;
+
+    LogFile::WriteLine("Initializing MM2 hooks...");
+
+    while ((hook = g_hooks[i++]) != NULL) {
+        if (reset(hook))
+            ++numHooks;
+    }
+
+    LogFile::Format(" - numHooks: %d\n", numHooks);
+
+    if (numHooks == 0) {
+        LogFile::WriteLine("WARNING: No supported hooks were found for this game version. Crashes may occur!");
+        return HOOK_INIT_UNSUPPORTED;
+    }
+
+    return HOOK_INIT_OK;
+};
+
 bool InstallVTableHook(LPCSTR name, MM2Version gameVersion, LPVOID lpData, int count) {
     LogFile::Format(" - Installing V-Table hook: '%s'...\n", name);
 

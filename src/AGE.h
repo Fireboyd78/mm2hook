@@ -5,32 +5,52 @@
 // A.G.E. (Angel Game Engine) common includes
 //
 
-typedef struct AGEGameInfo
+struct ageInfo
 {
+    short gameVersion;
+    short engineVersion;
+    LPCSTR versionString;
+};
+
+struct ageInfoLookup {
     DWORD offset;
-    int version;
-    short age_version;
     bool isSupported;
-    LPCSTR age_string;
-} *LPAGEGameInfo;
 
-class CAGEGame {
-private:
-    int m_engineVersion;
+    ageInfo info;
+};
+
+class ageGame {
 protected:
-    virtual int Initialize() {
-        return HOOK_INIT_OK;
-    };
+    ageInfo m_info;
 public:
-    CAGEGame(int engineVersion) {
-        m_engineVersion = engineVersion;
+    ageGame(const ageInfo &gameInfo) : m_info(gameInfo) {};
+
+    ageGame(short gameVersion, short engineVersion)
+        : m_info { gameVersion, engineVersion } {};
+    ageGame(short gameVersion, short engineVersion, LPCSTR versionString)
+        : m_info { gameVersion, engineVersion, versionString } {};
+
+    static bool GetAGEInfo(const ageInfoLookup *infoLookup, ageInfoLookup &outInfo) {
+        const ageInfoLookup *l = NULL;
+        for (l = infoLookup; l->offset != 0; l++) {
+            if (strcmp((LPCSTR)l->offset, l->info.versionString) == 0)
+            {
+                outInfo = *l;
+                return true;
+            }
+        }
+        return false;
     };
 
-    CAGEGame(LPAGEGameInfo gameInfo) 
-        : CAGEGame(gameInfo->age_version) {
+    virtual int GetGameVersion() const {
+        return m_info.gameVersion;
     };
 
-    NOINLINE int GetEngineVersion() const {
-        return m_engineVersion;
+    virtual int GetEngineVersion() const {
+        return m_info.engineVersion;
     };
+
+    virtual HWND GetMainWindowHwnd() const PURE;
+
+    virtual void Initialize() {};
 };

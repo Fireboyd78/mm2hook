@@ -13,6 +13,8 @@ HRESULT NAKED DirectInputCreateA_Impl(HINSTANCE hinst, DWORD dwVersion, LPVOID *
 
 CMidtownMadness2 *pMM2;
 
+MM2Version gameVersion;
+
 WNDPROC hProcOld;
 LRESULT APIENTRY WndProcNew(HWND, UINT, WPARAM, LPARAM);
 
@@ -258,7 +260,7 @@ class HookSystemHandler {
 private:
     static void InitializeLua() {
         // Guaranteed to be loaded before anything vital is called (e.g. AngelReadString)
-        if (pMM2->GetGameVersion() == MM2_RETAIL)
+        if (gameVersion == MM2_RETAIL)
         {
             MM2Lua::Initialize();
         } else {
@@ -272,7 +274,7 @@ public:
         // initialize the Lua engine
         InitializeLua();
 
-        if (pMM2->GetGameVersion() == MM2_RETAIL)
+        if (gameVersion == MM2_RETAIL)
         {
             // hook into the printer
             $Printer.set(&PrinterHandler::Print);
@@ -699,22 +701,9 @@ const CB_INSTALL_INFO<60> vglEnd_CB = {
     }
 };
 
-const CB_INSTALL_INFO<2> bridgeFerryCull_CB = {
-    &BridgeFerryCallbackHandler::Cull, {
-        INIT_CB_CALL( NULL, NULL, 0x5780BC ), // gizBridgeMgr::Cull
-        INIT_CB_CALL( NULL, NULL, 0x5798F0 ), // gizFerryMgr::Cull
-    }
-};
-
 const CB_INSTALL_INFO<1> mmDashView_UpdateCS_CB = {
     &mmDashViewCallbackHandler::UpdateCS, {
         INIT_CB_CALL( NULL, NULL, 0x430F87 ), // replaces call to asLinearCS::Update
-    }
-};
-
-const CB_INSTALL_INFO<1> createGameMutex_CB = {
-    &CallbackHandler::CreateGameMutex, {
-        INIT_CB_CALL( NULL, NULL, 0x40128D ),
     }
 };
 
@@ -773,8 +762,25 @@ void InstallCallbacks(MM2Version gameVersion) {
         } break;
         case MM2_RETAIL:
         {
+            const CB_INSTALL_INFO<1> createGameMutex_CB = {
+                &CallbackHandler::CreateGameMutex,{
+                    INIT_CB_CALL(NULL, NULL, 0x40128D),
+                }
+            };
+
+            const CB_INSTALL_INFO<2> bridgeFerryCull_CB = {
+                &BridgeFerryCallbackHandler::Cull,{
+                    INIT_CB_CALL(NULL, NULL, 0x5780BC), // gizBridgeMgr::Cull
+                    INIT_CB_CALL(NULL, NULL, 0x5798F0), // gizFerryMgr::Cull
+                }
+            };
+
             // mutex was introduced in retail
             InstallGameCallback("CreateGameMutex", gameVersion, createGameMutex_CB);
+            
+            // revert bridges/ferries to how they were in the betas
+            InstallGameCallback("Bridge/Ferry: Cull", gameVersion, bridgeFerryCull_CB);
+            InstallVTableHook("Bridge/Ferry: Draw", gameVersion, bridgeFerryDraw_VT);
         } break;
     }
 
@@ -798,12 +804,6 @@ void InstallCallbacks(MM2Version gameVersion) {
 
     InstallGameCallback("vehCarAudioContainer::SetSirenCSVName", gameVersion, sirenCSV_CB);
 
-    // bridge/ferry fix for retail only
-    if (gameVersion == MM2_RETAIL) {
-        InstallGameCallback("Bridge/Ferry: Cull", gameVersion, bridgeFerryCull_CB);
-        InstallVTableHook("Bridge/Ferry: Draw", gameVersion, bridgeFerryDraw_VT);
-    }
-
     // dashboard testing
     InstallGameCallback("mmDashView::Update [EXPERIMENTAL]", gameVersion, mmDashView_UpdateCS_CB);
 };
@@ -811,7 +811,14 @@ void InstallCallbacks(MM2Version gameVersion) {
 //
 // Initialize all the important stuff prior to MM2 starting up
 //
-void Initialize(MM2Version gameVersion) {
+void Initialize(ageInfoLookup &gameInfo) {
+    // initialize game manager
+    pMM2 = new CMidtownMadness2(gameInfo.info);
+    pMM2->Initialize();
+
+    // TODO: Remove dependency on 'gameVersion'?
+    gameVersion = pMM2->GetVersion();
+
     if (InitializeFramework(gameVersion)) {
         InstallCallbacks(gameVersion);
         InstallPatches(gameVersion);
@@ -820,12 +827,12 @@ void Initialize(MM2Version gameVersion) {
     }
 }
 
-bool IsGameSupported(AGEGameInfo &gameInfo) {
+bool IsGameSupported(ageInfoLookup &gameInfo) {
     LogFile::WriteLine("Checking for known MM2 versions...");
 
     if (CMidtownMadness2::GetGameInfo(gameInfo))
     {
-        LogFile::Format(" - Detected game version %d\n", gameInfo.age_version);
+        LogFile::Format(" - Detected game version %d\n", gameInfo.info.engineVersion);
         return gameInfo.isSupported;
     }
     else
@@ -835,6 +842,7 @@ bool IsGameSupported(AGEGameInfo &gameInfo) {
 
         ExitProcess(EXIT_FAILURE);
     }
+
     return false;
 }
 
@@ -851,7 +859,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
             LogFile::WriteLine("Initializing...");
 
             HMODULE hDIModule = NULL;
-            AGEGameInfo gameInfo;
+            ageInfoLookup gameInfo;
 
             if (IsGameSupported(gameInfo))
             {
@@ -860,10 +868,8 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
                 {
                     LogFile::WriteLine("Injected into the game process successfully.");
 
-                    // initialize game manager
-                    pMM2 = new CMidtownMadness2(&gameInfo);
-
-                    Initialize(pMM2->GetGameVersion());
+                    // initialize the hook
+                    Initialize(gameInfo);
                 }
                 else
                 {
@@ -875,7 +881,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
             {
                 LogFile::WriteLine("Unsupported game version -- terminating...");
 
-                if (gameInfo.version == MM2_BETA_2_PETITE)
+                if (gameInfo.info.gameVersion == MM2_BETA_2_PETITE)
                 {
                     MessageBox(NULL, "Sorry, this version of Beta 2 was compressed with PeTite -- you'll need an unpacked version.\n\nOtherwise, please remove MM2Hook to launch the game.", "MM2Hook", MB_OK | MB_ICONERROR);
                 } else
