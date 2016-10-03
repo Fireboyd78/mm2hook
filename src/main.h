@@ -13,8 +13,6 @@
 // dinput hooking
 #include <dinput.h>
 
-using namespace LuaIntf;
-
 typedef HRESULT(WINAPI *LPFNDIRECTINPUTCREATE)(HINSTANCE, DWORD, LPVOID *, LPUNKNOWN);
 
 EXTERN_C LPFNDIRECTINPUTCREATE lpDICreate;
