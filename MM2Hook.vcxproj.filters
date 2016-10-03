@@ -21,6 +21,12 @@
     <Filter Include="LuaIntf Files">
       <UniqueIdentifier>{b0c16bd0-bdcf-4493-8c8d-9e34ef7c0253}</UniqueIdentifier>
     </Filter>
+    <Filter Include="LuaIntf Files\impl">
+      <UniqueIdentifier>{cfae8b57-924e-41bd-846b-e49302ff4421}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LuaIntf Files\src">
+      <UniqueIdentifier>{0904d3f2-eaad-4117-adf8-0d83ae6bc977}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\lua\lapi.h">
@@ -154,6 +160,51 @@
     </ClInclude>
     <ClInclude Include="src\mm2_common.h">
       <Filter>Source Files\mm2</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\impl\LuaException.h">
+      <Filter>LuaIntf Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\impl\LuaType.h">
+      <Filter>LuaIntf Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\impl\CppArg.h">
+      <Filter>LuaIntf Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\impl\CppBindClass.h">
+      <Filter>LuaIntf Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\impl\CppBindModule.h">
+      <Filter>LuaIntf Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\impl\CppFunction.h">
+      <Filter>LuaIntf Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\impl\CppInvoke.h">
+      <Filter>LuaIntf Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\impl\CppObject.h">
+      <Filter>LuaIntf Files\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\src\CppBindClass.cpp">
+      <Filter>LuaIntf Files\src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\src\CppBindModule.cpp">
+      <Filter>LuaIntf Files\src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\src\CppFunction.cpp">
+      <Filter>LuaIntf Files\src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\src\CppObject.cpp">
+      <Filter>LuaIntf Files\src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\src\LuaCompat.cpp">
+      <Filter>LuaIntf Files\src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\src\LuaRef.cpp">
+      <Filter>LuaIntf Files\src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\src\LuaState.cpp">
+      <Filter>LuaIntf Files\src</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

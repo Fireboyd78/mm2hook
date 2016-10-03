@@ -42,8 +42,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);src;src\lua</IncludePath>
-    <SourcePath>$(VC_SourcePath);src;src\lua</SourcePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);src;src\lua;src\LuaIntf;src\LuaIntf\impl</IncludePath>
+    <SourcePath>$(VC_SourcePath);src;src\lua;src\LuaIntf\src</SourcePath>
     <ASMOutputPath>$(OutDir)asm\</ASMOutputPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -85,7 +85,7 @@
       <MapExports>true</MapExports>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OptimizeReferences>false</OptimizeReferences>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
@@ -203,6 +203,40 @@
     <ClInclude Include="src\LuaIntf\LuaContext.h" />
     <ClInclude Include="src\LuaIntf\LuaIntf.h" />
     <ClInclude Include="src\LuaIntf\LuaRef.h" />
+    <ClInclude Include="src\LuaIntf\impl\CppArg.h" />
+    <ClInclude Include="src\LuaIntf\impl\CppBindClass.h" />
+    <ClInclude Include="src\LuaIntf\impl\CppBindModule.h" />
+    <ClInclude Include="src\LuaIntf\impl\CppFunction.h" />
+    <ClInclude Include="src\LuaIntf\impl\CppInvoke.h" />
+    <ClInclude Include="src\LuaIntf\impl\CppObject.h" />
+    <ClInclude Include="src\LuaIntf\impl\LuaException.h" />
+    <ClInclude Include="src\LuaIntf\impl\LuaType.h" />
+  </ItemGroup>
+  <!--
+    Include LuaIntf source, but do NOT compile it
+  -->
+  <ItemGroup>
+    <ClInclude Include="src\LuaIntf\src\CppBindClass.cpp">
+      <FileType>CppHeader</FileType>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\src\CppBindModule.cpp">
+      <FileType>CppHeader</FileType>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\src\CppFunction.cpp">
+      <FileType>CppHeader</FileType>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\src\CppObject.cpp">
+      <FileType>CppHeader</FileType>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\src\LuaCompat.cpp">
+      <FileType>CppHeader</FileType>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\src\LuaRef.cpp">
+      <FileType>CppHeader</FileType>
+    </ClInclude>
+    <ClInclude Include="src\LuaIntf\src\LuaState.cpp">
+      <FileType>CppHeader</FileType>
+    </ClInclude>
   </ItemGroup>
   <!--
     MM2Hook files
