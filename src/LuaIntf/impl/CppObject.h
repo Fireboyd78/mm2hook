@@ -254,6 +254,7 @@ public:
 template <typename T>
 class CppObjectValue : public CppObject
 {
+    using ObjectValue = CppObjectValue<T>;
 private:
     CppObjectValue()
     {
@@ -263,6 +264,12 @@ private:
             assert(offset < MAX_PADDING);
             m_data[sizeof(m_data) - 1] = static_cast<unsigned char>(offset);
         }
+    }
+
+    static ObjectValue* allocateValue(lua_State *L, bool is_const)
+    {
+        void* mem = allocate<ObjectValue>(L, getClassID<T>(is_const));
+        return ::new (mem) ObjectValue();
     }
 
 public:
@@ -284,23 +291,20 @@ public:
     template <typename... P>
     static void pushToStack(lua_State* L, bool is_const, P&&... args)
     {
-        void* mem = allocate<CppObjectValue<T>>(L, getClassID<T>(is_const));
-        CppObjectValue<T>* v = ::new (mem) CppObjectValue<T>();
+        ObjectValue* v = allocateValue(L, is_const);
         ::new (v->objectPtr()) T(std::forward<P>(args)...);
     }
 
     template <typename... P>
     static void pushToStack(lua_State* L, std::tuple<P...>& args, bool is_const)
     {
-        void* mem = allocate<CppObjectValue<T>>(L, getClassID<T>(is_const));
-        CppObjectValue<T>* v = ::new (mem) CppObjectValue<T>();
+        ObjectValue* v = allocateValue(L, is_const);
         CppInvokeClassConstructor<T>::call(v->objectPtr(), args);
     }
 
     static void pushToStack(lua_State* L, const T& obj, bool is_const)
     {
-        void* mem = allocate<CppObjectValue<T>>(L, getClassID<T>(is_const));
-        CppObjectValue<T>* v = ::new (mem) CppObjectValue<T>();
+        ObjectValue* v = allocateValue(L, is_const);
         ::new (v->objectPtr()) T(obj);
     }
 
@@ -480,11 +484,12 @@ struct LuaCppObjectFactory <SP, T, true, true>
 template <typename T, bool IS_CONST, bool IS_REF>
 struct LuaClassMapping
 {
-    using ObjectType = typename CppObjectTraits<T>::ObjectType;
+    using ObjectTraits = CppObjectTraits<T>;
+    using ObjectType = typename ObjectTraits::ObjectType;
 
-    static constexpr bool isShared = CppObjectTraits<T>::isSharedPtr;
+    static constexpr bool isShared = ObjectTraits::isSharedPtr;
     static constexpr bool isRef = isShared ? true : IS_REF;
-    static constexpr bool isConst = isShared ? CppObjectTraits<T>::isSharedConst : IS_CONST;
+    static constexpr bool isConst = isShared ? ObjectTraits::isSharedConst : IS_CONST;
 
     static void push(lua_State* L, const T& t)
     {
@@ -554,7 +559,8 @@ namespace Lua
     template <typename T, typename... P>
     inline void pushNew(lua_State* L, P&&... args)
     {
-        CppObjectValue<typename std::remove_cv<T>::type>::pushToStack(L, std::is_const<T>::value, std::forward<P>(args)...);
+        using Type = typename std::remove_cv<T>::type;
+        CppObjectValue<Type>::pushToStack(L, std::is_const<T>::value, std::forward<P>(args)...);
     }
 
     /**
@@ -563,7 +569,8 @@ namespace Lua
     template <typename T>
     inline T* objectCast(lua_State* L, int index)
     {
-        return CppObject::cast<typename std::remove_cv<T>::type>(L, index, std::is_const<T>::value);
+        using Type = typename std::remove_cv<T>::type;
+        return CppObject::cast<Type>(L, index, std::is_const<T>::value);
     }
 
     /**

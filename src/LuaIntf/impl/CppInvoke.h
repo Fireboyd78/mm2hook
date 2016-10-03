@@ -70,12 +70,15 @@ struct CppDispatchMethod <FN, R, TUPLE, 0, INDEX...>
 template <typename FN, typename R, typename... P>
 struct CppInvokeMethod
 {
-    static R call(const FN& func, std::tuple<P...>& args)
+    using TUPLE = std::tuple<P...>;
+    static const size_t N = sizeof...(P);
+
+    static R call(const FN& func, TUPLE& args)
     {
-        return CppDispatchMethod<FN, R, std::tuple<P...>, sizeof...(P)>::call(func, args);
+        return CppDispatchMethod<FN, R, TUPLE, N>::call(func, args);
     }
 
-    static int push(lua_State* L, const FN& func, std::tuple<P...>& args)
+    static int push(lua_State* L, const FN& func, TUPLE& args)
     {
         LuaType<R>::push(L, call(func, args));
         return 1;
@@ -85,12 +88,15 @@ struct CppInvokeMethod
 template <typename FN, typename... P>
 struct CppInvokeMethod <FN, void, P...>
 {
-    static void call(const FN& func, std::tuple<P...>& args)
+    using TUPLE = std::tuple<P...>;
+    static const size_t N = sizeof...(P);
+
+    static void call(const FN& func, TUPLE& args)
     {
-        CppDispatchMethod<FN, void, std::tuple<P...>, sizeof...(P)>::call(func, args);
+        CppDispatchMethod<FN, void, TUPLE, N>::call(func, args);
     }
 
-    static int push(lua_State*, const FN& func, std::tuple<P...>& args)
+    static int push(lua_State*, const FN& func, TUPLE& args)
     {
         call(func, args);
         return 0;
@@ -102,7 +108,7 @@ struct CppInvokeMethod <FN, int, CppArgHolder<lua_State*>, P...>
 {
     static int call(const FN& func, std::tuple<CppArgHolder<lua_State*>, P...>& args)
     {
-        return CppDispatchMethod<FN, int, std::tuple<CppArgHolder<lua_State*>, P...>, sizeof...(P) + 1>::call(func, args);
+        return CppDispatchMethod<FN, int, std::tuple<CppArgHolder<lua_State*>, P...>, sizeof...(P)+1>::call(func, args);
     }
 
     static int push(lua_State*, const FN& func, std::tuple<CppArgHolder<lua_State*>, P...>& args)
@@ -116,7 +122,7 @@ struct CppInvokeMethod <FN, int, CppArgHolder<LuaState>, P...>
 {
     static int call(const FN& func, std::tuple<CppArgHolder<LuaState>, P...>& args)
     {
-        return CppDispatchMethod<FN, int, std::tuple<CppArgHolder<LuaState>, P...>, sizeof...(P) + 1>::call(func, args);
+        return CppDispatchMethod<FN, int, std::tuple<CppArgHolder<LuaState>, P...>, sizeof...(P)+1>::call(func, args);
     }
 
     static int push(lua_State*, const FN& func, std::tuple<CppArgHolder<LuaState>, P...>& args)
@@ -128,27 +134,32 @@ struct CppInvokeMethod <FN, int, CppArgHolder<LuaState>, P...>
 template <typename FN, typename... RP, typename... P>
 struct CppInvokeMethod <FN, std::tuple<RP...>, P...>
 {
-    static std::tuple<RP...> call(const FN& func, std::tuple<P...>& args)
+    using TUPLE = std::tuple<P...>;
+    using R = std::tuple<RP...>;
+
+    static const size_t N = sizeof...(P);
+
+    static R call(const FN& func, TUPLE& args)
     {
-        return CppDispatchMethod<FN, std::tuple<RP...>, std::tuple<P...>, sizeof...(P)>::call(func, args);
+        return CppDispatchMethod<FN, R, TUPLE, N>::call(func, args);
     }
 
-    static int push(lua_State* L, const FN& func, std::tuple<P...>& args)
+    static int push(lua_State* L, const FN& func, TUPLE& args)
     {
-        std::tuple<RP...> ret = call(func, args);
+        R ret = call(func, args);
         return pushTuple<0, RP...>(L, ret);
     }
 
 private:
     template <size_t INDEX, typename RV0, typename... RV>
-    static int pushTuple(lua_State* L, const std::tuple<RP...>& ret)
+    static int pushTuple(lua_State* L, const R& ret)
     {
         LuaType<RV0>::push(L, std::get<INDEX>(ret));
         return 1 + pushTuple<INDEX + 1, RV...>(L, ret);
     }
 
     template <size_t INDEX>
-    static int pushTuple(lua_State*, const std::tuple<RP...>&)
+    static int pushTuple(lua_State*, const R&)
     {
         return 0;
     }
@@ -178,15 +189,21 @@ template <typename T>
 struct CppInvokeClassConstructor
 {
     template <typename... P>
-    static T* call(std::tuple<P...>& args)
+    using TUPLE = std::tuple<P...>;
+
+    template <typename... P>
+    using DispatchConstructor = CppDispatchClassConstructor<T, TUPLE<P...>, sizeof...(P)>;
+
+    template <typename... P>
+    static T* call(TUPLE<P...>& args)
     {
-        return CppDispatchClassConstructor<T, std::tuple<P...>, sizeof...(P)>::call(args);
+        return DispatchConstructor<P...>::call(args);
     }
 
     template <typename... P>
-    static T* call(void* mem, std::tuple<P...>& args)
+    static T* call(void* mem, TUPLE<P...>& args)
     {
-        return CppDispatchClassConstructor<T, std::tuple<P...>, sizeof...(P)>::call(mem, args);
+        return DispatchConstructor<P...>::call(mem, args);
     }
 };
 
@@ -217,12 +234,15 @@ struct CppDispatchClassMethod <T, true, FN, R, TUPLE, 0, INDEX...>
 template <typename T, bool IS_PROXY, typename FN, typename R, typename... P>
 struct CppInvokeClassMethod
 {
-    static R call(T* t, const FN& func, std::tuple<P...>& args)
+    using TUPLE = std::tuple<P...>;
+    static const size_t N = sizeof...(P);
+
+    static R call(T* t, const FN& func, TUPLE& args)
     {
-        return CppDispatchClassMethod<T, IS_PROXY, FN, R, std::tuple<P...>, sizeof...(P)>::call(t, func, args);
+        return CppDispatchClassMethod<T, IS_PROXY, FN, R, TUPLE, N>::call(t, func, args);
     }
 
-    static int push(lua_State* L, T* t, const FN& func, std::tuple<P...>& args)
+    static int push(lua_State* L, T* t, const FN& func, TUPLE& args)
     {
         LuaType<R>::push(L, call(t, func, args));
         return 1;
@@ -232,12 +252,15 @@ struct CppInvokeClassMethod
 template <typename T, bool IS_PROXY, typename FN, typename... P>
 struct CppInvokeClassMethod <T, IS_PROXY, FN, void, P...>
 {
-    static void call(T* t, const FN& func, std::tuple<P...>& args)
+    using TUPLE = std::tuple<P...>;
+    static const size_t N = sizeof...(P);
+
+    static void call(T* t, const FN& func, TUPLE& args)
     {
-        CppDispatchClassMethod<T, IS_PROXY, FN, void, std::tuple<P...>, sizeof...(P)>::call(t, func, args);
+        CppDispatchClassMethod<T, IS_PROXY, FN, void, TUPLE, N>::call(t, func, args);
     }
 
-    static int push(lua_State*, T* t, const FN& func, std::tuple<P...>& args)
+    static int push(lua_State*, T* t, const FN& func, TUPLE& args)
     {
         call(t, func, args);
         return 0;
@@ -249,7 +272,7 @@ struct CppInvokeClassMethod <T, IS_PROXY, FN, int, CppArgHolder<lua_State*>, P..
 {
     static int call(T* t, const FN& func, std::tuple<CppArgHolder<lua_State*>, P...>& args)
     {
-        return CppDispatchClassMethod<T, IS_PROXY, FN, int, std::tuple<CppArgHolder<lua_State*>, P...>, sizeof...(P) + 1>::call(t, func, args);
+        return CppDispatchClassMethod<T, IS_PROXY, FN, int, std::tuple<CppArgHolder<lua_State*>, P...>, sizeof...(P)+1>::call(t, func, args);
     }
 
     static int push(lua_State*, T* t, const FN& func, std::tuple<CppArgHolder<lua_State*>, P...>& args)
@@ -263,7 +286,7 @@ struct CppInvokeClassMethod <T, IS_PROXY, FN, int, CppArgHolder<LuaState>, P...>
 {
     static int call(T* t, const FN& func, std::tuple<CppArgHolder<LuaState>, P...>& args)
     {
-        return CppDispatchClassMethod<T, IS_PROXY, FN, int, std::tuple<CppArgHolder<LuaState>, P...>, sizeof...(P) + 1>::call(t, func, args);
+        return CppDispatchClassMethod<T, IS_PROXY, FN, int, std::tuple<CppArgHolder<LuaState>, P...>, sizeof...(P)+1>::call(t, func, args);
     }
 
     static int push(lua_State*, T* t, const FN& func, std::tuple<CppArgHolder<LuaState>, P...>& args)
@@ -275,27 +298,32 @@ struct CppInvokeClassMethod <T, IS_PROXY, FN, int, CppArgHolder<LuaState>, P...>
 template <typename T, bool IS_PROXY, typename FN, typename... RP, typename... P>
 struct CppInvokeClassMethod <T, IS_PROXY, FN, std::tuple<RP...>, P...>
 {
-    static std::tuple<RP...> call(T* t, const FN& func, std::tuple<P...>& args)
+    using TUPLE = std::tuple<P...>;
+    using R = std::tuple<RP...>;
+
+    static const size_t N = sizeof...(P);
+
+    static R call(T* t, const FN& func, TUPLE& args)
     {
-        return CppDispatchClassMethod<T, IS_PROXY, FN, std::tuple<RP...>, std::tuple<P...>, sizeof...(P)>::call(t, func, args);
+        return CppDispatchClassMethod<T, IS_PROXY, FN, R, TUPLE, N>::call(t, func, args);
     }
 
-    static int push(lua_State* L, T* t, const FN& func, std::tuple<P...>& args)
+    static int push(lua_State* L, T* t, const FN& func, TUPLE& args)
     {
-        std::tuple<RP...> ret = call(t, func, args);
+        R ret = call(t, func, args);
         return pushTuple<0, RP...>(L, ret);
     }
 
 private:
     template <size_t INDEX, typename RV0, typename... RV>
-    static int pushTuple(lua_State* L, const std::tuple<RP...>& ret)
+    static int pushTuple(lua_State* L, const R& ret)
     {
         LuaType<RV0>::push(L, std::get<INDEX>(ret));
         return 1 + pushTuple<INDEX + 1, RV...>(L, ret);
     }
 
     template <size_t INDEX>
-    static int pushTuple(lua_State*, const std::tuple<RP...>&)
+    static int pushTuple(lua_State*, const R&)
     {
         return 0;
     }
