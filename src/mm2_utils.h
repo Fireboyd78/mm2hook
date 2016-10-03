@@ -40,11 +40,11 @@ private:
 protected:
     MM2AddressData addressData;
 public:
-    IMM2HookPtr::IMM2HookPtr(const MM2AddressData &addressData) : addressData(addressData) {
+    inline IMM2HookPtr::IMM2HookPtr(const MM2AddressData &addressData) : addressData(addressData) {
         MM2HookMgr::alloc(this);
     };
 
-    virtual IMM2HookPtr::~IMM2HookPtr() {
+    inline IMM2HookPtr::~IMM2HookPtr() {
         MM2HookMgr::free(hook_idx);
     };
 
@@ -67,20 +67,20 @@ public:
 template<typename TRet>
 class MM2FnHook : public IMM2HookPtr {
 public:
-    inline MM2FnHook(const MM2AddressData &addressData)
+    constexpr MM2FnHook(const MM2AddressData &addressData)
         : IMM2HookPtr(addressData) {};
-    inline MM2FnHook(DWORD addrBeta1, DWORD addrBeta2, DWORD addrRetail)
+    constexpr MM2FnHook(DWORD addrBeta1, DWORD addrBeta2, DWORD addrRetail)
         : IMM2HookPtr(addrBeta1, addrBeta2, addrRetail) {};
-    
+
     template<typename ...TArgs>
-    inline TRet operator()(TArgs ...args) const {
+    constexpr TRet operator()(TArgs ...args) const {
         typedef TRet (__cdecl *MethodCall)(TArgs...);
 
         return static_cast<MethodCall>(lpAddr)(args...);
     };
 
     template<typename ...TArgs, class TThis>
-    inline TRet operator()(const TThis &&This, TArgs ...args) const {
+    constexpr TRet operator()(const TThis &&This, TArgs ...args) const {
         typedef TRet (__thiscall *MemberCall)(const TThis, TArgs...);
 
         return static_cast<MemberCall>(lpAddr)(This, args...);
@@ -90,24 +90,24 @@ public:
 template<typename TType>
 class MM2PtrHook : public IMM2HookPtr {
 public:
-    inline MM2PtrHook(const MM2AddressData &addressData)
+    constexpr MM2PtrHook(const MM2AddressData &addressData)
         : IMM2HookPtr(addressData) {};
-    inline MM2PtrHook(DWORD addrBeta1, DWORD addrBeta2, DWORD addrRetail)
+    constexpr MM2PtrHook(DWORD addrBeta1, DWORD addrBeta2, DWORD addrRetail)
         : IMM2HookPtr(addrBeta1, addrBeta2, addrRetail) {};
 
     inline void set(TType value) {
         *static_cast<TType*>(lpAddr) = value;
     };
 
-    inline operator TType*() const {
+    constexpr operator TType*() const {
         return reinterpret_cast<TType*>(lpAddr);
     };
 
-    inline operator TType() const {
+    constexpr operator TType() const {
         return *static_cast<TType*>(lpAddr);
     };
 
-    inline TType* operator[](int index) const {
+    constexpr TType* operator[](int index) const {
         return reinterpret_cast<TType*>((char *)lpAddr + (index * sizeof(TType)));
     };
 };
