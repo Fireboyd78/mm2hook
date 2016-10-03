@@ -3,6 +3,9 @@
 // MM2 uses DirectInput 7
 #define DIRECTINPUT_VERSION 0x0700
 
+#define _LUA_EMBED
+#define NO_LUAINTF
+
 #include "common.h"
 #include "hook.h"
 #include "patch.h"
