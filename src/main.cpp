@@ -428,10 +428,10 @@ BOOL __stdcall AutoDetectCallback (GUID     *lpGUID,
     MM2PtrHook<mmGraphicsInterface>         gfxInterfaces       (NULL, NULL, 0x683130);
     MM2PtrHook<unsigned int>                gfxInterfaceCount   (NULL, NULL, 0x6844C0);
 
-    MM2PtrHook<decltype(*(LPD3DENUMDEVICESCALLBACK7) NULL)>
+    MM2PtrHook<decltype(*(LPD3DENUMDEVICESCALLBACK7)0)>
                                             lpDeviceCallback    (NULL, NULL, 0x4AC3D0);
-    MM2PtrHook<decltype(*(LPDDENUMMODESCALLBACK2) NULL)>
-                                             lpResCallback      (NULL, NULL, 0x4AC6F0);
+    MM2PtrHook<decltype(*(LPDDENUMMODESCALLBACK2)0)>
+                                            lpResCallback       (NULL, NULL, 0x4AC6F0);
 
     MM2PtrHook<unsigned int>                gfxMaxScreenWidth   (NULL, NULL, 0x6844FC);
     MM2PtrHook<unsigned int>                gfxMaxScreenHeight  (NULL, NULL, 0x6844D8);
@@ -445,7 +445,7 @@ BOOL __stdcall AutoDetectCallback (GUID     *lpGUID,
         gfxInterface->DeviceCaps = 1;
         gfxInterface->AcceptableDepths = mmGraphicsInterface::Depth32;
 
-        DDDEVICEIDENTIFIER2 ddDeviceIdentifier { NULL };
+        DDDEVICEIDENTIFIER2 ddDeviceIdentifier = { NULL };
 
         if (lpDD->GetDeviceIdentifier(&ddDeviceIdentifier, 0) == DD_OK)
         {
