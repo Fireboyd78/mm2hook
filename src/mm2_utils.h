@@ -99,10 +99,37 @@ public:
         *static_cast<TType*>(lpAddr) = value;
     };
 
+    /*
+        Member-of-pointer operator (e.g. ptr->SomeMethod(); // MM2PtrHook<TClass> ptr_hook)
+    */
+    constexpr TType* operator->() const {
+        return reinterpret_cast<TType*>(lpAddr);
+    };
+
+    /*
+        Address-of operator (e.g. TType *ptr = &ptr_hook; // MM2PtrHook<TType> ptr_hook)
+    */
+    constexpr TType* operator &() const {
+        return reinterpret_cast<TType*>(lpAddr);
+    };
+
+    /*
+        Indirection operator (e.g. TType ptr = *ptr_hook; // MM2PtrHook<TType> ptr_hook)
+    */
+    constexpr TType operator *() const {
+        return *static_cast<TType*>(lpAddr);
+    };
+
+    /*
+        Implicit conversion (e.g. TType *value = ptr_hook; // MM2PtrHook<TType *> ptr_hook)
+    */
     constexpr operator TType*() const {
         return reinterpret_cast<TType*>(lpAddr);
     };
 
+    /*
+        Implicit conversion (e.g. TType value = ptr_hook; // MM2PtrHook<TType> ptr_hook)
+    */
     constexpr operator TType() const {
         return *static_cast<TType*>(lpAddr);
     };
