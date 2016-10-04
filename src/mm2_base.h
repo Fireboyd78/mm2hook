@@ -39,7 +39,6 @@ namespace MM2
     };
 
     class asNode : public asCullable {
-    private:
         asNode *next;
         asNode *child; // not sure on this one
         asNode *parent;
@@ -80,55 +79,59 @@ namespace MM2
         static MM2FnHook<bool> $Load;
         static MM2FnHook<bool> $Save;
     public:
-        asNode() {
+        AGE_API asNode() {
             PUSH_VTABLE();
             $$ctor(this);
             POP_VTABLE();
         };
 
-        virtual ~asNode() {
+        AGE_API virtual ~asNode() {
             PUSH_VTABLE();
             $$dtor(this);
             POP_VTABLE();
         };
 
-        int AddChild(asNode *child) {
+        AGE_API void SetName(LPCSTR name) {
+            $SetName(this, name);
+        };
+
+        AGE_API int AddChild(asNode *child) {
             return $AddChild(this, child);
         };
 
-        int InsertChild(int index, asNode *child) {
+        AGE_API int InsertChild(int index, asNode *child) {
             return $InsertChild(this, index, child);
         };
 
-        int RemoveChild(int index) {
+        AGE_API int RemoveChild(int index) {
             return $RemoveChild_$1(this, index);
         };
 
-        int RemoveChild(asNode *child) {
+        AGE_API int RemoveChild(asNode *child) {
             return $RemoveChild_$2(this, child);
         };
 
-        void RemoveAllChildren(void) {
+        AGE_API void RemoveAllChildren(void) {
             $RemoveAllChildren(this);
         };
 
-        asNode * GetChild(int index) {
+        AGE_API asNode * GetChild(int index) {
             return $GetChild(this, index);
         };
 
-        asNode * GetNext(void) {
+        AGE_API asNode* GetNext(void) {
             return $GetNext(this);
         };
 
-        asNode * GetLastChild(void) {
+        AGE_API asNode* GetLastChild(void) {
             return $GetLastChild(this);
         };
 
-        int NumChildren(void) {
+        AGE_API int NumChildren(void) {
             return $NumChildren(this);
         };
 
-        void SwitchTo(int index) {
+        AGE_API void SwitchTo(int index) {
             $SwitchTo(this, index);
         };
 
@@ -137,47 +140,47 @@ namespace MM2
             They must EXACTLY match the virtual tables in MM2!
         */
 
-        virtual void Update(void) {
+        AGE_API virtual void Update(void) {
             $Update(this);
         };
 
-        virtual void Reset(void) {
+        AGE_API virtual void Reset(void) {
             $Reset(this);
         };
 
-        virtual void ResChange(int width, int height) {
+        AGE_API virtual void ResChange(int width, int height) {
             $ResChange(this, width, height);
         };
 
-        virtual void UpdatePaused(void) {
+        AGE_API virtual void UpdatePaused(void) {
             $UpdatePaused(this);
         };
 
-        virtual void FileIO(datParser &parser) {
+        AGE_API virtual void FileIO(datParser &parser) {
             $FileIO(this, &parser);
         };
 
-        virtual void AfterLoad(void) {
+        AGE_API virtual void AfterLoad(void) {
             $AfterLoad(this);
         };
 
-        virtual void BeforeSave(void) {
+        AGE_API virtual void BeforeSave(void) {
             $BeforeSave(this);
         };
 
-        virtual bool Save(void) {
+        AGE_API virtual bool Save(void) {
             return $Save(this);
         };
 
-        virtual bool Load(void) {
+        AGE_API virtual bool Load(void) {
             return $Load(this);
         };
 
-        virtual char * GetClassName(void) {
+        AGE_API virtual char * GetClassName(void) {
             return $GetClassNameA(this);
         };
 
-        virtual const char * GetDirName(void) {
+        AGE_API virtual const char * GetDirName(void) {
             return $GetDirName(this);
         };
     };

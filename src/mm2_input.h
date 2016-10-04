@@ -35,19 +35,19 @@ namespace MM2
         static MM2FnHook<void> $Queue;
         static MM2FnHook<void> $Command;
     public:
-        static bool Pop(ioEvent *outEvent) {
-            $Pop(outEvent);
+        AGE_API static bool Pop(ioEvent *outEvent) {
+            return $Pop(outEvent);
         };
 
-        static bool Peek(ioEvent *outEvent, int *idx) {
-            $Peek(outEvent, idx);
+        AGE_API static bool Peek(ioEvent *outEvent, int *idx) {
+            return $Peek(outEvent, idx);
         };
 
-        static void Queue(ioEvent::ioEventType type, int x, int y, int value) {
+        AGE_API static void Queue(ioEvent::ioEventType type, int x, int y, int value) {
             $Queue(type, x, y, value);
         };
 
-        static void Command(void *command) {
+        AGE_API static void Command(void *command) {
             $Command(command);
         };
     };

@@ -23,19 +23,19 @@ namespace MM2
         static MM2FnHook<bool> $Get_$3;
         static MM2FnHook<bool> $Get_$4;
     public:
-        static bool Get(LPCSTR arg) {
+        AGE_API static bool Get(LPCSTR arg) {
             return $Get_$1(arg);
         };
 
-        static bool Get(LPCSTR arg, UINT index, int *out) {
+        AGE_API static bool Get(LPCSTR arg, UINT index, int *out) {
             return $Get_$2(arg, index, out);
         };
 
-        static bool Get(LPCSTR arg, UINT index, float *out) {
+        AGE_API static bool Get(LPCSTR arg, UINT index, float *out) {
             return $Get_$3(arg, index, out);
         };
 
-        static bool Get(LPCSTR arg, UINT index, LPCSTR *out) {
+        AGE_API static bool Get(LPCSTR arg, UINT index, LPCSTR *out) {
             return $Get_$4(arg, index, out);
         };
     };
@@ -54,20 +54,20 @@ namespace MM2
         static Stream * Create(char const *,char const *,char const *,bool);
         */
 
-        static void FullPath(char *buffer, int length, LPCSTR directory, LPCSTR filename) {
+        AGE_API static void FullPath(char *buffer, int length, LPCSTR directory, LPCSTR filename) {
             $FullPath_$1(buffer, length, directory, filename);
         };
 
-        static void FullPath(char *buffer, int length, LPCSTR directory, LPCSTR filename, LPCSTR extension) {
+        AGE_API static void FullPath(char *buffer, int length, LPCSTR directory, LPCSTR filename, LPCSTR extension) {
             $FullPath_$2(buffer, length, directory, filename, extension);
         };
 
         // these don't work for files outside of archives
-        static bool Exists(LPCSTR directory, LPCSTR filename) {
+        AGE_API static bool Exists(LPCSTR directory, LPCSTR filename) {
             return $Exists_$1(directory, filename);
         };
 
-        static bool Exists(LPCSTR directory, LPCSTR filename, LPCSTR extension) {
+        AGE_API static bool Exists(LPCSTR directory, LPCSTR filename, LPCSTR extension) {
             return $Exists_$2(directory, filename, extension);
         };
     };
@@ -114,31 +114,31 @@ namespace MM2
 
         static MM2FnHook<void> $Call;
     public:
-        datCallback(void) {
+        AGE_API datCallback(void) {
             $$ctor$void(this);
         };
 
-        datCallback(LPDATCALLBACK_THIS callback, Base *base) {
+        AGE_API datCallback(LPDATCALLBACK_THIS callback, Base *base) {
             $$ctor$ThisCB_$1(this, callback, base);
         };
-        datCallback(LPDATCALLBACK_THIS_1 callback, Base *base, void *context) {
+        AGE_API datCallback(LPDATCALLBACK_THIS_1 callback, Base *base, void *context) {
             $$ctor$ThisCB_$2(this, callback, base, context);
         };
-        datCallback(LPDATCALLBACK_THIS_2 callback, Base *base, void *context) {
+        AGE_API datCallback(LPDATCALLBACK_THIS_2 callback, Base *base, void *context) {
             $$ctor$ThisCB_$3(this, callback, base, context);
         };
 
-        datCallback(LPDATCALLBACK callback, Base *base) {
+        AGE_API datCallback(LPDATCALLBACK callback, Base *base) {
             $$ctor$CB_$1(this, callback, base);
         };
-        datCallback(LPDATCALLBACK_1 callback, Base *base, void *context) {
+        AGE_API datCallback(LPDATCALLBACK_1 callback, Base *base, void *context) {
             $$ctor$CB_$2(this, callback, base, context);
         };
-        datCallback(LPDATCALLBACK_2 callback, Base *base, void *context) {
+        AGE_API datCallback(LPDATCALLBACK_2 callback, Base *base, void *context) {
             $$ctor$CB_$3(this, callback, base, context);
         };
 
-        void Call(void *arg) {
+        AGE_API void Call(void *arg) {
             $Call(this, arg);
         };
     };
@@ -149,11 +149,11 @@ namespace MM2
         static MM2FnHook<bool> $OpenLog;
         static MM2FnHook<void> $SetOutputMask;
     public:
-        static bool OpenLog(LPCSTR filename) {
+        AGE_API static bool OpenLog(LPCSTR filename) {
             return $OpenLog(filename);
         };
 
-        static void CloseLog(void) {
+        AGE_API static void CloseLog(void) {
             $CloseLog();
         };
 
@@ -162,7 +162,7 @@ namespace MM2
         static void SetAfterMsgBoxFunction(void(__cdecl *lpFunc)(void));
         */
 
-        static void SetOutputMask(UINT mask) {
+        AGE_API static void SetOutputMask(UINT mask) {
             $SetOutputMask(mask);
         };
     };
@@ -236,7 +236,7 @@ namespace MM2
             8 - Vector4
             9 - Parser (datParser)
         */
-        datParserRecord & AddRecord(int type, LPCSTR name, void *dataPtr, int count) {
+        AGE_API datParserRecord & AddRecord(int type, LPCSTR name, void *dataPtr, int count) {
             // last parameter is the 'callback' which is never actually used
             return $AddRecord(this, type, name, dataPtr, count, NULL);
         };
@@ -245,15 +245,15 @@ namespace MM2
             return AddRecord(type, name, dataPtr, 1);
         };
     public:
-        datParser(const char *filename) {
+        AGE_API datParser(const char *filename) {
             $$ctor(this, filename);
         };
 
-        ~datParser() {
+        AGE_API ~datParser() {
             $$dtor(this);
         };
 
-        datParser * AddParser(LPCSTR name) {
+        AGE_API datParser * AddParser(LPCSTR name) {
             // 'callback' unused (see AddRecord above)
             return $AddParser(this, name, NULL);
         };
@@ -271,37 +271,37 @@ namespace MM2
             Support for adding arrays of values
         */
 
-        void AddValue(LPCSTR name, bool *values, int count)     { AddRecord(1, name, values, count); };
-        void AddValue(LPCSTR name, char *values, int count)     { AddRecord(2, name, values, count); };
-        void AddValue(LPCSTR name, short *values, int count)    { AddRecord(3, name, values, count); };
-        void AddValue(LPCSTR name, int *values, int count)      { AddRecord(4, name, values, count); };
-        void AddValue(LPCSTR name, float *values, int count)    { AddRecord(5, name, values, count); };
-        void AddValue(LPCSTR name, Vector2 *values, int count)  { AddRecord(6, name, values, count); };
-        void AddValue(LPCSTR name, Vector3 *values, int count)  { AddRecord(7, name, values, count); };
-        void AddValue(LPCSTR name, Vector4 *values, int count)  { AddRecord(8, name, values, count); };
+        AGE_API void AddValue(LPCSTR name, bool *values, int count)     { AddRecord(1, name, values, count); };
+        AGE_API void AddValue(LPCSTR name, char *values, int count)     { AddRecord(2, name, values, count); };
+        AGE_API void AddValue(LPCSTR name, short *values, int count)    { AddRecord(3, name, values, count); };
+        AGE_API void AddValue(LPCSTR name, int *values, int count)      { AddRecord(4, name, values, count); };
+        AGE_API void AddValue(LPCSTR name, float *values, int count)    { AddRecord(5, name, values, count); };
+        AGE_API void AddValue(LPCSTR name, Vector2 *values, int count)  { AddRecord(6, name, values, count); };
+        AGE_API void AddValue(LPCSTR name, Vector3 *values, int count)  { AddRecord(7, name, values, count); };
+        AGE_API void AddValue(LPCSTR name, Vector4 *values, int count)  { AddRecord(8, name, values, count); };
 
         /*
             Inline methods for adding a single value instead of an array
         */
 
-        inline void AddValue(LPCSTR name, bool *value)          { AddValue(name, value, 1); };
-        inline void AddValue(LPCSTR name, char *value)          { AddValue(name, value, 1); };
-        inline void AddValue(LPCSTR name, short *value)         { AddValue(name, value, 1); };
-        inline void AddValue(LPCSTR name, int *value)           { AddValue(name, value, 1); };
-        inline void AddValue(LPCSTR name, float *value)         { AddValue(name, value, 1); };
-        inline void AddValue(LPCSTR name, Vector2 *value)       { AddValue(name, value, 1); };
-        inline void AddValue(LPCSTR name, Vector3 *value)       { AddValue(name, value, 1); };
-        inline void AddValue(LPCSTR name, Vector4 *value)       { AddValue(name, value, 1); };
+        inline void AddValue(LPCSTR name, bool *value)      { AddValue(name, value, 1); };
+        inline void AddValue(LPCSTR name, char *value)      { AddValue(name, value, 1); };
+        inline void AddValue(LPCSTR name, short *value)     { AddValue(name, value, 1); };
+        inline void AddValue(LPCSTR name, int *value)       { AddValue(name, value, 1); };
+        inline void AddValue(LPCSTR name, float *value)     { AddValue(name, value, 1); };
+        inline void AddValue(LPCSTR name, Vector2 *value)   { AddValue(name, value, 1); };
+        inline void AddValue(LPCSTR name, Vector3 *value)   { AddValue(name, value, 1); };
+        inline void AddValue(LPCSTR name, Vector4 *value)   { AddValue(name, value, 1); };
 
-        bool Load(Stream *stream, LPCSTR filename) {
+        AGE_API bool Load(Stream *stream, LPCSTR filename) {
             return $Load_$1(this, stream, filename);
         };
 
-        bool Load(LPCSTR directory, LPCSTR filename) {
+        AGE_API bool Load(LPCSTR directory, LPCSTR filename) {
             return $Load_$2(this, directory, filename);
         };
 
-        bool Load(LPCSTR directory, LPCSTR filename, LPCSTR extension) {
+        AGE_API bool Load(LPCSTR directory, LPCSTR filename, LPCSTR extension) {
             return $Load_$3(this, directory, filename, extension);
         };
 
@@ -309,15 +309,15 @@ namespace MM2
             Binary saving is indefinitely disabled since it's bugged
         */
 
-        bool Save(Stream *stream, LPCSTR filename) {
+        AGE_API bool Save(Stream *stream, LPCSTR filename) {
             return $Save_$1(this, stream, filename, false);
         };
 
-        bool Save(LPCSTR directory, LPCSTR filename) {
+        AGE_API bool Save(LPCSTR directory, LPCSTR filename) {
             return $Save_$2(this, directory, filename, false);
         };
 
-        bool Save(LPCSTR directory, LPCSTR filename, LPCSTR extension) {
+        AGE_API bool Save(LPCSTR directory, LPCSTR filename, LPCSTR extension) {
             return $Save_$3(this, directory, filename, extension, false);
         };
     };
@@ -327,11 +327,11 @@ namespace MM2
         static MM2FnHook<void> $Reset;
         static MM2FnHook<void> $Update;
     public:
-        static void Reset(void) {
+        AGE_API static void Reset(void) {
             $Reset();
         };
 
-        static void Update(void) {
+        AGE_API static void Update(void) {
             $Update();
         };
     };

@@ -49,13 +49,13 @@ namespace MM2
 
         static MM2FnHook<void> $BeDone;
     public:
-        mmGame(void) {
+        AGE_API mmGame(void) {
             PUSH_VTABLE();
             $$ctor(this);
             POP_VTABLE();
         };
 
-        virtual ~mmGame(void) {
+        AGE_API virtual ~mmGame(void) {
             PUSH_VTABLE();
             $$dtor(this);
             POP_VTABLE();
@@ -69,46 +69,46 @@ namespace MM2
             return *getPtr<mmPopup*>(this, 0x94);
         };
 
-        virtual int Init(void) {
-            $Init(this);
+        AGE_API virtual int Init(void) {
+            return $Init(this);
         };
 
-        virtual void InitGameStrings(void) {
+        AGE_API virtual void InitGameStrings(void) {
             $InitGameStrings(this);
         };
 
-        virtual void InitMyPlayer(void) PURE;
+        AGE_API virtual void InitMyPlayer(void) PURE;
 
-        virtual void InitOtherPlayers(void) {
+        AGE_API virtual void InitOtherPlayers(void) {
             $InitOtherPlayers(this);
         };
 
-        virtual void InitGameObjects(void) PURE;
-        virtual void InitHUD(void) PURE;
-        virtual void UpdateGameInput(int) PURE;
-        virtual void UpdateDebugKeyInput(int) PURE;
-        virtual void UpdateGame(void) PURE;
-        virtual void NextRace(void) PURE;
+        AGE_API virtual void InitGameObjects(void) PURE;
+        AGE_API virtual void InitHUD(void) PURE;
+        AGE_API virtual void UpdateGameInput(int) PURE;
+        AGE_API virtual void UpdateDebugKeyInput(int) PURE;
+        AGE_API virtual void UpdateGame(void) PURE;
+        AGE_API virtual void NextRace(void) PURE;
 
-        virtual void HitWaterHandler(void) {
+        AGE_API virtual void HitWaterHandler(void) {
             $HitWaterHandler(this);
         };
 
-        virtual void DropThruCityHandler(void) {
+        AGE_API virtual void DropThruCityHandler(void) {
             $DropThruCityHandler(this);
         };
 
-        virtual void SendChatMessage(char *message) {
+        AGE_API virtual void SendChatMessage(char *message) {
             $SendChatMessage(this, message);
         };
 
-        virtual void SwitchState(int) PURE;
+        AGE_API virtual void SwitchState(int) PURE;
 
-        virtual void BeDone(int) {
+        AGE_API virtual void BeDone(int) {
 
         };
 
-        virtual void * GetWaypoints(void) PURE;
+        AGE_API virtual void * GetWaypoints(void) PURE;
     };
 
     class mmGameManager {
@@ -151,7 +151,7 @@ namespace MM2
     protected:
         static MM2FnHook<bool> $LoadAmbientSFX;
     public:
-        bool LoadAmbientSFX(LPCSTR name) {
+        AGE_API bool LoadAmbientSFX(LPCSTR name) {
             return $LoadAmbientSFX(this, name);
         };
     };
@@ -164,15 +164,15 @@ namespace MM2
         static MM2FnHook<void> $SetMessage2;
         static MM2FnHook<void> $PostChatMessage;
     public:
-        void SetMessage(THIS_ LPCSTR message, float duration, int p2) {
+        AGE_API void SetMessage(THIS_ LPCSTR message, float duration, int p2) {
             $SetMessage(this, message, duration, p2);
         };
 
-        void SetMessage2(THIS_ LPCSTR message) {
+        AGE_API void SetMessage2(THIS_ LPCSTR message) {
             $SetMessage2(this, message);
         };
 
-        void PostChatMessage(THIS_ LPCSTR message) {
+        AGE_API void PostChatMessage(THIS_ LPCSTR message) {
             $PostChatMessage(this, message);
         };
     };
@@ -207,19 +207,19 @@ namespace MM2
             return *getPtr<mmGame*>(this, 0x18);
         };
 
-        int IsEnabled(THIS_ void) {
+        AGE_API int IsEnabled(THIS_ void) {
             return $IsEnabled(this);
         };
 
-        void Lock(THIS_ void) {
+        AGE_API void Lock(THIS_ void) {
             $Lock(this);
         };
 
-        void Unlock(THIS_ void) {
+        AGE_API void Unlock(THIS_ void) {
             $Unlock(this);
         };
 
-        void ProcessChat(THIS_ void) {
+        AGE_API void ProcessChat(THIS_ void) {
             $ProcessChat(this);
         };
     };

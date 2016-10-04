@@ -20,51 +20,51 @@ namespace MM2
         static MM2FnHook<int> $Size;
         static MM2FnHook<int> $Flush;
     public:
-        static void DumpOpenFiles(void) {
+        AGE_API static void DumpOpenFiles(void) {
             $DumpOpenFiles();
         };
 
-        static Stream* Open(LPCSTR filename, bool isZipFile) {
+        AGE_API static Stream* Open(LPCSTR filename, bool isZipFile) {
             return $Open(filename, isZipFile);
         };
 
-        static Stream* Create(LPCSTR filename) {
+        AGE_API static Stream* Create(LPCSTR filename) {
             return $Create(filename);
         };
 
-        int Read(LPVOID dstBuf, int size) {
+        AGE_API int Read(LPVOID dstBuf, int size) {
             return $Read(this, dstBuf, size);
         };
 
-        int Write(const LPVOID srcBuf, int size) {
+        AGE_API int Write(const LPVOID srcBuf, int size) {
             return $Write(this, srcBuf, size);
         };
 
-        int GetCh(void) {
+        AGE_API int GetCh(void) {
             return $GetCh(this);
         };
 
-        int PutCh(unsigned char ch) {
+        AGE_API int PutCh(unsigned char ch) {
             return $PutCh(this, ch);
         };
 
-        int Seek(int offset) {
+        AGE_API int Seek(int offset) {
             return $Seek(this, offset);
         };
 
-        int Tell(void) {
+        AGE_API int Tell(void) {
             return $Tell(this);
         };
 
-        int Close(void) {
+        AGE_API int Close(void) {
             return $Close(this);
         };
 
-        int Size(void) {
+        AGE_API int Size(void) {
             return $Size(this);
         };
 
-        int Flush(void) {
+        AGE_API int Flush(void) {
             return $Flush(this);
         };
     };

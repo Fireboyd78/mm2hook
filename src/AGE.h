@@ -5,6 +5,8 @@
 // A.G.E. (Angel Game Engine) common includes
 //
 
+#define AGE_API NOINLINE __declspec(dllexport)
+
 struct ageInfo
 {
     short gameVersion;

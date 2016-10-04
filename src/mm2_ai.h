@@ -12,9 +12,12 @@ namespace MM2
 
         static MM2PtrHook<aiMap> $AIMAP;
     public:
-        static void Dump(void) {
-            const aiMap* This = $AIMAP;
-            $Dump(&*This);
+        AGE_API void Dump(void) {
+            $Dump(this);
+        };
+
+        static aiMap* Instance(void) {
+            return $AIMAP;
         };
     };
 }

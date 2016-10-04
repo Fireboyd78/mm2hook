@@ -10,7 +10,7 @@ namespace MM2
     protected:
         static MM2FnHook<void> $SetSirenCSVName;
     public:
-        static void SetSirenCSVName(LPCSTR name) {
+        AGE_API static void SetSirenCSVName(LPCSTR name) {
             $SetSirenCSVName(name);
         };
     };
