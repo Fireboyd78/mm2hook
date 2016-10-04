@@ -81,6 +81,8 @@ MM2FnHook<void> $asLinearCS_Update          ( NULL, NULL, 0x4A3370 );
 
 MM2FnHook<bool> $gfxAutoDetect              ( NULL, NULL, 0x4ABE00 );
 
+MM2FnHook<void> $setRes                     ( NULL, NULL, 0x4A8CE0 );
+
 /*
     TODO: Move VGL stuff to a separate file?
 */
@@ -502,6 +504,13 @@ public:
 
         return $gfxAutoDetect (success);
     };
+
+    static void setRes (int width, int height, int cdepth, int zdepth, bool detectArgs)
+    {
+        LogFile::WriteLine ("Additional graphics params enabled");
+
+        $setRes (width, height, cdepth, zdepth, true);
+    }
 };
 
 class CallbackHandler {
@@ -718,14 +727,6 @@ const PATCH_INSTALL_INFO<1, 3> chatSize_patch = {
     }
 };
 
-const PATCH_INSTALL_INFO<1, 1> gfxArgs_patch =
-{
-    { 1 },
-    {
-        { NULL, NULL, 0x401473 }
-    }
-};
-
 const PATCH_INSTALL_INFO<4, 1> windowStyle_patch =
 {
     { 0x00, 0x00, 0xCA, 0x80 },
@@ -776,6 +777,12 @@ const CB_INSTALL_INFO<1> angelReadString_CB = {
 const CB_INSTALL_INFO<1> gfxAutoDetect_CB = {
     &gfxHandler::gfxAutoDetect, {
         INIT_CB_CALL( NULL, NULL, 0x401440 ),
+    }
+};
+
+const CB_INSTALL_INFO<1> setRes_CB = {
+    &gfxHandler::setRes, {
+        INIT_CB_CALL (NULL, NULL, 0x401482),
     }
 };
 
@@ -919,7 +926,6 @@ void InstallPatches(MM2Version gameVersion) {
 
     InstallGamePatch("Increase chat buffer size", gameVersion, chatSize_patch);
 
-    InstallGamePatch ("Enable graphics args", gameVersion, gfxArgs_patch);
     InstallGamePatch ("Change window style", gameVersion, windowStyle_patch);
     InstallGamePatch ("Increase cop limit", gameVersion, copLimit_patch);
 };
@@ -969,7 +975,8 @@ void InstallCallbacks(MM2Version gameVersion) {
     InstallGameCallback("ageDebug", gameVersion, ageDebug_CB);
 
     InstallGameCallback("gfxAutoDetect", gameVersion, gfxAutoDetect_CB);
-
+    InstallGameCallback("setRes", gameVersion, setRes_CB);
+    
     InstallGameCallback("memSafeHeap::Init [Heap fix]", gameVersion, memSafeHeapInit_CB);
 
     // not supported for betas yet
