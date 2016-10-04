@@ -59,9 +59,10 @@ LUAMOD_API int luaopen_MM2(lua_State * L)
     LogFile::Write(" - Registering MM2 library...");
 
     LuaRef mod = LuaRef::createTable(L);
+    auto modL = mod.state();
 
-    luaAddGlobals(mod.state());
-    luaAddModule_LogFile(mod.state());
+    luaAddGlobals(modL);
+    luaAddModule_LogFile(modL);
 
     LuaBinding(L)
         .beginClass<datOutput>("datOutput")
