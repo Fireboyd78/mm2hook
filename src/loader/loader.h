@@ -10,8 +10,6 @@
 #include "hook.h"
 #include "patch.h"
 
-#include "mm2.h"
-
 // dinput hooking
 #include <dinput.h>
 
