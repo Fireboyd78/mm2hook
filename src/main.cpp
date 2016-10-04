@@ -422,56 +422,55 @@ BOOL __stdcall AutoDetectCallback (GUID     *lpGUID,
                                     IUnknown* pUnkOuter)>
         DirectDrawCreateEx (NULL, NULL, 0x684518);
 
-    MM2PtrHook<IDirectDraw7*>               lpDD (NULL, NULL, 0x6830A8);
-    MM2PtrHook<IDirect3D7*>                 lpD3D (NULL, NULL, 0x6830AC);
+    MM2PtrHook<IDirectDraw7*>               lpDD                (NULL, NULL, 0x6830A8);
+    MM2PtrHook<IDirect3D7*>                 lpD3D               (NULL, NULL, 0x6830AC);
 
-    MM2PtrHook<mmGraphicsInterface>         gfxInterfaces (NULL, NULL, 0x683130);
-    MM2PtrHook<unsigned int>                gfxInterfaceCount (NULL, NULL, 0x6844C0);
+    MM2PtrHook<mmGraphicsInterface>         gfxInterfaces       (NULL, NULL, 0x683130);
+    MM2PtrHook<unsigned int>                gfxInterfaceCount   (NULL, NULL, 0x6844C0);
 
     MM2PtrHook<decltype(*(LPD3DENUMDEVICESCALLBACK7) NULL)>
-        lpDeviceCallback (NULL, NULL, 0x4AC3D0);
+                                            lpDeviceCallback    (NULL, NULL, 0x4AC3D0);
     MM2PtrHook<decltype(*(LPDDENUMMODESCALLBACK2) NULL)>
-        lpResCallback (NULL, NULL, 0x4AC6F0);
+                                             lpResCallback      (NULL, NULL, 0x4AC6F0);
 
-    MM2PtrHook<unsigned int>                gfxMaxScreenWidth (NULL, NULL, 0x6844FC);
-    MM2PtrHook<unsigned int>                gfxMaxScreenHeight (NULL, NULL, 0x6844D8);
+    MM2PtrHook<unsigned int>                gfxMaxScreenWidth   (NULL, NULL, 0x6844FC);
+    MM2PtrHook<unsigned int>                gfxMaxScreenHeight  (NULL, NULL, 0x6844D8);
 
-    if (DirectDrawCreateEx (lpGUID, (LPVOID*) &lpDD, IID_IDirectDraw7, 0) == DD_OK)
+    if (DirectDrawCreateEx (lpGUID, (LPVOID*) &lpDD, IID_IDirectDraw7, nullptr) == DD_OK)
     {
-        mmGraphicsInterface *gfxInterface = gfxInterfaces[gfxInterfaceCount];
+        mmGraphicsInterface *gfxInterface = &gfxInterfaces[gfxInterfaceCount];
 
         strcpy (gfxInterface->Name, lpDriverDescription);
 
         gfxInterface->DeviceCaps = 1;
         gfxInterface->AcceptableDepths = mmGraphicsInterface::Depth32;
 
-        DDDEVICEIDENTIFIER2 ddDeviceIdentifier;
-        memset (&ddDeviceIdentifier, 0, sizeof (ddDeviceIdentifier));
+        DDDEVICEIDENTIFIER2 ddDeviceIdentifier { NULL };
 
-        if (lpDD->GetDeviceIdentifier (&ddDeviceIdentifier, 0) == DD_OK)
+        if (lpDD->GetDeviceIdentifier(&ddDeviceIdentifier, 0) == DD_OK)
         {
             gfxInterface->VendorID = ddDeviceIdentifier.dwVendorId;
             gfxInterface->DeviceID = ddDeviceIdentifier.dwDeviceId;
             gfxInterface->GUID = ddDeviceIdentifier.guidDeviceIdentifier;
         }
 
-        if (lpDD->QueryInterface (IID_IDirect3D7, (LPVOID*) &lpD3D) == DD_OK)
+        if (lpDD->QueryInterface(IID_IDirect3D7, (LPVOID*) &lpD3D) == DD_OK)
         {
-            lpD3D->EnumDevices (LPD3DENUMDEVICESCALLBACK7 (&lpDeviceCallback), gfxInterface);
-            lpD3D->Release ();
+            lpD3D->EnumDevices(LPD3DENUMDEVICESCALLBACK7(&lpDeviceCallback), gfxInterface);
+            lpD3D->Release();
             *lpD3D = nullptr;
         }
 
-        gfxInterface->Renderer = mmGraphicsInterface::HardwareWithTnL;
-        gfxInterface->ResolutionCount = 0;
-        gfxInterface->ResolutionChoice = 0;
-        gfxInterface->AvailableMemory = 0x40000000; // 1GB = 1024 * 1024 * 1024
+        gfxInterface->Renderer          = mmGraphicsInterface::HardwareWithTnL;
+        gfxInterface->ResolutionCount   = 0;
+        gfxInterface->ResolutionChoice  = 0;
+        gfxInterface->AvailableMemory   = 0x40000000; // 1GB = 1024 * 1024 * 1024
 
         *gfxMaxScreenWidth = 0;
         *gfxMaxScreenHeight = 0;
 
-        lpDD->EnumDisplayModes (0, 0, gfxInterface, LPDDENUMMODESCALLBACK2 (&lpResCallback));
-        lpDD->Release ();
+        lpDD->EnumDisplayModes(0, 0, gfxInterface, LPDDENUMMODESCALLBACK2(&lpResCallback));
+        lpDD->Release();
         *lpDD = nullptr;
 
         ++*gfxInterfaceCount;
@@ -491,25 +490,25 @@ private:
             }
         };
 
-        InstallGameCallback ("AutoDetectCallback: Hooked", gameVersion, gfxAutoDetectPatch_CB);
+        InstallGameCallback("AutoDetectCallback: Hooked", gameVersion, gfxAutoDetectPatch_CB);
     };
 public:
-    static bool gfxAutoDetect (bool *success)
+    static bool gfxAutoDetect(bool *success)
     {
-        if (MM2::datArgParser::Get ("noautodetect"))
+        if (MM2::datArgParser::Get("noautodetect"))
         {
-            LogFile::WriteLine ("Hooking AutoDetect.");
-            InstallAutoDetectPatch ();
+            LogFile::WriteLine("Hooking AutoDetect.");
+            InstallAutoDetectPatch();
         }
 
-        return $gfxAutoDetect (success);
+        return $gfxAutoDetect(success);
     };
 
-    static void setRes (int width, int height, int cdepth, int zdepth, bool detectArgs)
+    static void setRes(int width, int height, int cdepth, int zdepth, bool detectArgs)
     {
-        LogFile::WriteLine ("Additional graphics params enabled");
+        LogFile::WriteLine("Additional graphics params enabled");
 
-        $setRes (width, height, cdepth, zdepth, true);
+        $setRes(width, height, cdepth, zdepth, true);
     }
 };
 
@@ -617,7 +616,7 @@ class GraphicsCallbackHandler
 {
 private:
     static UINT32 CalculateShadedColor(int color) {
-        auto timeWeather = $TIMEWEATHER[$timeOfDay];
+        auto timeWeather = &$TIMEWEATHER[$timeOfDay];
 
         vglKeyColor = addPitch(&timeWeather->KeyColor, timeWeather->KeyPitch);
         vglFill1Color = addPitch(&timeWeather->Fill1Color, timeWeather->Fill1Pitch);

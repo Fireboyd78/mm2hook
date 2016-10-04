@@ -88,59 +88,88 @@ public:
 };
 
 template<typename TType>
-class MM2PtrHook : public IMM2HookPtr {
+class MM2PtrHook : public IMM2HookPtr
+{
 public:
     constexpr MM2PtrHook(const MM2AddressData &addressData)
-        : IMM2HookPtr(addressData) {};
+        : IMM2HookPtr(addressData)
+    { };
+
     constexpr MM2PtrHook(DWORD addrBeta1, DWORD addrBeta2, DWORD addrRetail)
-        : IMM2HookPtr(addrBeta1, addrBeta2, addrRetail) {};
+        : IMM2HookPtr(addrBeta1, addrBeta2, addrRetail)
+    { };
 
-    inline void set(TType value) {
-        *static_cast<TType*>(lpAddr) = value;
+    inline TType* get() const
+    {
+        return static_cast<TType*>(this->lpAddr);
+    }
+
+    inline void set(TType value)
+    {
+        *this->get() = value;
+    }
+
+    /*
+        TType*->TMember - Pointer to struct of TType
+    */
+    inline TType& operator->() const
+    {
+        return *this->get();
     };
 
     /*
-        Member-of-pointer operator (e.g. ptr->SomeMethod(); // MM2PtrHook<TClass> ptr_hook)
+        &TType - Instance of TType
     */
-    TType operator->() {
-        return *reinterpret_cast<TType*>(lpAddr);
+    inline TType* operator&() const
+    {
+        return this->get();
     };
 
     /*
-        Address-of operator (e.g. TType *ptr = &ptr_hook; // MM2PtrHook<TType> ptr_hook)
+        *TType - Pointer to TType
     */
-    TType* operator &() {
-        return reinterpret_cast<TType*>(lpAddr);
+    inline TType& operator*() const
+    {
+        return *this->get();
     };
+
 
     /*
-        Indirection operator (e.g. TType ptr = *ptr_hook; // MM2PtrHook<TType> ptr_hook)
+        TType*(this) - Convert this to TType pointer
     */
-    TType& operator *() {
-        return *static_cast<TType*>(lpAddr);
-    };
+    explicit inline operator TType*() const
+    {
+        return this->get();
+    }
 
     /*
-        Implicit conversion (e.g. TType *value = ptr_hook; // MM2PtrHook<TType *> ptr_hook)
+        TType&(this) - Convert this to TType reference
     */
-    operator TType*() {
-        return reinterpret_cast<TType*>(lpAddr);
-    };
+    inline operator TType&() const
+    {
+        return *this->get();
+    }
 
     /*
-        Implicit conversion (e.g. TType value = ptr_hook; // MM2PtrHook<TType> ptr_hook)
+        TType[0] - Pointer is TType array
     */
-    operator TType&() {
-        return *static_cast<TType*>(lpAddr);
-    };
+    inline TType& operator[ ](std::size_t index) const
+    {
+        return this->get()[index];
+    }
 
-    TType* operator[](int index) {
-        return reinterpret_cast<TType*>((char *)lpAddr + (index * sizeof(TType)));
-    };
+    /*
+        this() - TType is function pointer
+    */
+    template <typename... TArgs>
+    inline auto operator()(TArgs... args)
+    {
+        return (*this->get())(args...);
+    }
 };
 
 /*
-Game patching functions
+    Game patching functions
 */
 
 enum CB_HOOK_TYPE {
