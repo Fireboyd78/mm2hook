@@ -102,39 +102,39 @@ public:
     /*
         Member-of-pointer operator (e.g. ptr->SomeMethod(); // MM2PtrHook<TClass> ptr_hook)
     */
-    constexpr TType* operator->() const {
-        return reinterpret_cast<TType*>(lpAddr);
+    TType operator->() {
+        return *reinterpret_cast<TType*>(lpAddr);
     };
 
     /*
         Address-of operator (e.g. TType *ptr = &ptr_hook; // MM2PtrHook<TType> ptr_hook)
     */
-    constexpr TType* operator &() const {
+    TType* operator &() {
         return reinterpret_cast<TType*>(lpAddr);
     };
 
     /*
         Indirection operator (e.g. TType ptr = *ptr_hook; // MM2PtrHook<TType> ptr_hook)
     */
-    constexpr TType operator *() const {
+    TType& operator *() {
         return *static_cast<TType*>(lpAddr);
     };
 
     /*
         Implicit conversion (e.g. TType *value = ptr_hook; // MM2PtrHook<TType *> ptr_hook)
     */
-    constexpr operator TType*() const {
+    operator TType*() {
         return reinterpret_cast<TType*>(lpAddr);
     };
 
     /*
         Implicit conversion (e.g. TType value = ptr_hook; // MM2PtrHook<TType> ptr_hook)
     */
-    constexpr operator TType() const {
+    operator TType&() {
         return *static_cast<TType*>(lpAddr);
     };
 
-    constexpr TType* operator[](int index) const {
+    TType* operator[](int index) {
         return reinterpret_cast<TType*>((char *)lpAddr + (index * sizeof(TType)));
     };
 };

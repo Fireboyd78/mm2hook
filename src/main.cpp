@@ -359,47 +359,152 @@ public:
     }
 };
 
-class gfxHandler {
-private:
-    static void InstallAutoDetectPatch() {
-        const IMM2HookPtr addr_jmp1 = { NULL, NULL, 0x4AC2EE };
-        const IMM2HookPtr addr_jmp2 = { NULL, NULL, 0x4AC392 };
+struct mmGraphicsInterface
+{
+    GUID GUID;
+    char Name[64];
 
-        if (addr_jmp1.is_null() || addr_jmp2.is_null())
-            return;
+    unsigned int DeviceCaps;
 
-        const CB_INSTALL_INFO<1> gfxAutoDetectPatch1_CB = {
-            { addr_jmp1.ptr() },{
-                INIT_CB_JUMP(NULL, NULL, 0x4AC14A),
-            }
-        };
-
-        const CB_INSTALL_INFO<1> gfxAutoDetectPatch2_CB = {
-            { addr_jmp2.ptr() },{
-                INIT_CB_JUMP(NULL, NULL, 0x4AC318),
-            }
-        };
-
-        const PATCH_INSTALL_INFO<4, 2> gfxAutoDetectResPatch = {
-            { 0 },{
-                { NULL, NULL, 0x4AC2EF },
-                { NULL, NULL, 0x4AC2F4 },
-            }
-        };
-
-        InstallGameCallback("AutoDetectCallback: disable [1/2]", gameVersion, gfxAutoDetectPatch1_CB);
-        InstallGameCallback("AutoDetectCallback: disable [2/2]", gameVersion, gfxAutoDetectPatch2_CB);
-
-        InstallGamePatch("AutoDetectCallback: MaxRes = 0", gameVersion, gfxAutoDetectResPatch);
+    enum mmRenderer : unsigned int
+    {
+        Software = 0,    // Software (No 3D Video Card)
+        Hardware = 1,    // Hardware (3D Video Card)
+        HardwareWithTnL = 2     // Hardware (3D Video Card With T&L)
     };
-public:
-    static bool gfxAutoDetect(bool *p1) {
-        if (MM2::datArgParser::Get("-noautodetect")) {
-            LogFile::WriteLine("Disabling AutoDetect.");
-            InstallAutoDetectPatch();
+
+    mmRenderer Renderer;
+
+    unsigned int ResolutionCount;   // Max of 64 mmResolutions
+    unsigned int ResolutionChoice;
+
+    enum mmColorDepthFlag : unsigned int
+    {
+        Depth16 = 0x400,
+        Depth24 = 0x200,
+        Depth32 = 0x100
+    };
+
+    mmColorDepthFlag AcceptableDepths;  // Used to check if mmResolution::Depth is allowed
+
+    unsigned int AvailableMemory;
+    unsigned int VendorID;
+    unsigned int DeviceID;
+
+    struct mmResolution
+    {
+        unsigned short ScreenWidth;
+        unsigned short ScreenHeight;
+        unsigned short ColorDepth;      // Always 16
+        unsigned short Is16BitColor;    // = (ColorDepth == 16) + 6 // Always 7
+    };
+
+    mmResolution Resolutions[64];
+};
+
+#define DIRECT3D_VERSION        0x0700
+#define DIRECTINPUT_VERSION     0x0700
+
+#include <d3d.h>
+
+BOOL __stdcall AutoDetectCallback (GUID     *lpGUID,
+                                   LPSTR    lpDriverDescription,
+                                   LPSTR    lpDriverName,
+                                   LPVOID   lpContext)
+{
+    LogFile::Format ("Detect: GUID=%x Desc=%s - Name=%s\n", lpGUID, lpDriverDescription, lpDriverName);
+
+    MM2PtrHook<HRESULT (__stdcall*)(GUID*     lpGUID,
+                                    LPVOID*   lplpDD,
+                                    REFIID    iid,
+                                    IUnknown* pUnkOuter)>
+        DirectDrawCreateEx (NULL, NULL, 0x684518);
+
+    MM2PtrHook<IDirectDraw7*>               lpDD (NULL, NULL, 0x6830A8);
+    MM2PtrHook<IDirect3D7*>                 lpD3D (NULL, NULL, 0x6830AC);
+
+    MM2PtrHook<mmGraphicsInterface>         gfxInterfaces (NULL, NULL, 0x683130);
+    MM2PtrHook<unsigned int>                gfxInterfaceCount (NULL, NULL, 0x6844C0);
+
+    MM2PtrHook<decltype(*(LPD3DENUMDEVICESCALLBACK7) NULL)>
+        lpDeviceCallback (NULL, NULL, 0x4AC3D0);
+    MM2PtrHook<decltype(*(LPDDENUMMODESCALLBACK2) NULL)>
+        lpResCallback (NULL, NULL, 0x4AC6F0);
+
+    MM2PtrHook<unsigned int>                gfxMaxScreenWidth (NULL, NULL, 0x6844FC);
+    MM2PtrHook<unsigned int>                gfxMaxScreenHeight (NULL, NULL, 0x6844D8);
+
+    if (DirectDrawCreateEx (lpGUID, (LPVOID*) &lpDD, IID_IDirectDraw7, 0) == DD_OK)
+    {
+        LogFile::Format ("IDirectDraw7: %x\n", *lpDD);
+
+        mmGraphicsInterface *gfxInterface = gfxInterfaces[gfxInterfaceCount];
+
+        LogFile::Format ("gfxInterface: %x\n", gfxInterface);
+
+        strcpy (gfxInterface->Name, lpDriverDescription);
+
+        gfxInterface->DeviceCaps = 1;
+        gfxInterface->AcceptableDepths = mmGraphicsInterface::Depth32;
+
+        DDDEVICEIDENTIFIER2 ddDeviceIdentifier;
+        memset (&ddDeviceIdentifier, 0, sizeof (ddDeviceIdentifier));
+
+        if (lpDD->GetDeviceIdentifier (&ddDeviceIdentifier, 0) == DD_OK)
+        {
+            gfxInterface->VendorID = ddDeviceIdentifier.dwVendorId;
+            gfxInterface->DeviceID = ddDeviceIdentifier.dwDeviceId;
+            gfxInterface->GUID = ddDeviceIdentifier.guidDeviceIdentifier;
         }
 
-        return $gfxAutoDetect(p1);
+        if (lpDD->QueryInterface (IID_IDirect3D7, (LPVOID*) &lpD3D) == DD_OK)
+        {
+            lpD3D->EnumDevices (LPD3DENUMDEVICESCALLBACK7 (&lpDeviceCallback), gfxInterface);
+            lpD3D->Release ();
+            *lpD3D = nullptr;
+        }
+
+        gfxInterface->Renderer = mmGraphicsInterface::HardwareWithTnL;
+        gfxInterface->ResolutionCount = 0;
+        gfxInterface->ResolutionChoice = 0;
+        gfxInterface->AvailableMemory = 0x40000000; // 1GB = 1024 * 1024 * 1024
+
+        *gfxMaxScreenWidth = 0;
+        *gfxMaxScreenHeight = 0;
+
+        lpDD->EnumDisplayModes (0, 0, gfxInterface, LPDDENUMMODESCALLBACK2 (&lpResCallback));
+        lpDD->Release ();
+        *lpDD = nullptr;
+
+        ++*gfxInterfaceCount;
+    }
+
+    return TRUE;
+}
+
+class gfxHandler
+{
+private:
+    static void InstallAutoDetectPatch ()
+    {
+        const CB_INSTALL_INFO<1> gfxAutoDetectPatch_CB = {
+            { &AutoDetectCallback }, {
+                INIT_CB_JUMP (NULL, NULL, 0x4AC030),
+            }
+        };
+
+        InstallGameCallback ("AutoDetectCallback: Hooked", gameVersion, gfxAutoDetectPatch_CB);
+    };
+public:
+    static bool gfxAutoDetect (bool *success)
+    {
+        if (MM2::datArgParser::Get ("noautodetect"))
+        {
+            LogFile::WriteLine ("Hooking AutoDetect.");
+            InstallAutoDetectPatch ();
+        }
+
+        return $gfxAutoDetect (success);
     };
 };
 
@@ -844,9 +949,9 @@ void InstallCallbacks(MM2Version gameVersion) {
     InstallGameCallback("memSafeHeap::Init [Heap fix]", gameVersion, memSafeHeapInit_CB);
 
     // not supported for betas yet
-    if (gameVersion == MM2_RETAIL) {
-        InstallGameCallback("AngelReadString", gameVersion, angelReadString_CB);
-    }
+    //if (gameVersion == MM2_RETAIL) {
+    //    InstallGameCallback("AngelReadString", gameVersion, angelReadString_CB);
+    //}
 
     InstallGameCallback("vglBegin", gameVersion, vglBegin_CB);
     InstallGameCallback("vglEnd", gameVersion, vglEnd_CB);
