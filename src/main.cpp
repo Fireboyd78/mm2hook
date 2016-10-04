@@ -412,7 +412,7 @@ BOOL __stdcall AutoDetectCallback (GUID     *lpGUID,
                                    LPSTR    lpDriverName,
                                    LPVOID   lpContext)
 {
-    LogFile::Format ("Detect: GUID=%x Desc=%s - Name=%s\n", lpGUID, lpDriverDescription, lpDriverName);
+    LogFile::Format ("Detect: GUID=%x Desc=%s, Name=%s\n", lpGUID, lpDriverDescription, lpDriverName);
 
     MM2PtrHook<HRESULT (__stdcall*)(GUID*     lpGUID,
                                     LPVOID*   lplpDD,
@@ -436,11 +436,7 @@ BOOL __stdcall AutoDetectCallback (GUID     *lpGUID,
 
     if (DirectDrawCreateEx (lpGUID, (LPVOID*) &lpDD, IID_IDirectDraw7, 0) == DD_OK)
     {
-        LogFile::Format ("IDirectDraw7: %x\n", *lpDD);
-
         mmGraphicsInterface *gfxInterface = gfxInterfaces[gfxInterfaceCount];
-
-        LogFile::Format ("gfxInterface: %x\n", gfxInterface);
 
         strcpy (gfxInterface->Name, lpDriverDescription);
 
@@ -722,6 +718,14 @@ const PATCH_INSTALL_INFO<1, 3> chatSize_patch = {
     }
 };
 
+const PATCH_INSTALL_INFO<1, 1> gfxArgs_patch =
+{
+    { 1 },
+    {
+        { NULL, NULL, 0x401473 }
+    }
+};
+
 // ==========================
 // Callback hook definitions
 // ==========================
@@ -898,6 +902,8 @@ void InstallPatches(MM2Version gameVersion) {
     LogFile::WriteLine("Installing patches...");
 
     InstallGamePatch("Increase chat buffer size", gameVersion, chatSize_patch);
+
+    InstallGamePatch ("Enable graphics args", gameVersion, gfxArgs_patch);    
 };
 
 void InstallCallbacks(MM2Version gameVersion) {
