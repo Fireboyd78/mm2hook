@@ -169,7 +169,7 @@ struct PATCH_INSTALL_INFO {
     static const int length = count;
     static const int buffer_size = size;
 
-    char buffer[size];
+    unsigned char buffer[size];
     MM2AddressData addrData[count];
 };
 

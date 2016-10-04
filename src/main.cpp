@@ -726,6 +726,22 @@ const PATCH_INSTALL_INFO<1, 1> gfxArgs_patch =
     }
 };
 
+const PATCH_INSTALL_INFO<4, 1> windowStyle_patch =
+{
+    { 0x00, 0x00, 0xCA, 0x80 },
+    {
+        { NULL, NULL, 0x4A8BD1 }
+    }
+};
+
+const PATCH_INSTALL_INFO<1, 1> copLimit_patch =
+{
+    { 0x40 },
+    {
+        { NULL, NULL, 0x55100B }
+    }
+};
+
 // ==========================
 // Callback hook definitions
 // ==========================
@@ -903,7 +919,9 @@ void InstallPatches(MM2Version gameVersion) {
 
     InstallGamePatch("Increase chat buffer size", gameVersion, chatSize_patch);
 
-    InstallGamePatch ("Enable graphics args", gameVersion, gfxArgs_patch);    
+    InstallGamePatch ("Enable graphics args", gameVersion, gfxArgs_patch);
+    InstallGamePatch ("Change window style", gameVersion, windowStyle_patch);
+    InstallGamePatch ("Increase cop limit", gameVersion, copLimit_patch);
 };
 
 void InstallCallbacks(MM2Version gameVersion) {
