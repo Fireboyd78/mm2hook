@@ -85,6 +85,8 @@ MM2FnHook<bool> $gfxAutoDetect              ( NULL, NULL, 0x4ABE00 );
 
 MM2FnHook<void> $setRes                     ( NULL, NULL, 0x4A8CE0 );
 
+MM2FnHook<HWND> $gfxWindowCreate            ( NULL, NULL, 0x4A8A90 );
+
 /*
     TODO: Move VGL stuff to a separate file?
 */
@@ -458,6 +460,19 @@ public:
 
         $setRes(width, height, cdepth, zdepth, (datArgParser::Get("gfxArgs")) ? true : detectArgs);
     }
+
+    static HWND gfxWindowCreate(LPCSTR lpWindowName)
+    {
+        if (datArgParser::Get("nopause"))
+        {
+            InstallGamePatch("Disable pause", gameVersion, { 0x90, 0x90 },
+            {
+                { NULL, NULL, 0x4A8925 },
+            });
+        }
+
+        return $gfxWindowCreate(lpWindowName);
+    }
 };
 
 class CallbackHandler {
@@ -697,11 +712,6 @@ void InstallPatches(MM2Version gameVersion) {
     {
         { NULL, NULL, 0x55100B },
     });
-
-    InstallGamePatch("Disable pause on loose foucs", gameVersion, { 0x90, 0x90 },
-    {
-        { NULL, NULL, 0x4A8925 },
-    });
 };
 
 void InstallCallbacks(MM2Version gameVersion) {
@@ -764,6 +774,11 @@ void InstallCallbacks(MM2Version gameVersion) {
     InstallGameCallback("setRes", gameVersion, &gfxHandler::setRes, HOOK_CALL,
     {
         { NULL, NULL, 0x401482 },
+    });
+
+    InstallGameCallback("gfxWindowCreate", gameVersion, &gfxHandler::gfxWindowCreate, HOOK_CALL,
+    {
+        { NULL, NULL, 0x4A94AA },
     });
     
     InstallGameCallback("memSafeHeap::Init [Heap fix]", gameVersion, &memSafeHeapCallbackHandler::Init, HOOK_CALL,
