@@ -697,6 +697,11 @@ void InstallPatches(MM2Version gameVersion) {
     {
         { NULL, NULL, 0x55100B },
     });
+
+    InstallGamePatch("Disable pause on loose foucs", gameVersion, { 0x90, 0x90 },
+    {
+        { NULL, NULL, 0x4A8925 },
+    });
 };
 
 void InstallCallbacks(MM2Version gameVersion) {
