@@ -178,11 +178,6 @@ enum CB_HOOK_TYPE
     HOOK_CALL
 };
 
-#define INIT_CB_DATA(type, addr1, addr2, addr3) {{ addr1, addr2, addr3 }, type }
-
-#define INIT_CB_CALL(addr1, addr2, addr3) INIT_CB_DATA(HOOK_CALL, addr1, addr2, addr3)
-#define INIT_CB_JUMP(addr1, addr2, addr3) INIT_CB_DATA(HOOK_JMP, addr1, addr2, addr3)
-
 #include <array>
 using CB_INSTALL_PATCH = std::array<DWORD, MM2_NUM_VERSIONS>;
 
