@@ -27,21 +27,21 @@ namespace MM2
 
     struct gfxInterface {
         /*0x00*/ GUID GUID;
-        /*0x04*/ char Name[64];
+        /*0x10*/ char Name[64];
  
-        /*0x44*/ uint32_t DeviceCaps;
+        /*0x50*/ uint32_t DeviceCaps;
  
-        /*0x48*/ gfxDeviceType DeviceType;
+        /*0x54*/ gfxDeviceType DeviceType;
  
-        /*0x4C*/ uint32_t ResolutionCount;   // Max of 64 resolutions
-        /*0x50*/ uint32_t ResolutionChoice;
+        /*0x58*/ uint32_t ResolutionCount;   // Max of 64 resolutions
+        /*0x5C*/ uint32_t ResolutionChoice;
  
-        /*0x54*/ gfxDepthFlags AcceptableDepths;  // Used to check if mmResolution::Depth is allowed
+        /*0x60*/ gfxDepthFlags AcceptableDepths;  // Used to check if mmResolution::Depth is allowed
  
-        /*0x58*/ uint32_t AvailableMemory;
-        /*0x5C*/ uint32_t VendorID;
-        /*0x60*/ uint32_t DeviceID;
+        /*0x64*/ uint32_t AvailableMemory;
+        /*0x68*/ uint32_t VendorID;
+        /*0x6C*/ uint32_t DeviceID;
  
-        /*0x64*/ gfxResData Resolutions[64];
+        /*0x70*/ gfxResData Resolutions[64];
     };
 }
