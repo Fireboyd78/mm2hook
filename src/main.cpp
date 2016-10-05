@@ -349,7 +349,7 @@ public:
 
 class ChatHandler {
 public:
-    void Process(char *message) {
+    static void Process(char *message) {
         if (isConsoleOpen) {
             MM2Lua::SendCommand(message);
 
@@ -403,11 +403,6 @@ struct mmGraphicsInterface
 
     mmResolution Resolutions[64];
 };
-
-#define DIRECT3D_VERSION        0x0700
-#define DIRECTINPUT_VERSION     0x0700
-
-#include <d3d.h>
 
 BOOL __stdcall AutoDetectCallback (GUID*    lpGUID,
                                    LPSTR    lpDriverDescription,
@@ -709,34 +704,6 @@ public:
 */
 
 // ==========================
-// Patch definitions
-// ==========================
-
-const PATCH_INSTALL_INFO<1, 3> chatSize_patch = {
-    { 60 }, {
-        { NULL, NULL, 0x4E68B5 },
-        { NULL, NULL, 0x4E68B9 },
-        { NULL, NULL, 0x50BBCF }
-    }
-};
-
-const PATCH_INSTALL_INFO<4, 1> windowStyle_patch =
-{
-    { 0x00, 0x00, 0xCA, 0x80 },
-    {
-        { NULL, NULL, 0x4A8BD1 }
-    }
-};
-
-const PATCH_INSTALL_INFO<1, 1> copLimit_patch =
-{
-    { 0x40 },
-    {
-        { NULL, NULL, 0x55100B }
-    }
-};
-
-// ==========================
 // VTable hook definitions
 // ==========================
 
@@ -767,12 +734,25 @@ bool InitializeFramework(MM2Version gameVersion) {
 };
 
 void InstallPatches(MM2Version gameVersion) {
+
     LogFile::WriteLine("Installing patches...");
 
-    InstallGamePatch("Increase chat buffer size", gameVersion, chatSize_patch);
+    InstallGamePatch("Increase chat buffer size", gameVersion, { 60 },
+    {
+        { NULL, NULL, 0x4E68B5 },
+        { NULL, NULL, 0x4E68B9 },
+        { NULL, NULL, 0x50BBCF },
+    });
 
-    InstallGamePatch ("Change window style", gameVersion, windowStyle_patch);
-    InstallGamePatch ("Increase cop limit", gameVersion, copLimit_patch);
+    InstallGamePatch ("Change window style", gameVersion, { 0x00, 0x00, 0xCA, 0x80 },
+    {
+        { NULL, NULL, 0x4A8BD1 },
+    });
+
+    InstallGamePatch ("Increase cop limit", gameVersion, { 0x40 },
+    {
+        { NULL, NULL, 0x55100B },
+    });
 };
 
 void InstallCallbacks(MM2Version gameVersion) {

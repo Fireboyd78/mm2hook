@@ -130,7 +130,7 @@ bool InstallFunctionHook(DWORD dwAddress, DWORD fnDest) {
     return true;
 }
 
-void InstallPatch(DWORD dwAddress, BYTE *patchData, DWORD dwSize) {
+void InstallPatch(DWORD dwAddress, const void* patchData, std::size_t dwSize) {
     PushPatch((LPVOID)dwAddress, dwSize);
     memcpy((LPVOID)dwAddress, patchData, dwSize);
     PopPatch();

@@ -1,8 +1,11 @@
 #pragma once
+
+#include <array>
+
 #include "common.h"
 #include "hook.h"
 
-#define MAX_HOOK_PTRS 4096
+constexpr std::size_t MAX_HOOK_PTRS = 4096;
 
 extern class MM2HookMgr;
 extern class IMM2HookPtr;
@@ -21,11 +24,10 @@ enum MM2Version
     MM2_BETA_2_PETITE
 };
 
-struct MM2AddressData {
-    DWORD addresses[MM2_NUM_VERSIONS];
-};
+using MM2AddressData = std::array<DWORD, MM2_NUM_VERSIONS>;
 
-class MM2HookMgr {
+class MM2HookMgr
+{
 public:
     static void alloc(IMM2HookPtr *hook);
     static void free(int hook_idx);
@@ -34,33 +36,33 @@ public:
     static int Initialize(MM2Version version);
 };
 
-class IMM2HookPtr : public IHookPtr {
+class IMM2HookPtr : public IHookPtr
+{
 private:
     int hook_idx = -1;
 protected:
     MM2AddressData addressData;
 public:
-    inline IMM2HookPtr::IMM2HookPtr(const MM2AddressData &addressData) : addressData(addressData) {
+    inline IMM2HookPtr::IMM2HookPtr(const MM2AddressData &addressData)
+        : addressData(addressData)
+    {
         MM2HookMgr::alloc(this);
     };
 
-    inline IMM2HookPtr::~IMM2HookPtr() {
+    inline IMM2HookPtr(DWORD addrBeta1,
+                       DWORD addrBeta2,
+                       DWORD addrRetail)
+        : IMM2HookPtr(MM2AddressData { addrBeta1, addrBeta2, addrRetail })
+    { };
+
+    inline IMM2HookPtr::~IMM2HookPtr()
+    {
         MM2HookMgr::free(hook_idx);
     };
 
-    inline IMM2HookPtr( DWORD addrBeta1,
-                        DWORD addrBeta2,
-                        DWORD addrRetail
-    ) : IMM2HookPtr( 
-            MM2AddressData {
-                addrBeta1,
-                addrBeta2,
-                addrRetail
-            }
-    ) {};
-
-    inline void set_version(MM2Version gameVersion) {
-        lpAddr = (LPVOID)addressData.addresses[gameVersion];
+    inline void set_version(MM2Version gameVersion)
+    {
+        lpAddr = (LPVOID) addressData[gameVersion];
     };
 };
 
@@ -171,8 +173,6 @@ public:
     }
 };
 
-#include <type_traits>
-
 template <typename TFunc>
 using MM2RawFnHook = MM2PtrHook<std::remove_pointer_t<TFunc>>;
 
@@ -186,20 +186,9 @@ enum CB_HOOK_TYPE
     HOOK_CALL
 };
 
-#include <array>
-using CB_INSTALL_PATCH = std::array<DWORD, MM2_NUM_VERSIONS>;
-
-template<int size = 1, int count = 1>
-struct PATCH_INSTALL_INFO {
-    static const int length = count;
-    static const int buffer_size = size;
-
-    unsigned char buffer[size];
-    MM2AddressData addrData[count];
-};
-
 template<int count = 1>
-struct VT_INSTALL_INFO {
+struct VT_INSTALL_INFO
+{
     static const int length = count;
 
     ANY_PTR dwHookAddr;
@@ -207,16 +196,20 @@ struct VT_INSTALL_INFO {
 };
 
 bool InstallVTableHook(LPCSTR name, MM2Version gameVersion, LPVOID lpData, int count);
-bool InstallGamePatch(LPCSTR name, MM2Version gameVersion, LPVOID lpData, int buffer_size, int count);
 
-void InstallGameCallback(LPCSTR name, MM2Version gameVersion, ANY_PTR lpCallback, CB_HOOK_TYPE type, std::initializer_list<CB_INSTALL_PATCH> addresses);
+void InstallGamePatch(LPCSTR name,
+                      MM2Version gameVersion,
+                      std::initializer_list<unsigned char> bytes,
+                      std::initializer_list<MM2AddressData> addresses);
+
+void InstallGameCallback(LPCSTR name,
+                         MM2Version gameVersion,
+                         ANY_PTR lpCallback,
+                         CB_HOOK_TYPE type,
+                         std::initializer_list<MM2AddressData> addresses);
 
 template<int count>
-inline bool InstallVTableHook(LPCSTR name, MM2Version gameVersion, const VT_INSTALL_INFO<count> &data) {
-    return InstallVTableHook(name, gameVersion, (LPVOID)&data, data.length);
-}
-
-template<int size, int count>
-inline bool InstallGamePatch(LPCSTR name, MM2Version gameVersion, const PATCH_INSTALL_INFO<size, count> &data) {
-    return InstallGamePatch(name, gameVersion, (LPVOID)&data, data.buffer_size, data.length);
+inline bool InstallVTableHook(LPCSTR name, MM2Version gameVersion, const VT_INSTALL_INFO<count> &data)
+{
+    return InstallVTableHook(name, gameVersion, (LPVOID) &data, data.length);
 }

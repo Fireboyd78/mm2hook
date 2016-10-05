@@ -22,4 +22,4 @@ void InstallVTHook(DWORD dwHookAddr, DWORD dwNewAddr, LPDWORD lpdwOldAddr);
 bool InstallCallbackHook(DWORD dwAddress, DWORD fnDest, bool isCall);
 bool InstallFunctionHook(DWORD dwAddress, DWORD jmpDest);
 
-void InstallPatch(DWORD dwAddress, BYTE *patchData, DWORD dwSize);
+void InstallPatch(DWORD dwAddress, const void* patchData, std::size_t dwSize);
