@@ -9,6 +9,7 @@
 #include "mm2_city.h"
 #include "mm2_data.h"
 #include "mm2_game.h"
+#include "mm2_gfx.h"
 #include "mm2_input.h"
 #include "mm2_stream.h"
 #include "mm2_vehicle.h"

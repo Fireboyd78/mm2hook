@@ -1,5 +1,7 @@
 #include "main.h"
 
+using namespace MM2;
+
 LPFNDIRECTINPUTCREATE lpDICreate;
 
 // Export as 'DirectInputCreateA/W' so we can hook into MM2
@@ -44,11 +46,11 @@ const double cosNum = 1.570796;
 UINT32 vglColor;
 UINT32 vglCalculatedColor = 0xFFFFFFFF;
 
-MM2::Vector3 vglAmbient;
-MM2::Vector3 vglKeyColor;
-MM2::Vector3 vglFill1Color;
-MM2::Vector3 vglFill2Color;
-MM2::Vector3 vglShadedColor;
+Vector3 vglAmbient;
+Vector3 vglKeyColor;
+Vector3 vglFill1Color;
+Vector3 vglFill2Color;
+Vector3 vglShadedColor;
 
 /* ARGB color */
 struct {
@@ -65,7 +67,7 @@ struct {
 
 /* Dashboard experiment */
 
-static MM2::Matrix34 sm_DashOffset;
+static Matrix34 sm_DashOffset;
 
 // ==========================
 // Function hooks
@@ -99,14 +101,14 @@ MM2FnHook<void> $DefaultPrinter             ( NULL, NULL, 0x4C95F0 );
 // Pointer hooks
 // ==========================
 
-MM2PtrHook<MM2::cityTimeWeatherLighting> 
+MM2PtrHook<cityTimeWeatherLighting> 
                 $TIMEWEATHER                ( NULL, NULL, 0x6299A8 );
 
 MM2PtrHook<int> $timeOfDay                  ( NULL, NULL, 0x62B068 );
 
 MM2PtrHook<UINT32> $vglCurrentColor         ( NULL, NULL, 0x661974 );
 
-MM2PtrHook<MM2::asNode> $ROOT               ( NULL, NULL, 0x661738 );
+MM2PtrHook<asNode> $ROOT                    ( NULL, NULL, 0x661738 );
 
 MM2PtrHook<void (*)(LPCSTR)>
                     $PrintString            ( NULL, NULL, 0x5CECF0 );
@@ -157,7 +159,7 @@ bool HandleKeyPress(DWORD vKey)
             // tell the game to open a chat box,
             // and then use a local variable to check if it's open
 
-            MM2::mmGameManager *mgr = MM2::mmGameManager::Instance();
+            mmGameManager *mgr = mmGameManager::Instance();
             auto gamePtr = mgr->getGame();
 
             if (gamePtr != NULL)
@@ -195,7 +197,7 @@ LRESULT APIENTRY WndProcNew(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 // Generic functions
 // ==========================
 
-MM2::Vector3 addPitch(MM2::Vector3 *vec, float pitch) {
+Vector3 addPitch(Vector3 *vec, float pitch) {
     float p = (float)fmod(pitch, 3.14159);
     bool pitchIsZero = (pitch >= 0.0f);
 
@@ -213,7 +215,7 @@ float normalize(float value) {
     return (value > 1.0f) ? (value - (value - 1.0f)) : value;
 };
 
-MM2::Vector3 intToColor(int value) {
+Vector3 intToColor(int value) {
     return{
         (float)((char)((value & 0xFF0000) >> 16) / 256.0),
         (float)((char)((value & 0xFF00) >> 8) / 256.0),
@@ -287,7 +289,7 @@ public:
             /* Won't write to the log file for some reason :(
             LogFile::Write("Redirecting MM2 output...");
 
-            if (MM2::datOutput::OpenLog("mm2.log"))
+            if (datOutput::OpenLog("mm2.log"))
                 LogFile::Write("Done!\n");
             else
                 LogFile::Write("FAIL!\n");
@@ -343,13 +345,14 @@ public:
         MM2Lua::OnTick();
 
         // pass control back to MM2
-        MM2::datTimeManager::Update();
+        datTimeManager::Update();
     }
 };
 
 class ChatHandler {
 public:
-    static void Process(char *message) {
+    void Process(char *message) {
+        Warningf("ChatHandler::Process(\"%s\")", message);
         if (isConsoleOpen) {
             MM2Lua::SendCommand(message);
 
@@ -361,81 +364,38 @@ public:
     }
 };
 
-struct mmGraphicsInterface
-{
-    GUID GUID;
-    char Name[64];
-
-    unsigned int DeviceCaps;
-
-    enum mmRenderer : unsigned int
-    {
-        Software = 0,    // Software (No 3D Video Card)
-        Hardware = 1,    // Hardware (3D Video Card)
-        HardwareWithTnL = 2     // Hardware (3D Video Card With T&L)
-    };
-
-    mmRenderer Renderer;
-
-    unsigned int ResolutionCount;   // Max of 64 mmResolutions
-    unsigned int ResolutionChoice;
-
-    enum mmColorDepthFlag : unsigned int
-    {
-        Depth16 = 0x400,
-        Depth24 = 0x200,
-        Depth32 = 0x100
-    };
-
-    mmColorDepthFlag AcceptableDepths;  // Used to check if mmResolution::Depth is allowed
-
-    unsigned int AvailableMemory;
-    unsigned int VendorID;
-    unsigned int DeviceID;
-
-    struct mmResolution
-    {
-        unsigned short ScreenWidth;
-        unsigned short ScreenHeight;
-        unsigned short ColorDepth;      // Always 16
-        unsigned short Is16BitColor;    // = (ColorDepth == 16) + 6 // Always 7
-    };
-
-    mmResolution Resolutions[64];
-};
-
 BOOL __stdcall AutoDetectCallback (GUID*    lpGUID,
                                    LPSTR    lpDriverDescription,
                                    LPSTR    lpDriverName,
                                    LPVOID   lpContext)
 {
-    LogFile::Format ("GFXAutoDetect: Description=%s, Name=%s\n", lpDriverDescription, lpDriverName);
+    LogFile::Format("GFXAutoDetect: Description=%s, Name=%s\n", lpDriverDescription, lpDriverName);
 
     MM2PtrHook<HRESULT(WINAPI*)(GUID*,
                                 LPVOID*,
                                 REFIID,
-                                IUnknown*)> DirectDrawCreateEx  (NULL, NULL, 0x684518);
+                                IUnknown*)> DirectDrawCreateEx  ( NULL, NULL, 0x684518 );
 
-    MM2PtrHook<IDirectDraw7*>               lpDD                (NULL, NULL, 0x6830A8);
-    MM2PtrHook<IDirect3D7*>                 lpD3D               (NULL, NULL, 0x6830AC);
+    MM2PtrHook<IDirectDraw7 *>              lpDD                ( NULL, NULL, 0x6830A8 );
+    MM2PtrHook<IDirect3D7 *>                lpD3D               ( NULL, NULL, 0x6830AC );
 
-    MM2PtrHook<mmGraphicsInterface>         gfxInterfaces       (NULL, NULL, 0x683130);
-    MM2PtrHook<unsigned int>                gfxInterfaceCount   (NULL, NULL, 0x6844C0);
+    MM2PtrHook<gfxInterface>                gfxInterfaces       ( NULL, NULL, 0x683130 );
+    MM2PtrHook<uint32_t>                    gfxInterfaceCount   ( NULL, NULL, 0x6844C0 );
 
-    MM2RawFnHook<LPD3DENUMDEVICESCALLBACK7> lpDeviceCallback    (NULL, NULL, 0x4AC3D0);
-    MM2RawFnHook<LPDDENUMMODESCALLBACK2>    lpResCallback       (NULL, NULL, 0x4AC6F0);
+    MM2RawFnHook<LPD3DENUMDEVICESCALLBACK7> lpDeviceCallback    ( NULL, NULL, 0x4AC3D0 );
+    MM2RawFnHook<LPDDENUMMODESCALLBACK2>    lpResCallback       ( NULL, NULL, 0x4AC6F0 );
 
-    MM2PtrHook<unsigned int>                gfxMaxScreenWidth   (NULL, NULL, 0x6844FC);
-    MM2PtrHook<unsigned int>                gfxMaxScreenHeight  (NULL, NULL, 0x6844D8);
+    MM2PtrHook<uint32_t>                    gfxMaxScreenWidth   ( NULL, NULL, 0x6844FC );
+    MM2PtrHook<uint32_t>                    gfxMaxScreenHeight  ( NULL, NULL, 0x6844D8 );
 
-    if (DirectDrawCreateEx (lpGUID, (LPVOID*) &lpDD, IID_IDirectDraw7, nullptr) == DD_OK)
+    if (DirectDrawCreateEx(lpGUID, (LPVOID*)&lpDD, IID_IDirectDraw7, nullptr) == DD_OK)
     {
-        mmGraphicsInterface *gfxInterface = &gfxInterfaces[gfxInterfaceCount];
+        gfxInterface *gfxInterface = &gfxInterfaces[gfxInterfaceCount];
 
         strcpy (gfxInterface->Name, lpDriverDescription);
 
         gfxInterface->DeviceCaps = 1;
-        gfxInterface->AcceptableDepths = mmGraphicsInterface::Depth32;
+        gfxInterface->AcceptableDepths = gfxDepthFlags::Depth32;
 
         DDDEVICEIDENTIFIER2 ddDeviceIdentifier = { NULL };
 
@@ -450,10 +410,11 @@ BOOL __stdcall AutoDetectCallback (GUID*    lpGUID,
         {
             lpD3D->EnumDevices(lpDeviceCallback, gfxInterface);
             lpD3D->Release();
+
             *lpD3D = nullptr;
         }
 
-        gfxInterface->Renderer          = mmGraphicsInterface::HardwareWithTnL;
+        gfxInterface->DeviceType        = gfxDeviceType::HardwareWithTnL;
         gfxInterface->ResolutionCount   = 0;
         gfxInterface->ResolutionChoice  = 0;
         gfxInterface->AvailableMemory   = 0x40000000; // 1GB = 1024 * 1024 * 1024
@@ -463,6 +424,7 @@ BOOL __stdcall AutoDetectCallback (GUID*    lpGUID,
 
         lpDD->EnumDisplayModes(0, 0, gfxInterface, lpResCallback);
         lpDD->Release();
+
         *lpDD = nullptr;
 
         ++*gfxInterfaceCount;
@@ -473,21 +435,18 @@ BOOL __stdcall AutoDetectCallback (GUID*    lpGUID,
 
 class gfxHandler
 {
-private:
-    static void InstallAutoDetectPatch()
-    {
-        InstallGameCallback("AutoDetectCallback", gameVersion, &AutoDetectCallback, HOOK_JMP,
-        {
-            { NULL, NULL, 0x4AC030 },
-        });
-    };
 public:
     static bool gfxAutoDetect(bool *success)
     {
-        if (MM2::datArgParser::Get("noautodetect"))
+        if (datArgParser::Get("noautodetect"))
         {
-            LogFile::WriteLine("Hooking AutoDetect");
-            InstallAutoDetectPatch();
+            LogFile::WriteLine("Hooking AutoDetect...");
+            
+            // Hook into the original AutoDetect and replace it with our own version
+            InstallGameCallback("AutoDetectCallback", gameVersion, &AutoDetectCallback, HOOK_JMP,
+            {
+                { NULL, NULL, 0x4AC030 },
+            });
         }
 
         return $gfxAutoDetect(success);
@@ -495,16 +454,16 @@ public:
 
     static void setRes(int width, int height, int cdepth, int zdepth, bool detectArgs)
     {
-        LogFile::WriteLine("Additional graphics params enabled");
+        LogFile::WriteLine("Additional graphics params enabled.");
 
-        $setRes(width, height, cdepth, zdepth, true);
+        $setRes(width, height, cdepth, zdepth, (datArgParser::Get("gfxArgs")) ? true : detectArgs);
     }
 };
 
 class CallbackHandler {
 public:
     static void CreateGameMutex(LPCSTR lpName) {
-        if (MM2::datArgParser::Get("nomutex")) {
+        if (datArgParser::Get("nomutex")) {
             LogFile::WriteLine("Game mutex disabled.");
             return;
         }
@@ -515,7 +474,7 @@ public:
     bool LoadAmbientSFX(LPCSTR name) {
         LPCSTR szAmbientSFX = NULL;
 
-        auto city = (LPCSTR)MM2::szCityName;
+        auto city = (LPCSTR)szCityName;
 
         if ((_strcmpi(city, "sf") == 0) && (_strcmpi(city, "london") == 0))
         {
@@ -523,7 +482,7 @@ public:
 
             sprintf(ambientSFX, "%sambience", city);
 
-            bool exists = !(MM2::datAssetManager::Exists("aud\\dmusic\\csv_files", ambientSFX, "csv"));
+            bool exists = !(datAssetManager::Exists("aud\\dmusic\\csv_files", ambientSFX, "csv"));
 
             // default to 'sfambience' instead of 'londonambience'
             szAmbientSFX = (exists) ? ambientSFX : "sfambience";
@@ -536,27 +495,27 @@ public:
         LogFile::Format("AmbientSFX: %s\n", szAmbientSFX);
 
         // pass to MM2
-        return ((MM2::mmGameMusicData*)this)->LoadAmbientSFX(szAmbientSFX);
+        return ((mmGameMusicData*)this)->LoadAmbientSFX(szAmbientSFX);
     };
 
     static void SetSirenCSVName(LPCSTR name) {
         char siren_name[80] = { NULL };
 
-        sprintf(siren_name, "%spolicesiren", (LPCSTR)MM2::szCityName);
+        sprintf(siren_name, "%spolicesiren", (LPCSTR)szCityName);
 
-        bool useDefault = !(MM2::datAssetManager::Exists("aud\\cardata\\player", siren_name, "csv"));
+        bool useDefault = !(datAssetManager::Exists("aud\\cardata\\player", siren_name, "csv"));
 
         LPCSTR szSirenName = (useDefault) ? name : siren_name;
 
         LogFile::Format("SirenCSVName: %s\n", szSirenName);
 
         // pass to MM2
-        MM2::vehCarAudioContainer::SetSirenCSVName(szSirenName);
+        vehCarAudioContainer::SetSirenCSVName(szSirenName);
     };
 
     static void ageDebug(int enabled, LPCSTR format, ...) {
         // this makes the game load up reeeeeally slow if enabled!
-        if (ageDebugEnabled || (ageDebugEnabled = MM2::datArgParser::Get("age_debug")))
+        if (ageDebugEnabled || (ageDebugEnabled = datArgParser::Get("age_debug")))
         {
             va_list va;
             va_start(va, format);
@@ -662,7 +621,7 @@ class mmDashViewCallbackHandler
 {
 public:
     void UpdateCS() {
-        auto dashCam = getPtr<MM2::Matrix34>(this, 0x18);
+        auto dashCam = getPtr<Matrix34>(this, 0x18);
 
         // apply an offset (mainly doing this from CheatEngine, etc.)
         dashCam->m11 += sm_DashOffset.m11;
@@ -688,7 +647,7 @@ class memSafeHeapCallbackHandler
 {
 public:
     void Init(void *memAllocator, unsigned int heapSize, bool p3, bool p4, bool checkAlloc) {
-        MM2::datArgParser::Get("heapsize", 0, &g_heapSize);
+        datArgParser::Get("heapsize", 0, &g_heapSize);
 
         // fast way of expanding to the proper size
         // same as ((g_heapSize * 1024) * 1024)
@@ -874,7 +833,7 @@ void InstallCallbacks(MM2Version gameVersion) {
         { NULL, NULL, 0x401A2F },
     });
 
-    InstallGameCallback("mmGame::SendChatMessage", gameVersion, &ChatHandler::Process, HOOK_CALL,
+    InstallGameCallback("mmGame::SendChatMessage", gameVersion, &ChatHandler::Process, HOOK_JMP,
     {
         { NULL, NULL, 0x414EB6 },
     });
