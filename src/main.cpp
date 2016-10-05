@@ -84,8 +84,6 @@ MM2FnHook<bool> $gfxAutoDetect              ( NULL, NULL, 0x4ABE00 );
 
 MM2FnHook<void> $setRes                     ( NULL, NULL, 0x4A8CE0 );
 
-MM2FnHook<HWND> $gfxWindowCreate            ( NULL, NULL, 0x4A8A90 );
-
 /*
     TODO: Move VGL stuff to a separate file?
 */
@@ -116,13 +114,49 @@ MM2PtrHook<void (*)(LPCSTR)>
 MM2PtrHook<void (*)(int, LPCSTR, char *)>
                     $Printer                ( NULL, NULL, 0x5CED24);
 
+MM2PtrHook<HRESULT(WINAPI*)(GUID*,
+                            LPVOID*,
+                            REFIID,
+                            IUnknown*)> lpDirectDrawCreateEx(NULL, NULL, 0x684518);
+
+MM2PtrHook<IDirectDraw7 *>              lpDD(NULL, NULL, 0x6830A8);
+MM2PtrHook<IDirect3D7 *>                lpD3D(NULL, NULL, 0x6830AC);
+
+MM2PtrHook<gfxInterface>                gfxInterfaces(NULL, NULL, 0x683130);
+MM2PtrHook<uint32_t>                    gfxInterfaceCount(NULL, NULL, 0x6844C0);
+
+MM2RawFnHook<LPD3DENUMDEVICESCALLBACK7> lpDeviceCallback(NULL, NULL, 0x4AC3D0);
+MM2RawFnHook<LPDDENUMMODESCALLBACK2>    lpResCallback(NULL, NULL, 0x4AC6F0);
+
+MM2PtrHook<uint32_t>                    gfxMaxScreenWidth(NULL, NULL, 0x6844FC);
+MM2PtrHook<uint32_t>                    gfxMaxScreenHeight(NULL, NULL, 0x6844D8);
+
+MM2PtrHook<LPCSTR>  lpWindowTitle(NULL, NULL, 0x68311C);
+MM2PtrHook<HWND>    hWndMain(NULL, NULL, 0x6830B8);
+
+MM2PtrHook<ATOM>    ATOM_Class(NULL, NULL, 0x6830F0);
+MM2PtrHook<LPCSTR>  IconID(NULL, NULL, 0x683108);
+
+MM2PtrHook<BOOL>    inWindow(NULL, NULL, 0x6830D0);
+MM2PtrHook<BOOL>    isMaximized(NULL, NULL, 0x6830D1);
+MM2PtrHook<BOOL>    hasBorder(NULL, NULL, 0x5CA3ED);
+
+MM2PtrHook<HWND>    hWndParent(NULL, NULL, 0x682FA0);
+
+MM2PtrHook<DWORD>   WndPosX(NULL, NULL, 0x6830EC);
+MM2PtrHook<DWORD>   WndPosY(NULL, NULL, 0x683110);
+MM2PtrHook<DWORD>   WndWidth(NULL, NULL, 0x683128);
+MM2PtrHook<DWORD>   WndHeight(NULL, NULL, 0x683100);
+
+MM2RawFnHook<WNDPROC> gfxWindowProc(NULL, NULL, 0x04A88F0);
+
 /*
     !! THESE ARE ABSOLUTELY CRITICAL TO THE HOOK WORKING PROPERLY !!
 */
 
-MM2PtrHook<void(__stdcall*)(void)> $__VtResumeSampling  ( 0x5C86B8, 0x5DF710, 0x5E0CC4 );
-MM2PtrHook<void(__stdcall*)(void)> $__VtPauseSampling   ( 0x5C86C8, 0x5DF724, 0x5E0CD8 );
-MM2PtrHook<BOOL> $gameClosing                           ( 0x667DEC, 0x6B0150, 0x6B1708 );
+MM2PtrHook<void(*)(void)> $__VtResumeSampling   ( 0x5C86B8, 0x5DF710, 0x5E0CC4 );
+MM2PtrHook<void(*)(void)> $__VtPauseSampling    ( 0x5C86C8, 0x5DF724, 0x5E0CD8 );
+MM2PtrHook<BOOL> $gameClosing                   ( 0x667DEC, 0x6B0150, 0x6B1708 );
 
 /*
     ===========================================================================
@@ -267,24 +301,7 @@ BOOL __stdcall AutoDetectCallback (GUID*    lpGUID,
 {
     LogFile::Format("GFXAutoDetect: Description=%s, Name=%s\n", lpDriverDescription, lpDriverName);
 
-    MM2PtrHook<HRESULT(WINAPI*)(GUID*,
-                                LPVOID*,
-                                REFIID,
-                                IUnknown*)> DirectDrawCreateEx  ( NULL, NULL, 0x684518 );
-
-    MM2PtrHook<IDirectDraw7 *>              lpDD                ( NULL, NULL, 0x6830A8 );
-    MM2PtrHook<IDirect3D7 *>                lpD3D               ( NULL, NULL, 0x6830AC );
-
-    MM2PtrHook<gfxInterface>                gfxInterfaces       ( NULL, NULL, 0x683130 );
-    MM2PtrHook<uint32_t>                    gfxInterfaceCount   ( NULL, NULL, 0x6844C0 );
-
-    MM2RawFnHook<LPD3DENUMDEVICESCALLBACK7> lpDeviceCallback    ( NULL, NULL, 0x4AC3D0 );
-    MM2RawFnHook<LPDDENUMMODESCALLBACK2>    lpResCallback       ( NULL, NULL, 0x4AC6F0 );
-
-    MM2PtrHook<uint32_t>                    gfxMaxScreenWidth   ( NULL, NULL, 0x6844FC );
-    MM2PtrHook<uint32_t>                    gfxMaxScreenHeight  ( NULL, NULL, 0x6844D8 );
-
-    if (DirectDrawCreateEx(lpGUID, (LPVOID*)&lpDD, IID_IDirectDraw7, nullptr) == DD_OK)
+    if (lpDirectDrawCreateEx(lpGUID, (LPVOID*)&lpDD, IID_IDirectDraw7, nullptr) == DD_OK)
     {
         gfxInterface *gfxInterface = &gfxInterfaces[gfxInterfaceCount];
 
@@ -330,7 +347,6 @@ BOOL __stdcall AutoDetectCallback (GUID*    lpGUID,
 }
 
 
-MM2RawFnHook<WNDPROC> gfxWindowProc(NULL, NULL, 0x04A88F0);
 
 class gfxHandler
 {
@@ -339,7 +355,7 @@ public:
     {
         LogFile::WriteLine("Additional graphics params enabled.");
 
-        $setRes(width, height, cdepth, zdepth, datArgParser::Get("gfxArgs") ? true : detectArgs);
+        $setRes(width, height, cdepth, zdepth, true);
     }
 
     static LRESULT APIENTRY WndProcNew(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -367,37 +383,19 @@ public:
         return gfxWindowProc(hWnd, uMsg, wParam, lParam);
     }
 
-    static void __cdecl gfxWindowCreate(LPCSTR lpWindowName)
+    static void gfxWindowCreate(LPCSTR lpWindowName)
     {
-        MM2PtrHook<LPCSTR> lpWindowTitle(NULL, NULL, 0x68311C);
+        if (hWndMain)
+        {
+            return;
+        }
 
         if (lpWindowTitle)
         {
             lpWindowName = lpWindowTitle;
         }
 
-        MM2PtrHook<HWND>    hWndMain(NULL, NULL, 0x6830B8);
-
-        if (hWndMain)
-        {
-            return;
-        }
-
-        MM2PtrHook<ATOM>    ATOM_Class(NULL, NULL, 0x6830F0);
-        MM2PtrHook<LPCSTR>  IconID(NULL, NULL, 0x683108);
-
-        MM2PtrHook<BOOL>    inWindow(NULL, NULL, 0x6830D0);
-        MM2PtrHook<BOOL>    isMaximized(NULL, NULL, 0x6830D1);
-        MM2PtrHook<BOOL>    hasBorder(NULL, NULL, 0x5CA3ED);
-
-        hasBorder = !datArgParser::Get("noborder");
-
-        MM2PtrHook<HWND>    hWndParent(NULL, NULL, 0x682FA0);
-
-        MM2PtrHook<DWORD>   WndPosX(NULL, NULL, 0x6830EC);
-        MM2PtrHook<DWORD>   WndPosY(NULL, NULL, 0x683110);
-        MM2PtrHook<DWORD>   WndWidth(NULL, NULL, 0x683128);
-        MM2PtrHook<DWORD>   WndHeight(NULL, NULL, 0x683100);
+        *hasBorder = !datArgParser::Get("noborder");
 
         if (!ATOM_Class)
         {
@@ -414,7 +412,7 @@ public:
             wc.lpszMenuName = NULL;
             wc.lpszClassName = "gfxWindow";
 
-            ATOM_Class = RegisterClassA(&wc);
+            *ATOM_Class = RegisterClassA(&wc);
         }
 
         HDC hDC = GetDC(0);
@@ -424,12 +422,12 @@ public:
 
         if (WndPosX == -1)
         {
-            WndPosX = (screenWidth - WndWidth) / 2;
+            *WndPosX = (screenWidth - WndWidth) / 2;
         }
 
         if (WndPosY == -1)
         {
-            WndPosY = (screenHeight - WndHeight) / 2;
+            *WndPosY = (screenHeight - WndHeight) / 2;
         }
 
         DWORD dwStyle = NULL;
@@ -468,7 +466,7 @@ public:
             0,
             0);
 
-        hWndMain = hWND;
+        *hWndMain = hWND;
 
         if (inWindow)
         {
@@ -718,8 +716,8 @@ public:
         if (gameVersion == MM2_RETAIL)
         {
             // hook into the printer
-            $Printer = &PrinterHandler::Print;
-            $PrintString = &PrinterHandler::PrintString;
+            *$Printer = &PrinterHandler::Print;
+            *$PrintString = &PrinterHandler::PrintString;
 
             /* Won't write to the log file for some reason :(
             LogFile::Write("Redirecting MM2 output...");
@@ -730,7 +728,7 @@ public:
             LogFile::Write("FAIL!\n");
             */
 
-            if (datArgParser::Get("noautodetect"))
+            if (!datArgParser::Get("oldautodetect"))
             {
                 // Hook into the original AutoDetect and replace it with our own version
                 InstallGameCallback("AutoDetectCallback", gameVersion, &AutoDetectCallback, HOOK_JMP,
@@ -752,7 +750,7 @@ public:
         MM2Lua::Reset();
     }
 
-    static void __stdcall Start()
+    static void Start()
     {
         if (!$gameClosing)
         {
@@ -765,7 +763,7 @@ public:
         }
     }
 
-    static void __stdcall Stop()
+    static void Stop()
     {
         if ($gameClosing)
         {
@@ -794,8 +792,8 @@ bool InitializeFramework(MM2Version gameVersion) {
         return false;
     }
 
-    $__VtResumeSampling = &HookSystemHandler::Start;
-    $__VtPauseSampling = &HookSystemHandler::Stop;
+    *$__VtResumeSampling = &HookSystemHandler::Start;
+    *$__VtPauseSampling = &HookSystemHandler::Stop;
 
     LogFile::WriteLine("Done!");
     return true;

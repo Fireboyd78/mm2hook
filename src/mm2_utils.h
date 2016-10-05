@@ -171,11 +171,6 @@ public:
     {
         return (*this->get())(args...);
     }
-
-    inline void operator=(TType value)
-    {
-        this->set(value);
-    }
 };
 
 template <typename TFunc>
