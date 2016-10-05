@@ -408,7 +408,7 @@ public:
             wc.cbClsExtra = 0;
             wc.cbWndExtra = 0;
             wc.hInstance = 0;
-            wc.hIcon = LoadIconA(GetModuleHandleA(0), IconID ? IconID : IDI_APPLICATION);
+            wc.hIcon = LoadIconA(GetModuleHandleA(NULL), IconID ? IconID : IDI_APPLICATION);
             wc.hCursor = LoadCursorA(0, IDC_ARROW);
             wc.hbrBackground = CreateSolidBrush(NULL);
             wc.lpszMenuName = NULL;
@@ -485,7 +485,10 @@ public:
                 0);
         }
 
-        ShowWindow(hWND, 1);
+        SetCursor(NULL);
+        ShowCursor(FALSE);
+
+        ShowWindow(hWND, TRUE);
         UpdateWindow(hWND);
         SetFocus(hWND);
     }
@@ -812,6 +815,11 @@ void InstallPatches(MM2Version gameVersion) {
     InstallGamePatch ("Increase cop limit", gameVersion, { 0x40 },
     {
         { NULL, NULL, 0x55100B },
+    });
+
+    InstallGamePatch("Enables pointer in windowed mode", gameVersion, { 0x90, 0x90 },
+    {
+        { NULL, NULL, 0x4F136E },
     });
 };
 
