@@ -81,6 +81,8 @@ MM2FnHook<void> $asLinearCS_Update          ( NULL, NULL, 0x4A3370 );
 
 MM2FnHook<bool> $gfxAutoDetect              ( NULL, NULL, 0x4ABE00 );
 
+MM2FnHook<void> $setRes                     ( NULL, NULL, 0x4A8CE0 );
+
 /*
     TODO: Move VGL stuff to a separate file?
 */
@@ -347,7 +349,7 @@ public:
 
 class ChatHandler {
 public:
-    void Process(char *message) {
+    static void Process(char *message) {
         if (isConsoleOpen) {
             MM2Lua::SendCommand(message);
 
@@ -359,48 +361,144 @@ public:
     }
 };
 
-class gfxHandler {
+struct mmGraphicsInterface
+{
+    GUID GUID;
+    char Name[64];
+
+    unsigned int DeviceCaps;
+
+    enum mmRenderer : unsigned int
+    {
+        Software = 0,    // Software (No 3D Video Card)
+        Hardware = 1,    // Hardware (3D Video Card)
+        HardwareWithTnL = 2     // Hardware (3D Video Card With T&L)
+    };
+
+    mmRenderer Renderer;
+
+    unsigned int ResolutionCount;   // Max of 64 mmResolutions
+    unsigned int ResolutionChoice;
+
+    enum mmColorDepthFlag : unsigned int
+    {
+        Depth16 = 0x400,
+        Depth24 = 0x200,
+        Depth32 = 0x100
+    };
+
+    mmColorDepthFlag AcceptableDepths;  // Used to check if mmResolution::Depth is allowed
+
+    unsigned int AvailableMemory;
+    unsigned int VendorID;
+    unsigned int DeviceID;
+
+    struct mmResolution
+    {
+        unsigned short ScreenWidth;
+        unsigned short ScreenHeight;
+        unsigned short ColorDepth;      // Always 16
+        unsigned short Is16BitColor;    // = (ColorDepth == 16) + 6 // Always 7
+    };
+
+    mmResolution Resolutions[64];
+};
+
+BOOL __stdcall AutoDetectCallback (GUID*    lpGUID,
+                                   LPSTR    lpDriverDescription,
+                                   LPSTR    lpDriverName,
+                                   LPVOID   lpContext)
+{
+    LogFile::Format ("GFXAutoDetect: Description=%s, Name=%s\n", lpDriverDescription, lpDriverName);
+
+    MM2PtrHook<HRESULT(WINAPI*)(GUID*,
+                                LPVOID*,
+                                REFIID,
+                                IUnknown*)> DirectDrawCreateEx  (NULL, NULL, 0x684518);
+
+    MM2PtrHook<IDirectDraw7*>               lpDD                (NULL, NULL, 0x6830A8);
+    MM2PtrHook<IDirect3D7*>                 lpD3D               (NULL, NULL, 0x6830AC);
+
+    MM2PtrHook<mmGraphicsInterface>         gfxInterfaces       (NULL, NULL, 0x683130);
+    MM2PtrHook<unsigned int>                gfxInterfaceCount   (NULL, NULL, 0x6844C0);
+
+    MM2RawFnHook<LPD3DENUMDEVICESCALLBACK7> lpDeviceCallback    (NULL, NULL, 0x4AC3D0);
+    MM2RawFnHook<LPDDENUMMODESCALLBACK2>    lpResCallback       (NULL, NULL, 0x4AC6F0);
+
+    MM2PtrHook<unsigned int>                gfxMaxScreenWidth   (NULL, NULL, 0x6844FC);
+    MM2PtrHook<unsigned int>                gfxMaxScreenHeight  (NULL, NULL, 0x6844D8);
+
+    if (DirectDrawCreateEx (lpGUID, (LPVOID*) &lpDD, IID_IDirectDraw7, nullptr) == DD_OK)
+    {
+        mmGraphicsInterface *gfxInterface = &gfxInterfaces[gfxInterfaceCount];
+
+        strcpy (gfxInterface->Name, lpDriverDescription);
+
+        gfxInterface->DeviceCaps = 1;
+        gfxInterface->AcceptableDepths = mmGraphicsInterface::Depth32;
+
+        DDDEVICEIDENTIFIER2 ddDeviceIdentifier = { NULL };
+
+        if (lpDD->GetDeviceIdentifier(&ddDeviceIdentifier, 0) == DD_OK)
+        {
+            gfxInterface->VendorID  = ddDeviceIdentifier.dwVendorId;
+            gfxInterface->DeviceID  = ddDeviceIdentifier.dwDeviceId;
+            gfxInterface->GUID      = ddDeviceIdentifier.guidDeviceIdentifier;
+        }
+
+        if (lpDD->QueryInterface(IID_IDirect3D7, (LPVOID*) &lpD3D) == DD_OK)
+        {
+            lpD3D->EnumDevices(lpDeviceCallback, gfxInterface);
+            lpD3D->Release();
+            *lpD3D = nullptr;
+        }
+
+        gfxInterface->Renderer          = mmGraphicsInterface::HardwareWithTnL;
+        gfxInterface->ResolutionCount   = 0;
+        gfxInterface->ResolutionChoice  = 0;
+        gfxInterface->AvailableMemory   = 0x40000000; // 1GB = 1024 * 1024 * 1024
+
+        *gfxMaxScreenWidth = 0;
+        *gfxMaxScreenHeight = 0;
+
+        lpDD->EnumDisplayModes(0, 0, gfxInterface, lpResCallback);
+        lpDD->Release();
+        *lpDD = nullptr;
+
+        ++*gfxInterfaceCount;
+    }
+
+    return TRUE;
+}
+
+class gfxHandler
+{
 private:
-    static void InstallAutoDetectPatch() {
-        const IMM2HookPtr addr_jmp1 = { NULL, NULL, 0x4AC2EE };
-        const IMM2HookPtr addr_jmp2 = { NULL, NULL, 0x4AC392 };
-
-        if (addr_jmp1.is_null() || addr_jmp2.is_null())
-            return;
-
-        const CB_INSTALL_INFO<1> gfxAutoDetectPatch1_CB = {
-            { addr_jmp1.ptr() },{
-                INIT_CB_JUMP(NULL, NULL, 0x4AC14A),
-            }
-        };
-
-        const CB_INSTALL_INFO<1> gfxAutoDetectPatch2_CB = {
-            { addr_jmp2.ptr() },{
-                INIT_CB_JUMP(NULL, NULL, 0x4AC318),
-            }
-        };
-
-        const PATCH_INSTALL_INFO<4, 2> gfxAutoDetectResPatch = {
-            { 0 },{
-                { NULL, NULL, 0x4AC2EF },
-                { NULL, NULL, 0x4AC2F4 },
-            }
-        };
-
-        InstallGameCallback("AutoDetectCallback: disable [1/2]", gameVersion, gfxAutoDetectPatch1_CB);
-        InstallGameCallback("AutoDetectCallback: disable [2/2]", gameVersion, gfxAutoDetectPatch2_CB);
-
-        InstallGamePatch("AutoDetectCallback: MaxRes = 0", gameVersion, gfxAutoDetectResPatch);
+    static void InstallAutoDetectPatch()
+    {
+        InstallGameCallback("AutoDetectCallback", gameVersion, &AutoDetectCallback, HOOK_JMP,
+        {
+            { NULL, NULL, 0x4AC030 },
+        });
     };
 public:
-    static bool gfxAutoDetect(bool *p1) {
-        if (MM2::datArgParser::Get("-noautodetect")) {
-            LogFile::WriteLine("Disabling AutoDetect.");
+    static bool gfxAutoDetect(bool *success)
+    {
+        if (MM2::datArgParser::Get("noautodetect"))
+        {
+            LogFile::WriteLine("Hooking AutoDetect");
             InstallAutoDetectPatch();
         }
 
-        return $gfxAutoDetect(p1);
+        return $gfxAutoDetect(success);
     };
+
+    static void setRes(int width, int height, int cdepth, int zdepth, bool detectArgs)
+    {
+        LogFile::WriteLine("Additional graphics params enabled");
+
+        $setRes(width, height, cdepth, zdepth, true);
+    }
 };
 
 class CallbackHandler {
@@ -507,7 +605,7 @@ class GraphicsCallbackHandler
 {
 private:
     static UINT32 CalculateShadedColor(int color) {
-        auto timeWeather = $TIMEWEATHER[$timeOfDay];
+        auto timeWeather = &$TIMEWEATHER[$timeOfDay];
 
         vglKeyColor = addPitch(&timeWeather->KeyColor, timeWeather->KeyPitch);
         vglFill1Color = addPitch(&timeWeather->Fill1Color, timeWeather->Fill1Pitch);
@@ -606,160 +704,6 @@ public:
 */
 
 // ==========================
-// Patch definitions
-// ==========================
-
-const PATCH_INSTALL_INFO<1, 3> chatSize_patch = {
-    { 60 }, {
-        { NULL, NULL, 0x4E68B5 },
-        { NULL, NULL, 0x4E68B9 },
-        { NULL, NULL, 0x50BBCF }
-    }
-};
-
-// ==========================
-// Callback hook definitions
-// ==========================
-
-// Replaces a call to ArchInit (a null function) just before ExceptMain
-// This is PERFECT for initializing everything before the game even starts!
-const CB_INSTALL_INFO<1> archInit_CB = {
-    &HookSystemHandler::Initialize, {
-        INIT_CB_CALL( NULL, NULL, 0x4023DB ),
-    }
-};
-
-const CB_INSTALL_INFO<1> tick_CB = {
-    &TickHandler::Update, {
-        INIT_CB_CALL( NULL, NULL, 0x401A2F ),
-    }
-};
-
-const CB_INSTALL_INFO<1> ageDebug_CB = {
-    &CallbackHandler::ageDebug, {
-        INIT_CB_JUMP( NULL, NULL, 0x402630 ),
-    }
-};
-
-const CB_INSTALL_INFO<1> angelReadString_CB = {
-    &CallbackHandler::AngelReadString, {
-        // NOTE: Completely overrides AngelReadString!
-        INIT_CB_JUMP( NULL, NULL, 0x534790 ),
-    }
-};
-
-const CB_INSTALL_INFO<1> gfxAutoDetect_CB = {
-    &gfxHandler::gfxAutoDetect, {
-        INIT_CB_CALL( NULL, NULL, 0x401440 ),
-    }
-};
-
-const CB_INSTALL_INFO<1> memSafeHeapInit_CB = {
-    &memSafeHeapCallbackHandler::Init, {
-        INIT_CB_CALL( NULL, NULL, 0x4015DD ),
-    }
-};
-
-const CB_INSTALL_INFO<1> sendChatMsg_CB = {
-    &ChatHandler::Process, {
-        INIT_CB_JUMP( NULL, NULL, 0x414EB6 ),
-    }
-};
-
-const CB_INSTALL_INFO<1> loadAmbientSFX_CB = {
-    &CallbackHandler::LoadAmbientSFX, {
-        INIT_CB_CALL( NULL, NULL, 0x433F93 ),
-    }
-};
-
-const CB_INSTALL_INFO<2> sirenCSV_CB = {
-    &CallbackHandler::SetSirenCSVName, {
-        INIT_CB_CALL( NULL, NULL, 0x412783 ),
-        INIT_CB_CALL( NULL, NULL, 0x412772 ),
-    }
-};
-
-const CB_INSTALL_INFO<60> vglBegin_CB = {
-    &GraphicsCallbackHandler::vglBegin, {
-        INIT_CB_CALL( NULL, NULL, 0x448424 ), INIT_CB_CALL( NULL, NULL, 0x448697 ), 
-        INIT_CB_CALL( NULL, NULL, 0x448903 ), INIT_CB_CALL( NULL, NULL, 0x448BFD ), 
-        INIT_CB_CALL( NULL, NULL, 0x448DE4 ), INIT_CB_CALL( NULL, NULL, 0x44902A ), 
-        INIT_CB_CALL( NULL, NULL, 0x4492A4 ), INIT_CB_CALL( NULL, NULL, 0x4494C3 ), 
-        INIT_CB_CALL( NULL, NULL, 0x4496A5 ), INIT_CB_CALL( NULL, NULL, 0x44986B ), 
-        INIT_CB_CALL( NULL, NULL, 0x449A13 ), INIT_CB_CALL( NULL, NULL, 0x449BD9 ), 
-        INIT_CB_CALL( NULL, NULL, 0x449D82 ), INIT_CB_CALL( NULL, NULL, 0x449F67 ), 
-        INIT_CB_CALL( NULL, NULL, 0x44A21C ), INIT_CB_CALL( NULL, NULL, 0x44A444 ), 
-        INIT_CB_CALL( NULL, NULL, 0x44A629 ), INIT_CB_CALL( NULL, NULL, 0x44A7EF ), 
-        INIT_CB_CALL( NULL, NULL, 0x44A997 ), INIT_CB_CALL( NULL, NULL, 0x44AB5D ), 
-        INIT_CB_CALL( NULL, NULL, 0x44AD06 ), INIT_CB_CALL( NULL, NULL, 0x44AECA ), 
-        INIT_CB_CALL( NULL, NULL, 0x44B0EC ), INIT_CB_CALL( NULL, NULL, 0x44B24B ), 
-        INIT_CB_CALL( NULL, NULL, 0x44B3B6 ), INIT_CB_CALL( NULL, NULL, 0x44B557 ), 
-        INIT_CB_CALL( NULL, NULL, 0x44B6F3 ), INIT_CB_CALL( NULL, NULL, 0x44B8F1 ), 
-        INIT_CB_CALL( NULL, NULL, 0x44BA8A ), INIT_CB_CALL( NULL, NULL, 0x44BC29 ), 
-        INIT_CB_CALL( NULL, NULL, 0x44BE9C ), INIT_CB_CALL( NULL, NULL, 0x44C136 ), 
-        INIT_CB_CALL( NULL, NULL, 0x44C40C ), INIT_CB_CALL( NULL, NULL, 0x44C64A ), 
-        INIT_CB_CALL( NULL, NULL, 0x44C7C0 ), INIT_CB_CALL( NULL, NULL, 0x44CAD6 ), 
-        INIT_CB_CALL( NULL, NULL, 0x44CCF5 ), INIT_CB_CALL( NULL, NULL, 0x44CF6D ), 
-        INIT_CB_CALL( NULL, NULL, 0x44D0D4 ), INIT_CB_CALL( NULL, NULL, 0x44D5F7 ), 
-        INIT_CB_CALL( NULL, NULL, 0x44D789 ), INIT_CB_CALL( NULL, NULL, 0x44DC55 ), 
-        INIT_CB_CALL( NULL, NULL, 0x44E050 ), INIT_CB_CALL( NULL, NULL, 0x44E14B ), 
-        INIT_CB_CALL( NULL, NULL, 0x44E2A3 ), INIT_CB_CALL( NULL, NULL, 0x44E69D ), 
-        INIT_CB_CALL( NULL, NULL, 0x44E79E ), INIT_CB_CALL( NULL, NULL, 0x44EAA0 ), 
-        INIT_CB_CALL( NULL, NULL, 0x44EBA5 ), INIT_CB_CALL( NULL, NULL, 0x44EFD0 ), 
-        INIT_CB_CALL( NULL, NULL, 0x44F0DC ), INIT_CB_CALL( NULL, NULL, 0x44F588 ), 
-        INIT_CB_CALL( NULL, NULL, 0x44F7E2 ), INIT_CB_CALL( NULL, NULL, 0x44FC1E ), 
-        INIT_CB_CALL( NULL, NULL, 0x44FDD4 ), INIT_CB_CALL( NULL, NULL, 0x44FF10 ), 
-        INIT_CB_CALL( NULL, NULL, 0x450085 ), INIT_CB_CALL( NULL, NULL, 0x450269 ), 
-        // ------------------------------------
-        INIT_CB_CALL( NULL, NULL, 0x443B9D ), // dgRoadDecalInstance
-        INIT_CB_CALL( NULL, NULL, 0x57AC4A ), // ped LODs
-    }
-};
-
-const CB_INSTALL_INFO<60> vglEnd_CB = {
-    &GraphicsCallbackHandler::vglEnd, {
-        INIT_CB_CALL( NULL, NULL, 0x4485D3 ), INIT_CB_CALL( NULL, NULL, 0x448B82 ),
-        INIT_CB_CALL( NULL, NULL, 0x448D8C ), INIT_CB_CALL( NULL, NULL, 0x448FB7 ),
-        INIT_CB_CALL( NULL, NULL, 0x449219 ), INIT_CB_CALL( NULL, NULL, 0x449480 ),
-        INIT_CB_CALL( NULL, NULL, 0x44963E ), INIT_CB_CALL( NULL, NULL, 0x44983C ),
-        INIT_CB_CALL( NULL, NULL, 0x4499D4 ), INIT_CB_CALL( NULL, NULL, 0x449BAA ),
-        INIT_CB_CALL( NULL, NULL, 0x449D42 ), INIT_CB_CALL( NULL, NULL, 0x449F5A ),
-        INIT_CB_CALL( NULL, NULL, 0x44A146 ), INIT_CB_CALL( NULL, NULL, 0x44A3F8 ),
-        INIT_CB_CALL( NULL, NULL, 0x44A5BF ), INIT_CB_CALL( NULL, NULL, 0x44A7C0 ),
-        INIT_CB_CALL( NULL, NULL, 0x44A958 ), INIT_CB_CALL( NULL, NULL, 0x44AB2E ),
-        INIT_CB_CALL( NULL, NULL, 0x44ACC6 ), INIT_CB_CALL( NULL, NULL, 0x44AEBC ),
-        INIT_CB_CALL( NULL, NULL, 0x44B083 ), INIT_CB_CALL( NULL, NULL, 0x44B23D ),
-        INIT_CB_CALL( NULL, NULL, 0x44B394 ), INIT_CB_CALL( NULL, NULL, 0x44B531 ),
-        INIT_CB_CALL( NULL, NULL, 0x44B6E1 ), INIT_CB_CALL( NULL, NULL, 0x44B895 ),
-        INIT_CB_CALL( NULL, NULL, 0x44BA7C ), INIT_CB_CALL( NULL, NULL, 0x44BC03 ),
-        INIT_CB_CALL( NULL, NULL, 0x44BE8E ), INIT_CB_CALL( NULL, NULL, 0x44C118 ),
-        INIT_CB_CALL( NULL, NULL, 0x44C3EA ), INIT_CB_CALL( NULL, NULL, 0x44C638 ),
-        INIT_CB_CALL( NULL, NULL, 0x44C77A ), INIT_CB_CALL( NULL, NULL, 0x44C989 ),
-        INIT_CB_CALL( NULL, NULL, 0x44CC44 ), INIT_CB_CALL( NULL, NULL, 0x44CE63 ),
-        INIT_CB_CALL( NULL, NULL, 0x44D04E ), INIT_CB_CALL( NULL, NULL, 0x44D403 ),
-        INIT_CB_CALL( NULL, NULL, 0x44D780 ), INIT_CB_CALL( NULL, NULL, 0x44D8E9 ),
-        INIT_CB_CALL( NULL, NULL, 0x44E014 ), INIT_CB_CALL( NULL, NULL, 0x44E131 ),
-        INIT_CB_CALL( NULL, NULL, 0x44E22C ), INIT_CB_CALL( NULL, NULL, 0x44E661 ),
-        INIT_CB_CALL( NULL, NULL, 0x44E785 ), INIT_CB_CALL( NULL, NULL, 0x44E886 ),
-        INIT_CB_CALL( NULL, NULL, 0x44EB82 ), INIT_CB_CALL( NULL, NULL, 0x44EDC3 ),
-        INIT_CB_CALL( NULL, NULL, 0x44F0B9 ), INIT_CB_CALL( NULL, NULL, 0x44F316 ),
-        INIT_CB_CALL( NULL, NULL, 0x44F64C ), INIT_CB_CALL( NULL, NULL, 0x44FB9D ),
-        INIT_CB_CALL( NULL, NULL, 0x44FD30 ), INIT_CB_CALL( NULL, NULL, 0x44FE4E ),
-        INIT_CB_CALL( NULL, NULL, 0x44FFB3 ), INIT_CB_CALL( NULL, NULL, 0x450162 ),
-        INIT_CB_CALL( NULL, NULL, 0x450390 ), INIT_CB_CALL( NULL, NULL, 0x45078C ),
-        // ------------------------------------
-        INIT_CB_CALL( NULL, NULL, 0x443DCC ), // road decals
-        INIT_CB_CALL( NULL, NULL, 0x57AD41 ), // ped LODs
-    }
-};
-
-const CB_INSTALL_INFO<1> mmDashView_UpdateCS_CB = {
-    &mmDashViewCallbackHandler::UpdateCS, {
-        INIT_CB_CALL( NULL, NULL, 0x430F87 ), // replaces call to asLinearCS::Update
-    }
-};
-
-// ==========================
 // VTable hook definitions
 // ==========================
 
@@ -790,9 +734,25 @@ bool InitializeFramework(MM2Version gameVersion) {
 };
 
 void InstallPatches(MM2Version gameVersion) {
+
     LogFile::WriteLine("Installing patches...");
 
-    InstallGamePatch("Increase chat buffer size", gameVersion, chatSize_patch);
+    InstallGamePatch("Increase chat buffer size", gameVersion, { 60 },
+    {
+        { NULL, NULL, 0x4E68B5 },
+        { NULL, NULL, 0x4E68B9 },
+        { NULL, NULL, 0x50BBCF },
+    });
+
+    InstallGamePatch ("Change window style", gameVersion, { 0x00, 0x00, 0xCA, 0x80 },
+    {
+        { NULL, NULL, 0x4A8BD1 },
+    });
+
+    InstallGamePatch ("Increase cop limit", gameVersion, { 0x40 },
+    {
+        { NULL, NULL, 0x55100B },
+    });
 };
 
 void InstallCallbacks(MM2Version gameVersion) {
@@ -803,63 +763,138 @@ void InstallCallbacks(MM2Version gameVersion) {
         case MM2_BETA_1:
         case MM2_BETA_2:
         {
-            // Make sure the betas never expire
-            const CB_INSTALL_INFO<1> trialTimeExpired_CB = {
-                &ReturnNullOrZero, {
-                    INIT_CB_CALL( 0x4011B0, 0x4012AC, NULL ),
-                }
-            };
-
-            InstallGameCallback("TrialTimeExpired", gameVersion, trialTimeExpired_CB);
+            // Disables time check on betas
+            InstallGameCallback("TrialTimeExpired", gameVersion, &ReturnNullOrZero, HOOK_CALL,
+            {
+                { 0x4011B0, 0x4012AC, NULL }
+            });
         } break;
         case MM2_RETAIL:
         {
-            const CB_INSTALL_INFO<1> createGameMutex_CB = {
-                &CallbackHandler::CreateGameMutex,{
-                    INIT_CB_CALL(NULL, NULL, 0x40128D),
-                }
-            };
-
-            const CB_INSTALL_INFO<2> bridgeFerryCull_CB = {
-                &BridgeFerryCallbackHandler::Cull,{
-                    INIT_CB_CALL(NULL, NULL, 0x5780BC), // gizBridgeMgr::Cull
-                    INIT_CB_CALL(NULL, NULL, 0x5798F0), // gizFerryMgr::Cull
-                }
-            };
-
             // mutex was introduced in retail
-            InstallGameCallback("CreateGameMutex", gameVersion, createGameMutex_CB);
+            InstallGameCallback("CreateGameMutex", gameVersion, &CallbackHandler::CreateGameMutex, HOOK_CALL,
+            {
+                { NULL, NULL, 0x40128D },
+            });
             
             // revert bridges/ferries to how they were in the betas
-            InstallGameCallback("Bridge/Ferry: Cull", gameVersion, bridgeFerryCull_CB);
+            InstallGameCallback("Bridge/Ferry: Cull", gameVersion, &BridgeFerryCallbackHandler::Cull, HOOK_CALL,
+            {
+                { NULL, NULL, 0x5780BC },   // gizBridgeMgr::Cull
+                { NULL, NULL, 0x5798F0 }    // gizFerryMgr::Cull
+            });
+
             InstallVTableHook("Bridge/Ferry: Draw", gameVersion, bridgeFerryDraw_VT);
         } break;
     }
 
-    InstallGameCallback("ArchInit", gameVersion, archInit_CB);
-    InstallGameCallback("ageDebug", gameVersion, ageDebug_CB);
+    // Replaces a call to ArchInit (a null function) just before ExceptMain
+    // This is PERFECT for initializing everything before the game even starts!
+    InstallGameCallback("ArchInit", gameVersion, &HookSystemHandler::Initialize, HOOK_CALL,
+    {         
+        { NULL, NULL, 0x4023DB }
+    });
 
-    InstallGameCallback("gfxAutoDetect", gameVersion, gfxAutoDetect_CB);
+    InstallGameCallback("ageDebug", gameVersion, &CallbackHandler::ageDebug, HOOK_JMP,
+    {
+        { NULL, NULL, 0x402630 }
+    });
 
-    InstallGameCallback("memSafeHeap::Init [Heap fix]", gameVersion, memSafeHeapInit_CB);
+    InstallGameCallback("gfxAutoDetect", gameVersion, &gfxHandler::gfxAutoDetect, HOOK_CALL,
+    {
+        { NULL, NULL, 0x401440 }
+    });
 
-    // not supported for betas yet
-    if (gameVersion == MM2_RETAIL) {
-        InstallGameCallback("AngelReadString", gameVersion, angelReadString_CB);
-    }
+    InstallGameCallback("setRes", gameVersion, &gfxHandler::setRes, HOOK_CALL,
+    {
+        { NULL, NULL, 0x401482 }
+    });
+    
+    InstallGameCallback("memSafeHeap::Init [Heap fix]", gameVersion, &memSafeHeapCallbackHandler::Init, HOOK_CALL,
+    {
+        { NULL, NULL, 0x4015DD }
+    });
 
-    InstallGameCallback("vglBegin", gameVersion, vglBegin_CB);
-    InstallGameCallback("vglEnd", gameVersion, vglEnd_CB);
+    //// not supported for betas yet
+    //if (gameVersion == MM2_RETAIL)
+    //{
+    //    // NOTE: Completely overrides AngelReadString!
+    //    InstallGameCallback("AngelReadString", gameVersion, &CallbackHandler::AngelReadString, HOOK_JMP,
+    //    {
+    //        { NULL, NULL, 0x534790 },
+    //    });
+    //}
 
-    InstallGameCallback("datTimeManager::Update", gameVersion, tick_CB);
+    InstallGameCallback("vglBegin", gameVersion, &GraphicsCallbackHandler::vglBegin, HOOK_CALL,
+    {
+        { NULL, NULL, 0x448424 }, { NULL, NULL, 0x448697 }, { NULL, NULL, 0x448903 }, { NULL, NULL, 0x448BFD },
+        { NULL, NULL, 0x448DE4 }, { NULL, NULL, 0x44902A }, { NULL, NULL, 0x4492A4 }, { NULL, NULL, 0x4494C3 },
+        { NULL, NULL, 0x4496A5 }, { NULL, NULL, 0x44986B }, { NULL, NULL, 0x449A13 }, { NULL, NULL, 0x449BD9 },
+        { NULL, NULL, 0x449D82 }, { NULL, NULL, 0x449F67 }, { NULL, NULL, 0x44A21C }, { NULL, NULL, 0x44A444 },
+        { NULL, NULL, 0x44A629 }, { NULL, NULL, 0x44A7EF }, { NULL, NULL, 0x44A997 }, { NULL, NULL, 0x44AB5D },
+        { NULL, NULL, 0x44AD06 }, { NULL, NULL, 0x44AECA }, { NULL, NULL, 0x44B0EC }, { NULL, NULL, 0x44B24B },
+        { NULL, NULL, 0x44B3B6 }, { NULL, NULL, 0x44B557 }, { NULL, NULL, 0x44B6F3 }, { NULL, NULL, 0x44B8F1 },
+        { NULL, NULL, 0x44BA8A }, { NULL, NULL, 0x44BC29 }, { NULL, NULL, 0x44BE9C }, { NULL, NULL, 0x44C136 },
+        { NULL, NULL, 0x44C40C }, { NULL, NULL, 0x44C64A }, { NULL, NULL, 0x44C7C0 }, { NULL, NULL, 0x44CAD6 },
+        { NULL, NULL, 0x44CCF5 }, { NULL, NULL, 0x44CF6D }, { NULL, NULL, 0x44D0D4 }, { NULL, NULL, 0x44D5F7 },
+        { NULL, NULL, 0x44D789 }, { NULL, NULL, 0x44DC55 }, { NULL, NULL, 0x44E050 }, { NULL, NULL, 0x44E14B },
+        { NULL, NULL, 0x44E2A3 }, { NULL, NULL, 0x44E69D }, { NULL, NULL, 0x44E79E }, { NULL, NULL, 0x44EAA0 },
+        { NULL, NULL, 0x44EBA5 }, { NULL, NULL, 0x44EFD0 }, { NULL, NULL, 0x44F0DC }, { NULL, NULL, 0x44F588 },
+        { NULL, NULL, 0x44F7E2 }, { NULL, NULL, 0x44FC1E }, { NULL, NULL, 0x44FDD4 }, { NULL, NULL, 0x44FF10 },
+        { NULL, NULL, 0x450085 }, { NULL, NULL, 0x450269 },
+        // ------------------------------------
+        { NULL, NULL, 0x443B9D }, // dgRoadDecalInstance
+        { NULL, NULL, 0x57AC4A }, // ped LODs
+    });
 
-    InstallGameCallback("mmGame::SendChatMessage", gameVersion, sendChatMsg_CB);
-    InstallGameCallback("mmGameMusicData::LoadAmbientSFX", gameVersion, loadAmbientSFX_CB);
+    InstallGameCallback("vglEnd", gameVersion, &GraphicsCallbackHandler::vglEnd, HOOK_CALL,
+    {
+        { NULL, NULL, 0x4485D3 }, { NULL, NULL, 0x448B82 }, { NULL, NULL, 0x448D8C }, { NULL, NULL, 0x448FB7 },
+        { NULL, NULL, 0x449219 }, { NULL, NULL, 0x449480 }, { NULL, NULL, 0x44963E }, { NULL, NULL, 0x44983C },
+        { NULL, NULL, 0x4499D4 }, { NULL, NULL, 0x449BAA }, { NULL, NULL, 0x449D42 }, { NULL, NULL, 0x449F5A },
+        { NULL, NULL, 0x44A146 }, { NULL, NULL, 0x44A3F8 }, { NULL, NULL, 0x44A5BF }, { NULL, NULL, 0x44A7C0 },
+        { NULL, NULL, 0x44A958 }, { NULL, NULL, 0x44AB2E }, { NULL, NULL, 0x44ACC6 }, { NULL, NULL, 0x44AEBC },
+        { NULL, NULL, 0x44B083 }, { NULL, NULL, 0x44B23D }, { NULL, NULL, 0x44B394 }, { NULL, NULL, 0x44B531 },
+        { NULL, NULL, 0x44B6E1 }, { NULL, NULL, 0x44B895 }, { NULL, NULL, 0x44BA7C }, { NULL, NULL, 0x44BC03 },
+        { NULL, NULL, 0x44BE8E }, { NULL, NULL, 0x44C118 }, { NULL, NULL, 0x44C3EA }, { NULL, NULL, 0x44C638 },
+        { NULL, NULL, 0x44C77A }, { NULL, NULL, 0x44C989 }, { NULL, NULL, 0x44CC44 }, { NULL, NULL, 0x44CE63 },
+        { NULL, NULL, 0x44D04E }, { NULL, NULL, 0x44D403 }, { NULL, NULL, 0x44D780 }, { NULL, NULL, 0x44D8E9 },
+        { NULL, NULL, 0x44E014 }, { NULL, NULL, 0x44E131 }, { NULL, NULL, 0x44E22C }, { NULL, NULL, 0x44E661 },
+        { NULL, NULL, 0x44E785 }, { NULL, NULL, 0x44E886 }, { NULL, NULL, 0x44EB82 }, { NULL, NULL, 0x44EDC3 },
+        { NULL, NULL, 0x44F0B9 }, { NULL, NULL, 0x44F316 }, { NULL, NULL, 0x44F64C }, { NULL, NULL, 0x44FB9D },
+        { NULL, NULL, 0x44FD30 }, { NULL, NULL, 0x44FE4E }, { NULL, NULL, 0x44FFB3 }, { NULL, NULL, 0x450162 },
+        { NULL, NULL, 0x450390 }, { NULL, NULL, 0x45078C },
+        // ------------------------------------
+        { NULL, NULL, 0x443DCC }, // road decals
+        { NULL, NULL, 0x57AD41 }, // ped LODs
+    });
 
-    InstallGameCallback("vehCarAudioContainer::SetSirenCSVName", gameVersion, sirenCSV_CB);
+    InstallGameCallback("datTimeManager::Update", gameVersion, &TickHandler::Update, HOOK_CALL,
+    {
+        { NULL, NULL, 0x401A2F },
+    });
+
+    InstallGameCallback("mmGame::SendChatMessage", gameVersion, &ChatHandler::Process, HOOK_CALL,
+    {
+        { NULL, NULL, 0x414EB6 },
+    });
+
+    InstallGameCallback("mmGameMusicData::LoadAmbientSFX", gameVersion, &CallbackHandler::LoadAmbientSFX, HOOK_CALL,
+    {
+        { NULL, NULL, 0x433F93 },
+    });
+
+    InstallGameCallback("vehCarAudioContainer::SetSirenCSVName", gameVersion, &CallbackHandler::SetSirenCSVName, HOOK_CALL,
+    {
+        { NULL, NULL, 0x412783 },
+        { NULL, NULL, 0x412772 },
+    });
 
     // dashboard testing
-    InstallGameCallback("mmDashView::Update [EXPERIMENTAL]", gameVersion, mmDashView_UpdateCS_CB);
+    InstallGameCallback("mmDashView::Update [EXPERIMENTAL]", gameVersion, &mmDashViewCallbackHandler::UpdateCS, HOOK_CALL,
+    {
+        { NULL, NULL, 0x430F87 }, // replaces call to asLinearCS::Update
+    });
 };
 
 //

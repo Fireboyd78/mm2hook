@@ -17,7 +17,7 @@ namespace MM2
         };
 
         static aiMap* Instance(void) {
-            return $AIMAP;
+            return &$AIMAP;
         };
     };
 }

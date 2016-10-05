@@ -1,8 +1,11 @@
 #pragma once
+
+#include <array>
+
 #include "common.h"
 #include "hook.h"
 
-#define MAX_HOOK_PTRS 4096
+constexpr std::size_t MAX_HOOK_PTRS = 4096;
 
 extern class MM2HookMgr;
 extern class IMM2HookPtr;
@@ -21,11 +24,10 @@ enum MM2Version
     MM2_BETA_2_PETITE
 };
 
-struct MM2AddressData {
-    DWORD addresses[MM2_NUM_VERSIONS];
-};
+using MM2AddressData = std::array<DWORD, MM2_NUM_VERSIONS>;
 
-class MM2HookMgr {
+class MM2HookMgr
+{
 public:
     static void alloc(IMM2HookPtr *hook);
     static void free(int hook_idx);
@@ -34,168 +36,180 @@ public:
     static int Initialize(MM2Version version);
 };
 
-class IMM2HookPtr : public IHookPtr {
+class IMM2HookPtr : public IHookPtr
+{
 private:
     int hook_idx = -1;
 protected:
     MM2AddressData addressData;
 public:
-    inline IMM2HookPtr::IMM2HookPtr(const MM2AddressData &addressData) : addressData(addressData) {
+    inline IMM2HookPtr::IMM2HookPtr(const MM2AddressData &addressData)
+        : addressData(addressData)
+    {
         MM2HookMgr::alloc(this);
     };
 
-    inline IMM2HookPtr::~IMM2HookPtr() {
+    inline IMM2HookPtr(DWORD addrBeta1,
+                       DWORD addrBeta2,
+                       DWORD addrRetail)
+        : IMM2HookPtr(MM2AddressData { addrBeta1, addrBeta2, addrRetail })
+    { };
+
+    inline IMM2HookPtr::~IMM2HookPtr()
+    {
         MM2HookMgr::free(hook_idx);
     };
 
-    inline IMM2HookPtr( DWORD addrBeta1,
-                        DWORD addrBeta2,
-                        DWORD addrRetail
-    ) : IMM2HookPtr( 
-            MM2AddressData {
-                addrBeta1,
-                addrBeta2,
-                addrRetail
-            }
-    ) {};
-
-    inline void set_version(MM2Version gameVersion) {
-        lpAddr = (LPVOID)addressData.addresses[gameVersion];
+    inline void set_version(MM2Version gameVersion)
+    {
+        lpAddr = (LPVOID) addressData[gameVersion];
     };
 };
 
 template<typename TRet>
-class MM2FnHook : public IMM2HookPtr {
+class MM2FnHook : public IMM2HookPtr
+{
 public:
     constexpr MM2FnHook(const MM2AddressData &addressData)
-        : IMM2HookPtr(addressData) {};
+        : IMM2HookPtr(addressData) { };
     constexpr MM2FnHook(DWORD addrBeta1, DWORD addrBeta2, DWORD addrRetail)
-        : IMM2HookPtr(addrBeta1, addrBeta2, addrRetail) {};
+        : IMM2HookPtr(addrBeta1, addrBeta2, addrRetail) { };
 
     template<typename ...TArgs>
-    constexpr TRet operator()(TArgs ...args) const {
-        typedef TRet (__cdecl *MethodCall)(TArgs...);
+    constexpr TRet operator()(TArgs ...args) const
+    {
+        typedef TRet(__cdecl *MethodCall)(TArgs...);
 
         return static_cast<MethodCall>(lpAddr)(args...);
     };
 
     template<typename ...TArgs, class TThis>
-    constexpr TRet operator()(const TThis &&This, TArgs ...args) const {
-        typedef TRet (__thiscall *MemberCall)(const TThis, TArgs...);
+    constexpr TRet operator()(const TThis &&This, TArgs ...args) const
+    {
+        typedef TRet(__thiscall *MemberCall)(const TThis, TArgs...);
 
         return static_cast<MemberCall>(lpAddr)(This, args...);
     };
 };
 
 template<typename TType>
-class MM2PtrHook : public IMM2HookPtr {
+class MM2PtrHook : public IMM2HookPtr
+{
 public:
     constexpr MM2PtrHook(const MM2AddressData &addressData)
-        : IMM2HookPtr(addressData) {};
+        : IMM2HookPtr(addressData)
+    { };
+
     constexpr MM2PtrHook(DWORD addrBeta1, DWORD addrBeta2, DWORD addrRetail)
-        : IMM2HookPtr(addrBeta1, addrBeta2, addrRetail) {};
+        : IMM2HookPtr(addrBeta1, addrBeta2, addrRetail)
+    { };
 
-    inline void set(TType value) {
-        *static_cast<TType*>(lpAddr) = value;
+    inline TType* get() const
+    {
+        return static_cast<TType*>(this->lpAddr);
+    }
+
+    inline void set(TType value)
+    {
+        *this->get() = value;
+    }
+
+    /*
+        TType*->TMember - Pointer to struct of TType
+    */
+    inline TType& operator->() const
+    {
+        return *this->get();
     };
 
     /*
-        Member-of-pointer operator (e.g. ptr->SomeMethod(); // MM2PtrHook<TClass> ptr_hook)
+        &TType - Instance of TType
     */
-    constexpr TType* operator->() const {
-        return reinterpret_cast<TType*>(lpAddr);
+    inline TType* operator&() const
+    {
+        return this->get();
     };
 
     /*
-        Address-of operator (e.g. TType *ptr = &ptr_hook; // MM2PtrHook<TType> ptr_hook)
+        *TType - Pointer to TType
     */
-    constexpr TType* operator &() const {
-        return reinterpret_cast<TType*>(lpAddr);
+    inline TType& operator*() const
+    {
+        return *this->get();
     };
+
 
     /*
-        Indirection operator (e.g. TType ptr = *ptr_hook; // MM2PtrHook<TType> ptr_hook)
+        TType*(this) - Convert this to TType pointer
     */
-    constexpr TType operator *() const {
-        return *static_cast<TType*>(lpAddr);
-    };
+    explicit inline operator TType*() const
+    {
+        return this->get();
+    }
 
     /*
-        Implicit conversion (e.g. TType *value = ptr_hook; // MM2PtrHook<TType *> ptr_hook)
+        TType&(this) - Convert this to TType reference
     */
-    constexpr operator TType*() const {
-        return reinterpret_cast<TType*>(lpAddr);
-    };
+    inline operator TType&() const
+    {
+        return *this->get();
+    }
 
     /*
-        Implicit conversion (e.g. TType value = ptr_hook; // MM2PtrHook<TType> ptr_hook)
+        TType[0] - Pointer is TType array
     */
-    constexpr operator TType() const {
-        return *static_cast<TType*>(lpAddr);
-    };
+    inline TType& operator[ ](std::size_t index) const
+    {
+        return this->get()[index];
+    }
 
-    constexpr TType* operator[](int index) const {
-        return reinterpret_cast<TType*>((char *)lpAddr + (index * sizeof(TType)));
-    };
+    /*
+        this() - TType is function pointer
+    */
+    template <typename... TArgs>
+    inline auto operator()(TArgs... args)
+    {
+        return (*this->get())(args...);
+    }
 };
 
+template <typename TFunc>
+using MM2RawFnHook = MM2PtrHook<std::remove_pointer_t<TFunc>>;
+
 /*
-Game patching functions
+    Game patching functions
 */
 
-enum CB_HOOK_TYPE {
+enum CB_HOOK_TYPE
+{
     HOOK_JMP,
     HOOK_CALL
 };
 
-#define INIT_CB_DATA(type, addr1, addr2, addr3) {{ addr1, addr2, addr3 }, type }
-
-#define INIT_CB_CALL(addr1, addr2, addr3) INIT_CB_DATA(HOOK_CALL, addr1, addr2, addr3)
-#define INIT_CB_JUMP(addr1, addr2, addr3) INIT_CB_DATA(HOOK_JMP, addr1, addr2, addr3)
-
-template<int size = 1>
-struct CB_INSTALL_INFO {
-    static const int length = size;
-
-    fn_ptr cb_proc;
-    struct {
-        MM2AddressData addr_data;
-        CB_HOOK_TYPE type;
-    } cb_data[size];
-};
-
-template<int size = 1, int count = 1>
-struct PATCH_INSTALL_INFO {
-    static const int length = count;
-    static const int buffer_size = size;
-
-    char buffer[size];
-    MM2AddressData addrData[count];
-};
-
 template<int count = 1>
-struct VT_INSTALL_INFO {
+struct VT_INSTALL_INFO
+{
     static const int length = count;
 
-    fn_ptr dwHookAddr;
+    ANY_PTR dwHookAddr;
     MM2AddressData addrData[count];
 };
 
 bool InstallVTableHook(LPCSTR name, MM2Version gameVersion, LPVOID lpData, int count);
-bool InstallGamePatch(LPCSTR name, MM2Version gameVersion, LPVOID lpData, int buffer_size, int count);
-bool InstallGameCallback(LPCSTR cb_name, MM2Version gameVersion, LPVOID lpCallback, int count);
+
+void InstallGamePatch(LPCSTR name,
+                      MM2Version gameVersion,
+                      std::initializer_list<unsigned char> bytes,
+                      std::initializer_list<MM2AddressData> addresses);
+
+void InstallGameCallback(LPCSTR name,
+                         MM2Version gameVersion,
+                         ANY_PTR lpCallback,
+                         CB_HOOK_TYPE type,
+                         std::initializer_list<MM2AddressData> addresses);
 
 template<int count>
-inline bool InstallVTableHook(LPCSTR name, MM2Version gameVersion, const VT_INSTALL_INFO<count> &data) {
-    return InstallVTableHook(name, gameVersion, (LPVOID)&data, data.length);
-}
-
-template<int size, int count>
-inline bool InstallGamePatch(LPCSTR name, MM2Version gameVersion, const PATCH_INSTALL_INFO<size, count> &data) {
-    return InstallGamePatch(name, gameVersion, (LPVOID)&data, data.buffer_size, data.length);
-}
-
-template<int size>
-inline bool InstallGameCallback(LPCSTR cb_name, MM2Version gameVersion, const CB_INSTALL_INFO<size> &cb) {
-    return InstallGameCallback(cb_name, gameVersion, (LPVOID)&cb, cb.length);
+inline bool InstallVTableHook(LPCSTR name, MM2Version gameVersion, const VT_INSTALL_INFO<count> &data)
+{
+    return InstallVTableHook(name, gameVersion, (LPVOID) &data, data.length);
 }

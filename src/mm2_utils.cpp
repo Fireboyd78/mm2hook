@@ -75,7 +75,7 @@ bool InstallVTableHook(LPCSTR name, MM2Version gameVersion, LPVOID lpData, int c
     int progress = 0;
 
     for (int i = 0; i < count; i++) {
-        auto addr = info->addrData[i].addresses[gameVersion];
+        auto addr = info->addrData[i][gameVersion];
 
         LogFile::Format("  - [%d] %08X => %08X : ", (i + 1), addr, info->dwHookAddr);
 
@@ -92,62 +92,57 @@ bool InstallVTableHook(LPCSTR name, MM2Version gameVersion, LPVOID lpData, int c
     return success;
 }
 
-bool InstallGamePatch(LPCSTR name, MM2Version gameVersion, LPVOID lpData, int buffer_size, int count) {
+void InstallGamePatch(LPCSTR name,
+                      MM2Version gameVersion,
+                      std::initializer_list<unsigned char> bytes,
+                      std::initializer_list<MM2AddressData> addresses)
+{
     LogFile::Format(" - Installing patch: '%s'...\n", name);
 
-    auto info = (PATCH_INSTALL_INFO<>*)lpData;
+    std::size_t count = 0;
+    for (auto patch : addresses)
+    {
+        auto addr = patch[gameVersion];
 
-    if (count == 0 || buffer_size == 0) {
-        LogFile::WriteLine(" - ERROR! Data is empty!");
-        return false;
-    }
-
-    int progress = 0;
-
-    for (int i = 0; i < count; i++) {
-        auto addr = info->addrData[i].addresses[gameVersion];
-
-        LogFile::Format("  - [%d] %08X => %08X : ", (i + 1), addr, (BYTE*)&info->buffer);
+        LogFile::Format("   - %08X", addr);
 
         if (addr != NULL)
         {
-            InstallPatch(addr, (BYTE*)&info->buffer, buffer_size);
+            InstallPatch(addr, bytes.begin(), bytes.size());
             LogFile::WriteLine("OK");
 
-            progress++;
-        } else LogFile::WriteLine("Not supported");
+            count++;
+        }
+        else
+        {
+            LogFile::WriteLine("Not Supported");
+        }
     }
 
-    bool success = (progress > 0);
-    return success;
+    LogFile::Format("   - Installed %u / %u patches\n", count, addresses.size());
 }
 
-bool InstallGameCallback(LPCSTR cb_name, MM2Version gameVersion, LPVOID lpCallback, int count) {
-    LogFile::Format(" - Installing callback: '%s'...\n", cb_name);
+void InstallGameCallback(LPCSTR name, MM2Version gameVersion, ANY_PTR lpCallback, CB_HOOK_TYPE type, std::initializer_list<MM2AddressData> addresses)
+{
+    LogFile::Format(" - Installing callback: '%s'...\n", name);
 
-    if (count == 0) {
-        LogFile::WriteLine(" - ERROR! Address data is empty!");
-        return false;
-    }
+    std::size_t count = 0;
+    for (auto patch : addresses)
+    {
+        auto addr = patch[gameVersion];
 
-    auto cb_info = (CB_INSTALL_INFO<>*)lpCallback;
-
-    const DWORD cb = cb_info->cb_proc;
-    int progress = 0;
-
-    for (int i = 0; i < count; i++) {
-        auto data = cb_info->cb_data[i];
-        auto addr = data.addr_data.addresses[gameVersion];
-
-        LogFile::Format("  - [%d]: %08X => %08X : ", (i + 1), addr, cb);
-
-        if (addr != NULL && InstallCallbackHook(addr, cb, (data.type == HOOK_CALL)))
+        LogFile::Format("   - %08X => %08X :", addr, lpCallback);
+        if (addr != NULL && InstallCallbackHook(addr, lpCallback, type == HOOK_CALL))
         {
             LogFile::WriteLine("OK");
-            progress++;
-        } else LogFile::WriteLine("Not supported");
+
+            ++count;
+        }
+        else
+        {
+            LogFile::WriteLine("Not Supported");
+        }
     }
 
-    bool success = (progress > 0);
-    return success;
+    LogFile::Format("   - Installed %u / %u callbacks\n", count, addresses.size());
 }
