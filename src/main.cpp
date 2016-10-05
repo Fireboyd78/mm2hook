@@ -17,10 +17,9 @@ CMidtownMadness2 *pMM2;
 
 MM2Version gameVersion;
 
-WNDPROC hProcOld;
 LRESULT APIENTRY WndProcNew(HWND, UINT, WPARAM, LPARAM);
 
-bool isWindowSubclassed = false;
+//bool isWindowSubclassed = false;
 bool isConsoleOpen = false;
 
 // ==========================
@@ -121,32 +120,13 @@ MM2PtrHook<void (*)(int, LPCSTR, char *)>
     !! THESE ARE ABSOLUTELY CRITICAL TO THE HOOK WORKING PROPERLY !!
 */
 
-MM2PtrHook<DWORD> $__VtResumeSampling       ( 0x5C86B8, 0x5DF710, 0x5E0CC4 );
-MM2PtrHook<DWORD> $__VtPauseSampling        ( 0x5C86C8, 0x5DF724, 0x5E0CD8 );
-MM2PtrHook<BOOL> $gameClosing               ( 0x667DEC, 0x6B0150, 0x6B1708 );
+MM2PtrHook<void(__stdcall*)(void)> $__VtResumeSampling  ( 0x5C86B8, 0x5DF710, 0x5E0CC4 );
+MM2PtrHook<void(__stdcall*)(void)> $__VtPauseSampling   ( 0x5C86C8, 0x5DF724, 0x5E0CD8 );
+MM2PtrHook<BOOL> $gameClosing                           ( 0x667DEC, 0x6B0150, 0x6B1708 );
 
 /*
     ===========================================================================
 */
-
-bool SubclassGameWindow(HWND gameWnd, WNDPROC pWndProcNew, WNDPROC *ppWndProcOld)
-{
-    LogFile::Write("Subclassing window...");
-    if (gameWnd != NULL)
-    {
-        WNDPROC hProcOld = (WNDPROC)GetWindowLong(gameWnd, GWL_WNDPROC);
-
-        *ppWndProcOld = hProcOld;
-
-        if (hProcOld != NULL && SetWindowLong(gameWnd, GWL_WNDPROC, (LONG)pWndProcNew))
-        {
-            LogFile::WriteLine("Done!");
-            return true;
-        }
-    }
-    LogFile::WriteLine("FAIL!");
-    return false;
-}
 
 bool HandleKeyPress(DWORD vKey)
 {
@@ -180,19 +160,6 @@ bool HandleKeyPress(DWORD vKey)
         } return true;
     }
     return false;
-}
-
-LRESULT APIENTRY WndProcNew(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    switch (uMsg) {
-        case WM_KEYUP:
-        case WM_SYSKEYUP:
-        {
-            if (HandleKeyPress((DWORD)wParam))
-                return 0;
-        } break;
-    }
-    return CallWindowProc(hProcOld, hWnd, uMsg, wParam, lParam);
 }
 
 // ==========================
@@ -363,6 +330,7 @@ BOOL __stdcall AutoDetectCallback (GUID*    lpGUID,
 }
 
 
+MM2RawFnHook<WNDPROC> gfxWindowProc(NULL, NULL, 0x04A88F0);
 
 class gfxHandler
 {
@@ -372,6 +340,20 @@ public:
         LogFile::WriteLine("Additional graphics params enabled.");
 
         $setRes(width, height, cdepth, zdepth, datArgParser::Get("gfxArgs") ? true : detectArgs);
+    }
+
+    static LRESULT APIENTRY WndProcNew(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+    {
+        switch (uMsg)
+        {
+            case WM_KEYUP:
+            case WM_SYSKEYUP:
+            {
+                if (HandleKeyPress(wParam))
+                    return 0;
+            } break;
+        }
+        return gfxWindowProc(hWnd, uMsg, wParam, lParam);
     }
 
     static void __cdecl gfxWindowCreate(LPCSTR lpWindowName)
@@ -406,14 +388,14 @@ public:
         MM2PtrHook<DWORD>   WndWidth(NULL, NULL, 0x683128);
         MM2PtrHook<DWORD>   WndHeight(NULL, NULL, 0x683100);
 
-        MM2RawFnHook<WNDPROC> gfxWindowProc(NULL, NULL, 0x04A88F0);
+        //MM2RawFnHook<WNDPROC> gfxWindowProc(NULL, NULL, 0x04A88F0);
 
         if (!ATOM_Class)
         {
             WNDCLASSA wc = { NULL };
 
             wc.style = CS_HREDRAW | CS_VREDRAW;
-            wc.lpfnWndProc = gfxWindowProc;
+            wc.lpfnWndProc = WndProcNew;
             wc.cbClsExtra = 0;
             wc.cbWndExtra = 0;
             wc.hInstance = 0;
@@ -766,16 +748,10 @@ public:
         MM2Lua::Reset();
     }
 
-    static void Start()
+    static void __stdcall Start()
     {
         if (!$gameClosing)
         {
-            if (!isWindowSubclassed)
-            {
-                SubclassGameWindow(pMM2->GetMainWindowHwnd(), WndProcNew, &hProcOld);
-                isWindowSubclassed = true;
-            }
-
             // GameLoop was restarted
             Reset(false);
         }
@@ -785,7 +761,7 @@ public:
         }
     }
 
-    static void Stop()
+    static void __stdcall Stop()
     {
         if ($gameClosing)
         {
@@ -814,8 +790,8 @@ bool InitializeFramework(MM2Version gameVersion) {
         return false;
     }
 
-    $__VtResumeSampling.set((DWORD)&HookSystemHandler::Start);
-    $__VtPauseSampling.set((DWORD)&HookSystemHandler::Stop);
+    $__VtResumeSampling = &HookSystemHandler::Start;
+    $__VtPauseSampling = &HookSystemHandler::Stop;
 
     LogFile::WriteLine("Done!");
     return true;
