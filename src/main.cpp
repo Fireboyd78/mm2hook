@@ -738,6 +738,9 @@ void InstallCallbacks(MM2Version gameVersion) {
 
     // Replaces a call to ArchInit (a null function) just before ExceptMain
     // This is PERFECT for initializing everything before the game even starts!
+    //
+    // NOTE: Arguments passed to the game can be retrieved using datArgParser,
+    // since it gets initialized just before ArchInit.
     InstallGameCallback("ArchInit", gameVersion, &HookSystemHandler::Initialize, HOOK_CALL,
     {         
         { NULL, NULL, 0x4023DB },
