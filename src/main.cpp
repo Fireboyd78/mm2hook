@@ -427,14 +427,8 @@ BOOL __stdcall AutoDetectCallback (GUID*    lpGUID,
     MM2PtrHook<mmGraphicsInterface>         gfxInterfaces       (NULL, NULL, 0x683130);
     MM2PtrHook<unsigned int>                gfxInterfaceCount   (NULL, NULL, 0x6844C0);
 
-    MM2PtrHook<HRESULT(CALLBACK)(LPSTR,
-                                 LPSTR,
-                                 LPD3DDEVICEDESC7,
-                                 LPVOID)>
-                                            lpDeviceCallback    (NULL, NULL, 0x4AC3D0);
-    MM2PtrHook<HRESULT(PASCAL)(LPDDSURFACEDESC2,
-                               LPVOID)>
-                                            lpResCallback       (NULL, NULL, 0x4AC6F0);
+    MM2RawFnHook<LPD3DENUMDEVICESCALLBACK7> lpDeviceCallback    (NULL, NULL, 0x4AC3D0);
+    MM2RawFnHook<LPDDENUMMODESCALLBACK2>    lpResCallback       (NULL, NULL, 0x4AC6F0);
 
     MM2PtrHook<unsigned int>                gfxMaxScreenWidth   (NULL, NULL, 0x6844FC);
     MM2PtrHook<unsigned int>                gfxMaxScreenHeight  (NULL, NULL, 0x6844D8);
@@ -485,7 +479,7 @@ BOOL __stdcall AutoDetectCallback (GUID*    lpGUID,
 class gfxHandler
 {
 private:
-    static void InstallAutoDetectPatch ()
+    static void InstallAutoDetectPatch()
     {
         InstallGameCallback("AutoDetectCallback", gameVersion, &AutoDetectCallback, HOOK_JMP,
         {
@@ -743,13 +737,6 @@ const PATCH_INSTALL_INFO<1, 1> copLimit_patch =
 };
 
 // ==========================
-// Callback hook definitions
-// ==========================
-
-// Replaces a call to ArchInit (a null function) just before ExceptMain
-// This is PERFECT for initializing everything before the game even starts!
-
-// ==========================
 // VTable hook definitions
 // ==========================
 
@@ -821,6 +808,8 @@ void InstallCallbacks(MM2Version gameVersion) {
         } break;
     }
 
+    // Replaces a call to ArchInit (a null function) just before ExceptMain
+    // This is PERFECT for initializing everything before the game even starts!
     InstallGameCallback("ArchInit", gameVersion, &HookSystemHandler::Initialize, HOOK_CALL,
     {         
         { NULL, NULL, 0x4023DB }

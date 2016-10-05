@@ -65,23 +65,26 @@ public:
 };
 
 template<typename TRet>
-class MM2FnHook : public IMM2HookPtr {
+class MM2FnHook : public IMM2HookPtr
+{
 public:
     constexpr MM2FnHook(const MM2AddressData &addressData)
-        : IMM2HookPtr(addressData) {};
+        : IMM2HookPtr(addressData) { };
     constexpr MM2FnHook(DWORD addrBeta1, DWORD addrBeta2, DWORD addrRetail)
-        : IMM2HookPtr(addrBeta1, addrBeta2, addrRetail) {};
+        : IMM2HookPtr(addrBeta1, addrBeta2, addrRetail) { };
 
     template<typename ...TArgs>
-    constexpr TRet operator()(TArgs ...args) const {
-        typedef TRet (__cdecl *MethodCall)(TArgs...);
+    constexpr TRet operator()(TArgs ...args) const
+    {
+        typedef TRet(__cdecl *MethodCall)(TArgs...);
 
         return static_cast<MethodCall>(lpAddr)(args...);
     };
 
     template<typename ...TArgs, class TThis>
-    constexpr TRet operator()(const TThis &&This, TArgs ...args) const {
-        typedef TRet (__thiscall *MemberCall)(const TThis, TArgs...);
+    constexpr TRet operator()(const TThis &&This, TArgs ...args) const
+    {
+        typedef TRet(__thiscall *MemberCall)(const TThis, TArgs...);
 
         return static_cast<MemberCall>(lpAddr)(This, args...);
     };
@@ -167,6 +170,11 @@ public:
         return (*this->get())(args...);
     }
 };
+
+#include <type_traits>
+
+template <typename TFunc>
+using MM2RawFnHook = MM2PtrHook<std::remove_pointer_t<TFunc>>;
 
 /*
     Game patching functions
