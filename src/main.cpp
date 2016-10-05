@@ -72,90 +72,90 @@ static Matrix34 sm_DashOffset;
 // Function hooks
 // ==========================
 
-MM2FnHook<void> $CreateGameMutex            ( NULL, NULL, 0x402180 );
+MM2FnHook<void> $CreateGameMutex                ( NULL, NULL, 0x402180 );
 
-MM2FnHook<void> $dgBangerInstance_Draw      ( NULL, NULL, 0x4415E0 );
+MM2FnHook<void> $dgBangerInstance_Draw          ( NULL, NULL, 0x4415E0 );
 
-MM2FnHook<UINT32> $sdlPage16_GetShadedColor ( NULL, NULL, 0x450880 );
+MM2FnHook<UINT32> $sdlPage16_GetShadedColor     ( NULL, NULL, 0x450880 );
 
-MM2FnHook<void> $asLinearCS_Update          ( NULL, NULL, 0x4A3370 );
+MM2FnHook<void> $asLinearCS_Update              ( NULL, NULL, 0x4A3370 );
 
-MM2FnHook<bool> $gfxAutoDetect              ( NULL, NULL, 0x4ABE00 );
+MM2FnHook<bool> $gfxAutoDetect                  ( NULL, NULL, 0x4ABE00 );
 
-MM2FnHook<void> $setRes                     ( NULL, NULL, 0x4A8CE0 );
+MM2FnHook<void> $setRes                         ( NULL, NULL, 0x4A8CE0 );
 
 /*
-    TODO: Move VGL stuff to a separate file?
+    TODO: Move VGL stuff to a separate file?    
 */
 
-MM2FnHook<void> $vglBegin                   ( NULL, NULL, 0x4A5500 );
-MM2FnHook<void> $vglEnd                     ( NULL, NULL, 0x4A5A90 );
+MM2FnHook<void> $vglBegin                       ( NULL, NULL, 0x4A5500 );
+MM2FnHook<void> $vglEnd                         ( NULL, NULL, 0x4A5A90 );
 
-MM2FnHook<void> $memSafeHeap_Init           ( NULL, NULL, 0x577210 );
+MM2FnHook<void> $memSafeHeap_Init               ( NULL, NULL, 0x577210 );
 
-MM2FnHook<void> $DefaultPrintString         ( NULL, NULL, 0x4C9510 );
-MM2FnHook<void> $DefaultPrinter             ( NULL, NULL, 0x4C95F0 );
+MM2FnHook<void> $DefaultPrintString             ( NULL, NULL, 0x4C9510 );
+MM2FnHook<void> $DefaultPrinter                 ( NULL, NULL, 0x4C95F0 );
+
+MM2RawFnHook<WNDPROC> $gfxWindowProc            ( NULL, NULL, 0x4A88F0 );
+
+MM2RawFnHook<LPD3DENUMDEVICESCALLBACK7> 
+                $DeviceCallback                 ( NULL, NULL, 0x4AC3D0 );
+MM2RawFnHook<LPDDENUMMODESCALLBACK2>
+                $ResCallback                    ( NULL, NULL, 0x4AC6F0 );
 
 // ==========================
 // Pointer hooks
 // ==========================
 
 MM2PtrHook<cityTimeWeatherLighting> 
-                $TIMEWEATHER                ( NULL, NULL, 0x6299A8 );
+                TIMEWEATHER                     ( NULL, NULL, 0x6299A8 );
 
-MM2PtrHook<int> $timeOfDay                  ( NULL, NULL, 0x62B068 );
+MM2PtrHook<int> timeOfDay                       ( NULL, NULL, 0x62B068 );
 
-MM2PtrHook<UINT32> $vglCurrentColor         ( NULL, NULL, 0x661974 );
+MM2PtrHook<UINT32> vglCurrentColor              ( NULL, NULL, 0x661974 );
 
-MM2PtrHook<asNode> $ROOT                    ( NULL, NULL, 0x661738 );
+MM2PtrHook<asNode> ROOT                         ( NULL, NULL, 0x661738 );
 
 MM2PtrHook<void (*)(LPCSTR)>
-                    $PrintString            ( NULL, NULL, 0x5CECF0 );
+                $PrintString                    ( NULL, NULL, 0x5CECF0 );
 MM2PtrHook<void (*)(int, LPCSTR, char *)>
-                    $Printer                ( NULL, NULL, 0x5CED24);
+                $Printer                        ( NULL, NULL, 0x5CED24);
 
-MM2PtrHook<HRESULT(WINAPI*)(GUID*,
-                            LPVOID*,
-                            REFIID,
-                            IUnknown*)> lpDirectDrawCreateEx(NULL, NULL, 0x684518);
+MM2PtrHook<LPDIRECTDRAWCREATEEX>
+                $lpDirectDrawCreateEx           ( NULL, NULL, 0x684518 );
 
-MM2PtrHook<IDirectDraw7 *>              lpDD(NULL, NULL, 0x6830A8);
-MM2PtrHook<IDirect3D7 *>                lpD3D(NULL, NULL, 0x6830AC);
+MM2PtrHook<IDirectDraw7 *> lpDD                 ( NULL, NULL, 0x6830A8 );
+MM2PtrHook<IDirect3D7 *> lpD3D                  ( NULL, NULL, 0x6830AC );
 
-MM2PtrHook<gfxInterface>                gfxInterfaces(NULL, NULL, 0x683130);
-MM2PtrHook<uint32_t>                    gfxInterfaceCount(NULL, NULL, 0x6844C0);
+MM2PtrHook<gfxInterface> gfxInterfaces          ( NULL, NULL, 0x683130 );
+MM2PtrHook<uint32_t> gfxInterfaceCount          ( NULL, NULL, 0x6844C0 );
 
-MM2RawFnHook<LPD3DENUMDEVICESCALLBACK7> lpDeviceCallback(NULL, NULL, 0x4AC3D0);
-MM2RawFnHook<LPDDENUMMODESCALLBACK2>    lpResCallback(NULL, NULL, 0x4AC6F0);
+MM2PtrHook<uint32_t> gfxMaxScreenWidth          ( NULL, NULL, 0x6844FC );
+MM2PtrHook<uint32_t> gfxMaxScreenHeight         ( NULL, NULL, 0x6844D8 );
 
-MM2PtrHook<uint32_t>                    gfxMaxScreenWidth(NULL, NULL, 0x6844FC);
-MM2PtrHook<uint32_t>                    gfxMaxScreenHeight(NULL, NULL, 0x6844D8);
+MM2PtrHook<HWND> hWndParent                     ( NULL, NULL, 0x682FA0 );
+MM2PtrHook<HWND> hWndMain                       ( NULL, NULL, 0x6830B8 );
 
-MM2PtrHook<LPCSTR>  lpWindowTitle(NULL, NULL, 0x68311C);
-MM2PtrHook<HWND>    hWndMain(NULL, NULL, 0x6830B8);
+MM2PtrHook<LPCSTR> lpWindowTitle                ( NULL, NULL, 0x68311C );
 
-MM2PtrHook<ATOM>    ATOM_Class(NULL, NULL, 0x6830F0);
-MM2PtrHook<LPCSTR>  IconID(NULL, NULL, 0x683108);
+MM2PtrHook<ATOM> ATOM_Class                     ( NULL, NULL, 0x6830F0 );
+MM2PtrHook<LPCSTR> IconID                       ( NULL, NULL, 0x683108 );
 
-MM2PtrHook<BOOL>    inWindow(NULL, NULL, 0x6830D0);
-MM2PtrHook<BOOL>    isMaximized(NULL, NULL, 0x6830D1);
-MM2PtrHook<BOOL>    hasBorder(NULL, NULL, 0x5CA3ED);
+MM2PtrHook<BOOL> inWindow                       ( NULL, NULL, 0x6830D0 );
+MM2PtrHook<BOOL> isMaximized                    ( NULL, NULL, 0x6830D1 );
+MM2PtrHook<BOOL> hasBorder                      ( NULL, NULL, 0x5CA3ED );
 
-MM2PtrHook<HWND>    hWndParent(NULL, NULL, 0x682FA0);
-
-MM2PtrHook<DWORD>   WndPosX(NULL, NULL, 0x6830EC);
-MM2PtrHook<DWORD>   WndPosY(NULL, NULL, 0x683110);
-MM2PtrHook<DWORD>   WndWidth(NULL, NULL, 0x683128);
-MM2PtrHook<DWORD>   WndHeight(NULL, NULL, 0x683100);
-
-MM2RawFnHook<WNDPROC> gfxWindowProc(NULL, NULL, 0x04A88F0);
+MM2PtrHook<DWORD> WndPosX                       ( NULL, NULL, 0x6830EC );
+MM2PtrHook<DWORD> WndPosY                       ( NULL, NULL, 0x683110 );
+MM2PtrHook<DWORD> WndWidth                      ( NULL, NULL, 0x683128 );
+MM2PtrHook<DWORD> WndHeight                     ( NULL, NULL, 0x683100 );
 
 /*
     !! THESE ARE ABSOLUTELY CRITICAL TO THE HOOK WORKING PROPERLY !!
 */
 
-MM2PtrHook<void(*)(void)> $__VtResumeSampling   ( 0x5C86B8, 0x5DF710, 0x5E0CC4 );
-MM2PtrHook<void(*)(void)> $__VtPauseSampling    ( 0x5C86C8, 0x5DF724, 0x5E0CD8 );
+MM2PtrHook<void (*)(void)> $__VtResumeSampling  ( 0x5C86B8, 0x5DF710, 0x5E0CC4 );
+MM2PtrHook<void (*)(void)> $__VtPauseSampling   ( 0x5C86C8, 0x5DF724, 0x5E0CD8 );
 MM2PtrHook<BOOL> $gameClosing                   ( 0x667DEC, 0x6B0150, 0x6B1708 );
 
 /*
@@ -301,7 +301,7 @@ BOOL __stdcall AutoDetectCallback (GUID*    lpGUID,
 {
     LogFile::Format("GFXAutoDetect: Description=%s, Name=%s\n", lpDriverDescription, lpDriverName);
 
-    if (lpDirectDrawCreateEx(lpGUID, (LPVOID*)&lpDD, IID_IDirectDraw7, nullptr) == DD_OK)
+    if ($lpDirectDrawCreateEx(lpGUID, (LPVOID*)&lpDD, IID_IDirectDraw7, nullptr) == DD_OK)
     {
         gfxInterface *gfxInterface = &gfxInterfaces[gfxInterfaceCount];
 
@@ -321,7 +321,7 @@ BOOL __stdcall AutoDetectCallback (GUID*    lpGUID,
 
         if (lpDD->QueryInterface(IID_IDirect3D7, (LPVOID*) &lpD3D) == DD_OK)
         {
-            lpD3D->EnumDevices(lpDeviceCallback, gfxInterface);
+            lpD3D->EnumDevices($DeviceCallback, gfxInterface);
             lpD3D->Release();
 
             *lpD3D = nullptr;
@@ -335,7 +335,7 @@ BOOL __stdcall AutoDetectCallback (GUID*    lpGUID,
         *gfxMaxScreenWidth = 0;
         *gfxMaxScreenHeight = 0;
 
-        lpDD->EnumDisplayModes(0, 0, gfxInterface, lpResCallback);
+        lpDD->EnumDisplayModes(0, 0, gfxInterface, $ResCallback);
         lpDD->Release();
 
         *lpDD = nullptr;
@@ -380,7 +380,7 @@ public:
                 }
             } break;
         }
-        return gfxWindowProc(hWnd, uMsg, wParam, lParam);
+        return $gfxWindowProc(hWnd, uMsg, wParam, lParam);
     }
 
     static void gfxWindowCreate(LPCSTR lpWindowName)
@@ -596,7 +596,7 @@ class GraphicsCallbackHandler
 {
 private:
     static UINT32 CalculateShadedColor(int color) {
-        auto timeWeather = &$TIMEWEATHER[$timeOfDay];
+        auto timeWeather = &TIMEWEATHER[timeOfDay];
 
         vglKeyColor = addPitch(&timeWeather->KeyColor, timeWeather->KeyPitch);
         vglFill1Color = addPitch(&timeWeather->Fill1Color, timeWeather->Fill1Pitch);
@@ -620,18 +620,18 @@ private:
     }
 public:
     static void vglBegin(int gfxMode, int p1) {
-        vglColor = $vglCurrentColor;
+        vglColor = vglCurrentColor;
 
         // calculate a nice shaded color ;)
         vglCalculatedColor = CalculateShadedColor(vglColor);
-        $vglCurrentColor.set(vglCalculatedColor);
+        vglCurrentColor.set(vglCalculatedColor);
 
         $vglBegin(gfxMode, p1);
     }
 
     static void vglEnd(void) {
         // restore color
-        $vglCurrentColor.set(vglColor);
+        vglCurrentColor.set(vglColor);
         $vglEnd();
     }
 };
