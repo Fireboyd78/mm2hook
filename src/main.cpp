@@ -17,10 +17,9 @@ CMidtownMadness2 *pMM2;
 
 MM2Version gameVersion;
 
-WNDPROC hProcOld;
 LRESULT APIENTRY WndProcNew(HWND, UINT, WPARAM, LPARAM);
 
-bool isWindowSubclassed = false;
+//bool isWindowSubclassed = false;
 bool isConsoleOpen = false;
 
 // ==========================
@@ -115,36 +114,53 @@ MM2PtrHook<void (*)(LPCSTR)>
 MM2PtrHook<void (*)(int, LPCSTR, char *)>
                     $Printer                ( NULL, NULL, 0x5CED24);
 
+MM2PtrHook<HRESULT(WINAPI*)(GUID*,
+                            LPVOID*,
+                            REFIID,
+                            IUnknown*)> lpDirectDrawCreateEx(NULL, NULL, 0x684518);
+
+MM2PtrHook<IDirectDraw7 *>              lpDD(NULL, NULL, 0x6830A8);
+MM2PtrHook<IDirect3D7 *>                lpD3D(NULL, NULL, 0x6830AC);
+
+MM2PtrHook<gfxInterface>                gfxInterfaces(NULL, NULL, 0x683130);
+MM2PtrHook<uint32_t>                    gfxInterfaceCount(NULL, NULL, 0x6844C0);
+
+MM2RawFnHook<LPD3DENUMDEVICESCALLBACK7> lpDeviceCallback(NULL, NULL, 0x4AC3D0);
+MM2RawFnHook<LPDDENUMMODESCALLBACK2>    lpResCallback(NULL, NULL, 0x4AC6F0);
+
+MM2PtrHook<uint32_t>                    gfxMaxScreenWidth(NULL, NULL, 0x6844FC);
+MM2PtrHook<uint32_t>                    gfxMaxScreenHeight(NULL, NULL, 0x6844D8);
+
+MM2PtrHook<LPCSTR>  lpWindowTitle(NULL, NULL, 0x68311C);
+MM2PtrHook<HWND>    hWndMain(NULL, NULL, 0x6830B8);
+
+MM2PtrHook<ATOM>    ATOM_Class(NULL, NULL, 0x6830F0);
+MM2PtrHook<LPCSTR>  IconID(NULL, NULL, 0x683108);
+
+MM2PtrHook<BOOL>    inWindow(NULL, NULL, 0x6830D0);
+MM2PtrHook<BOOL>    isMaximized(NULL, NULL, 0x6830D1);
+MM2PtrHook<BOOL>    hasBorder(NULL, NULL, 0x5CA3ED);
+
+MM2PtrHook<HWND>    hWndParent(NULL, NULL, 0x682FA0);
+
+MM2PtrHook<DWORD>   WndPosX(NULL, NULL, 0x6830EC);
+MM2PtrHook<DWORD>   WndPosY(NULL, NULL, 0x683110);
+MM2PtrHook<DWORD>   WndWidth(NULL, NULL, 0x683128);
+MM2PtrHook<DWORD>   WndHeight(NULL, NULL, 0x683100);
+
+MM2RawFnHook<WNDPROC> gfxWindowProc(NULL, NULL, 0x04A88F0);
+
 /*
     !! THESE ARE ABSOLUTELY CRITICAL TO THE HOOK WORKING PROPERLY !!
 */
 
-MM2PtrHook<DWORD> $__VtResumeSampling       ( 0x5C86B8, 0x5DF710, 0x5E0CC4 );
-MM2PtrHook<DWORD> $__VtPauseSampling        ( 0x5C86C8, 0x5DF724, 0x5E0CD8 );
-MM2PtrHook<BOOL> $gameClosing               ( 0x667DEC, 0x6B0150, 0x6B1708 );
+MM2PtrHook<void(*)(void)> $__VtResumeSampling   ( 0x5C86B8, 0x5DF710, 0x5E0CC4 );
+MM2PtrHook<void(*)(void)> $__VtPauseSampling    ( 0x5C86C8, 0x5DF724, 0x5E0CD8 );
+MM2PtrHook<BOOL> $gameClosing                   ( 0x667DEC, 0x6B0150, 0x6B1708 );
 
 /*
     ===========================================================================
 */
-
-bool SubclassGameWindow(HWND gameWnd, WNDPROC pWndProcNew, WNDPROC *ppWndProcOld)
-{
-    LogFile::Write("Subclassing window...");
-    if (gameWnd != NULL)
-    {
-        WNDPROC hProcOld = (WNDPROC)GetWindowLong(gameWnd, GWL_WNDPROC);
-
-        *ppWndProcOld = hProcOld;
-
-        if (hProcOld != NULL && SetWindowLong(gameWnd, GWL_WNDPROC, (LONG)pWndProcNew))
-        {
-            LogFile::WriteLine("Done!");
-            return true;
-        }
-    }
-    LogFile::WriteLine("FAIL!");
-    return false;
-}
 
 bool HandleKeyPress(DWORD vKey)
 {
@@ -178,19 +194,6 @@ bool HandleKeyPress(DWORD vKey)
         } return true;
     }
     return false;
-}
-
-LRESULT APIENTRY WndProcNew(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    switch (uMsg) {
-        case WM_KEYUP:
-        case WM_SYSKEYUP:
-        {
-            if (HandleKeyPress((DWORD)wParam))
-                return 0;
-        } break;
-    }
-    return CallWindowProc(hProcOld, hWnd, uMsg, wParam, lParam);
 }
 
 // ==========================
@@ -262,79 +265,6 @@ public:
     };
 };
 
-class HookSystemHandler {
-private:
-    static void InitializeLua() {
-        // Guaranteed to be loaded before anything vital is called (e.g. AngelReadString)
-        if (gameVersion == MM2_RETAIL)
-        {
-            MM2Lua::Initialize();
-        } else {
-            // no lua support for betas yet
-            MessageBox(NULL, "NOTE: This game version does not currently support Lua scripting.", "MM2Hook", MB_OK | MB_ICONINFORMATION);
-            return;
-        }
-    }
-public:
-    static void Initialize(int argv, char **argc) {
-        // initialize the Lua engine
-        InitializeLua();
-
-        if (gameVersion == MM2_RETAIL)
-        {
-            // hook into the printer
-            $Printer.set(&PrinterHandler::Print);
-            $PrintString.set(&PrinterHandler::PrintString);
-
-            /* Won't write to the log file for some reason :(
-            LogFile::Write("Redirecting MM2 output...");
-
-            if (datOutput::OpenLog("mm2.log"))
-                LogFile::Write("Done!\n");
-            else
-                LogFile::Write("FAIL!\n");
-            */
-        }
-    }
-
-    static void Reset(bool restarting) {
-        LogFile::Write("Hook reset request received: ");
-        LogFile::WriteLine((restarting) ? "leaving GameLoop" : "entering GameLoop");
-
-        if (restarting)
-            MM2Lua::OnRestart();
-
-        MM2Lua::Reset();
-    }
-
-    static void Start() {
-        if (!$gameClosing) {
-            if (!isWindowSubclassed)
-            {
-                SubclassGameWindow(pMM2->GetMainWindowHwnd(), WndProcNew, &hProcOld);
-                isWindowSubclassed = true;
-            }
-
-            // GameLoop was restarted
-            Reset(false);
-        } else {
-            LogFile::WriteLine("WTF: Hook startup request received, but the game is closing!");
-        }
-    }
-
-    static void Stop() {
-        if ($gameClosing) {
-            LogFile::WriteLine("Hook shutdown request received.");
-
-            LogFile::Close();
-            L.close(); // release Lua
-        } else {
-            // GameLoop is restarting
-            Reset(true);
-        }
-    }
-};
-
 class TickHandler {
 public:
     static void Reset(void) {
@@ -371,24 +301,7 @@ BOOL __stdcall AutoDetectCallback (GUID*    lpGUID,
 {
     LogFile::Format("GFXAutoDetect: Description=%s, Name=%s\n", lpDriverDescription, lpDriverName);
 
-    MM2PtrHook<HRESULT(WINAPI*)(GUID*,
-                                LPVOID*,
-                                REFIID,
-                                IUnknown*)> DirectDrawCreateEx  ( NULL, NULL, 0x684518 );
-
-    MM2PtrHook<IDirectDraw7 *>              lpDD                ( NULL, NULL, 0x6830A8 );
-    MM2PtrHook<IDirect3D7 *>                lpD3D               ( NULL, NULL, 0x6830AC );
-
-    MM2PtrHook<gfxInterface>                gfxInterfaces       ( NULL, NULL, 0x683130 );
-    MM2PtrHook<uint32_t>                    gfxInterfaceCount   ( NULL, NULL, 0x6844C0 );
-
-    MM2RawFnHook<LPD3DENUMDEVICESCALLBACK7> lpDeviceCallback    ( NULL, NULL, 0x4AC3D0 );
-    MM2RawFnHook<LPDDENUMMODESCALLBACK2>    lpResCallback       ( NULL, NULL, 0x4AC6F0 );
-
-    MM2PtrHook<uint32_t>                    gfxMaxScreenWidth   ( NULL, NULL, 0x6844FC );
-    MM2PtrHook<uint32_t>                    gfxMaxScreenHeight  ( NULL, NULL, 0x6844D8 );
-
-    if (DirectDrawCreateEx(lpGUID, (LPVOID*)&lpDD, IID_IDirectDraw7, nullptr) == DD_OK)
+    if (lpDirectDrawCreateEx(lpGUID, (LPVOID*)&lpDD, IID_IDirectDraw7, nullptr) == DD_OK)
     {
         gfxInterface *gfxInterface = &gfxInterfaces[gfxInterfaceCount];
 
@@ -433,30 +346,149 @@ BOOL __stdcall AutoDetectCallback (GUID*    lpGUID,
     return TRUE;
 }
 
+
+
 class gfxHandler
 {
 public:
-    static bool gfxAutoDetect(bool *success)
-    {
-        if (datArgParser::Get("noautodetect"))
-        {
-            LogFile::WriteLine("Hooking AutoDetect...");
-            
-            // Hook into the original AutoDetect and replace it with our own version
-            InstallGameCallback("AutoDetectCallback", gameVersion, &AutoDetectCallback, HOOK_JMP,
-            {
-                { NULL, NULL, 0x4AC030 },
-            });
-        }
-
-        return $gfxAutoDetect(success);
-    };
-
     static void setRes(int width, int height, int cdepth, int zdepth, bool detectArgs)
     {
         LogFile::WriteLine("Additional graphics params enabled.");
 
-        $setRes(width, height, cdepth, zdepth, (datArgParser::Get("gfxArgs")) ? true : detectArgs);
+        $setRes(width, height, cdepth, zdepth, true);
+    }
+
+    static LRESULT APIENTRY WndProcNew(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+    {
+        switch (uMsg)
+        {
+            case WM_KEYUP:
+            case WM_SYSKEYUP:
+            {
+                if (HandleKeyPress(wParam))
+                    return 0;
+            } break;
+
+            case WM_ACTIVATEAPP:
+            {
+                if (wParam == FALSE)
+                {
+                    if (datArgParser::Get("nopause"))
+                    {
+                        return 0;
+                    }
+                }
+            } break;
+        }
+        return gfxWindowProc(hWnd, uMsg, wParam, lParam);
+    }
+
+    static void gfxWindowCreate(LPCSTR lpWindowName)
+    {
+        if (hWndMain)
+        {
+            return;
+        }
+
+        if (lpWindowTitle)
+        {
+            lpWindowName = lpWindowTitle;
+        }
+
+        *hasBorder = !datArgParser::Get("noborder");
+
+        if (!ATOM_Class)
+        {
+            WNDCLASSA wc = { NULL };
+
+            wc.style = CS_HREDRAW | CS_VREDRAW;
+            wc.lpfnWndProc = WndProcNew;
+            wc.cbClsExtra = 0;
+            wc.cbWndExtra = 0;
+            wc.hInstance = 0;
+            wc.hIcon = LoadIconA(GetModuleHandleA(NULL), IconID ? IconID : IDI_APPLICATION);
+            wc.hCursor = LoadCursorA(0, IDC_ARROW);
+            wc.hbrBackground = CreateSolidBrush(NULL);
+            wc.lpszMenuName = NULL;
+            wc.lpszClassName = "gfxWindow";
+
+            *ATOM_Class = RegisterClassA(&wc);
+        }
+
+        HDC hDC = GetDC(0);
+        DWORD screenWidth = GetDeviceCaps(hDC, HORZRES);
+        DWORD screenHeight = GetDeviceCaps(hDC, VERTRES);
+        ReleaseDC(0, hDC);
+
+        if (WndPosX == -1)
+        {
+            *WndPosX = (screenWidth - WndWidth) / 2;
+        }
+
+        if (WndPosY == -1)
+        {
+            *WndPosY = (screenHeight - WndHeight) / 2;
+        }
+
+        DWORD dwStyle = NULL;
+
+        if (inWindow)
+        {
+            if (hWndParent)
+            {
+                dwStyle = WS_CHILD;
+            }
+            else if (hasBorder)
+            {
+                dwStyle = WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
+            }
+            else
+            {
+                dwStyle = WS_POPUP;
+            }
+        }
+        else
+        {
+            dwStyle = WS_POPUP | WS_SYSMENU;
+        }
+
+        HWND hWND = CreateWindowExA(
+            WS_EX_APPWINDOW,
+            "gfxWindow",
+            lpWindowName,
+            dwStyle,
+            WndPosX,
+            WndPosY,
+            640,
+            480,
+            hWndParent,
+            0,
+            0,
+            0);
+
+        *hWndMain = hWND;
+
+        if (inWindow)
+        {
+            RECT rect;
+
+            GetClientRect(hWND, &rect);
+
+            MoveWindow(
+                hWND,
+                WndPosX,
+                WndPosY,
+                2 * WndWidth - rect.right,
+                2 * WndWidth - rect.bottom,
+                0);
+        }
+
+        SetCursor(NULL);
+        ShowCursor(FALSE);
+
+        ShowWindow(hWND, TRUE);
+        UpdateWindow(hWND);
+        SetFocus(hWND);
     }
 };
 
@@ -658,6 +690,96 @@ public:
     };
 };
 
+class HookSystemHandler
+{
+private:
+    static void InitializeLua()
+    {
+        // Guaranteed to be loaded before anything vital is called (e.g. AngelReadString)
+        if (gameVersion == MM2_RETAIL)
+        {
+            MM2Lua::Initialize();
+        }
+        else
+        {
+            // no lua support for betas yet
+            MessageBox(NULL, "NOTE: This game version does not currently support Lua scripting.", "MM2Hook", MB_OK | MB_ICONINFORMATION);
+            return;
+        }
+    }
+public:
+    static void Initialize(int argv, char **argc)
+    {
+        // initialize the Lua engine
+        InitializeLua();
+
+        if (gameVersion == MM2_RETAIL)
+        {
+            // hook into the printer
+            *$Printer = &PrinterHandler::Print;
+            *$PrintString = &PrinterHandler::PrintString;
+
+            /* Won't write to the log file for some reason :(
+            LogFile::Write("Redirecting MM2 output...");
+
+            if (datOutput::OpenLog("mm2.log"))
+            LogFile::Write("Done!\n");
+            else
+            LogFile::Write("FAIL!\n");
+            */
+
+            if (!datArgParser::Get("oldautodetect"))
+            {
+                // Hook into the original AutoDetect and replace it with our own version
+                InstallGameCallback("AutoDetectCallback", gameVersion, &AutoDetectCallback, HOOK_JMP,
+                {
+                    { NULL, NULL, 0x4AC030 },
+                });
+            }
+        }
+    }
+
+    static void Reset(bool restarting)
+    {
+        LogFile::Write("Hook reset request received: ");
+        LogFile::WriteLine((restarting) ? "leaving GameLoop" : "entering GameLoop");
+
+        if (restarting)
+            MM2Lua::OnRestart();
+
+        MM2Lua::Reset();
+    }
+
+    static void Start()
+    {
+        if (!$gameClosing)
+        {
+            // GameLoop was restarted
+            Reset(false);
+        }
+        else
+        {
+            LogFile::WriteLine("WTF: Hook startup request received, but the game is closing!");
+        }
+    }
+
+    static void Stop()
+    {
+        if ($gameClosing)
+        {
+            LogFile::WriteLine("Hook shutdown request received.");
+
+            LogFile::Close();
+            L.close(); // release Lua
+        }
+        else
+        {
+            // GameLoop is restarting
+            Reset(true);
+        }
+    }
+};
+
 /*
     ===========================================================================
 */
@@ -670,8 +792,8 @@ bool InitializeFramework(MM2Version gameVersion) {
         return false;
     }
 
-    $__VtResumeSampling.set((DWORD)&HookSystemHandler::Start);
-    $__VtPauseSampling.set((DWORD)&HookSystemHandler::Stop);
+    *$__VtResumeSampling = &HookSystemHandler::Start;
+    *$__VtPauseSampling = &HookSystemHandler::Stop;
 
     LogFile::WriteLine("Done!");
     return true;
@@ -688,14 +810,14 @@ void InstallPatches(MM2Version gameVersion) {
         { NULL, NULL, 0x50BBCF },
     });
 
-    InstallGamePatch ("Change window style", gameVersion, { 0x00, 0x00, 0xCA, 0x80 },
-    {
-        { NULL, NULL, 0x4A8BD1 },
-    });
-
     InstallGamePatch ("Increase cop limit", gameVersion, { 0x40 },
     {
         { NULL, NULL, 0x55100B },
+    });
+
+    InstallGamePatch("Enables pointer in windowed mode", gameVersion, { 0x90, 0x90 },
+    {
+        { NULL, NULL, 0x4F136E },
     });
 };
 
@@ -751,14 +873,14 @@ void InstallCallbacks(MM2Version gameVersion) {
         { NULL, NULL, 0x402630 },
     });
 
-    InstallGameCallback("gfxAutoDetect", gameVersion, &gfxHandler::gfxAutoDetect, HOOK_CALL,
-    {
-        { NULL, NULL, 0x401440 },
-    });
-
     InstallGameCallback("setRes", gameVersion, &gfxHandler::setRes, HOOK_CALL,
     {
         { NULL, NULL, 0x401482 },
+    });
+
+    InstallGameCallback("gfxWindowCreate", gameVersion, &gfxHandler::gfxWindowCreate, HOOK_CALL,
+    {
+        { NULL, NULL, 0x4A94AA },
     });
     
     InstallGameCallback("memSafeHeap::Init [Heap fix]", gameVersion, &memSafeHeapCallbackHandler::Init, HOOK_CALL,
