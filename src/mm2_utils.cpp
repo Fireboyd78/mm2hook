@@ -62,34 +62,33 @@ int MM2HookMgr::Initialize(MM2Version version) {
     return HOOK_INIT_OK;
 };
 
-bool InstallVTableHook(LPCSTR name, MM2Version gameVersion, LPVOID lpData, int count) {
+void InstallVTableHook(LPCSTR name, 
+                       MM2Version gameVersion,
+                       ANY_PTR lpHookAddr,
+                       std::initializer_list<MM2AddressData> addresses) {
     LogFile::Format(" - Installing V-Table hook: '%s'...\n", name);
 
-    auto info = (VT_INSTALL_INFO<>*)lpData;
+    std::size_t count = 0;
+    for (auto patch : addresses)
+    {
+        auto addr = patch[gameVersion];
 
-    if (count == 0) {
-        LogFile::WriteLine(" - ERROR! Data is empty!");
-        return false;
-    }
-
-    int progress = 0;
-
-    for (int i = 0; i < count; i++) {
-        auto addr = info->addrData[i][gameVersion];
-
-        LogFile::Format("  - [%d] %08X => %08X : ", (i + 1), addr, info->dwHookAddr);
+        LogFile::Format("   - %08X => %08X :", addr, lpHookAddr);
 
         if (addr != NULL)
         {
-            InstallVTHook(addr, info->dwHookAddr);
+            InstallVTHook(addr, lpHookAddr);
             LogFile::WriteLine("OK");
 
-            progress++;
-        } else LogFile::WriteLine("Not supported");
+            ++count;
+        }
+        else
+        {
+            LogFile::WriteLine("Not supported");
+        }
     }
 
-    bool success = (progress > 0);
-    return success;
+    LogFile::Format("   - Installed %u / %u hooks\n", count, addresses.size());
 }
 
 void InstallGamePatch(LPCSTR name,
@@ -104,7 +103,7 @@ void InstallGamePatch(LPCSTR name,
     {
         auto addr = patch[gameVersion];
 
-        LogFile::Format("   - %08X", addr);
+        LogFile::Format("   - %08X : ", addr);
 
         if (addr != NULL)
         {
@@ -131,7 +130,7 @@ void InstallGameCallback(LPCSTR name, MM2Version gameVersion, ANY_PTR lpCallback
     {
         auto addr = patch[gameVersion];
 
-        LogFile::Format("   - %08X => %08X :", addr, lpCallback);
+        LogFile::Format("   - %08X => %08X : ", addr, lpCallback);
         if (addr != NULL && InstallCallbackHook(addr, lpCallback, type == HOOK_CALL))
         {
             LogFile::WriteLine("OK");

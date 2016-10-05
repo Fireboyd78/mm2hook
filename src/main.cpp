@@ -661,21 +661,6 @@ public:
 /*
     ===========================================================================
 */
-
-// ==========================
-// VTable hook definitions
-// ==========================
-
-const VT_INSTALL_INFO<2> bridgeFerryDraw_VT = {
-    &BridgeFerryCallbackHandler::Draw, {
-        { NULL, NULL, 0x5B5FB8 }, // gizBridge::Draw
-        { NULL, NULL, 0x5B61AC } // gizFerry::Draw
-    }
-};
-
-/*
-    ===========================================================================
-*/
 bool InitializeFramework(MM2Version gameVersion) {
     LogFile::Write("Hooking into the framework...");
 
@@ -725,7 +710,7 @@ void InstallCallbacks(MM2Version gameVersion) {
             // Disables time check on betas
             InstallGameCallback("TrialTimeExpired", gameVersion, &ReturnNullOrZero, HOOK_CALL,
             {
-                { 0x4011B0, 0x4012AC, NULL }
+                { 0x4011B0, 0x4012AC, NULL },
             });
         } break;
         case MM2_RETAIL:
@@ -739,11 +724,15 @@ void InstallCallbacks(MM2Version gameVersion) {
             // revert bridges/ferries to how they were in the betas
             InstallGameCallback("Bridge/Ferry: Cull", gameVersion, &BridgeFerryCallbackHandler::Cull, HOOK_CALL,
             {
-                { NULL, NULL, 0x5780BC },   // gizBridgeMgr::Cull
-                { NULL, NULL, 0x5798F0 }    // gizFerryMgr::Cull
+                { NULL, NULL, 0x5780BC }, // gizBridgeMgr::Cull
+                { NULL, NULL, 0x5798F0 }, // gizFerryMgr::Cull
             });
 
-            InstallVTableHook("Bridge/Ferry: Draw", gameVersion, bridgeFerryDraw_VT);
+            InstallVTableHook("Bridge/Ferry: Draw", gameVersion, &BridgeFerryCallbackHandler::Draw,
+            {
+                { NULL, NULL, 0x5B5FB8 }, // gizBridge::Draw
+                { NULL, NULL, 0x5B61AC }, // gizFerry::Draw
+            });
         } break;
     }
 
@@ -751,27 +740,27 @@ void InstallCallbacks(MM2Version gameVersion) {
     // This is PERFECT for initializing everything before the game even starts!
     InstallGameCallback("ArchInit", gameVersion, &HookSystemHandler::Initialize, HOOK_CALL,
     {         
-        { NULL, NULL, 0x4023DB }
+        { NULL, NULL, 0x4023DB },
     });
 
     InstallGameCallback("ageDebug", gameVersion, &CallbackHandler::ageDebug, HOOK_JMP,
     {
-        { NULL, NULL, 0x402630 }
+        { NULL, NULL, 0x402630 },
     });
 
     InstallGameCallback("gfxAutoDetect", gameVersion, &gfxHandler::gfxAutoDetect, HOOK_CALL,
     {
-        { NULL, NULL, 0x401440 }
+        { NULL, NULL, 0x401440 },
     });
 
     InstallGameCallback("setRes", gameVersion, &gfxHandler::setRes, HOOK_CALL,
     {
-        { NULL, NULL, 0x401482 }
+        { NULL, NULL, 0x401482 },
     });
     
     InstallGameCallback("memSafeHeap::Init [Heap fix]", gameVersion, &memSafeHeapCallbackHandler::Init, HOOK_CALL,
     {
-        { NULL, NULL, 0x4015DD }
+        { NULL, NULL, 0x4015DD },
     });
 
     //// not supported for betas yet

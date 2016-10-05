@@ -195,7 +195,10 @@ struct VT_INSTALL_INFO
     MM2AddressData addrData[count];
 };
 
-bool InstallVTableHook(LPCSTR name, MM2Version gameVersion, LPVOID lpData, int count);
+void InstallVTableHook(LPCSTR name, 
+                       MM2Version gameVersion,
+                       ANY_PTR lpHookAddr,
+                       std::initializer_list<MM2AddressData> addresses);
 
 void InstallGamePatch(LPCSTR name,
                       MM2Version gameVersion,
@@ -207,9 +210,3 @@ void InstallGameCallback(LPCSTR name,
                          ANY_PTR lpCallback,
                          CB_HOOK_TYPE type,
                          std::initializer_list<MM2AddressData> addresses);
-
-template<int count>
-inline bool InstallVTableHook(LPCSTR name, MM2Version gameVersion, const VT_INSTALL_INFO<count> &data)
-{
-    return InstallVTableHook(name, gameVersion, (LPVOID) &data, data.length);
-}
