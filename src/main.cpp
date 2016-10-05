@@ -352,6 +352,17 @@ public:
                 if (HandleKeyPress(wParam))
                     return 0;
             } break;
+
+            case WM_ACTIVATEAPP:
+            {
+                if (wParam == FALSE)
+                {
+                    if (datArgParser::Get("nopause"))
+                    {
+                        return 0;
+                    }
+                }
+            } break;
         }
         return gfxWindowProc(hWnd, uMsg, wParam, lParam);
     }
@@ -387,8 +398,6 @@ public:
         MM2PtrHook<DWORD>   WndPosY(NULL, NULL, 0x683110);
         MM2PtrHook<DWORD>   WndWidth(NULL, NULL, 0x683128);
         MM2PtrHook<DWORD>   WndHeight(NULL, NULL, 0x683100);
-
-        //MM2RawFnHook<WNDPROC> gfxWindowProc(NULL, NULL, 0x04A88F0);
 
         if (!ATOM_Class)
         {
@@ -433,7 +442,7 @@ public:
             }
             else if (hasBorder)
             {
-                dwStyle = WS_SYSMENU | WS_CAPTION;
+                dwStyle = WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
             }
             else
             {
@@ -706,8 +715,8 @@ public:
         if (gameVersion == MM2_RETAIL)
         {
             // hook into the printer
-            $Printer.set(&PrinterHandler::Print);
-            $PrintString.set(&PrinterHandler::PrintString);
+            $Printer = &PrinterHandler::Print;
+            $PrintString = &PrinterHandler::PrintString;
 
             /* Won't write to the log file for some reason :(
             LogFile::Write("Redirecting MM2 output...");
@@ -724,14 +733,6 @@ public:
                 InstallGameCallback("AutoDetectCallback", gameVersion, &AutoDetectCallback, HOOK_JMP,
                 {
                     { NULL, NULL, 0x4AC030 },
-                });
-            }
-
-            if (datArgParser::Get("nopause"))
-            {
-                InstallGamePatch("Disable Pause", gameVersion, { 0x90, 0x90 },
-                {
-                    { NULL, NULL, 0x4A8925 },
                 });
             }
         }
@@ -806,11 +807,6 @@ void InstallPatches(MM2Version gameVersion) {
         { NULL, NULL, 0x4E68B5 },
         { NULL, NULL, 0x4E68B9 },
         { NULL, NULL, 0x50BBCF },
-    });
-
-    InstallGamePatch ("Change window style", gameVersion, { 0x00, 0x00, 0xCA, 0x80 },
-    {
-        { NULL, NULL, 0x4A8BD1 },
     });
 
     InstallGamePatch ("Increase cop limit", gameVersion, { 0x40 },
