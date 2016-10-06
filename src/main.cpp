@@ -679,7 +679,7 @@ private:
         vglResultColor.g = (char)(vglShadedColor.Y * 255.999);
         vglResultColor.b = (char)(vglShadedColor.Z * 255.999);
 
-        return $sdlPage16_GetShadedColor(color, *(int*)&vglResultColor);
+        return $sdlPage16_GetShadedColor(color, (int)vglResultColor.dwColor);
     }
 public:
     static void vglBegin(int gfxMode, int p1) {
