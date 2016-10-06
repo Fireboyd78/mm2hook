@@ -298,7 +298,7 @@ BOOL __stdcall AutoDetectCallback (GUID*    lpGUID,
                                    LPSTR    lpDriverName,
                                    LPVOID   lpContext)
 {
-    LogFile::Format("GFXAutoDetect: Description=%s, Name=%s\n", lpDriverDescription, lpDriverName);
+    Displayf("AutoDetect: GUID=%x, Description=%s, Name=%s", lpGUID, lpDriverDescription, lpDriverName);
 
     if ($lpDirectDrawCreateEx(lpGUID, (LPVOID*)&lpDD, IID_IDirectDraw7, nullptr) == DD_OK)
     {
@@ -327,9 +327,21 @@ BOOL __stdcall AutoDetectCallback (GUID*    lpGUID,
         }
 
         gfxInterface->DeviceType        = gfxDeviceType::HardwareWithTnL;
+
         gfxInterface->ResolutionCount   = 0;
         gfxInterface->ResolutionChoice  = 0;
-        gfxInterface->AvailableMemory   = 0x40000000; // 1GB = 1024 * 1024 * 1024
+
+        DWORD availableMemory = 0x40000000; // 1GB = 1024 * 1024 * 1024
+        DDSCAPS2 ddsCaps = { NULL };
+
+        ddsCaps.dwCaps = DDSCAPS_VIDEOMEMORY | DDSCAPS_LOCALVIDMEM;
+
+        if (lpDD->GetAvailableVidMem(&ddsCaps, &availableMemory, NULL) != DD_OK)
+            Warningf("  Couldn't get video memory, using default");
+        
+        Displayf("  Total video memory: %dMB", (availableMemory >> 20));
+
+        gfxInterface->AvailableMemory = availableMemory;
 
         *gfxMaxScreenWidth = 0;
         *gfxMaxScreenHeight = 0;
