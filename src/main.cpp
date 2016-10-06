@@ -282,7 +282,6 @@ public:
 class ChatHandler {
 public:
     void Process(char *message) {
-        Warningf("ChatHandler::Process(\"%s\")", message);
         if (isConsoleOpen) {
             MM2Lua::SendCommand(message);
 
@@ -319,7 +318,7 @@ BOOL __stdcall AutoDetectCallback (GUID*    lpGUID,
             gfxInterface->GUID      = ddDeviceIdentifier.guidDeviceIdentifier;
         }
 
-        if (lpDD->QueryInterface(IID_IDirect3D7, (LPVOID*) &lpD3D) == DD_OK)
+        if (lpDD->QueryInterface(IID_IDirect3D7, (LPVOID*)&lpD3D) == DD_OK)
         {
             lpD3D->EnumDevices($DeviceCallback, gfxInterface);
             lpD3D->Release();
@@ -345,8 +344,6 @@ BOOL __stdcall AutoDetectCallback (GUID*    lpGUID,
 
     return TRUE;
 }
-
-
 
 class gfxHandler
 {
@@ -783,6 +780,7 @@ public:
 /*
     ===========================================================================
 */
+
 bool InitializeFramework(MM2Version gameVersion) {
     LogFile::Write("Hooking into the framework...");
 
@@ -873,7 +871,7 @@ void InstallCallbacks(MM2Version gameVersion) {
         { NULL, NULL, 0x402630 },
     });
 
-    InstallGameCallback("setRes", gameVersion, &gfxHandler::setRes, HOOK_CALL,
+    InstallGameCallback("gfxPipeline::SetRes", gameVersion, &gfxHandler::setRes, HOOK_CALL,
     {
         { NULL, NULL, 0x401482 },
     });
