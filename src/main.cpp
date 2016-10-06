@@ -53,18 +53,17 @@ Vector3 vglShadedColor;
 
 /* ARGB color */
 struct COLOR_ARGB {
-    char b;
-    char g;
-    char r;
-    char a;
+    union {
+        char b;
+        char g;
+        char r;
+        char a;
+
+        DWORD dwColor;
+    };
 };
 
-COLOR_ARGB vglResultColor = {
-    (char)0,
-    (char)0,
-    (char)0,
-    (char)255,
-};
+COLOR_ARGB vglResultColor;
 
 /* Dashboard experiment */
 
@@ -539,7 +538,7 @@ public:
                 if (ddPixelFormat.dwGBitMask == 0xFF00)
                 {
                     // we can use the color directly
-                    fillColor = *(UINT*)&color;
+                    fillColor = color.dwColor;
                 }
                 else
                 {
