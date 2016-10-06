@@ -66,9 +66,9 @@ struct ColorFlags
 ColorFlagType(8, 8, 8, 8)
 ColorFlagType(0, 8, 8, 8)
 ColorFlagType(1, 5, 5, 5)
-ColorFlagType(4, 4, 4, 4)
-ColorFlagType(0, 5, 6, 5)
 ColorFlagType(0, 5, 5, 5)
+ColorFlagType(0, 5, 6, 5)
+ColorFlagType(4, 4, 4, 4)
 
 #undef ColorFlagType
 
@@ -76,7 +76,7 @@ template <
     std::uint8_t OA, std::uint8_t OR, std::uint8_t OG, std::uint8_t OB,
     std::uint8_t NA, std::uint8_t NR, std::uint8_t NG, std::uint8_t NB
 >
-std::uint32_t ChangeColor(std::uint32_t color)
+inline std::uint32_t ConvertColor(std::uint32_t color)
 {
     using OF = ColorFlags<OA, OR, OG, OB>;
     using NF = ColorFlags<NA, NR, NG, NB>;
@@ -91,7 +91,7 @@ std::uint32_t ChangeColor(std::uint32_t color)
 template <
     std::uint8_t NA, std::uint8_t NR, std::uint8_t NG, std::uint8_t NB
 >
-std::uint32_t CreateColor(std::uint8_t a, std::uint8_t r, std::uint8_t g, std::uint8_t b)
+inline std::uint32_t CreateColor(std::uint8_t a, std::uint8_t r, std::uint8_t g, std::uint8_t b)
 {
     using NF = ColorFlags<NA, NR, NG, NB>;
 
@@ -105,7 +105,7 @@ std::uint32_t CreateColor(std::uint8_t a, std::uint8_t r, std::uint8_t g, std::u
 template <
     std::uint8_t OA, std::uint8_t OR, std::uint8_t OG, std::uint8_t OB
 >
-Vector4 ColorToVector(std::uint32_t color)
+inline Vector4 ColorToVector(std::uint32_t color)
 {
     using OF = ColorFlags<OA, OR, OG, OB>;
 
@@ -121,7 +121,7 @@ Vector4 ColorToVector(std::uint32_t color)
 template <
     std::uint8_t OR, std::uint8_t OG, std::uint8_t OB
 >
-Vector3 ColorToVector(std::uint32_t color)
+inline Vector3 ColorToVector(std::uint32_t color)
 {
     using OF = ColorFlags<0, OR, OG, OB>;
 
@@ -584,12 +584,12 @@ public:
         {
             case 0x3E0: // 555
             {
-                color = ChangeColor<0, 5, 5, 5, 0, 8, 8, 8>(color);
+                color = ConvertColor<0, 5, 5, 5, 0, 8, 8, 8>(color);
             } break;
 
             case 0x7E0: // 565
             {
-                color = ChangeColor<0, 5, 6, 5, 0, 8, 8, 8>(color);
+                color = ConvertColor<0, 5, 6, 5, 0, 8, 8, 8>(color);
             } break;
 
             case 0xFF00: // 888
