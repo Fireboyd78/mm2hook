@@ -52,15 +52,14 @@ Vector3 vglFill2Color;
 Vector3 vglShadedColor;
 
 /* ARGB color */
-struct COLOR_ARGB {
-    union {
-        char b;
-        char g;
-        char r;
-        char a;
-
-        DWORD dwColor;
+union COLOR_ARGB
+{
+    struct
+    {
+        BYTE b, g, r, a;
     };
+
+    DWORD color;
 };
 
 COLOR_ARGB vglResultColor;
@@ -538,7 +537,7 @@ public:
                 if (ddPixelFormat.dwGBitMask == 0xFF00)
                 {
                     // we can use the color directly
-                    fillColor = color.dwColor;
+                    fillColor = color.color;
                 }
                 else
                 {
@@ -675,11 +674,11 @@ private:
             normalize((vglKeyColor.Z + vglFill1Color.Z + vglFill2Color.Z) + vglAmbient.Z),
         };
 
-        vglResultColor.r = (char)(vglShadedColor.X * 255.999);
-        vglResultColor.g = (char)(vglShadedColor.Y * 255.999);
-        vglResultColor.b = (char)(vglShadedColor.Z * 255.999);
+        vglResultColor.r = BYTE(vglShadedColor.X * 255.999);
+        vglResultColor.g = BYTE(vglShadedColor.Y * 255.999);
+        vglResultColor.b = BYTE(vglShadedColor.Z * 255.999);
 
-        return $sdlPage16_GetShadedColor(color, (int)vglResultColor.dwColor);
+        return $sdlPage16_GetShadedColor(color, vglResultColor.color);
     }
 public:
     static void vglBegin(int gfxMode, int p1) {
