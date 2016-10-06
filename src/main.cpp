@@ -882,6 +882,11 @@ void InstallCallbacks(MM2Version gameVersion) {
     {
         { NULL, NULL, 0x4A94AA },
     });
+
+    InstallGameCallback("gfxLoadVideoDatabase [disable 'badvideo.txt']", gameVersion, &ReturnFalse, HOOK_CALL,
+    {
+        { NULL, NULL, 0x4AC4F9 },
+    });
     
     InstallGameCallback("memSafeHeap::Init [Heap fix]", gameVersion, &memSafeHeapCallbackHandler::Init, HOOK_CALL,
     {
