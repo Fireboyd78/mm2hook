@@ -968,6 +968,11 @@ void InstallCallbacks(MM2Version gameVersion) {
     {
         { NULL, NULL, 0x430F87 }, // replaces call to asLinearCS::Update
     });
+
+    InstallGameCallback("zipFile::Init ['extraLen' spam fix]", gameVersion, &NullSub, HOOK_CALL,
+    {
+        { NULL, NULL, 0x5738EA }, // 'extraLen=%d'
+    });
 };
 
 //
