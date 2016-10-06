@@ -52,12 +52,14 @@ Vector3 vglFill2Color;
 Vector3 vglShadedColor;
 
 /* ARGB color */
-struct {
+struct COLOR_ARGB {
     char b;
     char g;
     char r;
     char a;
-} vglResultColor = {
+};
+
+COLOR_ARGB vglResultColor = {
     (char)0,
     (char)0,
     (char)0,
@@ -126,6 +128,8 @@ MM2PtrHook<LPDIRECTDRAWCREATEEX>
 
 MM2PtrHook<IDirectDraw7 *> lpDD                 ( NULL, NULL, 0x6830A8 );
 MM2PtrHook<IDirect3D7 *> lpD3D                  ( NULL, NULL, 0x6830AC );
+
+MM2PtrHook<IDirectDrawSurface7 *> lpdsRend      ( NULL, NULL, 0x6830CC );
 
 MM2PtrHook<gfxInterface> gfxInterfaces          ( NULL, NULL, 0x683130 );
 MM2PtrHook<uint32_t> gfxInterfaceCount          ( NULL, NULL, 0x6844C0 );
@@ -503,6 +507,57 @@ public:
 
 class CallbackHandler {
 public:
+    static void ProgressRect(int x, int y, int width, int height, COLOR_ARGB color) {
+        RECT rect;
+        DDPIXELFORMAT ddPixelFormat = { NULL };
+        DDBLTFX ddBltFx;
+
+        int fillColor;
+
+        ddBltFx.dwSize = 0x64;
+        ddPixelFormat.dwSize = 0x20;
+
+        lpdsRend->GetPixelFormat(&ddPixelFormat);
+
+        if (ddPixelFormat.dwGBitMask == 0x3E0)
+        {
+            // 555
+            fillColor |= (color.r & 0xF8) << 7;
+            fillColor |= (color.g & 0xF8) << 2;
+            fillColor |= (color.b & 0xF8) >> 3;
+        }
+        else
+        {
+            if (ddPixelFormat.dwGBitMask == 0x7E0)
+            {
+                fillColor |= (color.r & 0xF8) << 8;
+                fillColor |= (color.g & 0xFC) << 3;
+                fillColor |= (color.b & 0xF8) >> 3;
+            }
+            else
+            {
+                if (ddPixelFormat.dwGBitMask == 0xFF00)
+                {
+                    // we can use the color directly
+                    fillColor = *(UINT*)&color;
+                }
+                else
+                {
+                    fillColor = -1; // fully white (error)
+                }
+            }
+        }
+
+        ddBltFx.dwFillColor = fillColor;
+
+        rect.left = x;
+        rect.right = (x + width);
+        rect.top = y;
+        rect.bottom = (y + height);
+
+        lpdsRend->Blt(&rect, NULL, NULL, DDBLT_COLORFILL | DDBLT_WAIT, &ddBltFx);
+    };
+
     static void CreateGameMutex(LPCSTR lpName) {
         if (datArgParser::Get("nomutex")) {
             LogFile::WriteLine("Game mutex disabled.");
@@ -881,6 +936,12 @@ void InstallCallbacks(MM2Version gameVersion) {
     InstallGameCallback("ageDebug", gameVersion, &CallbackHandler::ageDebug, HOOK_JMP,
     {
         { NULL, NULL, 0x402630 },
+    });
+
+    InstallGameCallback("ProgressRect [white loading bar fix]", gameVersion, &CallbackHandler::ProgressRect, HOOK_CALL,
+    {
+        { NULL, NULL, 0x401163 },
+        { NULL, NULL, 0x4011CC },
     });
 
     InstallGameCallback("gfxPipeline::SetRes", gameVersion, &gfxHandler::setRes, HOOK_CALL,
