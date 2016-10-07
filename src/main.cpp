@@ -122,7 +122,6 @@ struct mmDirSnd
     float Volume;
 };
 
-
 /* Dashboard experiment */
 
 static Matrix34 sm_DashOffset;
@@ -164,6 +163,8 @@ MM2RawFnHook<LPDDENUMMODESCALLBACK2>
 
 MM2RawFnHook<mmDirSnd*(*)(int, bool, int, float, LPCSTR, bool)>
                 $mmDirSndInit                   ( NULL, NULL, 0x51CC50 );
+
+MM2FnHook<void> $asCullManagerInit              ( NULL, NULL, 0x4A1290 );
 
 // ==========================
 // Pointer hooks
@@ -839,6 +840,21 @@ public:
     };
 };
 
+class asCullManager
+{
+public:
+    void __thiscall Init(int maxCullables, int maxCullables2D)
+    {
+        maxCullables = 1024;
+        maxCullables2D = 256;
+
+        LogFile::Format("asCullManager::Init - Increased Cullables to %i, %i\n", maxCullables, maxCullables2D);
+
+        $asCullManagerInit(this, maxCullables, maxCullables2D);
+    }
+};
+
+
 class HookSystemHandler
 {
 private:
@@ -1057,6 +1073,11 @@ void InstallCallbacks(MM2Version gameVersion) {
     InstallGameCallback("memSafeHeap::Init [Heap fix]", gameVersion, &memSafeHeapCallbackHandler::Init, HOOK_CALL,
     {
         { NULL, NULL, 0x4015DD },
+    });
+
+    InstallGameCallback("asCullManager::Init [Increase Max Cullables]", gameVersion, &asCullManager::Init, HOOK_CALL,
+    {
+        { NULL, NULL, 0x401D5C },
     });
 
     //// not supported for betas yet
