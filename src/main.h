@@ -10,8 +10,11 @@
 // MM2 uses DirectX 7
 #define DIRECT3D_VERSION    0x0700
 #define DIRECTINPUT_VERSION 0x0700
+#define DIRECTSOUND_VERSION 0x0700
 #include <d3d.h>
 #include <dinput.h>
+#include <mmreg.h>
+#include <dsound.h>
 
 typedef HRESULT (WINAPI *LPFNDIRECTINPUTCREATE)(HINSTANCE, DWORD, LPVOID *, LPUNKNOWN);
 typedef HRESULT (WINAPI *LPDIRECTDRAWCREATEEX)(GUID *, LPVOID *, REFIID, IUnknown *);

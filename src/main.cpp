@@ -5,9 +5,7 @@ using namespace MM2;
 LPFNDIRECTINPUTCREATE lpDICreate;
 
 // Export as 'DirectInputCreateA/W' so we can hook into MM2
-// (Apparently DirectInputCreateW gets called sometimes...)
 #pragma comment(linker, "/EXPORT:DirectInputCreateA=_DirectInputCreateA_Impl")
-#pragma comment(linker, "/EXPORT:DirectInputCreateW=_DirectInputCreateA_Impl")
 HRESULT NAKED DirectInputCreateA_Impl(HINSTANCE hinst, DWORD dwVersion, LPVOID *ppDI, LPUNKNOWN punkOuter)
 {
     _asm jmp DWORD PTR ds:lpDICreate
@@ -88,6 +86,43 @@ constexpr inline std::uint32_t ConvertColor(const std::uint32_t color)
         ((color & OF::SMB) >> OF::SB) * NF::MB / (OF::MB ? OF::MB : 1) << NF::SB;
 }
 
+struct DirSndEntry
+{
+    GUID GUID;
+    LPCSTR Name;
+    int Rating;
+    DirSndEntry *NextEntry;
+};
+
+// TODO: Move these ASAP
+struct DirSnd
+{
+    void *lpVTbl;
+    LPDIRECTSOUNDBUFFER lpDirectSoundBuffer;
+    LPDIRECTSOUND lpDirectSound;
+    HWND hWnd;
+    int gap10;
+    DirSndEntry *FirstEntry;
+    DirSndEntry *lpCurrentEntry;
+};
+
+
+struct mmDirSnd
+{
+    DirSnd dirSnd;
+    int field_1C;
+    int field_20;
+    int field_24;
+    int DeviceFlags;
+    int Enable3D;
+    BOOL SoundEnabled;
+    int DeviceCaps;
+    int field_38;
+    int field_3C;
+    float Volume;
+};
+
+
 /* Dashboard experiment */
 
 static Matrix34 sm_DashOffset;
@@ -127,6 +162,9 @@ MM2RawFnHook<LPD3DENUMDEVICESCALLBACK7>
 MM2RawFnHook<LPDDENUMMODESCALLBACK2>
                 $ResCallback                    ( NULL, NULL, 0x4AC6F0 );
 
+MM2RawFnHook<mmDirSnd*(*)(int, bool, int, float, LPCSTR, bool)>
+                $mmDirSndInit                   ( NULL, NULL, 0x51CC50 );
+
 // ==========================
 // Pointer hooks
 // ==========================
@@ -142,8 +180,8 @@ MM2PtrHook<asNode> ROOT                         ( NULL, NULL, 0x661738 );
 
 MM2PtrHook<void (*)(LPCSTR)>
                 $PrintString                    ( NULL, NULL, 0x5CECF0 );
-MM2PtrHook<void (*)(int, LPCSTR, char *)>
-                $Printer                        ( NULL, NULL, 0x5CED24);
+MM2PtrHook<void (*)(int, LPCSTR, va_list)>
+                $Printer                        ( NULL, NULL, 0x5CED24 );
 
 MM2PtrHook<LPDIRECTDRAWCREATEEX>
                 $lpDirectDrawCreateEx           ( NULL, NULL, 0x684518 );
@@ -152,6 +190,8 @@ MM2PtrHook<IDirectDraw7 *> lpDD                 ( NULL, NULL, 0x6830A8 );
 MM2PtrHook<IDirect3D7 *> lpD3D                  ( NULL, NULL, 0x6830AC );
 
 MM2PtrHook<IDirectDrawSurface7 *> lpdsRend      ( NULL, NULL, 0x6830CC );
+
+MM2PtrHook<mmDirSnd*> dirSnd                    ( NULL, NULL, 0x6B4C2C );
 
 MM2PtrHook<gfxInterface> gfxInterfaces          ( NULL, NULL, 0x683130 );
 MM2PtrHook<uint32_t> gfxInterfaceCount          ( NULL, NULL, 0x6844C0 );
@@ -244,11 +284,17 @@ float normalize(float value) {
     return (value > 1.0f) ? (value - (value - 1.0f)) : value;
 };
 
-Vector3 intToColor(int value) {
-    return{
-        (float)((char)((value & 0xFF0000) >> 16) / 256.0),
-        (float)((char)((value & 0xFF00) >> 8) / 256.0),
-        (float)((char)((value & 0xFF)) / 256.0),
+template <std::uint8_t A, std::uint8_t R, std::uint8_t G, std::uint8_t B>
+Vector4 ColorToVector(std::uint32_t color)
+{
+    using CF = ColorFlags<A, R, G, B>;
+
+    return
+    {
+        float((color & CF::SMR) >> CF::SR) / (CF::MR ? CF::MR : 1),
+        float((color & CF::SMG) >> CF::SG) / (CF::MG ? CF::MG : 1),
+        float((color & CF::SMB) >> CF::SB) / (CF::MB ? CF::MB : 1),
+        float((color & CF::SMA) >> CF::SA) / (CF::MA ? CF::MA : 1)
     };
 }
 
@@ -397,8 +443,7 @@ public:
     {
         switch (uMsg)
         {
-            case WM_KEYUP:
-            case WM_SYSKEYUP:
+            case WM_KEYUP: case WM_SYSKEYUP:
             {
                 if (HandleKeyPress(wParam))
                     return 0;
@@ -432,7 +477,7 @@ public:
 
         *hasBorder = !datArgParser::Get("noborder");
 
-        if (!ATOM_Class)
+        if (!*ATOM_Class)
         {
             WNDCLASSA wc = { NULL };
 
@@ -455,12 +500,12 @@ public:
         DWORD screenHeight = GetDeviceCaps(hDC, VERTRES);
         ReleaseDC(0, hDC);
 
-        if (WndPosX == -1)
+        if (*WndPosX == -1)
         {
             *WndPosX = (screenWidth - WndWidth) / 2;
         }
 
-        if (WndPosY == -1)
+        if (*WndPosY == -1)
         {
             *WndPosY = (screenHeight - WndHeight) / 2;
         }
@@ -524,6 +569,23 @@ public:
         ShowWindow(hWND, TRUE);
         UpdateWindow(hWND);
         SetFocus(hWND);
+    }
+};
+
+class soundHandler
+{
+public:
+    mmDirSnd* mmDirSndInit(int sampleRate, bool enableStero, int a4, float volume, LPCSTR deviceName, bool enable3D)
+    {    
+        // TODO: Properly fix loading the correct audio device
+        if (*deviceName == '\0')
+        {
+            deviceName = "Primary Sound Driver";
+        }
+
+        // TODO: Set sampling rate (see 0x519640 - int __thiscall AudManager::SetBitDepthAndSampleRate(int this, int bitDepth, int samplingRate))
+        // TODO: Redo SetPrimaryBufferFormat? (see 0x5A5860 -void __thiscall DirSnd::SetPrimaryBufferFormat(mmDirSnd *this, int sampleRate, bool allowStero))
+        return $mmDirSndInit(48000, enableStero, a4, volume, deviceName, enable3D);
     }
 };
 
@@ -681,10 +743,11 @@ private:
         Vector3 vglFill2Color = addPitch(&timeWeather->Fill2Color, timeWeather->Fill2Pitch);
 
         // convert the ambient to a vector3 for better accuracy
-        Vector3 vglAmbient = intToColor(timeWeather->Ambient);
+        Vector4 vglAmbient = ColorToVector<0, 8, 8, 8>(timeWeather->Ambient);
 
         // compute le values
-        Vector3 vglShadedColor = {
+        Vector3 vglShadedColor =
+        {
             normalize((vglKeyColor.X + vglFill1Color.X + vglFill2Color.X) + vglAmbient.X),
             normalize((vglKeyColor.Y + vglFill1Color.Y + vglFill2Color.Y) + vglAmbient.Y),
             normalize((vglKeyColor.Z + vglFill1Color.Z + vglFill2Color.Z) + vglAmbient.Z),
@@ -763,9 +826,10 @@ public:
 
         datArgParser::Get("heapsize", 0, &newHeapSize);
 
+        LogFile::Format("memSafeHeap::Init -- Allocating %dMB heap\n", newHeapSize);
+
         newHeapSize <<= 20; // Same as *= (1024 * 1024)
 
-        LogFile::Format("memSafeHeap::Init -- Allocating %dMB heap (%d bytes)\n", newHeapSize);
         return $memSafeHeap_Init(this, memAllocator, newHeapSize, p3, p4, checkAlloc);
     };
 };
@@ -822,7 +886,7 @@ public:
     static void Reset(bool restarting)
     {
         LogFile::Write("Hook reset request received: ");
-        LogFile::WriteLine((restarting) ? "leaving GameLoop" : "entering GameLoop");
+        LogFile::WriteLine(restarting ? "Leaving GameLoop" : "Entering GameLoop");
 
         if (restarting)
             MM2Lua::OnRestart();
@@ -968,6 +1032,11 @@ void InstallCallbacks(MM2Version gameVersion) {
     InstallGameCallback("gfxWindowCreate", gameVersion, &gfxHandler::gfxWindowCreate, HOOK_CALL,
     {
         { NULL, NULL, 0x4A94AA },
+    });    
+
+    InstallGameCallback("mmDirSnd Init", gameVersion, &soundHandler::mmDirSndInit, HOOK_CALL,
+    {
+        { NULL, NULL, 0x51941D },
     });
 
     InstallGameCallback("gfxLoadVideoDatabase [disable 'badvideo.txt']", gameVersion, &ReturnFalse, HOOK_CALL,
