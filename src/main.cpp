@@ -17,9 +17,6 @@ CMidtownMadness2 *pMM2;
 
 MM2Version gameVersion;
 
-LRESULT APIENTRY WndProcNew(HWND, UINT, WPARAM, LPARAM);
-
-//bool isWindowSubclassed = false;
 bool isConsoleOpen = false;
 
 // ==========================
@@ -34,22 +31,10 @@ LPCSTR ageLogFile = "AGE.log";
 bool ageDebugEnabled = false;
 char ageDebug_buffer[1024] = { NULL };
 
-/* Heap fix */
-
-int g_heapSize = 128;
-
 /* PSDL shading fix */
 
 const double cosNum = 1.570796;
-
 UINT32 vglColor;
-UINT32 vglCalculatedColor = 0xFFFFFFFF;
-
-Vector3 vglAmbient;
-Vector3 vglKeyColor;
-Vector3 vglFill1Color;
-Vector3 vglFill2Color;
-Vector3 vglShadedColor;
 
 /* ARGB color */
 union COLOR_ARGB
@@ -62,7 +47,46 @@ union COLOR_ARGB
     DWORD color;
 };
 
-COLOR_ARGB vglResultColor;
+template <std::uint8_t A, std::uint8_t R, std::uint8_t G, std::uint8_t B>
+struct ColorFlags
+{
+    enum : std::uint32_t
+    {
+        // Bit Shifts (created in reverse order)
+        SB = 0,
+        SG = SB + B,
+        SR = SG + G,
+        SA = SR + R,
+
+        // Bit Masks
+        MA = ((1u << A) - 1u),
+        MR = ((1u << R) - 1u),
+        MG = ((1u << G) - 1u),
+        MB = ((1u << B) - 1u),
+
+        // Shifted Bit Masks
+        SMA = MA << SA,
+        SMR = MR << SR,
+        SMG = MG << SG,
+        SMB = MB << SB,
+    };
+};
+
+template <
+    std::uint8_t OA, std::uint8_t OR, std::uint8_t OG, std::uint8_t OB,
+    std::uint8_t NA, std::uint8_t NR, std::uint8_t NG, std::uint8_t NB
+>
+constexpr inline std::uint32_t ConvertColor(const std::uint32_t color)
+{
+    using OF = ColorFlags<OA, OR, OG, OB>;
+    using NF = ColorFlags<NA, NR, NG, NB>;
+
+    return
+        ((color & OF::SMA) >> OF::SA) * NF::MA / (OF::MA ? OF::MA : 1) << NF::SA |
+        ((color & OF::SMR) >> OF::SR) * NF::MG / (OF::MR ? OF::MR : 1) << NF::SR |
+        ((color & OF::SMG) >> OF::SG) * NF::MG / (OF::MG ? OF::MG : 1) << NF::SG |
+        ((color & OF::SMB) >> OF::SB) * NF::MB / (OF::MB ? OF::MB : 1) << NF::SB;
+}
 
 /* Dashboard experiment */
 
@@ -505,55 +529,47 @@ public:
 
 class CallbackHandler {
 public:
-    static void ProgressRect(int x, int y, int width, int height, COLOR_ARGB color) {
-        RECT rect;
-        DDPIXELFORMAT ddPixelFormat = { NULL };
-        DDBLTFX ddBltFx;
-
-        int fillColor;
-
-        ddBltFx.dwSize = 0x64;
-        ddPixelFormat.dwSize = 0x20;
-
+    static void ProgressRect(int x, int y, int width, int height, DWORD color)
+    {
+        DDPIXELFORMAT ddPixelFormat = { sizeof(ddPixelFormat) };
         lpdsRend->GetPixelFormat(&ddPixelFormat);
 
-        if (ddPixelFormat.dwGBitMask == 0x3E0)
+        // Color is provided in 32 bit, we need to convert it to the correct type
+        switch (ddPixelFormat.dwGBitMask)
         {
-            // 555
-            fillColor |= (color.r & 0xF8) << 7;
-            fillColor |= (color.g & 0xF8) << 2;
-            fillColor |= (color.b & 0xF8) >> 3;
-        }
-        else
-        {
-            if (ddPixelFormat.dwGBitMask == 0x7E0)
+            case 0x03E0: // 555
             {
-                fillColor |= (color.r & 0xF8) << 8;
-                fillColor |= (color.g & 0xFC) << 3;
-                fillColor |= (color.b & 0xF8) >> 3;
-            }
-            else
+                color = ConvertColor<0, 8, 8, 8, 0, 5, 5, 5>(color);
+            } break;
+
+            case 0x07E0: // 565
             {
-                if (ddPixelFormat.dwGBitMask == 0xFF00)
-                {
-                    // we can use the color directly
-                    fillColor = color.color;
-                }
-                else
-                {
-                    fillColor = -1; // fully white (error)
-                }
-            }
+                color = ConvertColor<0, 8, 8, 8, 0, 5, 6, 5>(color);
+            } break;
+
+            case 0xFF00: // 888
+            {
+                // Already in the right format
+            } break;
+
+            default: // Unknown
+            {
+                color = -1;
+            } break;
         }
 
-        ddBltFx.dwFillColor = fillColor;
+        DDBLTFX ddBltFx = { sizeof(ddBltFx) };
+        ddBltFx.dwFillColor = color;
 
-        rect.left = x;
-        rect.right = (x + width);
-        rect.top = y;
-        rect.bottom = (y + height);
+        RECT position =
+        {
+            x,
+            y,
+            x + width,
+            y + height
+        };
 
-        lpdsRend->Blt(&rect, NULL, NULL, DDBLT_COLORFILL | DDBLT_WAIT, &ddBltFx);
+        lpdsRend->Blt(&position, NULL, NULL, DDBLT_COLORFILL | DDBLT_WAIT, &ddBltFx);
     };
 
     static void CreateGameMutex(LPCSTR lpName) {
@@ -660,19 +676,21 @@ private:
     static UINT32 CalculateShadedColor(int color) {
         auto timeWeather = &TIMEWEATHER[timeOfDay];
 
-        vglKeyColor = addPitch(&timeWeather->KeyColor, timeWeather->KeyPitch);
-        vglFill1Color = addPitch(&timeWeather->Fill1Color, timeWeather->Fill1Pitch);
-        vglFill2Color = addPitch(&timeWeather->Fill2Color, timeWeather->Fill2Pitch);
+        Vector3 vglKeyColor = addPitch(&timeWeather->KeyColor, timeWeather->KeyPitch);
+        Vector3 vglFill1Color = addPitch(&timeWeather->Fill1Color, timeWeather->Fill1Pitch);
+        Vector3 vglFill2Color = addPitch(&timeWeather->Fill2Color, timeWeather->Fill2Pitch);
 
         // convert the ambient to a vector3 for better accuracy
-        vglAmbient = intToColor(timeWeather->Ambient);
+        Vector3 vglAmbient = intToColor(timeWeather->Ambient);
 
         // compute le values
-        vglShadedColor = {
+        Vector3 vglShadedColor = {
             normalize((vglKeyColor.X + vglFill1Color.X + vglFill2Color.X) + vglAmbient.X),
             normalize((vglKeyColor.Y + vglFill1Color.Y + vglFill2Color.Y) + vglAmbient.Y),
             normalize((vglKeyColor.Z + vglFill1Color.Z + vglFill2Color.Z) + vglAmbient.Z),
         };
+
+        COLOR_ARGB vglResultColor;
 
         vglResultColor.r = BYTE(vglShadedColor.X * 255.999);
         vglResultColor.g = BYTE(vglShadedColor.Y * 255.999);
@@ -685,15 +703,14 @@ public:
         vglColor = vglCurrentColor;
 
         // calculate a nice shaded color ;)
-        vglCalculatedColor = CalculateShadedColor(vglColor);
-        vglCurrentColor.set(vglCalculatedColor);
+        *vglCurrentColor = CalculateShadedColor(vglColor);
 
         $vglBegin(gfxMode, p1);
     }
 
     static void vglEnd(void) {
         // restore color
-        vglCurrentColor.set(vglColor);
+        *vglCurrentColor = vglColor;
         $vglEnd();
     }
 };
@@ -740,15 +757,16 @@ public:
 class memSafeHeapCallbackHandler
 {
 public:
-    void Init(void *memAllocator, unsigned int heapSize, bool p3, bool p4, bool checkAlloc) {
-        datArgParser::Get("heapsize", 0, &g_heapSize);
+    void Init(void *memAllocator, unsigned int heapSize, bool p3, bool p4, bool checkAlloc)
+    {        
+        int newHeapSize = 128;
 
-        // fast way of expanding to the proper size
-        // same as ((g_heapSize * 1024) * 1024)
-        heapSize = (g_heapSize << 20);
+        datArgParser::Get("heapsize", 0, &newHeapSize);
 
-        LogFile::Format("memSafeHeap::Init -- Allocating %dMB heap (%d bytes)\n", g_heapSize, heapSize);
-        return $memSafeHeap_Init(this, memAllocator, heapSize, p3, p4, checkAlloc);
+        newHeapSize <<= 20; // Same as *= (1024 * 1024)
+
+        LogFile::Format("memSafeHeap::Init -- Allocating %dMB heap (%d bytes)\n", newHeapSize);
+        return $memSafeHeap_Init(this, memAllocator, newHeapSize, p3, p4, checkAlloc);
     };
 };
 
