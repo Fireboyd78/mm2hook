@@ -726,10 +726,10 @@ private:
             normalize(vglKeyColor.X + vglFill1Color.X + vglFill2Color.X + vglAmbient.X),
             normalize(vglKeyColor.Y + vglFill1Color.Y + vglFill2Color.Y + vglAmbient.Y),
             normalize(vglKeyColor.Z + vglFill1Color.Z + vglFill2Color.Z + vglAmbient.Z),
-            0
+            1
         };
 
-        return $sdlPage16_GetShadedColor(color, VectorToColor<0, 8, 8, 8>(vglShadedColor));
+        return $sdlPage16_GetShadedColor(color, VectorToColor<8, 8, 8, 8>(vglShadedColor));
     }
 public:
     static void vglBegin(int gfxMode, int p1) {
