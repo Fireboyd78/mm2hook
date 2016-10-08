@@ -86,42 +86,6 @@ constexpr inline std::uint32_t ConvertColor(const std::uint32_t color)
         ((color & OF::SMB) >> OF::SB) * NF::MB / (OF::MB ? OF::MB : 1) << NF::SB;
 }
 
-struct DirSndEntry
-{
-    GUID GUID;
-    LPCSTR Name;
-    int Rating;
-    DirSndEntry *NextEntry;
-};
-
-// TODO: Move these ASAP
-struct DirSnd
-{
-    void *lpVTbl;
-    LPDIRECTSOUNDBUFFER lpDirectSoundBuffer;
-    LPDIRECTSOUND lpDirectSound;
-    HWND hWnd;
-    int gap10;
-    DirSndEntry *FirstEntry;
-    DirSndEntry *lpCurrentEntry;
-};
-
-
-struct mmDirSnd
-{
-    DirSnd dirSnd;
-    int field_1C;
-    int field_20;
-    int field_24;
-    int DeviceFlags;
-    int Enable3D;
-    BOOL SoundEnabled;
-    int DeviceCaps;
-    int field_38;
-    int field_3C;
-    float Volume;
-};
-
 /* Dashboard experiment */
 
 static Matrix34 sm_DashOffset;
@@ -573,28 +537,6 @@ public:
     }
 };
 
-class soundHandler
-{
-public:
-    mmDirSnd* mmDirSndInit(int sampleRate, bool enableStero, int a4, float volume, LPCSTR deviceName, bool enable3D)
-    {    
-        // TODO: Load the device name from player config?
-        if (*deviceName == '\0')
-        {
-            if (!datArgParser::Get("defaultsounddev", 0, &deviceName))
-            {
-                deviceName = "Primary Sound Driver";
-            }
-
-            LogFile::Format("mmDirSnd::Init - Default Device: %s\n", deviceName);
-        }
-
-        // TODO: Set sampling rate (see 0x519640 - int __thiscall AudManager::SetBitDepthAndSampleRate(int this, int bitDepth, int samplingRate))
-        // TODO: Redo SetPrimaryBufferFormat to set sampleSize? (see 0x5A5860 -void __thiscall DirSnd::SetPrimaryBufferFormat(mmDirSnd *this, int sampleRate, bool allowStero))
-        return $mmDirSndInit(48000, enableStero, a4, volume, deviceName, enable3D);
-    }
-};
-
 class CallbackHandler {
 public:
     static void ProgressRect(int x, int y, int width, int height, DWORD color)
@@ -735,6 +677,21 @@ public:
         }   
         L.pop(1);
         return str;
+    }
+
+    static mmDirSnd* mmDirSndInit(int sampleRate, bool enableStero, int a4, float volume, LPCSTR deviceName, bool enable3D)
+    {
+        // TODO: Load the device name from player config?
+        if (*deviceName == '\0')
+        {
+            datArgParser::Get("defaultsounddev", 0, &deviceName);
+        }
+
+        LogFile::Format("mmDirSnd::Init - Using Device: %s\n", deviceName);
+
+        // TODO: Set sampling rate (see 0x519640 - int __thiscall AudManager::SetBitDepthAndSampleRate(int this, int bitDepth, int samplingRate))
+        // TODO: Redo SetPrimaryBufferFormat to set sampleSize? (see 0x5A5860 -void __thiscall DirSnd::SetPrimaryBufferFormat(mmDirSnd *this, int sampleRate, bool allowStero))
+        return $mmDirSndInit(48000, enableStero, a4, volume, deviceName, enable3D);
     }
 };
 
@@ -1060,7 +1017,7 @@ void InstallCallbacks(MM2Version gameVersion) {
         { NULL, NULL, 0x4A94AA },
     });    
 
-    InstallGameCallback("mmDirSnd Init", gameVersion, &soundHandler::mmDirSndInit, HOOK_CALL,
+    InstallGameCallback("mmDirSnd::Init", gameVersion, &CallbackHandler::mmDirSndInit, HOOK_CALL,
     {
         { NULL, NULL, 0x51941D },
     });

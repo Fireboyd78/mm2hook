@@ -209,6 +209,7 @@
     <ClInclude Include="src\mm2_gfx.h">
       <Filter>Source Files\mm2</Filter>
     </ClInclude>
+    <ClInclude Include="src\mm2_audio.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
@@ -345,6 +346,9 @@
     </ClCompile>
     <ClCompile Include="src\mm2_gfx.cpp">
       <Filter>Source Files\mm2</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mm2_audio.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
