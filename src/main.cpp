@@ -263,6 +263,18 @@ Vector4 ColorToVector(std::uint32_t color)
     };
 }
 
+template <std::uint8_t A, std::uint8_t R, std::uint8_t G, std::uint8_t B>
+std::uint32_t VectorToColor(Vector4 color)
+{
+    using CF = ColorFlags<A, R, G, B>;
+
+    return
+        (std::uint8_t(color.X * CF::MR) << CF::SR) |
+        (std::uint8_t(color.Y * CF::MG) << CF::SG) |
+        (std::uint8_t(color.Z * CF::MB) << CF::SB) |
+        (std::uint8_t(color.W * CF::MA) << CF::SA);
+}
+
 // ==========================
 // Callback handlers
 // ==========================
@@ -709,24 +721,19 @@ private:
         Vector4 vglAmbient = ColorToVector<0, 8, 8, 8>(timeWeather->Ambient);
 
         // compute le values
-        Vector3 vglShadedColor =
+        Vector4 vglShadedColor =
         {
-            normalize((vglKeyColor.X + vglFill1Color.X + vglFill2Color.X) + vglAmbient.X),
-            normalize((vglKeyColor.Y + vglFill1Color.Y + vglFill2Color.Y) + vglAmbient.Y),
-            normalize((vglKeyColor.Z + vglFill1Color.Z + vglFill2Color.Z) + vglAmbient.Z),
+            normalize(vglKeyColor.X + vglFill1Color.X + vglFill2Color.X + vglAmbient.X),
+            normalize(vglKeyColor.Y + vglFill1Color.Y + vglFill2Color.Y + vglAmbient.Y),
+            normalize(vglKeyColor.Z + vglFill1Color.Z + vglFill2Color.Z + vglAmbient.Z),
+            0
         };
 
-        COLOR_ARGB vglResultColor;
-
-        vglResultColor.r = BYTE(vglShadedColor.X * 255.999);
-        vglResultColor.g = BYTE(vglShadedColor.Y * 255.999);
-        vglResultColor.b = BYTE(vglShadedColor.Z * 255.999);
-
-        return $sdlPage16_GetShadedColor(color, vglResultColor.color);
+        return $sdlPage16_GetShadedColor(color, VectorToColor<0, 8, 8, 8>(vglShadedColor));
     }
 public:
     static void vglBegin(int gfxMode, int p1) {
-        vglColor = vglCurrentColor;
+        vglColor = *vglCurrentColor;
 
         // calculate a nice shaded color ;)
         *vglCurrentColor = CalculateShadedColor(vglColor);

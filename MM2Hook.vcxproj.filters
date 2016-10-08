@@ -209,7 +209,9 @@
     <ClInclude Include="src\mm2_gfx.h">
       <Filter>Source Files\mm2</Filter>
     </ClInclude>
-    <ClInclude Include="src\mm2_audio.h" />
+    <ClInclude Include="src\mm2_audio.h">
+      <Filter>Source Files\mm2</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
@@ -311,9 +313,6 @@
     <ClCompile Include="src\lua\lzio.c">
       <Filter>Lua 5.3.2 Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\patch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\mm2_stream.cpp">
       <Filter>Source Files\mm2</Filter>
     </ClCompile>
@@ -348,6 +347,9 @@
       <Filter>Source Files\mm2</Filter>
     </ClCompile>
     <ClCompile Include="src\mm2_audio.cpp">
+      <Filter>Source Files\mm2</Filter>
+    </ClCompile>
+    <ClCompile Include="src\patch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
