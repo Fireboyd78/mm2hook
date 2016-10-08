@@ -80,10 +80,10 @@ constexpr inline std::uint32_t ConvertColor(const std::uint32_t color)
     using NF = ColorFlags<NA, NR, NG, NB>;
 
     return
-        ((color & OF::SMA) >> OF::SA) * NF::MA / (OF::MA ? OF::MA : 1) << NF::SA |
-        ((color & OF::SMR) >> OF::SR) * NF::MG / (OF::MR ? OF::MR : 1) << NF::SR |
-        ((color & OF::SMG) >> OF::SG) * NF::MG / (OF::MG ? OF::MG : 1) << NF::SG |
-        ((color & OF::SMB) >> OF::SB) * NF::MB / (OF::MB ? OF::MB : 1) << NF::SB;
+        (((color & OF::SMA) >> OF::SA) * NF::MA / (OF::MA ? OF::MA : 1) << NF::SA) |
+        (((color & OF::SMR) >> OF::SR) * NF::MG / (OF::MR ? OF::MR : 1) << NF::SR) |
+        (((color & OF::SMG) >> OF::SG) * NF::MG / (OF::MG ? OF::MG : 1) << NF::SG) |
+        (((color & OF::SMB) >> OF::SB) * NF::MB / (OF::MB ? OF::MB : 1) << NF::SB);
 }
 
 /* Dashboard experiment */
@@ -269,10 +269,10 @@ std::uint32_t VectorToColor(Vector4 color)
     using CF = ColorFlags<A, R, G, B>;
 
     return
-        (std::uint8_t(color.X * CF::MR) << CF::SR) |
-        (std::uint8_t(color.Y * CF::MG) << CF::SG) |
-        (std::uint8_t(color.Z * CF::MB) << CF::SB) |
-        (std::uint8_t(color.W * CF::MA) << CF::SA);
+        (std::uint32_t(color.X * CF::MR) << CF::SR) |
+        (std::uint32_t(color.Y * CF::MG) << CF::SG) |
+        (std::uint32_t(color.Z * CF::MB) << CF::SB) |
+        (std::uint32_t(color.W * CF::MA) << CF::SA);
 }
 
 // ==========================
@@ -710,7 +710,7 @@ public:
 class GraphicsCallbackHandler
 {
 private:
-    static UINT32 CalculateShadedColor(int color) {
+    static DWORD CalculateShadedColor(int color) {
         auto timeWeather = &TIMEWEATHER[timeOfDay];
 
         Vector3 vglKeyColor = addPitch(&timeWeather->KeyColor, timeWeather->KeyPitch);
@@ -718,9 +718,8 @@ private:
         Vector3 vglFill2Color = addPitch(&timeWeather->Fill2Color, timeWeather->Fill2Pitch);
 
         // convert the ambient to a vector3 for better accuracy
-        Vector4 vglAmbient = ColorToVector<0, 8, 8, 8>(timeWeather->Ambient);
+        Vector4 vglAmbient = ColorToVector<8, 8, 8, 8>(timeWeather->Ambient);        
 
-        // compute le values
         Vector4 vglShadedColor =
         {
             normalize(vglKeyColor.X + vglFill1Color.X + vglFill2Color.X + vglAmbient.X),
