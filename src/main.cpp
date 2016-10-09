@@ -118,6 +118,8 @@ MM2FnHook<void> $memSafeHeap_Init               ( NULL, NULL, 0x577210 );
 MM2FnHook<void> $DefaultPrintString             ( NULL, NULL, 0x4C9510 );
 MM2FnHook<void> $DefaultPrinter                 ( NULL, NULL, 0x4C95F0 );
 
+MM2PtrHook<void(*)(void)> $FatalErrorHandler    ( NULL, NULL, 0x6A3D38 );
+
 MM2RawFnHook<WNDPROC> $gfxWindowProc            ( NULL, NULL, 0x4A88F0 );
 
 MM2RawFnHook<LPD3DENUMDEVICESCALLBACK7> 
@@ -305,13 +307,18 @@ public:
         $DefaultPrintString(message);
     };
 
-    static void Print(int level, LPCSTR message, char *va_args) {
+    static void Print(int level, LPCSTR message, va_list va_args) {
         HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
         SetConsoleTextAttribute(hConsole, printer_types[level]);
         $DefaultPrinter(level, message, va_args);
         SetConsoleTextAttribute(hConsole, FOREGROUND_WHITE);
     };
+
+    static void FatalErrorHandler()
+    {
+        system("PAUSE");
+    }
 };
 
 class TickHandler {
@@ -846,6 +853,7 @@ public:
             // hook into the printer
             *$Printer = &PrinterHandler::Print;
             *$PrintString = &PrinterHandler::PrintString;
+            *$FatalErrorHandler = &PrinterHandler::FatalErrorHandler;
 
             /* Won't write to the log file for some reason :(
             LogFile::Write("Redirecting MM2 output...");
