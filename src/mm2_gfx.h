@@ -14,11 +14,11 @@ namespace MM2
 {
     typedef HRESULT(WINAPI *LPDIRECTDRAWCREATEEX)(GUID *, LPVOID *, REFIID, IUnknown *);
 
-    static MM2RawFnHook<WNDPROC>                            $gfxWindowProc(NULL, NULL, 0x4A88F0);
-    static MM2RawFnHook<LPD3DENUMDEVICESCALLBACK7>          $DeviceCallback(NULL, NULL, 0x4AC3D0);
-    static MM2RawFnHook<LPDDENUMMODESCALLBACK2>             $ResCallback(NULL, NULL, 0x4AC6F0);
+    // Graphics Callbacks
+    static MM2RawFnHook<WNDPROC>                    $gfxWindowProc  { NULL, NULL, 0x4A88F0 };
+    static MM2RawFnHook<LPD3DENUMDEVICESCALLBACK7>  $DeviceCallback { NULL, NULL, 0x4AC3D0 };
+    static MM2RawFnHook<LPDDENUMMODESCALLBACK2>     $ResCallback    { NULL, NULL, 0x4AC6F0 };
 
-    static MM2RawFnHook<bool(*)(bool)>                      $gfxAutoDetect(NULL, NULL, 0x4ABE00);
     static MM2RawFnHook<void(*)(int, int, int, int, bool)>  $setRes(NULL, NULL, 0x4A8CE0);
 
     static MM2PtrHook<LPDIRECTDRAWCREATEEX>                 $DirectDrawCreateEx(NULL, NULL, 0x684518);

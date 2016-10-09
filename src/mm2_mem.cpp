@@ -3,7 +3,7 @@
 
 using namespace MM2;
 
-void memSafeHeap::Init(memMemoryAllocator*memAllocator, int heapSize, bool p3, bool p4, bool checkAlloc)
+void memSafeHeap::Init(memMemoryAllocator* memAllocator, int heapSize, bool p3, bool p4, bool checkAlloc)
 {
     int newHeapSize = 128;
 
@@ -13,5 +13,5 @@ void memSafeHeap::Init(memMemoryAllocator*memAllocator, int heapSize, bool p3, b
 
     newHeapSize <<= 20; // Same as *= (1024 * 1024)
 
-    return (this->*$memSafeHeapInit)(memAllocator, newHeapSize, p3, p4, checkAlloc);
+    return $memSafeHeapInit(this, memAllocator, newHeapSize, p3, p4, checkAlloc);
 };

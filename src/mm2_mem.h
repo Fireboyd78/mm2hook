@@ -8,7 +8,7 @@ namespace MM2
     struct memMemoryAllocator;
     struct memSafeHeap;
 
-    static MM2RawFnHook<void(memSafeHeap::*)(memMemoryAllocator*, int, bool, bool, bool)>
+    static MM2FnHook<void>
         $memSafeHeapInit (NULL, NULL, 0x577210);
 
     struct memMemoryAllocator
