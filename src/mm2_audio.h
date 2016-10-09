@@ -34,8 +34,8 @@ namespace MM2
         } *lpFirstDevice, *lpCurrentDevice;
 
         int field_1C;
-        int field_20;
-        int field_24;
+        int DeviceCount;
+        int BitDepth;
         int DeviceFlags;
         byte byte2C;
         byte Enable3D;
