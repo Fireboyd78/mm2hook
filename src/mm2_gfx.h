@@ -19,52 +19,50 @@ namespace MM2
     static MM2RawFnHook<LPD3DENUMDEVICESCALLBACK7>  $DeviceCallback { NULL, NULL, 0x4AC3D0 };
     static MM2RawFnHook<LPDDENUMMODESCALLBACK2>     $ResCallback    { NULL, NULL, 0x4AC6F0 };
 
-    static MM2RawFnHook<void(*)(int, int, int, int, bool)>  $setRes(NULL, NULL, 0x4A8CE0);
+    static MM2RawFnHook<void(*)(int, int, int, int, bool)>  $setRes { NULL, NULL, 0x4A8CE0 };
 
-    static MM2PtrHook<LPDIRECTDRAWCREATEEX>                 $DirectDrawCreateEx(NULL, NULL, 0x684518);
+    static MM2PtrHook<LPDIRECTDRAWCREATEEX>     $DirectDrawCreateEx { NULL, NULL, 0x684518 };
 
-    static MM2PtrHook<IDirectDraw7 *>                       lpDD(NULL, NULL, 0x6830A8);
-    static MM2PtrHook<IDirect3D7 *>                         lpD3D(NULL, NULL, 0x6830AC);
-    static MM2PtrHook<IDirectDrawSurface7 *>                lpdsRend(NULL, NULL, 0x6830CC);
+    static MM2PtrHook<IDirectDraw7 *>           lpDD                { NULL, NULL, 0x6830A8 };
+    static MM2PtrHook<IDirect3D7 *>             lpD3D               { NULL, NULL, 0x6830AC };
+    static MM2PtrHook<IDirectDrawSurface7 *>    lpdsRend            { NULL, NULL, 0x6830CC };
 
     struct gfxInterface; // Forward declare
-    static MM2PtrHook<gfxInterface>                         gfxInterfaces(NULL, NULL, 0x683130);
-    static MM2PtrHook<uint32_t>                             gfxInterfaceCount(NULL, NULL, 0x6844C0);
+    static MM2PtrHook<gfxInterface>             gfxInterfaces       { NULL, NULL, 0x683130 };
+    static MM2PtrHook<uint32_t>                 gfxInterfaceCount   { NULL, NULL, 0x6844C0 };
 
-    static MM2PtrHook<uint32_t>                             gfxMaxScreenWidth(NULL, NULL, 0x6844FC);
-    static MM2PtrHook<uint32_t>                             gfxMaxScreenHeight(NULL, NULL, 0x6844D8);
+    static MM2PtrHook<uint32_t>                 gfxMaxScreenWidth   { NULL, NULL, 0x6844FC };
+    static MM2PtrHook<uint32_t>                 gfxMaxScreenHeight  { NULL, NULL, 0x6844D8 };
 
-    static MM2PtrHook<HWND>                                 hWndParent(NULL, NULL, 0x682FA0);
-    static MM2PtrHook<HWND>                                 hWndMain(NULL, NULL, 0x6830B8);
+    static MM2PtrHook<HWND>                     hWndParent          { NULL, NULL, 0x682FA0 };
+    static MM2PtrHook<HWND>                     hWndMain            { NULL, NULL, 0x6830B8 };
 
-    static MM2PtrHook<LPCSTR>                               lpWindowTitle(NULL, NULL, 0x68311C);
-    static MM2PtrHook<ATOM>                                 ATOM_Class(NULL, NULL, 0x6830F0);
-    static MM2PtrHook<LPCSTR>                               IconID(NULL, NULL, 0x683108);
+    static MM2PtrHook<LPCSTR>                   lpWindowTitle       { NULL, NULL, 0x68311C };
+    static MM2PtrHook<ATOM>                     ATOM_Class          { NULL, NULL, 0x6830F0 };
+    static MM2PtrHook<LPCSTR>                   IconID              { NULL, NULL, 0x683108 };
 
-    static MM2PtrHook<BOOL>                                 inWindow(NULL, NULL, 0x6830D0);
-    static MM2PtrHook<BOOL>                                 isMaximized(NULL, NULL, 0x6830D1);
-    static MM2PtrHook<BOOL>                                 hasBorder(NULL, NULL, 0x5CA3ED);
+    static MM2PtrHook<BOOL>                     inWindow            { NULL, NULL, 0x6830D0 };
+    static MM2PtrHook<BOOL>                     isMaximized         { NULL, NULL, 0x6830D1 };
+    static MM2PtrHook<BOOL>                     hasBorder           { NULL, NULL, 0x5CA3ED };
 
-    static MM2PtrHook<DWORD>                                WndPosX(NULL, NULL, 0x6830EC);
-    static MM2PtrHook<DWORD>                                WndPosY(NULL, NULL, 0x683110);
-    static MM2PtrHook<DWORD>                                WndWidth(NULL, NULL, 0x683128);
-    static MM2PtrHook<DWORD>                                WndHeight(NULL, NULL, 0x683100);
+    static MM2PtrHook<DWORD>                    WndPosX             { NULL, NULL, 0x6830EC };
+    static MM2PtrHook<DWORD>                    WndPosY             { NULL, NULL, 0x683110 };
+    static MM2PtrHook<DWORD>                    WndWidth            { NULL, NULL, 0x683128 };
+    static MM2PtrHook<DWORD>                    WndHeight           { NULL, NULL, 0x683100 };
 
-    static MM2FnHook<void>                                  $vglBegin(NULL, NULL, 0x4A5500);
-    static MM2FnHook<void>                                  $vglEnd(NULL, NULL, 0x4A5A90);
+    static MM2FnHook<void>                      $vglBegin           { NULL, NULL, 0x4A5500 };
+    static MM2FnHook<void>                      $vglEnd             { NULL, NULL, 0x4A5A90 };
 
-    static MM2PtrHook<cityTimeWeatherLighting>              timeWeatherLighting(NULL, NULL, 0x6299A8);
+    static MM2PtrHook<cityTimeWeatherLighting>  timeWeatherLighting { NULL, NULL, 0x6299A8 };
 
-    static MM2PtrHook<int>                                  timeOfDay(NULL, NULL, 0x62B068);
-
-    static MM2PtrHook<UINT32>                               vglCurrentColor(NULL, NULL, 0x661974);
-
-    static MM2FnHook<UINT32>                                $sdlPage16_GetShadedColor(NULL, NULL, 0x450880);
+    static MM2PtrHook<int>              timeOfDay                   { NULL, NULL, 0x62B068 };
+    static MM2PtrHook<UINT32>           vglCurrentColor             { NULL, NULL, 0x661974 };
+    static MM2FnHook<UINT32>            $sdlPage16_GetShadedColor   { NULL, NULL, 0x450880 };
 
     enum gfxDeviceType
     {
-        Software = 0,    // Software (No 3D Video Card)
-        Hardware = 1,    // Hardware (3D Video Card)
+        Software        = 0,    // Software (No 3D Video Card)
+        Hardware        = 1,    // Hardware (3D Video Card)
         HardwareWithTnL = 2     // Hardware (3D Video Card With T&L)
     };
 
@@ -79,8 +77,8 @@ namespace MM2
     {
         uint16_t ScreenWidth;
         uint16_t ScreenHeight;
-        uint16_t ColorDepth;      // Always 16
-        uint16_t Is16BitColor;    // = (ColorDepth == 16) + 6 // Always 7
+        uint16_t ColorDepth;
+        uint16_t Is16BitColor; // = (ColorDepth == 16) + 6, Not actually used
     };
 
     struct gfxInterface

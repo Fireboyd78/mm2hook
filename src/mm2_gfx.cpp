@@ -164,15 +164,15 @@ BOOL __stdcall gfxCallback::AutoDetectCallback(GUID*    lpGUID,
         gfxInterface->ResolutionCount = 0;
         gfxInterface->ResolutionChoice = 0;
 
-        strcpy(gfxInterface->Name, lpDriverDescription);
+        strcpy_s(gfxInterface->Name, lpDriverDescription);
 
         DDDEVICEIDENTIFIER2 ddDeviceIdentifier = { NULL };
 
         if (lpDD->GetDeviceIdentifier(&ddDeviceIdentifier, 0) == DD_OK)
         {
-            gfxInterface->VendorID = ddDeviceIdentifier.dwVendorId;
-            gfxInterface->DeviceID = ddDeviceIdentifier.dwDeviceId;
-            gfxInterface->GUID = ddDeviceIdentifier.guidDeviceIdentifier;
+            gfxInterface->VendorID  = ddDeviceIdentifier.dwVendorId;
+            gfxInterface->DeviceID  = ddDeviceIdentifier.dwDeviceId;
+            gfxInterface->GUID      = ddDeviceIdentifier.guidDeviceIdentifier;
         }
 
         if (lpDD->QueryInterface(IID_IDirect3D7, (LPVOID*) &lpD3D) == DD_OK)
