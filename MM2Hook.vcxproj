@@ -255,6 +255,7 @@
     <ClInclude Include="src\mm2_audio.h" />
     <ClInclude Include="src\mm2_base.h" />
     <ClInclude Include="src\mm2_city.h" />
+    <ClInclude Include="src\mm2_color.h" />
     <ClInclude Include="src\mm2_common.h" />
     <ClInclude Include="src\mm2_data.h" />
     <ClInclude Include="src\mm2_game.h" />

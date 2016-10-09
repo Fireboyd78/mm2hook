@@ -15,76 +15,15 @@ CMidtownMadness2 *pMM2;
 
 MM2Version gameVersion;
 
-bool isConsoleOpen = false;
-
 // ==========================
 // Game-related properties
 // ==========================
 
 /* AGE Debugging */
-
-FILE *ageLog;
-
-LPCSTR ageLogFile = "AGE.log";
-bool ageDebugEnabled = false;
-char ageDebug_buffer[1024] = { NULL };
+FILE* ageLogFile = NULL;
 
 /* PSDL shading fix */
 
-const double cosNum = 1.570796;
-UINT32 vglColor;
-
-/* ARGB color */
-union COLOR_ARGB
-{
-    struct
-    {
-        BYTE b, g, r, a;
-    };
-
-    DWORD color;
-};
-
-template <std::uint8_t A, std::uint8_t R, std::uint8_t G, std::uint8_t B>
-struct ColorFlags
-{
-    enum : std::uint32_t
-    {
-        // Bit Shifts (created in reverse order)
-        SB = 0,
-        SG = SB + B,
-        SR = SG + G,
-        SA = SR + R,
-
-        // Bit Masks
-        MA = ((1u << A) - 1u),
-        MR = ((1u << R) - 1u),
-        MG = ((1u << G) - 1u),
-        MB = ((1u << B) - 1u),
-
-        // Shifted Bit Masks
-        SMA = MA << SA,
-        SMR = MR << SR,
-        SMG = MG << SG,
-        SMB = MB << SB,
-    };
-};
-
-template <
-    std::uint8_t OA, std::uint8_t OR, std::uint8_t OG, std::uint8_t OB,
-    std::uint8_t NA, std::uint8_t NR, std::uint8_t NG, std::uint8_t NB
->
-constexpr inline std::uint32_t ConvertColor(const std::uint32_t color)
-{
-    using OF = ColorFlags<OA, OR, OG, OB>;
-    using NF = ColorFlags<NA, NR, NG, NB>;
-
-    return
-        (((color & OF::SMA) >> OF::SA) * NF::MA / (OF::MA ? OF::MA : 1) << NF::SA) |
-        (((color & OF::SMR) >> OF::SR) * NF::MG / (OF::MR ? OF::MR : 1) << NF::SR) |
-        (((color & OF::SMG) >> OF::SG) * NF::MG / (OF::MG ? OF::MG : 1) << NF::SG) |
-        (((color & OF::SMB) >> OF::SB) * NF::MB / (OF::MB ? OF::MB : 1) << NF::SB);
-}
 
 /* Dashboard experiment */
 
@@ -95,53 +34,16 @@ static Matrix34 sm_DashOffset;
 // ==========================
 
 MM2FnHook<void> $CreateGameMutex                ( NULL, NULL, 0x402180 );
-
 MM2FnHook<void> $dgBangerInstance_Draw          ( NULL, NULL, 0x4415E0 );
-
-MM2FnHook<UINT32> $sdlPage16_GetShadedColor     ( NULL, NULL, 0x450880 );
-
 MM2FnHook<void> $asLinearCS_Update              ( NULL, NULL, 0x4A3370 );
-
-MM2FnHook<bool> $gfxAutoDetect                  ( NULL, NULL, 0x4ABE00 );
-
-MM2FnHook<void> $setRes                         ( NULL, NULL, 0x4A8CE0 );
-
-/*
-    TODO: Move VGL stuff to a separate file?    
-*/
-
-MM2FnHook<void> $vglBegin                       ( NULL, NULL, 0x4A5500 );
-MM2FnHook<void> $vglEnd                         ( NULL, NULL, 0x4A5A90 );
-
 MM2FnHook<void> $memSafeHeap_Init               ( NULL, NULL, 0x577210 );
-
 MM2FnHook<void> $DefaultPrintString             ( NULL, NULL, 0x4C9510 );
 MM2FnHook<void> $DefaultPrinter                 ( NULL, NULL, 0x4C95F0 );
-
-MM2PtrHook<void(*)(void)> $FatalErrorHandler    ( NULL, NULL, 0x6A3D38 );
-
-MM2RawFnHook<WNDPROC> $gfxWindowProc            ( NULL, NULL, 0x4A88F0 );
-
-MM2RawFnHook<LPD3DENUMDEVICESCALLBACK7> 
-                $DeviceCallback                 ( NULL, NULL, 0x4AC3D0 );
-MM2RawFnHook<LPDDENUMMODESCALLBACK2>
-                $ResCallback                    ( NULL, NULL, 0x4AC6F0 );
-
-MM2RawFnHook<mmDirSnd*(*)(int, bool, int, float, LPCSTR, bool)>
-                $mmDirSndInit                   ( NULL, NULL, 0x51CC50 );
-
 MM2FnHook<void> $asCullManagerInit              ( NULL, NULL, 0x4A1290 );
 
 // ==========================
 // Pointer hooks
 // ==========================
-
-MM2PtrHook<cityTimeWeatherLighting> 
-                TIMEWEATHER                     ( NULL, NULL, 0x6299A8 );
-
-MM2PtrHook<int> timeOfDay                       ( NULL, NULL, 0x62B068 );
-
-MM2PtrHook<UINT32> vglCurrentColor              ( NULL, NULL, 0x661974 );
 
 MM2PtrHook<asNode> ROOT                         ( NULL, NULL, 0x661738 );
 
@@ -149,39 +51,9 @@ MM2PtrHook<void (*)(LPCSTR)>
                 $PrintString                    ( NULL, NULL, 0x5CECF0 );
 MM2PtrHook<void (*)(int, LPCSTR, va_list)>
                 $Printer                        ( NULL, NULL, 0x5CED24 );
+MM2PtrHook<void(*)(void)>
+                $FatalErrorHandler              ( NULL, NULL, 0x6A3D38 );
 
-MM2PtrHook<LPDIRECTDRAWCREATEEX>
-                $lpDirectDrawCreateEx           ( NULL, NULL, 0x684518 );
-
-MM2PtrHook<IDirectDraw7 *> lpDD                 ( NULL, NULL, 0x6830A8 );
-MM2PtrHook<IDirect3D7 *> lpD3D                  ( NULL, NULL, 0x6830AC );
-
-MM2PtrHook<IDirectDrawSurface7 *> lpdsRend      ( NULL, NULL, 0x6830CC );
-
-MM2PtrHook<mmDirSnd*> dirSnd                    ( NULL, NULL, 0x6B4C2C );
-
-MM2PtrHook<gfxInterface> gfxInterfaces          ( NULL, NULL, 0x683130 );
-MM2PtrHook<uint32_t> gfxInterfaceCount          ( NULL, NULL, 0x6844C0 );
-
-MM2PtrHook<uint32_t> gfxMaxScreenWidth          ( NULL, NULL, 0x6844FC );
-MM2PtrHook<uint32_t> gfxMaxScreenHeight         ( NULL, NULL, 0x6844D8 );
-
-MM2PtrHook<HWND> hWndParent                     ( NULL, NULL, 0x682FA0 );
-MM2PtrHook<HWND> hWndMain                       ( NULL, NULL, 0x6830B8 );
-
-MM2PtrHook<LPCSTR> lpWindowTitle                ( NULL, NULL, 0x68311C );
-
-MM2PtrHook<ATOM> ATOM_Class                     ( NULL, NULL, 0x6830F0 );
-MM2PtrHook<LPCSTR> IconID                       ( NULL, NULL, 0x683108 );
-
-MM2PtrHook<BOOL> inWindow                       ( NULL, NULL, 0x6830D0 );
-MM2PtrHook<BOOL> isMaximized                    ( NULL, NULL, 0x6830D1 );
-MM2PtrHook<BOOL> hasBorder                      ( NULL, NULL, 0x5CA3ED );
-
-MM2PtrHook<DWORD> WndPosX                       ( NULL, NULL, 0x6830EC );
-MM2PtrHook<DWORD> WndPosY                       ( NULL, NULL, 0x683110 );
-MM2PtrHook<DWORD> WndWidth                      ( NULL, NULL, 0x683128 );
-MM2PtrHook<DWORD> WndHeight                     ( NULL, NULL, 0x683100 );
 
 /*
     !! THESE ARE ABSOLUTELY CRITICAL TO THE HOOK WORKING PROPERLY !!
@@ -194,88 +66,6 @@ MM2PtrHook<BOOL> $gameClosing                   ( 0x667DEC, 0x6B0150, 0x6B1708 )
 /*
     ===========================================================================
 */
-
-bool HandleKeyPress(DWORD vKey)
-{
-    // Inform Lua of any changes beforehand
-    MM2Lua::OnKeyPress(vKey);
-
-    switch (vKey) {
-        // '~'
-        case VK_OEM_2:
-        case VK_OEM_3:
-        {
-            // tell the game to open a chat box,
-            // and then use a local variable to check if it's open
-
-            mmGameManager *mgr = mmGameManager::Instance();
-            auto gamePtr = mgr->getGame();
-
-            if (gamePtr != NULL)
-            {
-                auto popup = gamePtr->getPopup();
-
-                if (popup != NULL) {
-                    // don't try opening it again if it's already open
-                    if (popup->IsEnabled() && isConsoleOpen)
-                        return true;
-
-                    popup->ProcessChat();
-                    isConsoleOpen = true;
-                }
-            }
-        } return true;
-    }
-    return false;
-}
-
-// ==========================
-// Generic functions
-// ==========================
-
-Vector3 addPitch(Vector3 *vec, float pitch) {
-    float p = (float)fmod(pitch, 3.14159);
-    bool pitchIsZero = (pitch >= 0.0f);
-
-    return{
-        (float)((!pitchIsZero) ? vec->X * cos(pitch + cosNum) : 0.0f),
-        (float)((!pitchIsZero) ? vec->Y * cos(pitch + cosNum) : 0.0f),
-        (float)((!pitchIsZero) ? vec->Z * cos(pitch + cosNum) : 0.0f),
-    };
-}
-
-float normalize(float value) {
-    if (value >= 2.0f)
-        value = 1.0f;
-
-    return (value > 1.0f) ? (value - (value - 1.0f)) : value;
-};
-
-template <std::uint8_t A, std::uint8_t R, std::uint8_t G, std::uint8_t B>
-Vector4 ColorToVector(std::uint32_t color)
-{
-    using CF = ColorFlags<A, R, G, B>;
-
-    return
-    {
-        float((color & CF::SMR) >> CF::SR) / (CF::MR ? CF::MR : 1),
-        float((color & CF::SMG) >> CF::SG) / (CF::MG ? CF::MG : 1),
-        float((color & CF::SMB) >> CF::SB) / (CF::MB ? CF::MB : 1),
-        float((color & CF::SMA) >> CF::SA) / (CF::MA ? CF::MA : 1)
-    };
-}
-
-template <std::uint8_t A, std::uint8_t R, std::uint8_t G, std::uint8_t B>
-std::uint32_t VectorToColor(Vector4 color)
-{
-    using CF = ColorFlags<A, R, G, B>;
-
-    return
-        (std::uint32_t(color.X * CF::MR) << CF::SR) |
-        (std::uint32_t(color.Y * CF::MG) << CF::SG) |
-        (std::uint32_t(color.Z * CF::MB) << CF::SB) |
-        (std::uint32_t(color.W * CF::MA) << CF::SA);
-}
 
 // ==========================
 // Callback handlers
@@ -335,271 +125,9 @@ public:
     }
 };
 
-class ChatHandler {
-public:
-    void Process(char *message) {
-        if (isConsoleOpen) {
-            MM2Lua::SendCommand(message);
-
-            // return normal chatbox behavior
-            isConsoleOpen = false;
-        } else {
-            LogFile::Format("Got chat message: %s\n", message);
-        }
-    }
-};
-
-BOOL __stdcall AutoDetectCallback (GUID*    lpGUID,
-                                   LPSTR    lpDriverDescription,
-                                   LPSTR    lpDriverName,
-                                   LPVOID   lpContext)
-{
-    Displayf("AutoDetect: GUID=%x, Description=%s, Name=%s", lpGUID, lpDriverDescription, lpDriverName);
-
-    if ($lpDirectDrawCreateEx(lpGUID, (LPVOID*)&lpDD, IID_IDirectDraw7, nullptr) == DD_OK)
-    {
-        gfxInterface *gfxInterface = &gfxInterfaces[gfxInterfaceCount];
-
-        strcpy (gfxInterface->Name, lpDriverDescription);
-
-        gfxInterface->DeviceCaps = 1;
-        gfxInterface->AcceptableDepths = gfxDepthFlags::Depth32;
-
-        DDDEVICEIDENTIFIER2 ddDeviceIdentifier = { NULL };
-
-        if (lpDD->GetDeviceIdentifier(&ddDeviceIdentifier, 0) == DD_OK)
-        {
-            gfxInterface->VendorID  = ddDeviceIdentifier.dwVendorId;
-            gfxInterface->DeviceID  = ddDeviceIdentifier.dwDeviceId;
-            gfxInterface->GUID      = ddDeviceIdentifier.guidDeviceIdentifier;
-        }
-
-        if (lpDD->QueryInterface(IID_IDirect3D7, (LPVOID*)&lpD3D) == DD_OK)
-        {
-            lpD3D->EnumDevices($DeviceCallback, gfxInterface);
-            lpD3D->Release();
-
-            *lpD3D = nullptr;
-        }
-
-        gfxInterface->DeviceType        = gfxDeviceType::HardwareWithTnL;
-
-        gfxInterface->ResolutionCount   = 0;
-        gfxInterface->ResolutionChoice  = 0;
-
-        DWORD availableMemory = 0x40000000; // 1GB = 1024 * 1024 * 1024
-        DDSCAPS2 ddsCaps = { NULL };
-
-        ddsCaps.dwCaps = DDSCAPS_VIDEOMEMORY | DDSCAPS_LOCALVIDMEM;
-
-        if (lpDD->GetAvailableVidMem(&ddsCaps, &availableMemory, NULL) != DD_OK)
-            Warningf("  Couldn't get video memory, using default");
-        
-        Displayf("  Total video memory: %dMB", (availableMemory >> 20));
-
-        gfxInterface->AvailableMemory = availableMemory;
-
-        *gfxMaxScreenWidth = 0;
-        *gfxMaxScreenHeight = 0;
-
-        lpDD->EnumDisplayModes(0, 0, gfxInterface, $ResCallback);
-        lpDD->Release();
-
-        *lpDD = nullptr;
-
-        ++*gfxInterfaceCount;
-    }
-
-    return TRUE;
-}
-
-class gfxHandler
-{
-public:
-    static void setRes(int width, int height, int cdepth, int zdepth, bool detectArgs)
-    {
-        LogFile::WriteLine("Additional graphics params enabled.");
-
-        $setRes(width, height, cdepth, zdepth, true);
-    }
-
-    static LRESULT APIENTRY WndProcNew(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-    {
-        switch (uMsg)
-        {
-            case WM_KEYUP: case WM_SYSKEYUP:
-            {
-                if (HandleKeyPress(wParam))
-                    return 0;
-            } break;
-
-            case WM_ACTIVATEAPP:
-            {
-                if (wParam == FALSE)
-                {
-                    if (datArgParser::Get("nopause"))
-                    {
-                        return 0;
-                    }
-                }
-            } break;
-        }
-        return $gfxWindowProc(hWnd, uMsg, wParam, lParam);
-    }
-
-    static void gfxWindowCreate(LPCSTR lpWindowName)
-    {
-        if (hWndMain)
-        {
-            return;
-        }
-
-        if (lpWindowTitle)
-        {
-            lpWindowName = lpWindowTitle;
-        }
-
-        *hasBorder = !datArgParser::Get("noborder");
-
-        if (!*ATOM_Class)
-        {
-            WNDCLASSA wc = { NULL };
-
-            wc.style = CS_HREDRAW | CS_VREDRAW;
-            wc.lpfnWndProc = WndProcNew;
-            wc.cbClsExtra = 0;
-            wc.cbWndExtra = 0;
-            wc.hInstance = 0;
-            wc.hIcon = LoadIconA(GetModuleHandleA(NULL), IconID ? IconID : IDI_APPLICATION);
-            wc.hCursor = LoadCursorA(0, IDC_ARROW);
-            wc.hbrBackground = CreateSolidBrush(NULL);
-            wc.lpszMenuName = NULL;
-            wc.lpszClassName = "gfxWindow";
-
-            *ATOM_Class = RegisterClassA(&wc);
-        }
-
-        HDC hDC = GetDC(0);
-        DWORD screenWidth = GetDeviceCaps(hDC, HORZRES);
-        DWORD screenHeight = GetDeviceCaps(hDC, VERTRES);
-        ReleaseDC(0, hDC);
-
-        if (*WndPosX == -1)
-        {
-            *WndPosX = (screenWidth - WndWidth) / 2;
-        }
-
-        if (*WndPosY == -1)
-        {
-            *WndPosY = (screenHeight - WndHeight) / 2;
-        }
-
-        DWORD dwStyle = NULL;
-
-        if (inWindow)
-        {
-            if (hWndParent)
-            {
-                dwStyle = WS_CHILD;
-            }
-            else if (hasBorder)
-            {
-                dwStyle = WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
-            }
-            else
-            {
-                dwStyle = WS_POPUP;
-            }
-        }
-        else
-        {
-            dwStyle = WS_POPUP | WS_SYSMENU;
-        }
-
-        HWND hWND = CreateWindowExA(
-            WS_EX_APPWINDOW,
-            "gfxWindow",
-            lpWindowName,
-            dwStyle,
-            WndPosX,
-            WndPosY,
-            640,
-            480,
-            hWndParent,
-            0,
-            0,
-            0);
-
-        *hWndMain = hWND;
-
-        if (inWindow)
-        {
-            RECT rect;
-
-            GetClientRect(hWND, &rect);
-
-            MoveWindow(
-                hWND,
-                WndPosX,
-                WndPosY,
-                2 * WndWidth - rect.right,
-                2 * WndWidth - rect.bottom,
-                0);
-        }
-
-        SetCursor(NULL);
-        ShowCursor(FALSE);
-
-        ShowWindow(hWND, TRUE);
-        UpdateWindow(hWND);
-        SetFocus(hWND);
-    }
-};
-
 class CallbackHandler {
 public:
-    static void ProgressRect(int x, int y, int width, int height, DWORD color)
-    {
-        DDPIXELFORMAT ddPixelFormat = { sizeof(ddPixelFormat) };
-        lpdsRend->GetPixelFormat(&ddPixelFormat);
 
-        // Color is provided in 32 bit, we need to convert it to the correct type
-        switch (ddPixelFormat.dwGBitMask)
-        {
-            case 0x03E0: // 555
-            {
-                color = ConvertColor<0, 8, 8, 8, 0, 5, 5, 5>(color);
-            } break;
-
-            case 0x07E0: // 565
-            {
-                color = ConvertColor<0, 8, 8, 8, 0, 5, 6, 5>(color);
-            } break;
-
-            case 0xFF00: // 888
-            {
-                // Already in the right format
-            } break;
-
-            default: // Unknown
-            {
-                color = -1;
-            } break;
-        }
-
-        DDBLTFX ddBltFx = { sizeof(ddBltFx) };
-        ddBltFx.dwFillColor = color;
-
-        RECT position =
-        {
-            x,
-            y,
-            x + width,
-            y + height
-        };
-
-        lpdsRend->Blt(&position, NULL, NULL, DDBLT_COLORFILL | DDBLT_WAIT, &ddBltFx);
-    };
 
     static void CreateGameMutex(LPCSTR lpName) {
         if (datArgParser::Get("nomutex")) {
@@ -652,30 +180,23 @@ public:
         vehCarAudioContainer::SetSirenCSVName(szSirenName);
     };
 
-    static void ageDebug(int enabled, LPCSTR format, ...) {
-        // this makes the game load up reeeeeally slow if enabled!
-        if (ageDebugEnabled || (ageDebugEnabled = datArgParser::Get("age_debug")))
+    static void ageDebug(bool enabled, LPCSTR format, ...)
+    {
+        if (ageLogFile)
         {
+            fputs(FormatTime("%T: "), ageLogFile);
+
+            char buffer[1024];
+
             va_list va;
             va_start(va, format);
-            vsprintf(ageDebug_buffer, format, va);
+            vsprintf(buffer, format, va);
             va_end(va);
 
-            // 'LogFile::WriteLine' seems to be causing crashes upon exiting?
-            if (ageLog == NULL)
-            {
-                FILE *logFile = fopen(ageLogFile, "w");
-                
-                fputs("--<< A.G.E. Log file >>--\n\n", logFile);
-                fclose(logFile);
-            }
+            fputs(buffer, ageLogFile);
+            fputc('\n', ageLogFile);
 
-            ageLog = fopen(ageLogFile, "a+");
-
-            fputs(ageDebug_buffer, ageLog);
-            fputs("\n", ageLog);
-
-            fclose(ageLog);
+            fflush(ageLogFile);
         }
     };
 
@@ -711,46 +232,6 @@ public:
         // TODO: Set sampling rate (see 0x519640 - int __thiscall AudManager::SetBitDepthAndSampleRate(int this, int bitDepth, int samplingRate))
         // TODO: Redo SetPrimaryBufferFormat to set sampleSize? (see 0x5A5860 -void __thiscall DirSnd::SetPrimaryBufferFormat(mmDirSnd *this, int sampleRate, bool allowStero))
         return $mmDirSndInit(48000, enableStero, a4, volume, deviceName, enable3D);
-    }
-};
-
-class GraphicsCallbackHandler
-{
-private:
-    static DWORD CalculateShadedColor(int color) {
-        auto timeWeather = &TIMEWEATHER[timeOfDay];
-
-        Vector3 vglKeyColor = addPitch(&timeWeather->KeyColor, timeWeather->KeyPitch);
-        Vector3 vglFill1Color = addPitch(&timeWeather->Fill1Color, timeWeather->Fill1Pitch);
-        Vector3 vglFill2Color = addPitch(&timeWeather->Fill2Color, timeWeather->Fill2Pitch);
-
-        // convert the ambient to a vector3 for better accuracy
-        Vector4 vglAmbient = ColorToVector<8, 8, 8, 8>(timeWeather->Ambient);        
-
-        Vector4 vglShadedColor =
-        {
-            normalize(vglKeyColor.X + vglFill1Color.X + vglFill2Color.X + vglAmbient.X),
-            normalize(vglKeyColor.Y + vglFill1Color.Y + vglFill2Color.Y + vglAmbient.Y),
-            normalize(vglKeyColor.Z + vglFill1Color.Z + vglFill2Color.Z + vglAmbient.Z),
-            1
-        };
-
-        return $sdlPage16_GetShadedColor(color, VectorToColor<8, 8, 8, 8>(vglShadedColor));
-    }
-public:
-    static void vglBegin(int gfxMode, int p1) {
-        vglColor = *vglCurrentColor;
-
-        // calculate a nice shaded color ;)
-        *vglCurrentColor = CalculateShadedColor(vglColor);
-
-        $vglBegin(gfxMode, p1);
-    }
-
-    static void vglEnd(void) {
-        // restore color
-        *vglCurrentColor = vglColor;
-        $vglEnd();
     }
 };
 
@@ -813,7 +294,7 @@ public:
 class asCullManager
 {
 public:
-    void __thiscall Init(int maxCullables, int maxCullables2D)
+    void Init(int maxCullables, int maxCullables2D)
     {
         maxCullables = 1024;
         maxCullables2D = 256;
@@ -851,8 +332,8 @@ public:
         if (gameVersion == MM2_RETAIL)
         {
             // hook into the printer
-            *$Printer = &PrinterHandler::Print;
-            *$PrintString = &PrinterHandler::PrintString;
+            *$Printer           = &PrinterHandler::Print;
+            *$PrintString       = &PrinterHandler::PrintString;
             *$FatalErrorHandler = &PrinterHandler::FatalErrorHandler;
 
             /* Won't write to the log file for some reason :(
@@ -864,13 +345,9 @@ public:
             LogFile::Write("FAIL!\n");
             */
 
-            if (!datArgParser::Get("oldautodetect"))
+            if (ageLogFile == NULL && datArgParser::Get("ageDebug"))
             {
-                // Hook into the original AutoDetect and replace it with our own version
-                InstallGameCallback("AutoDetectCallback", gameVersion, &AutoDetectCallback, HOOK_JMP,
-                {
-                    { NULL, NULL, 0x4AC030 },
-                });
+                ageLogFile = fopen("AGE.log", "w+");
             }
         }
     }
@@ -907,6 +384,8 @@ public:
 
             LogFile::Close();
             L.close(); // release Lua
+
+            fclose(ageLogFile);
         }
         else
         {
@@ -1015,18 +494,23 @@ void InstallCallbacks(MM2Version gameVersion) {
         { NULL, NULL, 0x402630 },
     });
 
-    InstallGameCallback("ProgressRect [white loading bar fix]", gameVersion, &CallbackHandler::ProgressRect, HOOK_CALL,
+    InstallGameCallback("ProgressRect [white loading bar fix]", gameVersion, &gfxCallback::ProgressRect, HOOK_CALL,
     {
         { NULL, NULL, 0x401163 },
         { NULL, NULL, 0x4011CC },
     });
 
-    InstallGameCallback("gfxPipeline::SetRes", gameVersion, &gfxHandler::setRes, HOOK_CALL,
+    InstallGameCallback("gfxPipeline::SetRes", gameVersion, &gfxCallback::setRes, HOOK_CALL,
     {
         { NULL, NULL, 0x401482 },
     });
 
-    InstallGameCallback("gfxWindowCreate", gameVersion, &gfxHandler::gfxWindowCreate, HOOK_CALL,
+    InstallGameCallback("AutoDetectCallback", gameVersion, &gfxCallback::AutoDetectCallback, HOOK_JMP,
+    {
+        { NULL, NULL, 0x4AC030 },
+    });
+
+    InstallGameCallback("gfxWindowCreate", gameVersion, &gfxCallback::gfxWindowCreate, HOOK_CALL,
     {
         { NULL, NULL, 0x4A94AA },
     });    
@@ -1061,7 +545,7 @@ void InstallCallbacks(MM2Version gameVersion) {
     //    });
     //}
 
-    InstallGameCallback("vglBegin", gameVersion, &GraphicsCallbackHandler::vglBegin, HOOK_CALL,
+    InstallGameCallback("vglBegin", gameVersion, &gfxCallback::vglBegin, HOOK_CALL,
     {
         { NULL, NULL, 0x448424 }, { NULL, NULL, 0x448697 }, { NULL, NULL, 0x448903 }, { NULL, NULL, 0x448BFD },
         { NULL, NULL, 0x448DE4 }, { NULL, NULL, 0x44902A }, { NULL, NULL, 0x4492A4 }, { NULL, NULL, 0x4494C3 },
@@ -1083,7 +567,7 @@ void InstallCallbacks(MM2Version gameVersion) {
         { NULL, NULL, 0x57AC4A }, // ped LODs
     });
 
-    InstallGameCallback("vglEnd", gameVersion, &GraphicsCallbackHandler::vglEnd, HOOK_CALL,
+    InstallGameCallback("vglEnd", gameVersion, &gfxCallback::vglEnd, HOOK_CALL,
     {
         { NULL, NULL, 0x4485D3 }, { NULL, NULL, 0x448B82 }, { NULL, NULL, 0x448D8C }, { NULL, NULL, 0x448FB7 },
         { NULL, NULL, 0x449219 }, { NULL, NULL, 0x449480 }, { NULL, NULL, 0x44963E }, { NULL, NULL, 0x44983C },
@@ -1110,7 +594,7 @@ void InstallCallbacks(MM2Version gameVersion) {
         { NULL, NULL, 0x401A2F },
     });
 
-    InstallGameCallback("mmGame::SendChatMessage", gameVersion, &ChatHandler::Process, HOOK_JMP,
+    InstallGameCallback("mmGame::SendChatMessage", gameVersion, &inputCallback::ChatHandler::Process, HOOK_JMP,
     {
         { NULL, NULL, 0x414EB6 },
     });

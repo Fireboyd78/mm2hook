@@ -1,12 +1,15 @@
 #pragma once
-#include "mm2_common.h"
+
+#include "AGE.h"
+#include "mm2_utils.h"
 
 namespace MM2
 {
     // Forward declarations
     extern class ioEventQueue;
 
-    struct ioEvent {
+    struct ioEvent
+    {
         enum ioEventType
         {
             IO_EVENT_DESTROY = 0,
@@ -28,27 +31,42 @@ namespace MM2
         int value;
     };
 
-    class ioEventQueue {
+    class ioEventQueue
+    {
     protected:
         static MM2FnHook<bool> $Pop;
         static MM2FnHook<bool> $Peek;
         static MM2FnHook<void> $Queue;
         static MM2FnHook<void> $Command;
     public:
-        AGE_API static bool Pop(ioEvent *outEvent) {
+        AGE_API static bool Pop(ioEvent *outEvent)
+        {
             return $Pop(outEvent);
         };
 
-        AGE_API static bool Peek(ioEvent *outEvent, int *idx) {
+        AGE_API static bool Peek(ioEvent *outEvent, int *idx)
+        {
             return $Peek(outEvent, idx);
         };
 
-        AGE_API static void Queue(ioEvent::ioEventType type, int x, int y, int value) {
+        AGE_API static void Queue(ioEvent::ioEventType type, int x, int y, int value)
+        {
             $Queue(type, x, y, value);
         };
 
-        AGE_API static void Command(void *command) {
+        AGE_API static void Command(void *command)
+        {
             $Command(command);
+        };
+    };
+
+    namespace inputCallback
+    {
+        bool HandleKeyPress(DWORD vKey);
+
+        struct ChatHandler
+        {
+            void Process(char *message);
         };
     };
 }

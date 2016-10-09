@@ -5,37 +5,46 @@
 #include <mmreg.h>
 #include <dsound.h>
 
-struct mmDirSnd
+namespace MM2
 {
-    struct VTable
+    struct mmDirSnd; // Forward Declare
+    static MM2RawFnHook<mmDirSnd*(*)(int, bool, int, float, LPCSTR, bool)> 
+        $mmDirSndInit (NULL, NULL, 0x51CC50);
+
+    struct mmDirSnd
     {
-        int(mmDirSnd::*InitPrimarySoundBuffer)(int sampleRate, bool allowStero, LPCSTR lpDeviceName);
-    } *lpVTbl;
+        struct VTable
+        {
+            int(mmDirSnd::*InitPrimarySoundBuffer)(int      sampleRate,
+                                                   bool     allowStero,
+                                                   LPCSTR   lpDeviceName);
+        } *lpVTbl;
 
-    LPDIRECTSOUNDBUFFER lpDirectSoundBuffer;
-    LPDIRECTSOUND lpDirectSound;
-    HWND hWnd;
-    int gap10;
+        LPDIRECTSOUNDBUFFER lpDirectSoundBuffer;
+        LPDIRECTSOUND lpDirectSound;
+        HWND hWnd;
+        int gap10;
 
-    struct mmSoundDevice
-    {
-        GUID GUID;
-        LPCSTR Name;
-        DWORD Rating;
-        mmSoundDevice *lpNextDevice;
-    } *lpFirstDevice, *lpCurrentDevice;
+        struct mmSoundDevice
+        {
+            GUID GUID;
+            LPCSTR Name;
+            DWORD Rating;
+            mmSoundDevice *lpNextDevice;
+        } *lpFirstDevice, *lpCurrentDevice;
 
-    int field_1C;
-    int field_20;
-    int field_24;
-    int DeviceFlags;
-    byte byte2C;
-    byte Enable3D;
-    byte byte2E;
-    byte byte2F;
-    DWORD SoundEnabled;
-    int DeviceCaps;
-    int dword38;
-    int field_3C;
-    float Volume;
-};
+        int field_1C;
+        int field_20;
+        int field_24;
+        int DeviceFlags;
+        byte byte2C;
+        byte Enable3D;
+        byte byte2E;
+        byte byte2F;
+        DWORD SoundEnabled;
+        int DeviceCaps;
+        int dword38;
+        int field_3C;
+        float Volume;
+    };
+}

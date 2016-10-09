@@ -186,15 +186,6 @@ enum CB_HOOK_TYPE
     HOOK_CALL
 };
 
-template<int count = 1>
-struct VT_INSTALL_INFO
-{
-    static const int length = count;
-
-    ANY_PTR dwHookAddr;
-    MM2AddressData addrData[count];
-};
-
 void InstallVTableHook(LPCSTR name, 
                        MM2Version gameVersion,
                        ANY_PTR lpHookAddr,

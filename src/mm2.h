@@ -8,6 +8,7 @@
 #include "mm2_audio.h"
 #include "mm2_base.h"
 #include "mm2_city.h"
+#include "mm2_color.h"
 #include "mm2_data.h"
 #include "mm2_game.h"
 #include "mm2_gfx.h"

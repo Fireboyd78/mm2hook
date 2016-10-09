@@ -177,3 +177,6 @@ inline bool file_exists(LPCSTR filename) {
     }
     return false;
 }
+
+const char* FormatTime(const char* format);
+const char* GUIDToString(GUID* guid);
