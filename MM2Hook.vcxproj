@@ -135,6 +135,8 @@
     Lua 5.3.2 files
   -->
   <ItemGroup>
+    <ClInclude Include="src\mm2_mem.h" />
+    <ClInclude Include="src\mm2_structs.h" />
     <ClInclude Include="src\lua\lapi.h" />
     <ClInclude Include="src\lua\lauxlib.h" />
     <ClInclude Include="src\lua\lcode.h" />
@@ -163,6 +165,7 @@
     <ClInclude Include="src\lua\lzio.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\mm2_mem.cpp" />
     <ClCompile Include="src\lua\lapi.c" />
     <ClCompile Include="src\lua\lauxlib.c" />
     <ClCompile Include="src\lua\lbaselib.c" />

@@ -18,6 +18,6 @@ namespace MM2 {
 
     extern char * AngelReadString(UINT stringId);
 
-    extern MM2PtrHook<char> szCityName;
-    extern MM2PtrHook<char> szCityName2;
+    extern MM2PtrHook<char[40]> szCityName;
+    extern MM2PtrHook<char[40]> szCityName2;
 };

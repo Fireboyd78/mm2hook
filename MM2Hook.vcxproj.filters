@@ -215,6 +215,12 @@
     <ClInclude Include="src\mm2_color.h">
       <Filter>Source Files\mm2</Filter>
     </ClInclude>
+    <ClInclude Include="src\mm2_structs.h">
+      <Filter>Source Files\mm2</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mm2_mem.h">
+      <Filter>Source Files\mm2</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
@@ -354,6 +360,9 @@
     </ClCompile>
     <ClCompile Include="src\patch.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mm2_mem.cpp">
+      <Filter>Source Files\mm2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

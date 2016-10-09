@@ -36,7 +36,6 @@ static Matrix34 sm_DashOffset;
 MM2FnHook<void> $CreateGameMutex                ( NULL, NULL, 0x402180 );
 MM2FnHook<void> $dgBangerInstance_Draw          ( NULL, NULL, 0x4415E0 );
 MM2FnHook<void> $asLinearCS_Update              ( NULL, NULL, 0x4A3370 );
-MM2FnHook<void> $memSafeHeap_Init               ( NULL, NULL, 0x577210 );
 MM2FnHook<void> $DefaultPrintString             ( NULL, NULL, 0x4C9510 );
 MM2FnHook<void> $DefaultPrinter                 ( NULL, NULL, 0x4C95F0 );
 MM2FnHook<void> $asCullManagerInit              ( NULL, NULL, 0x4A1290 );
@@ -141,7 +140,7 @@ public:
     bool LoadAmbientSFX(LPCSTR name) {
         LPCSTR szAmbientSFX = NULL;
 
-        auto city = (LPCSTR)szCityName;
+        LPCSTR city = *szCityName;
 
         if ((_strcmpi(city, "sf") == 0) && (_strcmpi(city, "london") == 0))
         {
@@ -218,21 +217,6 @@ public:
         L.pop(1);
         return str;
     }
-
-    static mmDirSnd* mmDirSndInit(int sampleRate, bool enableStero, int a4, float volume, LPCSTR deviceName, bool enable3D)
-    {
-        // TODO: Load the device name from player config?
-        if (*deviceName == '\0')
-        {
-            datArgParser::Get("defaultsounddev", 0, &deviceName);
-        }
-
-        LogFile::Format("mmDirSnd::Init - Using Device: %s\n", deviceName);
-
-        // TODO: Set sampling rate (see 0x519640 - int __thiscall AudManager::SetBitDepthAndSampleRate(int this, int bitDepth, int samplingRate))
-        // TODO: Redo SetPrimaryBufferFormat to set sampleSize? (see 0x5A5860 -void __thiscall DirSnd::SetPrimaryBufferFormat(mmDirSnd *this, int sampleRate, bool allowStero))
-        return $mmDirSndInit(48000, enableStero, a4, volume, deviceName, enable3D);
-    }
 };
 
 class BridgeFerryCallbackHandler
@@ -271,23 +255,6 @@ public:
         dashCam->m34 += sm_DashOffset.m34;
 
         $asLinearCS_Update(this);
-    };
-};
-
-class memSafeHeapCallbackHandler
-{
-public:
-    void Init(void *memAllocator, unsigned int heapSize, bool p3, bool p4, bool checkAlloc)
-    {        
-        int newHeapSize = 128;
-
-        datArgParser::Get("heapsize", 0, &newHeapSize);
-
-        LogFile::Format("memSafeHeap::Init -- Allocating %dMB heap\n", newHeapSize);
-
-        newHeapSize <<= 20; // Same as *= (1024 * 1024)
-
-        return $memSafeHeap_Init(this, memAllocator, newHeapSize, p3, p4, checkAlloc);
     };
 };
 
@@ -515,7 +482,7 @@ void InstallCallbacks(MM2Version gameVersion) {
         { NULL, NULL, 0x4A94AA },
     });    
 
-    InstallGameCallback("mmDirSnd::Init", gameVersion, &CallbackHandler::mmDirSndInit, HOOK_CALL,
+    InstallGameCallback("mmDirSnd::Init", gameVersion, &mmDirSnd::Init, HOOK_CALL,
     {
         { NULL, NULL, 0x51941D },
     });
@@ -525,7 +492,7 @@ void InstallCallbacks(MM2Version gameVersion) {
         { NULL, NULL, 0x4AC4F9 },
     });
     
-    InstallGameCallback("memSafeHeap::Init [Heap fix]", gameVersion, &memSafeHeapCallbackHandler::Init, HOOK_CALL,
+    InstallGameCallback("memSafeHeap::Init [Heap fix]", gameVersion, &memSafeHeap::Init, HOOK_CALL,
     {
         { NULL, NULL, 0x4015DD },
     });

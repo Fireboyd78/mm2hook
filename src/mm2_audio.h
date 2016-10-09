@@ -46,5 +46,12 @@ namespace MM2
         int dword38;
         int field_3C;
         float Volume;
+
+        static mmDirSnd* Init(int       sampleRate,
+                              bool      enableStero,
+                              int       a4,
+                              float     volume,
+                              LPCSTR    deviceName,
+                              bool      enable3D);
     };
 }

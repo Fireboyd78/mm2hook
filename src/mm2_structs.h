@@ -4,51 +4,53 @@
     Basically, just place any structures here. Finished or not, it's better to have them somewhere
 */
 
+#include "mm2_gfx.h"
+//#include <cstdint>
 
 namespace MM2
 {
     struct ArgEntry
     {
-        DWORD   WordCount;
-        LPCSTR* WordArray;
-    };
-
-    struct HashEntry
-    {
-        LPCSTR      Name;
-        LPVOID      Entry;
-        HashEntry*  NextEntry;
+        std::uint32_t   WordCount;
+        const char**    WordArray;
     };
 
     struct HashPosition
     {
-        DWORD   Index;
-        LPCSTR  Name;
-        LPVOID  Entry;
+        std::uint32_t   Index;
+        const char*     Name;
+        void*           Entry;
     };
 
     struct HashTable
     {
-        WORD        word0;
+        std::uint16_t        word0;
         bool        FixedSize;
         bool        bool3;
-        DWORD       lpUnk4;
-        DWORD       MaxSlots;
-        DWORD       UsedSlots;
-        HashEntry** FirstEntry;
+        std::uint32_t       lpUnk4;
+        std::uint32_t       MaxSlots;
+        std::uint32_t       UsedSlots;
+
+        struct HashEntry
+        {
+            const char*     Name;
+            void*           Entry;
+            HashEntry*      NextEntry;
+        }** FirstEntry;
+
         HashTable*  PreviousHashTable;
     };
 
     struct asCullManager
     {
         void** lpVTable;
-        DWORD dword4;
-        DWORD dword8;
-        DWORD dwordC;
-        _DWORD SomeFlags;
-        DWORD dword14;
-        _DWORD dword18;
-        _DWORD CurrentCameras;
+        std::uint32_t dword4;
+        std::uint32_t dword8;
+        std::uint32_t dwordC;
+        std::uint32_t SomeFlags;
+        std::uint32_t dword14;
+        std::uint32_t dword18;
+        std::uint32_t CurrentCameras;
         struct asCamera *CameraArray[16];
         int field_60;
         int CurrentCullables;
@@ -73,7 +75,6 @@ namespace MM2
         char field_A7;
     };
 
-
     struct gfxTexture
     {
         unsigned int DirectDrawSomething;
@@ -96,26 +97,26 @@ namespace MM2
 
     struct gfxImage
     {
-        WORD Width;
-        WORD Height;
-        WORD Size;
-        WORD Type;
-        DWORD TexEnv;
+        std::uint16_t Width;
+        std::uint16_t Height;
+        std::uint16_t Size;
+        std::uint16_t Type;
+        std::uint32_t TexEnv;
         void *lpImage;
-        DWORD *ColorData;
-        DWORD RefCount;
+        std::uint32_t *ColorData;
+        std::uint32_t RefCount;
         gfxImage *PreviousImage;
-        DWORD dword20;
-        DWORD dword24;
+        std::uint32_t dword20;
+        std::uint32_t dword24;
     };
 
     struct gfxBitmap
     {
         void *lpAlloc;
-        WORD Width;
-        WORD Height;
+        std::uint16_t Width;
+        std::uint16_t Height;
         IDirectDrawSurface7 *DDrawSurface;
-        DWORD RefCount;
+        std::uint16_t RefCount;
         gfxBitmap *PreviousBitmap;
     };
 }
