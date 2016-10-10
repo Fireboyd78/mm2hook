@@ -1,5 +1,8 @@
 #pragma once
+
 #include "mm2_utils.h"
+
+const double cosNum = 1.570796;
 
 namespace MM2
 {
@@ -70,5 +73,25 @@ namespace MM2
         float Y;
         float Z;
         float W;
+    };
+
+    static Vector3 addPitch(Vector3 *vec, float pitch)
+    {
+        float p = (float) fmod(pitch, 3.14159);
+        bool pitchIsZero = (pitch >= 0.0f);
+
+        return {
+            (float) ((!pitchIsZero) ? vec->X * cos(pitch + cosNum) : 0.0f),
+            (float) ((!pitchIsZero) ? vec->Y * cos(pitch + cosNum) : 0.0f),
+            (float) ((!pitchIsZero) ? vec->Z * cos(pitch + cosNum) : 0.0f),
+        };
+    }
+
+    static float normalize(float value)
+    {
+        if (value >= 2.0f)
+            value = 1.0f;
+
+        return (value > 1.0f) ? (value - (value - 1.0f)) : value;
     };
 }

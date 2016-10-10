@@ -37,5 +37,4 @@
 //  C4091: '__declspec(novtable)': ignored on left of 'x' when no variable is declared
 #pragma warning (disable : 4091)
 
-#include <utility>
 #include <type_traits>

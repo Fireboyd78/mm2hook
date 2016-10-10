@@ -1,5 +1,7 @@
 #include "common.h"
 
+#include <ctime>
+
 //
 // Debugging utilities
 //
@@ -73,3 +75,38 @@ bool GetHookProcAddress(HMODULE hModule, LPCSTR lpProcName, FARPROC *out)
         return false;
     }
 };
+
+const char* FormatTime(const char* format)
+{
+    static char buffer[1024];
+
+    std::time_t t = time(NULL);
+
+    std::strftime(buffer, sizeof(buffer), format, std::localtime(&t));
+
+    return buffer;
+}
+
+const char* GUIDToString(GUID* guid)
+{
+    if (guid == nullptr)
+    {
+        return "00000000-0000-0000-0000-000000000000";
+    }
+
+    static char buffer[(sizeof(GUID) * 2) + 4 + 1]; // 37 characters: 00000000-0000-0000-0000-000000000000 plus null
+
+    sprintf_s(buffer,
+              "%.8X"
+              "-%.4X"
+              "-%.4X"
+              "-%.2X%.2X"
+              "-%.2X%.2X%.2X%.2X%.2X%.2X",
+              guid->Data1,
+              guid->Data2,
+              guid->Data3,
+              guid->Data4[0], guid->Data4[1],
+              guid->Data4[2], guid->Data4[3], guid->Data4[4], guid->Data4[5], guid->Data4[6], guid->Data4[7]);
+
+    return buffer;
+}

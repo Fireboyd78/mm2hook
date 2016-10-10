@@ -135,6 +135,8 @@
     Lua 5.3.2 files
   -->
   <ItemGroup>
+    <ClInclude Include="src\mm2_mem.h" />
+    <ClInclude Include="src\mm2_structs.h" />
     <ClInclude Include="src\lua\lapi.h" />
     <ClInclude Include="src\lua\lauxlib.h" />
     <ClInclude Include="src\lua\lcode.h" />
@@ -163,6 +165,7 @@
     <ClInclude Include="src\lua\lzio.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\mm2_mem.cpp" />
     <ClCompile Include="src\lua\lapi.c" />
     <ClCompile Include="src\lua\lauxlib.c" />
     <ClCompile Include="src\lua\lbaselib.c" />
@@ -252,8 +255,10 @@
     <ClInclude Include="src\main.h" />
     <ClInclude Include="src\mm2.h" />
     <ClInclude Include="src\mm2_ai.h" />
+    <ClInclude Include="src\mm2_audio.h" />
     <ClInclude Include="src\mm2_base.h" />
     <ClInclude Include="src\mm2_city.h" />
+    <ClInclude Include="src\mm2_color.h" />
     <ClInclude Include="src\mm2_common.h" />
     <ClInclude Include="src\mm2_data.h" />
     <ClInclude Include="src\mm2_game.h" />
@@ -274,6 +279,7 @@
     </ClCompile>
     <ClCompile Include="src\mm2.cpp" />
     <ClCompile Include="src\mm2_ai.cpp" />
+    <ClCompile Include="src\mm2_audio.cpp" />
     <ClCompile Include="src\mm2_base.cpp" />
     <ClCompile Include="src\mm2_city.cpp" />
     <ClCompile Include="src\mm2_data.cpp" />
