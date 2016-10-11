@@ -219,10 +219,10 @@ union COLOR_ARGB
     UINT32 color;
 };
 
-template <int A, int R, int G, int B>
+template <std::uint8_t A, std::uint8_t R, std::uint8_t G, std::uint8_t B>
 struct ColorFlags
 {
-    enum : UINT
+    enum : std::uint32_t
     {
         // Bit Shifts (created in reverse order)
         SB = 0,
@@ -244,10 +244,13 @@ struct ColorFlags
     };
 };
 
-template <int OA, int OC, int NA, int NR, int NG, int NB>
-constexpr UINT32 ConvertColorRGBA(const UINT32 color)
+template <
+    std::uint8_t OA, std::uint8_t OR, std::uint8_t OG, std::uint8_t OB,
+    std::uint8_t NA, std::uint8_t NR, std::uint8_t NG, std::uint8_t NB
+>
+constexpr inline std::uint32_t ConvertColor(const std::uint32_t color)
 {
-    using OF = ColorFlags<OA, OC, OC, OC>;
+    using OF = ColorFlags<OA, OR, OG, OB>;
     using NF = ColorFlags<NA, NR, NG, NB>;
 
     return
@@ -255,23 +258,17 @@ constexpr UINT32 ConvertColorRGBA(const UINT32 color)
         (((color & OF::SMR) >> OF::SR) * NF::MG / (OF::MR ? OF::MR : 1) << NF::SR) |
         (((color & OF::SMG) >> OF::SG) * NF::MG / (OF::MG ? OF::MG : 1) << NF::SG) |
         (((color & OF::SMB) >> OF::SB) * NF::MB / (OF::MB ? OF::MB : 1) << NF::SB);
-};
-
-template <int OC, int NR, int NG, int NB>
-constexpr UINT32 ConvertColorRGB(const UINT32 color)
-{
-    return ConvertColorRGBA<0, OC, 0, NR, NG, NB>(color);
-};
+}
 
 inline UINT32 GetPixelFormatColor(LPDDPIXELFORMAT lpDDPixelFormat, UINT32 color) {
     switch (lpDDPixelFormat->dwGBitMask)
     {
         // 555
         case 0x3E0:
-            return ConvertColorRGB<8, 5, 5, 5>(color);
+            return ConvertColor<8, 8, 8, 8, 1, 5, 5, 5>(color);
         // 565
         case 0x7E0:
-            return ConvertColorRGB<8, 5, 6, 5>(color);
+            return ConvertColor<8, 8, 8, 8, 0, 5, 6, 5>(color);
         // 888
         case 0xFF00:
             // already in the right format
