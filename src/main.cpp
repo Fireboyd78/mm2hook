@@ -51,17 +51,6 @@ Vector3 vglFill1Color;
 Vector3 vglFill2Color;
 Vector3 vglShadedColor;
 
-/* ARGB color */
-union COLOR_ARGB
-{
-    struct
-    {
-        BYTE b, g, r, a;
-    };
-
-    DWORD color;
-};
-
 COLOR_ARGB vglResultColor;
 
 /* Dashboard experiment */
@@ -121,7 +110,7 @@ MM2PtrHook<asNode> ROOT                         ( NULL, NULL, 0x661738 );
 
 MM2PtrHook<void (*)(LPCSTR)>
                 $PrintString                    ( NULL, NULL, 0x5CECF0 );
-MM2PtrHook<void (*)(int, LPCSTR, char *)>
+MM2PtrHook<void (*)(int, LPCSTR, va_list)>
                 $Printer                        ( NULL, NULL, 0x5CED24);
 
 MM2PtrHook<LPDIRECTDRAWCREATEEX>
@@ -221,7 +210,7 @@ float normalize(float value) {
         value = 1.0f;
 
     return (value > 1.0f) ? (value - (value - 1.0f)) : value;
-};
+}
 
 Vector3 intToColor(int value) {
     return{
@@ -261,7 +250,7 @@ public:
         $DefaultPrintString(message);
     };
 
-    static void Print(int level, LPCSTR message, char *va_args) {
+    static void Print(int level, LPCSTR message, va_list va_args) {
         HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
         SetConsoleTextAttribute(hConsole, printer_types[level]);
@@ -508,55 +497,25 @@ public:
 
 class CallbackHandler {
 public:
-    static void ProgressRect(int x, int y, int width, int height, COLOR_ARGB color) {
-        RECT rect;
+    static void ProgressRect(int x, int y, int width, int height, UINT color) {
         DDPIXELFORMAT ddPixelFormat = { NULL };
-        DDBLTFX ddBltFx;
-
-        int fillColor;
+        DDBLTFX ddBltFx = { NULL };
 
         ddBltFx.dwSize = 0x64;
         ddPixelFormat.dwSize = 0x20;
 
         lpdsRend->GetPixelFormat(&ddPixelFormat);
 
-        if (ddPixelFormat.dwGBitMask == 0x3E0)
-        {
-            // 555
-            fillColor |= (color.r & 0xF8) << 7;
-            fillColor |= (color.g & 0xF8) << 2;
-            fillColor |= (color.b & 0xF8) >> 3;
-        }
-        else
-        {
-            if (ddPixelFormat.dwGBitMask == 0x7E0)
-            {
-                fillColor |= (color.r & 0xF8) << 8;
-                fillColor |= (color.g & 0xFC) << 3;
-                fillColor |= (color.b & 0xF8) >> 3;
-            }
-            else
-            {
-                if (ddPixelFormat.dwGBitMask == 0xFF00)
-                {
-                    // we can use the color directly
-                    fillColor = color.color;
-                }
-                else
-                {
-                    fillColor = -1; // fully white (error)
-                }
-            }
-        }
+        ddBltFx.dwFillColor = GetPixelFormatColor(&ddPixelFormat, color);
 
-        ddBltFx.dwFillColor = fillColor;
+        RECT position = {
+            x,
+            y,
+            x + width,
+            y + height,
+        };
 
-        rect.left = x;
-        rect.right = (x + width);
-        rect.top = y;
-        rect.bottom = (y + height);
-
-        lpdsRend->Blt(&rect, NULL, NULL, DDBLT_COLORFILL | DDBLT_WAIT, &ddBltFx);
+        lpdsRend->Blt(&position, NULL, NULL, DDBLT_COLORFILL | DDBLT_WAIT, &ddBltFx);
     };
 
     static void CreateGameMutex(LPCSTR lpName) {
@@ -660,7 +619,7 @@ public:
 class GraphicsCallbackHandler
 {
 private:
-    static UINT32 CalculateShadedColor(int color) {
+    static UINT32 CalculateShadedColor(UINT32 color) {
         auto timeWeather = &TIMEWEATHER[timeOfDay];
 
         vglKeyColor = addPitch(&timeWeather->KeyColor, timeWeather->KeyPitch);
@@ -677,9 +636,10 @@ private:
             normalize((vglKeyColor.Z + vglFill1Color.Z + vglFill2Color.Z) + vglAmbient.Z),
         };
 
-        vglResultColor.r = BYTE(vglShadedColor.X * 255.999);
-        vglResultColor.g = BYTE(vglShadedColor.Y * 255.999);
-        vglResultColor.b = BYTE(vglShadedColor.Z * 255.999);
+        vglResultColor.r = (byte)(vglShadedColor.X * 255.999);
+        vglResultColor.g = (byte)(vglShadedColor.Y * 255.999);
+        vglResultColor.b = (byte)(vglShadedColor.Z * 255.999);
+        vglResultColor.a = (byte)255;
 
         return $sdlPage16_GetShadedColor(color, vglResultColor.color);
     }

@@ -208,3 +208,75 @@ void InstallGameCallback(LPCSTR name,
                          ANY_PTR lpCallback,
                          CB_HOOK_TYPE type,
                          std::initializer_list<MM2AddressData> addresses);
+
+union COLOR_ARGB
+{
+    struct
+    {
+        byte b, g, r, a;
+    };
+
+    UINT32 color;
+};
+
+template <int A, int R, int G, int B>
+struct ColorFlags
+{
+    enum : UINT
+    {
+        // Bit Shifts (created in reverse order)
+        SB = 0,
+        SG = SB + B,
+        SR = SG + G,
+        SA = SR + R,
+
+        // Bit Masks
+        MA = ((1u << A) - 1u),
+        MR = ((1u << R) - 1u),
+        MG = ((1u << G) - 1u),
+        MB = ((1u << B) - 1u),
+
+        // Shifted Bit Masks
+        SMA = MA << SA,
+        SMR = MR << SR,
+        SMG = MG << SG,
+        SMB = MB << SB,
+    };
+};
+
+template <int OA, int OC, int NA, int NR, int NG, int NB>
+constexpr UINT32 ConvertColorRGBA(const UINT32 color)
+{
+    using OF = ColorFlags<OA, OC, OC, OC>;
+    using NF = ColorFlags<NA, NR, NG, NB>;
+
+    return
+        (((color & OF::SMA) >> OF::SA) * NF::MA / (OF::MA ? OF::MA : 1) << NF::SA) |
+        (((color & OF::SMR) >> OF::SR) * NF::MG / (OF::MR ? OF::MR : 1) << NF::SR) |
+        (((color & OF::SMG) >> OF::SG) * NF::MG / (OF::MG ? OF::MG : 1) << NF::SG) |
+        (((color & OF::SMB) >> OF::SB) * NF::MB / (OF::MB ? OF::MB : 1) << NF::SB);
+};
+
+template <int OC, int NR, int NG, int NB>
+constexpr UINT32 ConvertColorRGB(const UINT32 color)
+{
+    return ConvertColorRGBA<0, OC, 0, NR, NG, NB>(color);
+};
+
+inline UINT32 GetPixelFormatColor(LPDDPIXELFORMAT lpDDPixelFormat, UINT32 color) {
+    switch (lpDDPixelFormat->dwGBitMask)
+    {
+        // 555
+        case 0x3E0:
+            return ConvertColorRGB<8, 5, 5, 5>(color);
+        // 565
+        case 0x7E0:
+            return ConvertColorRGB<8, 5, 6, 5>(color);
+        // 888
+        case 0xFF00:
+            // already in the right format
+            return color;
+    }
+    // unknown format
+    return -1;
+};
