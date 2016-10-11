@@ -252,6 +252,7 @@
     <ClInclude Include="src\main.h" />
     <ClInclude Include="src\mm2.h" />
     <ClInclude Include="src\mm2_ai.h" />
+    <ClInclude Include="src\mm2_audio.h" />
     <ClInclude Include="src\mm2_base.h" />
     <ClInclude Include="src\mm2_city.h" />
     <ClInclude Include="src\mm2_common.h" />
@@ -274,6 +275,7 @@
     </ClCompile>
     <ClCompile Include="src\mm2.cpp" />
     <ClCompile Include="src\mm2_ai.cpp" />
+    <ClCompile Include="src\mm2_audio.cpp" />
     <ClCompile Include="src\mm2_base.cpp" />
     <ClCompile Include="src\mm2_city.cpp" />
     <ClCompile Include="src\mm2_data.cpp" />
