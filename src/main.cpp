@@ -28,11 +28,7 @@ bool isConsoleOpen = false;
 
 /* AGE Debugging */
 
-FILE *ageLog;
-
-LPCSTR ageLogFile = "AGE.log";
-bool ageDebugEnabled = false;
-char ageDebug_buffer[1024] = { NULL };
+FILE *ageLogFile;
 
 /* Heap fix */
 
@@ -581,28 +577,17 @@ public:
 
     static void ageDebug(int enabled, LPCSTR format, ...) {
         // this makes the game load up reeeeeally slow if enabled!
-        if (ageDebugEnabled || (ageDebugEnabled = datArgParser::Get("age_debug")))
+        if (ageLogFile)
         {
+            char buffer[1024];
+
             va_list va;
             va_start(va, format);
-            vsprintf(ageDebug_buffer, format, va);
+            vsprintf(buffer, format, va);
             va_end(va);
 
-            // 'LogFile::WriteLine' seems to be causing crashes upon exiting?
-            if (ageLog == NULL)
-            {
-                FILE *logFile = fopen(ageLogFile, "w");
-                
-                fputs("--<< A.G.E. Log file >>--\n\n", logFile);
-                fclose(logFile);
-            }
-
-            ageLog = fopen(ageLogFile, "a+");
-
-            fputs(ageDebug_buffer, ageLog);
-            fputs("\n", ageLog);
-
-            fclose(ageLog);
+            fputs(buffer, ageLogFile);
+            fputs("\n", ageLogFile);
         }
     };
 
@@ -782,6 +767,11 @@ public:
             LogFile::Write("FAIL!\n");
             */
 
+            if (ageLogFile == NULL && datArgParser::Get("age_debug"))
+            {
+                ageLogFile = fopen("AGE.log", "w+");
+            }
+
             if (!datArgParser::Get("oldautodetect"))
             {
                 // Hook into the original AutoDetect and replace it with our own version
@@ -825,6 +815,11 @@ public:
 
             LogFile::Close();
             L.close(); // release Lua
+
+            if (ageLogFile)
+            {
+                fclose(ageLogFile);
+            }
         }
         else
         {
