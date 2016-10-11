@@ -85,6 +85,9 @@ MM2FnHook<void> $memSafeHeap_Init               ( NULL, NULL, 0x577210 );
 MM2FnHook<void> $DefaultPrintString             ( NULL, NULL, 0x4C9510 );
 MM2FnHook<void> $DefaultPrinter                 ( NULL, NULL, 0x4C95F0 );
 
+MM2RawFnHook<int (__stdcall *)(HMODULE, UINT, char *, int)>
+                $MyLoadStringA                  ( NULL, NULL, 0x5346B0 );
+
 MM2RawFnHook<WNDPROC> $gfxWindowProc            ( NULL, NULL, 0x4A88F0 );
 
 MM2RawFnHook<LPD3DENUMDEVICESCALLBACK7> 
@@ -495,6 +498,13 @@ public:
     }
 };
 
+HMODULE h_MMLANG = NULL;
+
+LocString string_buffer[8];
+int string_index = 0;
+
+const LPCSTR STRING_UNKNOWN = "?? lang:%d ??";
+
 class CallbackHandler {
 public:
     static void ProgressRect(int x, int y, int width, int height, UINT color) {
@@ -597,20 +607,39 @@ public:
     };
 
     static LPCSTR AngelReadString(UINT stringId) {
-        // currently this overrides the old AngelReadString function
-        // and provides no backwards compat. for MMLANG.DLL
-        auto str = "";
+        LPCSTR str = NULL;
+
         L.getGlobal("GetLocaleString");
         L.push(stringId);
-        if (L.pcall(1, 1, 0) == LUA_OK)
-        {
+
+        if ((L.pcall(1, 1, 0) == LUA_OK) && !L.isNil(-1))
             str = L.toString(-1);
-        }
-        else
+
+        // not found in Lua, let's look in MMLANG.DLL
+        if (str == NULL)
         {
-            LogFile::Format("[LUA] ERROR: %s\n", stringId, L.toString(-1));
-            str = "???";
-        }   
+            auto locStr = (char *)&string_buffer[(string_index++ & 0x7)];
+
+            // revert to MMLANG.DLL
+            if (h_MMLANG == NULL)
+            {
+                if ((h_MMLANG = LoadLibrary("MMLANG.DLL")) == NULL)
+                {
+                    MessageBox(NULL, "MMLANG.DLL not found.", "Midtown Madness 2", MB_ICONHAND);
+                    ExitProcess(0);
+                }
+            }
+
+            if ($MyLoadStringA(h_MMLANG, stringId, locStr, sizeof(LocString)) == 0)
+            {
+                // string wasn't in Lua or DLL, return an unknown string
+                // e.g. "?? lang:123 ??"
+                sprintf((char *)locStr, STRING_UNKNOWN, stringId);
+            }
+
+            str = locStr;
+        }
+
         L.pop(1);
         return str;
     }
@@ -925,15 +954,15 @@ void InstallCallbacks(MM2Version gameVersion) {
         { NULL, NULL, 0x4015DD },
     });
 
-    //// not supported for betas yet
-    //if (gameVersion == MM2_RETAIL)
-    //{
-    //    // NOTE: Completely overrides AngelReadString!
-    //    InstallGameCallback("AngelReadString", gameVersion, &CallbackHandler::AngelReadString, HOOK_JMP,
-    //    {
-    //        { NULL, NULL, 0x534790 },
-    //    });
-    //}
+    // not supported for betas yet
+    if (gameVersion == MM2_RETAIL)
+    {
+        // NOTE: Completely overrides the original AngelReadString (will check Lua first then DLL)
+        InstallGameCallback("AngelReadString", gameVersion, &CallbackHandler::AngelReadString, HOOK_JMP,
+        {
+            { NULL, NULL, 0x534790 },
+        });
+    }
 
     InstallGameCallback("vglBegin", gameVersion, &GraphicsCallbackHandler::vglBegin, HOOK_CALL,
     {

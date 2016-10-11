@@ -14,6 +14,10 @@
 #include "mm2_vector.h"
 
 namespace MM2 {
+    struct LocString {
+        char buffer[512];
+    };
+
     extern void Printf(LPCSTR str, ...);
     extern void Messagef(LPCSTR str, ...);
     extern void Displayf(LPCSTR str, ...);
