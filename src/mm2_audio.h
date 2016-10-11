@@ -26,30 +26,31 @@ namespace MM2
 
     class DirSnd {
     protected:
-        LPDIRECTSOUNDBUFFER lpDirectSoundBuffer;
-        LPDIRECTSOUND lpDirectSound;
 
-        HWND hWnd;
+        LPDIRECTSOUNDBUFFER lpDSBuffer;
+        LPDIRECTSOUND       lpDS;
 
-        DWORD unk_10;
+        HWND hWND;
 
-        PDSDEVICEDESC pNextDevice, pCurrentDevice;
+        int gap10;
 
-        int unk_1C;
-        int deviceCount;
-        int bitDepth;
+        PDSDEVICEDESC *FirstDriver;
+        PDSDEVICEDESC *CurrentDriver;
 
-        int deviceFlags;
+        int field_1C;
+        int DeviceCount;
+        int BitDepth;
+        int DeviceFlags;
 
-        byte unk_2C;
-        byte enable3D;
-        byte unk_2E;
-        byte unk_2F;
+        byte byte2C;
+        byte Enable3D;
+        byte byte2E;
+        byte byte2F;
 
-        DWORD soundEnabled;
+        int SoundEnabled;
+        int DeviceCaps;
 
-        int deviceCaps;
-        int unk_38;
+        PDSDEVICEDESC **SoundDevices;
 
         static MM2FnHook<void> $$ctor;
         static MM2FnHook<void> $$dtor;
@@ -152,8 +153,9 @@ namespace MM2
 
     class mmDirSnd : public DirSnd {
     protected:
-        UINT eaxEnabled;
-        float volume;
+
+        int eaxEnabled;
+        int dsound3DEnabled;
 
         static MM2FnHook<void> $$ctor;
         static MM2FnHook<void> $$dtor;
