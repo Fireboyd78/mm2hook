@@ -113,7 +113,9 @@ MM2PtrHook<asNode> ROOT                         ( NULL, NULL, 0x661738 );
 MM2PtrHook<void (*)(LPCSTR)>
                 $PrintString                    ( NULL, NULL, 0x5CECF0 );
 MM2PtrHook<void (*)(int, LPCSTR, va_list)>
-                $Printer                        ( NULL, NULL, 0x5CED24);
+                $Printer                        ( NULL, NULL, 0x5CED24 );
+MM2PtrHook<void(*)(void)>
+                $FatalErrorHandler              ( NULL, NULL, 0x6A3D38 );
 
 MM2PtrHook<LPDIRECTDRAWCREATEEX>
                 $lpDirectDrawCreateEx           ( NULL, NULL, 0x684518 );
@@ -259,6 +261,11 @@ public:
         $DefaultPrinter(level, message, va_args);
         SetConsoleTextAttribute(hConsole, FOREGROUND_WHITE);
     };
+
+    static void FatalError()
+    {
+        system("PAUSE");
+    }
 };
 
 class TickHandler {
@@ -791,8 +798,9 @@ public:
         if (gameVersion == MM2_RETAIL)
         {
             // hook into the printer
-            *$Printer = &PrinterHandler::Print;
-            *$PrintString = &PrinterHandler::PrintString;
+            *$Printer           = &PrinterHandler::Print;
+            *$PrintString       = &PrinterHandler::PrintString;
+            *$FatalErrorHandler = &PrinterHandler::FatalError;
 
             /* Won't write to the log file for some reason :(
             LogFile::Write("Redirecting MM2 output...");
