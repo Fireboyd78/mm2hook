@@ -201,7 +201,7 @@ Vector3 addPitch(Vector3 *vec, float pitch) {
     float p = (float)fmod(pitch, 3.14159);
     bool pitchIsZero = (pitch >= 0.0f);
 
-    return{
+    return {
         (float)((!pitchIsZero) ? vec->X * cos(pitch + cosNum) : 0.0f),
         (float)((!pitchIsZero) ? vec->Y * cos(pitch + cosNum) : 0.0f),
         (float)((!pitchIsZero) ? vec->Z * cos(pitch + cosNum) : 0.0f),
@@ -216,7 +216,7 @@ float normalize(float value) {
 }
 
 Vector3 intToColor(int value) {
-    return{
+    return {
         (float)((char)((value & 0xFF0000) >> 16) / 256.0),
         (float)((char)((value & 0xFF00) >> 8) / 256.0),
         (float)((char)((value & 0xFF)) / 256.0),
