@@ -1,4 +1,10 @@
 #pragma once
+
+//
+// MM2 uses DirectX 7
+//
+#define DIRECTX_VERSION 0x0700
+
 #include "common.h"
 #include "hook.h"
 
@@ -17,7 +23,4 @@ namespace MM2 {
     extern void Abortf(LPCSTR str, ...);
 
     extern char * AngelReadString(UINT stringId);
-
-    extern MM2PtrHook<char> szCityName;
-    extern MM2PtrHook<char> szCityName2;
 };

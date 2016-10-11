@@ -112,6 +112,9 @@ MM2PtrHook<cityTimeWeatherLighting>
 
 MM2PtrHook<int> timeOfDay                       ( NULL, NULL, 0x62B068 );
 
+MM2PtrHook<char[40]> cityName                   ( NULL, NULL, 0x6B167C );
+MM2PtrHook<char[40]> cityName2                  ( NULL, NULL, 0x6B16A4 );
+
 MM2PtrHook<UINT32> vglCurrentColor              ( NULL, NULL, 0x661974 );
 
 MM2PtrHook<asNode> ROOT                         ( NULL, NULL, 0x661738 );
@@ -568,7 +571,7 @@ public:
     bool LoadAmbientSFX(LPCSTR name) {
         LPCSTR szAmbientSFX = NULL;
 
-        auto city = (LPCSTR)szCityName;
+        LPCSTR city = *cityName;
 
         if ((_strcmpi(city, "sf") == 0) && (_strcmpi(city, "london") == 0))
         {
@@ -589,13 +592,13 @@ public:
         LogFile::Format("AmbientSFX: %s\n", szAmbientSFX);
 
         // pass to MM2
-        return ((mmGameMusicData*)this)->LoadAmbientSFX(szAmbientSFX);
+        return reinterpret_cast<mmGameMusicData *>(this)->LoadAmbientSFX(szAmbientSFX);
     };
 
     static void SetSirenCSVName(LPCSTR name) {
         char siren_name[80] = { NULL };
 
-        sprintf(siren_name, "%spolicesiren", (LPCSTR)szCityName);
+        sprintf(siren_name, "%spolicesiren", *cityName);
 
         bool useDefault = !(datAssetManager::Exists("aud\\cardata\\player", siren_name, "csv"));
 

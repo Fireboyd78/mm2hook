@@ -24,9 +24,6 @@ MM2PtrHook<HWND>
 
 namespace MM2
 {
-    MM2PtrHook<char>  szCityName    ( NULL, NULL, 0x6B167C );
-    MM2PtrHook<char>  szCityName2   ( NULL, NULL, 0x6B16A4 );
-
     DEFINE_PRINT_HOOK(Printf);
     DEFINE_PRINT_HOOK(Messagef);
     DEFINE_PRINT_HOOK(Displayf);

@@ -7,6 +7,38 @@
 
 #define AGE_API NOINLINE __declspec(dllexport)
 
+//
+// DirectX includes
+//
+
+// use DIRECTX_VERSION to set some/all of them
+// or define them individually, etc.
+// otherwise they'll default via the includes
+#ifdef DIRECTX_VERSION
+# ifndef DIRECT3D_VERSION
+#  define DIRECT3D_VERSION DIRECTX_VERSION
+# endif
+# ifndef DIRECTDRAW_VERSION
+#  define DIRECTDRAW_VERSION DIRECTX_VERSION
+# endif
+# ifndef DIRECTINPUT_VERSION
+#  define DIRECTINPUT_VERSION DIRECTX_VERSION
+# endif
+# ifndef DIRECTSOUND_VERSION
+#  define DIRECTSOUND_VERSION DIRECTX_VERSION
+# endif
+#endif
+
+#include <d3d.h>
+#include <ddraw.h>
+#include <dinput.h>
+
+#include <mmsystem.h>
+#include <dsound.h>
+
+typedef HRESULT(WINAPI *LPFNDIRECTINPUTCREATE)(HINSTANCE, DWORD, LPVOID *, LPUNKNOWN);
+typedef HRESULT(WINAPI *LPDIRECTDRAWCREATEEX)(GUID *, LPVOID *, REFIID, IUnknown *);
+
 struct ageInfo
 {
     short gameVersion;

@@ -1,9 +1,7 @@
 #pragma once
+#include "mm2_common.h"
 
 #include <array>
-
-#include "common.h"
-#include "hook.h"
 
 constexpr std::size_t MAX_HOOK_PTRS = 4096;
 
