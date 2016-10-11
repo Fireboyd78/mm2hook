@@ -28,11 +28,7 @@ bool isConsoleOpen = false;
 
 /* AGE Debugging */
 
-FILE *ageLog;
-
-LPCSTR ageLogFile = "AGE.log";
-bool ageDebugEnabled = false;
-char ageDebug_buffer[1024] = { NULL };
+FILE *ageLogFile;
 
 /* Heap fix */
 
@@ -95,6 +91,9 @@ MM2RawFnHook<LPD3DENUMDEVICESCALLBACK7>
 MM2RawFnHook<LPDDENUMMODESCALLBACK2>
                 $ResCallback                    ( NULL, NULL, 0x4AC6F0 );
 
+MM2FnHook<void> $asCullManagerInit              ( NULL, NULL, 0x4A1290 );
+
+
 // ==========================
 // Pointer hooks
 // ==========================
@@ -114,7 +113,9 @@ MM2PtrHook<asNode> ROOT                         ( NULL, NULL, 0x661738 );
 MM2PtrHook<void (*)(LPCSTR)>
                 $PrintString                    ( NULL, NULL, 0x5CECF0 );
 MM2PtrHook<void (*)(int, LPCSTR, va_list)>
-                $Printer                        ( NULL, NULL, 0x5CED24);
+                $Printer                        ( NULL, NULL, 0x5CED24 );
+MM2PtrHook<void(*)(void)>
+                $FatalErrorHandler              ( NULL, NULL, 0x6A3D38 );
 
 MM2PtrHook<LPDIRECTDRAWCREATEEX>
                 $lpDirectDrawCreateEx           ( NULL, NULL, 0x684518 );
@@ -260,6 +261,11 @@ public:
         $DefaultPrinter(level, message, va_args);
         SetConsoleTextAttribute(hConsole, FOREGROUND_WHITE);
     };
+
+    static void FatalError()
+    {
+        system("PAUSE");
+    }
 };
 
 class TickHandler {
@@ -581,28 +587,17 @@ public:
 
     static void ageDebug(int enabled, LPCSTR format, ...) {
         // this makes the game load up reeeeeally slow if enabled!
-        if (ageDebugEnabled || (ageDebugEnabled = datArgParser::Get("age_debug")))
+        if (ageLogFile)
         {
+            char buffer[1024];
+
             va_list va;
             va_start(va, format);
-            vsprintf(ageDebug_buffer, format, va);
+            vsprintf(buffer, format, va);
             va_end(va);
 
-            // 'LogFile::WriteLine' seems to be causing crashes upon exiting?
-            if (ageLog == NULL)
-            {
-                FILE *logFile = fopen(ageLogFile, "w");
-                
-                fputs("--<< A.G.E. Log file >>--\n\n", logFile);
-                fclose(logFile);
-            }
-
-            ageLog = fopen(ageLogFile, "a+");
-
-            fputs(ageDebug_buffer, ageLog);
-            fputs("\n", ageLog);
-
-            fclose(ageLog);
+            fputs(buffer, ageLogFile);
+            fputs("\n", ageLogFile);
         }
     };
 
@@ -690,6 +685,25 @@ public:
     }
 };
 
+
+mmDirSnd* mmDirSndInit(int sampleRate, bool enableStero, int a4, float volume, LPCSTR deviceName, bool enable3D)
+{
+    // TODO: Load the device name from player config?
+    if (*deviceName == '\0')
+    {
+        if (!datArgParser::Get("defaultsounddev", 0, &deviceName))
+        {
+            deviceName = "Primary Sound Driver";
+        }
+
+        LogFile::Format("mmDirSnd::Init - Default Device: %s\n", deviceName);
+    }
+
+    // TODO: Set sampling rate (see 0x519640 - int __thiscall AudManager::SetBitDepthAndSampleRate(int this, int bitDepth, int samplingRate))
+    // TODO: Redo SetPrimaryBufferFormat to set sampleSize? (see 0x5A5860 -void __thiscall DirSnd::SetPrimaryBufferFormat(mmDirSnd *this, int sampleRate, bool allowStero))
+    return mmDirSnd::Init(48000, enableStero, a4, volume, deviceName, enable3D);
+}
+
 class BridgeFerryCallbackHandler
 {
 public:
@@ -744,6 +758,20 @@ public:
     };
 };
 
+class asCullManager
+{
+public:
+    void Init(int maxCullables, int maxCullables2D)
+    {
+        maxCullables = 1024;
+        maxCullables2D = 256;
+
+        LogFile::Format("asCullManager::Init - Increased Cullables to %i, %i\n", maxCullables, maxCullables2D);
+
+        $asCullManagerInit(this, maxCullables, maxCullables2D);
+    }
+};
+
 class HookSystemHandler
 {
 private:
@@ -770,8 +798,9 @@ public:
         if (gameVersion == MM2_RETAIL)
         {
             // hook into the printer
-            *$Printer = &PrinterHandler::Print;
-            *$PrintString = &PrinterHandler::PrintString;
+            *$Printer           = &PrinterHandler::Print;
+            *$PrintString       = &PrinterHandler::PrintString;
+            *$FatalErrorHandler = &PrinterHandler::FatalError;
 
             /* Won't write to the log file for some reason :(
             LogFile::Write("Redirecting MM2 output...");
@@ -781,6 +810,11 @@ public:
             else
             LogFile::Write("FAIL!\n");
             */
+
+            if (ageLogFile == NULL && datArgParser::Get("age_debug"))
+            {
+                ageLogFile = fopen("AGE.log", "w+");
+            }
 
             if (!datArgParser::Get("oldautodetect"))
             {
@@ -825,6 +859,11 @@ public:
 
             LogFile::Close();
             L.close(); // release Lua
+
+            if (ageLogFile)
+            {
+                fclose(ageLogFile);
+            }
         }
         else
         {
@@ -948,10 +987,20 @@ void InstallCallbacks(MM2Version gameVersion) {
     {
         { NULL, NULL, 0x4AC4F9 },
     });
+
+    InstallGameCallback("mmDirSnd::Init", gameVersion, &mmDirSndInit, HOOK_CALL,
+    {
+        { NULL, NULL, 0x51941D },
+    });
     
     InstallGameCallback("memSafeHeap::Init [Heap fix]", gameVersion, &memSafeHeapCallbackHandler::Init, HOOK_CALL,
     {
         { NULL, NULL, 0x4015DD },
+    });
+
+    InstallGameCallback("asCullManager::Init [Increase Max Cullables]", gameVersion, &asCullManager::Init, HOOK_CALL,
+    {
+        { NULL, NULL, 0x401D5C },
     });
 
     // not supported for betas yet

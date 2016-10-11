@@ -36,8 +36,8 @@ namespace MM2
         PDSDEVICEDESC pNextDevice, pCurrentDevice;
 
         int unk_1C;
-        int unk_20;
-        int unk_24;
+        int deviceCount;
+        int bitDepth;
 
         int deviceFlags;
 
@@ -153,7 +153,7 @@ namespace MM2
     class mmDirSnd : public DirSnd {
     protected:
         UINT eaxEnabled;
-        UINT dsound3DEnabled;
+        float volume;
 
         static MM2FnHook<void> $$ctor;
         static MM2FnHook<void> $$dtor;
@@ -178,8 +178,8 @@ namespace MM2
             POP_VTABLE();
         };
 
-        AGE_API static mmDirSnd * Init(DWORD p1, BYTE p2, int p3, int p4, char *p5, short p6, short p7) {
-            return $Init(p1, p2, p3, p4, p5, p6, p7);
+        AGE_API static mmDirSnd * Init(int sampleRate, bool enableStero, int a4, float volume, LPCSTR deviceName, bool enable3D) {
+            return $Init(sampleRate, enableStero, a4, volume, deviceName, enable3D);
         };
 
         AGE_API void DeInit(short p1, short p2) {
