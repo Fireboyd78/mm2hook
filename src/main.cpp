@@ -17,9 +17,6 @@ CMidtownMadness2 *pMM2;
 
 MM2Version gameVersion;
 
-LRESULT APIENTRY WndProcNew(HWND, UINT, WPARAM, LPARAM);
-
-//bool isWindowSubclassed = false;
 bool isConsoleOpen = false;
 
 // ==========================
