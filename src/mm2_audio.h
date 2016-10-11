@@ -1,28 +1,28 @@
 #pragma once
 #include "mm2_common.h"
 
+/*
+    DirSnd is based on the "Full-Duplex Filter" sample found in the VC98 SDK
+    I've archived these files under "src\vc98_sdk\fdfilter" for reference
+*/
+typedef struct tag_dsdevdesc
+{
+    GUID    guDevice;		    // Device GUID
+    PSTR    pszDeviceDesc;	    // Description string
+    struct tag_dsdevdesc *pNext;
+} DSDEVICEDESC, *PDSDEVICEDESC;
+
+typedef struct tag_fd
+{
+    DWORD   dwCode;
+    BOOL    fEnabled;
+} FORMATDATA, *PFORMATDATA;
+
 namespace MM2
 {
     // Forward declarations
     extern class DirSnd;
     extern class mmDirSnd;
-
-    /*
-    DirSnd is based on the "Full-Duplex Filter" sample found in the VC98 SDK
-    I've archived these files under "src\vc98_sdk\fdfilter" for reference
-    */
-    typedef struct tag_dsdevdesc
-    {
-        GUID    guDevice;		    // Device GUID
-        PSTR    pszDeviceDesc;	    // Description string
-        struct tag_dsdevdesc *pNext;
-    } DSDEVICEDESC, *PDSDEVICEDESC;
-
-    typedef struct tag_fd
-    {
-        DWORD   dwCode;
-        BOOL    fEnabled;
-    } FORMATDATA, *PFORMATDATA;
 
     class DirSnd {
     protected:
