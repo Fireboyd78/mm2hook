@@ -36,8 +36,8 @@ namespace MM2
         PDSDEVICEDESC pNextDevice, pCurrentDevice;
 
         int unk_1C;
-        int unk_20;
-        int unk_24;
+        int deviceCount;
+        int bitDepth;
 
         int deviceFlags;
 
@@ -153,7 +153,7 @@ namespace MM2
     class mmDirSnd : public DirSnd {
     protected:
         UINT eaxEnabled;
-        UINT dsound3DEnabled;
+        float volume;
 
         static MM2FnHook<void> $$ctor;
         static MM2FnHook<void> $$dtor;
