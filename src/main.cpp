@@ -675,6 +675,25 @@ public:
     }
 };
 
+
+mmDirSnd* mmDirSndInit(int sampleRate, bool enableStero, int a4, float volume, LPCSTR deviceName, bool enable3D)
+{
+    // TODO: Load the device name from player config?
+    if (*deviceName == '\0')
+    {
+        if (!datArgParser::Get("defaultsounddev", 0, &deviceName))
+        {
+            deviceName = "Primary Sound Driver";
+        }
+
+        LogFile::Format("mmDirSnd::Init - Default Device: %s\n", deviceName);
+    }
+
+    // TODO: Set sampling rate (see 0x519640 - int __thiscall AudManager::SetBitDepthAndSampleRate(int this, int bitDepth, int samplingRate))
+    // TODO: Redo SetPrimaryBufferFormat to set sampleSize? (see 0x5A5860 -void __thiscall DirSnd::SetPrimaryBufferFormat(mmDirSnd *this, int sampleRate, bool allowStero))
+    return mmDirSnd::Init(48000, enableStero, a4, volume, deviceName, enable3D);
+}
+
 class BridgeFerryCallbackHandler
 {
 public:
@@ -942,6 +961,11 @@ void InstallCallbacks(MM2Version gameVersion) {
     InstallGameCallback("gfxLoadVideoDatabase [disable 'badvideo.txt']", gameVersion, &ReturnFalse, HOOK_CALL,
     {
         { NULL, NULL, 0x4AC4F9 },
+    });
+
+    InstallGameCallback("mmDirSnd::Init", gameVersion, &mmDirSndInit, HOOK_CALL,
+    {
+        { NULL, NULL, 0x51941D },
     });
     
     InstallGameCallback("memSafeHeap::Init [Heap fix]", gameVersion, &memSafeHeapCallbackHandler::Init, HOOK_CALL,

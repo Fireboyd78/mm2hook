@@ -178,8 +178,8 @@ namespace MM2
             POP_VTABLE();
         };
 
-        AGE_API static mmDirSnd * Init(DWORD p1, BYTE p2, int p3, int p4, char *p5, short p6, short p7) {
-            return $Init(p1, p2, p3, p4, p5, p6, p7);
+        AGE_API static mmDirSnd * Init(int sampleRate, bool enableStero, int a4, float volume, LPCSTR deviceName, bool enable3D) {
+            return $Init(sampleRate, enableStero, a4, volume, deviceName, enable3D);
         };
 
         AGE_API void DeInit(short p1, short p2) {
