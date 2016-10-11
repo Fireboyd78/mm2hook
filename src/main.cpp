@@ -17,9 +17,6 @@ CMidtownMadness2 *pMM2;
 
 MM2Version gameVersion;
 
-LRESULT APIENTRY WndProcNew(HWND, UINT, WPARAM, LPARAM);
-
-//bool isWindowSubclassed = false;
 bool isConsoleOpen = false;
 
 // ==========================
@@ -669,18 +666,19 @@ private:
     }
 public:
     static void vglBegin(int gfxMode, int p1) {
-        vglColor = vglCurrentColor;
+        // Save current vgl color
+        vglColor = *vglCurrentColor;
 
         // calculate a nice shaded color ;)
         vglCalculatedColor = CalculateShadedColor(vglColor);
-        vglCurrentColor.set(vglCalculatedColor);
+        *vglCurrentColor = vglCalculatedColor;
 
         $vglBegin(gfxMode, p1);
     }
 
     static void vglEnd(void) {
         // restore color
-        vglCurrentColor.set(vglColor);
+        *vglCurrentColor = vglColor;
         $vglEnd();
     }
 };
