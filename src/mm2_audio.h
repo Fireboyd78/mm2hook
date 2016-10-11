@@ -26,30 +26,41 @@ namespace MM2
 
     class DirSnd {
     protected:
-        LPDIRECTSOUNDBUFFER lpDirectSoundBuffer;
-        LPDIRECTSOUND lpDirectSound;
+        /*0x4*/
+        LPDIRECTSOUNDBUFFER lpDSBuffer;
+        LPDIRECTSOUND lpDS;
 
         HWND hWnd;
 
-        DWORD unk_10;
+        /*0x10*/
+        int unk_10;
 
         PDSDEVICEDESC pNextDevice, pCurrentDevice;
 
-        int unk_1C;
+        // not 100% sure on this one, but it does make sense
+        // DirSnd::~DirSnd() will try to release this if it's not null
+        // but it never gets set to anything, and the 3d listener stuff is empty
+        LPDIRECTSOUND3DLISTENER lpDS3DListener;
+
+        /*0x20*/
         int deviceCount;
+
         int bitDepth;
+        int flags;
 
-        int deviceFlags;
+        bool is3DEnabled; // did the 3D listener get created?
+        bool isInitialized; // was Init called?
 
-        byte unk_2C;
-        byte enable3D;
-        byte unk_2E;
-        byte unk_2F;
-
-        DWORD soundEnabled;
+        /*0x30*/
+        DWORD isSoundEnabled; // did the primary sound buffer get created?
 
         int deviceCaps;
-        int unk_38;
+
+        PDSDEVICEDESC *ppSoundDevices;
+
+        /*
+            Function hooks
+        */
 
         static MM2FnHook<void> $$ctor;
         static MM2FnHook<void> $$dtor;
@@ -152,8 +163,13 @@ namespace MM2
 
     class mmDirSnd : public DirSnd {
     protected:
+        /*0x3C*/
         UINT eaxEnabled;
-        float volume;
+        UINT dsound3DEnabled;
+
+        /*
+            Function hooks    
+        */
 
         static MM2FnHook<void> $$ctor;
         static MM2FnHook<void> $$dtor;
