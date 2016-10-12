@@ -663,7 +663,7 @@ public:
         };
 
         lpdsRend->Blt(&position, NULL, NULL, DDBLT_COLORFILL | DDBLT_WAIT, &ddBltFx);
-    };
+    }
 
     static void CreateGameMutex(LPCSTR lpName) {
         if (datArgParser::Get("nomutex")) {
@@ -671,8 +671,8 @@ public:
         } else {
             $CreateGameMutex(lpName);
         }
-    };
-    
+    }
+
     static void ageDebug(int enabled, LPCSTR format, ...) {
         // this makes the game load up reeeeeally slow if enabled!
         if (ageLogFile)
@@ -687,7 +687,7 @@ public:
             fputs(buffer, ageLogFile);
             fputs("\n", ageLogFile);
         }
-    };
+    }
 
     static LPCSTR AngelReadString(UINT stringId) {
         static const LPCSTR STRING_UNKNOWN = "?? lang:%d ??";
@@ -816,7 +816,7 @@ public:
     static void PrintString(LPCSTR message) {
         // TODO: redirect to a log file?
         $DefaultPrintString(message);
-    };
+    }
 
     static void Print(int level, LPCSTR message, va_list va_args) {
         static short printer_types[] = {
