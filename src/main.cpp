@@ -223,8 +223,7 @@ Vector3 intToColor(int value) {
 // ==========================
 // Specialized handlers
 // ==========================
-class asCullManagerHandler
-{
+class asCullManagerHandler {
 public:
     void Init(int maxCullables, int maxCullables2D) {
         maxCullables = 1024;
@@ -236,8 +235,7 @@ public:
     }
 };
 
-class BridgeFerryHandler
-{
+class BridgeFerryHandler {
 public:
     void Cull(int lod) {
         // wtf
@@ -249,11 +247,9 @@ public:
     }
 };
 
-class gfxPipelineHandler
-{
+class gfxPipelineHandler {
 public:
-    static LRESULT APIENTRY gfxWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-    {
+    static LRESULT APIENTRY gfxWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         switch (uMsg)
         {
             case WM_KEYUP:
@@ -272,15 +268,13 @@ public:
         return $gfxWindowProc(hWnd, uMsg, wParam, lParam);
     }
 
-    static void SetRes(int width, int height, int cdepth, int zdepth, bool detectArgs)
-    {
+    static void SetRes(int width, int height, int cdepth, int zdepth, bool detectArgs) {
         LogFile::WriteLine("[gfxPipeline::SetRes]: Additional graphics params enabled.");
 
         $setRes(width, height, cdepth, zdepth, true);
     }
 
-    static void gfxWindowCreate(LPCSTR lpWindowName)
-    {
+    static void gfxWindowCreate(LPCSTR lpWindowName) {
         if (hWndMain)
         {
             return;
@@ -388,8 +382,7 @@ public:
     }
 };
 
-class memSafeHeapHandler
-{
+class memSafeHeapHandler {
 public:
     void Init(void *memAllocator, unsigned int heapSize, bool p3, bool p4, bool checkAlloc) {
         datArgParser::Get("heapsize", 0, &g_heapSize);
@@ -400,11 +393,10 @@ public:
 
         LogFile::Format("[memSafeHeap::Init]: Allocating %dMB heap (%d bytes)\n", g_heapSize, heapSize);
         return $memSafeHeap_Init(this, memAllocator, heapSize, p3, p4, checkAlloc);
-    };
+    }
 };
 
-class mmDashViewHandler
-{
+class mmDashViewHandler {
 public:
     void UpdateCS() {
         auto dashCam = getPtr<Matrix34>(this, 0x18);
@@ -426,11 +418,10 @@ public:
         dashCam->m34 += sm_DashOffset.m34;
 
         $asLinearCS_Update(this);
-    };
+    }
 };
 
-class mmDirSndHandler
-{
+class mmDirSndHandler {
 public:
     static mmDirSnd* Init(int sampleRate, bool enableStero, int a4, float volume, LPCSTR deviceName, bool enable3D) {
         // TODO: Load the device name from player config?
@@ -441,7 +432,7 @@ public:
                 deviceName = "Primary Sound Driver";
             }
 
-            LogFile::Format("mmDirSnd::Init - Default Device: %s\n", deviceName);
+            LogFile::Format("[mmDirSnd::Init]: Default Device: %s\n", deviceName);
         }
 
         // TODO: Set sampling rate (see 0x519640 - int __thiscall AudManager::SetBitDepthAndSampleRate(int this, int bitDepth, int samplingRate))
@@ -450,8 +441,51 @@ public:
     }
 };
 
-class vglHandler
-{
+class mmGameMusicDataHandler {
+public:
+    bool LoadAmbientSFX(LPCSTR name) {
+        LPCSTR szAmbientSFX = NULL;
+
+        LPCSTR city = *cityName;
+
+        if ((_strcmpi(city, "sf") == 0) && (_strcmpi(city, "london") == 0))
+        {
+            char ambientSFX[80] = { NULL };
+
+            sprintf(ambientSFX, "%sambience", city);
+
+            bool exists = !(datAssetManager::Exists("aud\\dmusic\\csv_files", ambientSFX, "csv"));
+
+            // default to 'sfambience' instead of 'londonambience'
+            szAmbientSFX = (exists) ? ambientSFX : "sfambience";
+        } else {
+            szAmbientSFX = name;
+        }
+
+        LogFile::Format("AmbientSFX: %s\n", szAmbientSFX);
+
+        return reinterpret_cast<mmGameMusicData *>(this)->LoadAmbientSFX(szAmbientSFX);
+    }
+};
+
+class vehCarAudioContainerHandler {
+public:
+    static void SetSirenCSVName(LPCSTR name) {
+        char siren_name[80] = { NULL };
+
+        sprintf(siren_name, "%spolicesiren", *cityName);
+
+        bool useDefault = !(datAssetManager::Exists("aud\\cardata\\player", siren_name, "csv"));
+
+        LPCSTR szSirenName = (useDefault) ? name : siren_name;
+
+        LogFile::Format("SirenCSVName: %s\n", szSirenName);
+
+        vehCarAudioContainer::SetSirenCSVName(szSirenName);
+    }
+};
+
+class vglHandler {
 private:
     static UINT32 CalculateShadedColor(UINT32 color) {
         auto timeWeather = &TIMEWEATHER[timeOfDay];
@@ -634,54 +668,11 @@ public:
     static void CreateGameMutex(LPCSTR lpName) {
         if (datArgParser::Get("nomutex")) {
             LogFile::WriteLine("Game mutex disabled.");
-            return;
+        } else {
+            $CreateGameMutex(lpName);
         }
-
-        $CreateGameMutex(lpName);
     };
-
-    bool LoadAmbientSFX(LPCSTR name) {
-        LPCSTR szAmbientSFX = NULL;
-
-        LPCSTR city = *cityName;
-
-        if ((_strcmpi(city, "sf") == 0) && (_strcmpi(city, "london") == 0))
-        {
-            char ambientSFX[80] = { NULL };
-
-            sprintf(ambientSFX, "%sambience", city);
-
-            bool exists = !(datAssetManager::Exists("aud\\dmusic\\csv_files", ambientSFX, "csv"));
-
-            // default to 'sfambience' instead of 'londonambience'
-            szAmbientSFX = (exists) ? ambientSFX : "sfambience";
-        }
-        else
-        {
-            szAmbientSFX = name;
-        }
-
-        LogFile::Format("AmbientSFX: %s\n", szAmbientSFX);
-
-        // pass to MM2
-        return reinterpret_cast<mmGameMusicData *>(this)->LoadAmbientSFX(szAmbientSFX);
-    };
-
-    static void SetSirenCSVName(LPCSTR name) {
-        char siren_name[80] = { NULL };
-
-        sprintf(siren_name, "%spolicesiren", *cityName);
-
-        bool useDefault = !(datAssetManager::Exists("aud\\cardata\\player", siren_name, "csv"));
-
-        LPCSTR szSirenName = (useDefault) ? name : siren_name;
-
-        LogFile::Format("SirenCSVName: %s\n", szSirenName);
-
-        // pass to MM2
-        vehCarAudioContainer::SetSirenCSVName(szSirenName);
-    };
-
+    
     static void ageDebug(int enabled, LPCSTR format, ...) {
         // this makes the game load up reeeeeally slow if enabled!
         if (ageLogFile)
@@ -953,11 +944,11 @@ private:
             CB_HOOK<JMP>({ NULL, NULL, 0x414EB6 }),
         });
 
-        InstallGameCallback("mmGameMusicData::LoadAmbientSFX", &CallbackHandler::LoadAmbientSFX, {
+        InstallGameCallback("mmGameMusicData::LoadAmbientSFX", &mmGameMusicDataHandler::LoadAmbientSFX, {
             CB_HOOK<CALL>({ NULL, NULL, 0x433F93 }),
         });
 
-        InstallGameCallback("vehCarAudioContainer::SetSirenCSVName", &CallbackHandler::SetSirenCSVName, {
+        InstallGameCallback("vehCarAudioContainer::SetSirenCSVName", &vehCarAudioContainerHandler::SetSirenCSVName, {
             CB_HOOK<CALL>({ NULL, NULL, 0x412783 }),
             CB_HOOK<CALL>({ NULL, NULL, 0x412772 }),
         });
@@ -1053,9 +1044,7 @@ public:
         {
             // GameLoop was restarted
             Reset(false);
-        }
-        else
-        {
+        } else {
             LogFile::WriteLine("WTF: Hook startup request received, but the game is closing!");
         }
     }
@@ -1072,9 +1061,7 @@ public:
             {
                 fclose(ageLogFile);
             }
-        }
-        else
-        {
+        } else {
             // GameLoop is restarting
             Reset(true);
         }
@@ -1139,9 +1126,7 @@ bool IsGameSupported(ageInfoLookup &gameInfo) {
     {
         LogFile::Format(" - Detected game version %d\n", gameInfo.info.engineVersion);
         return gameInfo.isSupported;
-    }
-    else
-    {
+    } else {
         LogFile::WriteLine("Unknown module detected! Terminating...");
         MessageBox(NULL, "Unknown module! MM2Hook will now terminate the process.", "MM2Hook", MB_OK | MB_ICONERROR);
 
@@ -1151,8 +1136,7 @@ bool IsGameSupported(ageInfoLookup &gameInfo) {
     return false;
 }
 
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
-{
+BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved) {
 	switch (ul_reason_for_call)
 	{
         case DLL_PROCESS_ATTACH:
@@ -1175,9 +1159,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 
                     // initialize the hook
                     Initialize(gameInfo);
-                }
-                else
-                {
+                } else {
                     LogFile::WriteLine("Failed to inject into the game process.");
                     MessageBox(NULL, "Could not inject into the game process. Unknown errors may occur.", "MM2Hook", MB_OK | MB_ICONWARNING);
                 }
@@ -1189,8 +1171,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
                 if (gameInfo.info.gameVersion == MM2_BETA_2_PETITE)
                 {
                     MessageBox(NULL, "Sorry, this version of Beta 2 was compressed with PeTite -- you'll need an unpacked version.\n\nOtherwise, please remove MM2Hook to launch the game.", "MM2Hook", MB_OK | MB_ICONERROR);
-                } else
-                {
+                } else {
                     MessageBox(NULL, "Sorry, this version of MM2 is unsupported. Please remove MM2Hook to launch the game.", "MM2Hook", MB_OK | MB_ICONERROR);
                 }
 
