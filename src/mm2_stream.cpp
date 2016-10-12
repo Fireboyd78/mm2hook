@@ -3,8 +3,11 @@ using namespace MM2;
 
 MM2FnHook<void> Stream::$DumpOpenFiles  ( NULL, NULL, 0x4C9970 );
 
-MM2FnHook<Stream*> Stream::$Open        ( NULL, NULL, 0x4C99C0 );
-MM2FnHook<Stream*> Stream::$Create      ( NULL, NULL, 0x4C9A00 );
+MM2FnHook<Stream *> Stream::$Open$1     ( NULL, NULL, 0x4C99C0 );
+MM2FnHook<Stream *> Stream::$Create$1   ( NULL, NULL, 0x4C9A00 );
+
+MM2FnHook<Stream *> Stream::$Open$2     ( NULL, NULL, 0x4C9A40);
+MM2FnHook<Stream *> Stream::$Create$2   ( NULL, NULL, 0x4C9A70);
 
 MM2FnHook<int> Stream::$Read            ( NULL, NULL, 0x4C9AA0 );
 MM2FnHook<int> Stream::$Write           ( NULL, NULL, 0x4C9BF0 );

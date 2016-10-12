@@ -90,8 +90,8 @@ LUAMOD_API int luaopen_MM2(lua_State * L)
             }, LUA_ARGS(LPCSTR, _opt<bool>))
             .addStaticFunction("DumpOpenFiles", &Stream::DumpOpenFiles)
 
-            .addStaticFunction("Open", &Stream::Open)
-            .addStaticFunction("Create", &Stream::Create)
+            .addStaticFunction("Open", static_cast<Stream * (*)(LPCSTR, bool)>(&Stream::Open))
+            .addStaticFunction("Create", static_cast<Stream * (*)(LPCSTR)>(&Stream::Create))
 
             .addFunction("Read", &Stream::Read)
             .addFunction("Write", &Stream::Write)

@@ -3,12 +3,36 @@
 
 namespace MM2
 {
+    typedef void (*EnumFilesCallback)(LPCSTR, bool, LPVOID);
+
+    enum seekWhence {
+        seek_begin,
+        seek_current,
+        seek_end,
+    };
+
+    /* most of the methods are optional */
+    struct coreFileMethods {
+        int (*open)(LPCSTR filename, bool readOnly);
+        int (*create)(LPCSTR filename);
+        int (*read)(int handle, LPVOID buffer, int length);
+        int (*write)(int handle, const LPVOID buffer, int length);
+        int (*seek)(int handle, int position, seekWhence whence);
+        int (*close)(int handle);
+        int (*enumFiles)(LPCSTR, EnumFilesCallback, LPVOID);
+        int (*size)(int handle);
+        int (*flush)(int handle); // usually set to null
+    };
+
     class Stream {
     protected:
         static MM2FnHook<void> $DumpOpenFiles;
 
-        static MM2FnHook<Stream*> $Open;
-        static MM2FnHook<Stream*> $Create;
+        static MM2FnHook<Stream*> $Open$1;
+        static MM2FnHook<Stream*> $Create$1;
+
+        static MM2FnHook<Stream*> $Open$2;
+        static MM2FnHook<Stream*> $Create$2;
 
         static MM2FnHook<int> $Read;
         static MM2FnHook<int> $Write;
@@ -25,11 +49,19 @@ namespace MM2
         };
 
         AGE_API static Stream* Open(LPCSTR filename, bool isZipFile) {
-            return $Open(filename, isZipFile);
+            return $Open$1(filename, isZipFile);
+        };
+
+        AGE_API static Stream* Open(LPCSTR filename, const coreFileMethods *fileMethods, bool isZipFile) {
+            return $Open$2(filename, fileMethods, isZipFile);
         };
 
         AGE_API static Stream* Create(LPCSTR filename) {
-            return $Create(filename);
+            return $Create$1(filename);
+        };
+
+        AGE_API static Stream* Create(LPCSTR filename, const coreFileMethods *fileMethods) {
+            return $Create$2(filename, fileMethods);
         };
 
         AGE_API int Read(LPVOID dstBuf, int size) {
