@@ -95,6 +95,11 @@ void InstallGameCallback(LPCSTR name,
                          auto_ptr lpCallback,
                          std::initializer_list<CB_INSTALL_INFO> callbacks)
 {
+    static const char *hook_types[] = {
+        "jmp",
+        "call"
+    };
+
     LogFile::Format(" - Installing callback: '%s'...\n", name);
 
     std::size_t count = 0;
@@ -103,7 +108,7 @@ void InstallGameCallback(LPCSTR name,
         auto addr = cb.hookAddrs[g_version];
         auto type = cb.hookType;
 
-        LogFile::Format("   - %08X => %08X : ", addr, lpCallback);
+        LogFile::Format("   - [%s] %08X => %08X : ", hook_types[type], addr, lpCallback);
 
         if (addr != NULL && InstallCallbackHook(addr, lpCallback, type == HOOK_CALL))
         {

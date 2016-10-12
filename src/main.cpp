@@ -16,9 +16,6 @@ CMidtownMadness2 *pMM2;
 
 MM2Version gameVersion;
 
-LRESULT APIENTRY WndProcNew(HWND, UINT, WPARAM, LPARAM);
-
-//bool isWindowSubclassed = false;
 bool isConsoleOpen = false;
 
 // ==========================
@@ -224,152 +221,38 @@ Vector3 intToColor(int value) {
 }
 
 // ==========================
-// Callback handlers
+// Specialized handlers
 // ==========================
-
-#define FOREGROUND_PINK (FOREGROUND_BLUE | FOREGROUND_RED)
-#define FOREGROUND_TEAL (FOREGROUND_BLUE | FOREGROUND_GREEN)
-#define FOREGROUND_YELLOW (FOREGROUND_RED | FOREGROUND_GREEN)
-#define FOREGROUND_WHITE (FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE)
-
-#define BACKGROUND_PINK (BACKGROUND_BLUE | BACKGROUND_RED)
-#define BACKGROUND_TEAL (BACKGROUND_BLUE | BACKGROUND_GREEN)
-#define BACKGROUND_YELLOW (BACKGROUND_RED | BACKGROUND_GREEN)
-#define BACKGROUND_WHITE (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE)
-
-short printer_types[] = {
-    FOREGROUND_INTENSITY, // print
-    FOREGROUND_INTENSITY, // message
-    FOREGROUND_INTENSITY, // display
-    FOREGROUND_YELLOW | FOREGROUND_INTENSITY, // warning
-    FOREGROUND_RED | FOREGROUND_INTENSITY, // error
-    FOREGROUND_RED | FOREGROUND_INTENSITY, // quit/abort
-};
-
-class PrinterHandler {
-public:
-    static void PrintString(LPCSTR message) {
-        // TODO: redirect to a log file?
-        $DefaultPrintString(message);
-    };
-
-    static void Print(int level, LPCSTR message, va_list va_args) {
-        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-
-        SetConsoleTextAttribute(hConsole, printer_types[level]);
-        $DefaultPrinter(level, message, va_args);
-        SetConsoleTextAttribute(hConsole, FOREGROUND_WHITE);
-    };
-
-    static void FatalError()
-    {
-        system("PAUSE");
-    }
-};
-
-class TickHandler {
-public:
-    static void Reset(void) {
-        // TODO: reset tick stuff
-    }
-
-    static void Update(void) {
-        MM2Lua::OnTick();
-
-        // pass control back to MM2
-        datTimeManager::Update();
-    }
-};
-
-class ChatHandler {
-public:
-    void Process(char *message) {
-        if (isConsoleOpen) {
-            MM2Lua::SendCommand(message);
-
-            // return normal chatbox behavior
-            isConsoleOpen = false;
-        } else {
-            LogFile::Format("Got chat message: %s\n", message);
-        }
-    }
-};
-
-BOOL __stdcall AutoDetectCallback (GUID*    lpGUID,
-                                   LPSTR    lpDriverDescription,
-                                   LPSTR    lpDriverName,
-                                   LPVOID   lpContext)
-{
-    Displayf("AutoDetect: GUID=%x, Description=%s, Name=%s", lpGUID, lpDriverDescription, lpDriverName);
-
-    if ($lpDirectDrawCreateEx(lpGUID, (LPVOID*)&lpDD, IID_IDirectDraw7, nullptr) == DD_OK)
-    {
-        gfxInterface *gfxInterface = &gfxInterfaces[gfxInterfaceCount];
-
-        strcpy (gfxInterface->Name, lpDriverDescription);
-
-        gfxInterface->DeviceCaps = 1;
-        gfxInterface->AcceptableDepths = gfxDepthFlags::Depth32;
-
-        DDDEVICEIDENTIFIER2 ddDeviceIdentifier = { NULL };
-
-        if (lpDD->GetDeviceIdentifier(&ddDeviceIdentifier, 0) == DD_OK)
-        {
-            gfxInterface->VendorID  = ddDeviceIdentifier.dwVendorId;
-            gfxInterface->DeviceID  = ddDeviceIdentifier.dwDeviceId;
-            gfxInterface->GUID      = ddDeviceIdentifier.guidDeviceIdentifier;
-        }
-
-        if (lpDD->QueryInterface(IID_IDirect3D7, (LPVOID*)&lpD3D) == DD_OK)
-        {
-            lpD3D->EnumDevices($DeviceCallback, gfxInterface);
-            lpD3D->Release();
-
-            *lpD3D = nullptr;
-        }
-
-        gfxInterface->DeviceType        = gfxDeviceType::HardwareWithTnL;
-
-        gfxInterface->ResolutionCount   = 0;
-        gfxInterface->ResolutionChoice  = 0;
-
-        DWORD availableMemory = 0x40000000; // 1GB = 1024 * 1024 * 1024
-        DDSCAPS2 ddsCaps = { NULL };
-
-        ddsCaps.dwCaps = DDSCAPS_VIDEOMEMORY | DDSCAPS_LOCALVIDMEM;
-
-        if (lpDD->GetAvailableVidMem(&ddsCaps, &availableMemory, NULL) != DD_OK)
-            Warningf("  Couldn't get video memory, using default");
-        
-        Displayf("  Total video memory: %dMB", (availableMemory >> 20));
-
-        gfxInterface->AvailableMemory = availableMemory;
-
-        *gfxMaxScreenWidth = 0;
-        *gfxMaxScreenHeight = 0;
-
-        lpDD->EnumDisplayModes(0, 0, gfxInterface, $ResCallback);
-        lpDD->Release();
-
-        *lpDD = nullptr;
-
-        ++*gfxInterfaceCount;
-    }
-
-    return TRUE;
-}
-
-class gfxHandler
+class asCullManagerHandler
 {
 public:
-    static void setRes(int width, int height, int cdepth, int zdepth, bool detectArgs)
-    {
-        LogFile::WriteLine("Additional graphics params enabled.");
+    void Init(int maxCullables, int maxCullables2D) {
+        maxCullables = 1024;
+        maxCullables2D = 256;
 
-        $setRes(width, height, cdepth, zdepth, true);
+        LogFile::Format("[asCullManager::Init]: Increased Cullables to %d, %d\n", maxCullables, maxCullables2D);
+
+        $asCullManagerInit(this, maxCullables, maxCullables2D);
+    }
+};
+
+class BridgeFerryHandler
+{
+public:
+    void Cull(int lod) {
+        // wtf
+        //setPtr(this, 0x1B, (char)++lod);
     }
 
-    static LRESULT APIENTRY WndProcNew(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+    void Draw(int lod) {
+        $dgBangerInstance_Draw(this, lod);
+    }
+};
+
+class gfxPipelineHandler
+{
+public:
+    static LRESULT APIENTRY gfxWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         switch (uMsg)
         {
@@ -382,16 +265,18 @@ public:
 
             case WM_ACTIVATEAPP:
             {
-                if (wParam == FALSE)
-                {
-                    if (datArgParser::Get("nopause"))
-                    {
-                        return 0;
-                    }
-                }
+                if ((wParam == FALSE) && datArgParser::Get("nopause"))
+                    return 0;
             } break;
         }
         return $gfxWindowProc(hWnd, uMsg, wParam, lParam);
+    }
+
+    static void SetRes(int width, int height, int cdepth, int zdepth, bool detectArgs)
+    {
+        LogFile::WriteLine("[gfxPipeline::SetRes]: Additional graphics params enabled.");
+
+        $setRes(width, height, cdepth, zdepth, true);
     }
 
     static void gfxWindowCreate(LPCSTR lpWindowName)
@@ -413,7 +298,7 @@ public:
             WNDCLASSA wc = { NULL };
 
             wc.style = CS_HREDRAW | CS_VREDRAW;
-            wc.lpfnWndProc = WndProcNew;
+            wc.lpfnWndProc = gfxPipelineHandler::gfxWindowProc;
             wc.cbClsExtra = 0;
             wc.cbWndExtra = 0;
             wc.hInstance = 0;
@@ -503,139 +388,65 @@ public:
     }
 };
 
-HMODULE h_MMLANG = NULL;
-
-LocString string_buffer[8];
-int string_index = 0;
-
-const LPCSTR STRING_UNKNOWN = "?? lang:%d ??";
-
-class CallbackHandler {
+class memSafeHeapHandler
+{
 public:
-    static void ProgressRect(int x, int y, int width, int height, UINT color) {
-        DDPIXELFORMAT ddPixelFormat = { NULL };
-        DDBLTFX ddBltFx = { NULL };
+    void Init(void *memAllocator, unsigned int heapSize, bool p3, bool p4, bool checkAlloc) {
+        datArgParser::Get("heapsize", 0, &g_heapSize);
 
-        ddBltFx.dwSize = 0x64;
-        ddPixelFormat.dwSize = 0x20;
+        // fast way of expanding to the proper size
+        // same as ((g_heapSize * 1024) * 1024)
+        heapSize = (g_heapSize << 20);
 
-        lpdsRend->GetPixelFormat(&ddPixelFormat);
-
-        ddBltFx.dwFillColor = GetPixelFormatColor(&ddPixelFormat, color);
-
-        RECT position = {
-            x,
-            y,
-            x + width,
-            y + height,
-        };
-
-        lpdsRend->Blt(&position, NULL, NULL, DDBLT_COLORFILL | DDBLT_WAIT, &ddBltFx);
+        LogFile::Format("[memSafeHeap::Init]: Allocating %dMB heap (%d bytes)\n", g_heapSize, heapSize);
+        return $memSafeHeap_Init(this, memAllocator, heapSize, p3, p4, checkAlloc);
     };
+};
 
-    static void CreateGameMutex(LPCSTR lpName) {
-        if (datArgParser::Get("nomutex")) {
-            LogFile::WriteLine("Game mutex disabled.");
-            return;
-        }
+class mmDashViewHandler
+{
+public:
+    void UpdateCS() {
+        auto dashCam = getPtr<Matrix34>(this, 0x18);
 
-        $CreateGameMutex(lpName);
+        // apply an offset (mainly doing this from CheatEngine, etc.)
+        dashCam->m11 += sm_DashOffset.m11;
+        dashCam->m12 += sm_DashOffset.m12;
+        dashCam->m13 += sm_DashOffset.m13;
+        dashCam->m14 += sm_DashOffset.m14;
+
+        dashCam->m21 += sm_DashOffset.m21;
+        dashCam->m22 += sm_DashOffset.m22;
+        dashCam->m23 += sm_DashOffset.m23;
+        dashCam->m24 += sm_DashOffset.m24;
+
+        dashCam->m31 += sm_DashOffset.m31;
+        dashCam->m32 += sm_DashOffset.m32;
+        dashCam->m33 += sm_DashOffset.m33;
+        dashCam->m34 += sm_DashOffset.m34;
+
+        $asLinearCS_Update(this);
     };
+};
 
-    bool LoadAmbientSFX(LPCSTR name) {
-        LPCSTR szAmbientSFX = NULL;
-
-        LPCSTR city = *cityName;
-
-        if ((_strcmpi(city, "sf") == 0) && (_strcmpi(city, "london") == 0))
+class mmDirSndHandler
+{
+public:
+    static mmDirSnd* Init(int sampleRate, bool enableStero, int a4, float volume, LPCSTR deviceName, bool enable3D) {
+        // TODO: Load the device name from player config?
+        if (*deviceName == '\0')
         {
-            char ambientSFX[80] = { NULL };
-
-            sprintf(ambientSFX, "%sambience", city);
-
-            bool exists = !(datAssetManager::Exists("aud\\dmusic\\csv_files", ambientSFX, "csv"));
-
-            // default to 'sfambience' instead of 'londonambience'
-            szAmbientSFX = (exists) ? ambientSFX : "sfambience";
-        }
-        else
-        {
-            szAmbientSFX = name;
-        }
-
-        LogFile::Format("AmbientSFX: %s\n", szAmbientSFX);
-
-        // pass to MM2
-        return reinterpret_cast<mmGameMusicData *>(this)->LoadAmbientSFX(szAmbientSFX);
-    };
-
-    static void SetSirenCSVName(LPCSTR name) {
-        char siren_name[80] = { NULL };
-
-        sprintf(siren_name, "%spolicesiren", *cityName);
-
-        bool useDefault = !(datAssetManager::Exists("aud\\cardata\\player", siren_name, "csv"));
-
-        LPCSTR szSirenName = (useDefault) ? name : siren_name;
-
-        LogFile::Format("SirenCSVName: %s\n", szSirenName);
-
-        // pass to MM2
-        vehCarAudioContainer::SetSirenCSVName(szSirenName);
-    };
-
-    static void ageDebug(int enabled, LPCSTR format, ...) {
-        // this makes the game load up reeeeeally slow if enabled!
-        if (ageLogFile)
-        {
-            char buffer[1024];
-
-            va_list va;
-            va_start(va, format);
-            vsprintf(buffer, format, va);
-            va_end(va);
-
-            fputs(buffer, ageLogFile);
-            fputs("\n", ageLogFile);
-        }
-    };
-
-    static LPCSTR AngelReadString(UINT stringId) {
-        LPCSTR str = NULL;
-
-        L.getGlobal("GetLocaleString");
-        L.push(stringId);
-
-        if ((L.pcall(1, 1, 0) == LUA_OK) && !L.isNil(-1))
-            str = L.toString(-1);
-
-        // not found in Lua, let's look in MMLANG.DLL
-        if (str == NULL)
-        {
-            auto locStr = (char *)&string_buffer[(string_index++ & 0x7)];
-
-            // revert to MMLANG.DLL
-            if (h_MMLANG == NULL)
+            if (!datArgParser::Get("defaultsounddev", 0, &deviceName))
             {
-                if ((h_MMLANG = LoadLibrary("MMLANG.DLL")) == NULL)
-                {
-                    MessageBox(NULL, "MMLANG.DLL not found.", "Midtown Madness 2", MB_ICONHAND);
-                    ExitProcess(0);
-                }
+                deviceName = "Primary Sound Driver";
             }
 
-            if ($MyLoadStringA(h_MMLANG, stringId, locStr, sizeof(LocString)) == 0)
-            {
-                // string wasn't in Lua or DLL, return an unknown string
-                // e.g. "?? lang:123 ??"
-                sprintf((char *)locStr, STRING_UNKNOWN, stringId);
-            }
-
-            str = locStr;
+            LogFile::Format("mmDirSnd::Init - Default Device: %s\n", deviceName);
         }
 
-        L.pop(1);
-        return str;
+        // TODO: Set sampling rate (see 0x519640 - int __thiscall AudManager::SetBitDepthAndSampleRate(int this, int bitDepth, int samplingRate))
+        // TODO: Redo SetPrimaryBufferFormat to set sampleSize? (see 0x5A5860 -void __thiscall DirSnd::SetPrimaryBufferFormat(mmDirSnd *this, int sampleRate, bool allowStero))
+        return mmDirSnd::Init(48000, enableStero, a4, volume, deviceName, enable3D);
     }
 };
 
@@ -789,101 +600,399 @@ public:
             }
         }
 
-        LogFile::Format("   - Installed %u / %u callbacks\n", count, vglCBs.size());
+        LogFile::Format("   - Installed %d / %d callbacks\n", count, vglCBs.size());
     }
 };
 
-class mmDirSndHandler
-{
-public:
-    static mmDirSnd* Init(int sampleRate, bool enableStero, int a4, float volume, LPCSTR deviceName, bool enable3D) {
-        // TODO: Load the device name from player config?
-        if (*deviceName == '\0')
-        {
-            if (!datArgParser::Get("defaultsounddev", 0, &deviceName))
-            {
-                deviceName = "Primary Sound Driver";
-            }
+// ==========================
+// Callback handlers
+// ==========================
 
-            LogFile::Format("mmDirSnd::Init - Default Device: %s\n", deviceName);
+class CallbackHandler {
+public:
+    static void ProgressRect(int x, int y, int width, int height, UINT color) {
+        DDPIXELFORMAT ddPixelFormat = { NULL };
+        DDBLTFX ddBltFx = { NULL };
+
+        ddBltFx.dwSize = 0x64;
+        ddPixelFormat.dwSize = 0x20;
+
+        lpdsRend->GetPixelFormat(&ddPixelFormat);
+
+        ddBltFx.dwFillColor = GetPixelFormatColor(&ddPixelFormat, color);
+
+        RECT position = {
+            x,
+            y,
+            x + width,
+            y + height,
+        };
+
+        lpdsRend->Blt(&position, NULL, NULL, DDBLT_COLORFILL | DDBLT_WAIT, &ddBltFx);
+    };
+
+    static void CreateGameMutex(LPCSTR lpName) {
+        if (datArgParser::Get("nomutex")) {
+            LogFile::WriteLine("Game mutex disabled.");
+            return;
         }
 
-        // TODO: Set sampling rate (see 0x519640 - int __thiscall AudManager::SetBitDepthAndSampleRate(int this, int bitDepth, int samplingRate))
-        // TODO: Redo SetPrimaryBufferFormat to set sampleSize? (see 0x5A5860 -void __thiscall DirSnd::SetPrimaryBufferFormat(mmDirSnd *this, int sampleRate, bool allowStero))
-        return mmDirSnd::Init(48000, enableStero, a4, volume, deviceName, enable3D);
-    }
-};
-
-class BridgeFerryHandler
-{
-public:
-    void Cull(int lod) {
-        // wtf
-        //setPtr(this, 0x1B, (char)++lod);
-    }
-
-    void Draw(int lod) {
-        $dgBangerInstance_Draw(this, lod);
-    }
-};
-
-class mmDashViewHandler
-{
-public:
-    void UpdateCS() {
-        auto dashCam = getPtr<Matrix34>(this, 0x18);
-
-        // apply an offset (mainly doing this from CheatEngine, etc.)
-        dashCam->m11 += sm_DashOffset.m11;
-        dashCam->m12 += sm_DashOffset.m12;
-        dashCam->m13 += sm_DashOffset.m13;
-        dashCam->m14 += sm_DashOffset.m14;
-
-        dashCam->m21 += sm_DashOffset.m21;
-        dashCam->m22 += sm_DashOffset.m22;
-        dashCam->m23 += sm_DashOffset.m23;
-        dashCam->m24 += sm_DashOffset.m24;
-
-        dashCam->m31 += sm_DashOffset.m31;
-        dashCam->m32 += sm_DashOffset.m32;
-        dashCam->m33 += sm_DashOffset.m33;
-        dashCam->m34 += sm_DashOffset.m34;
-
-        $asLinearCS_Update(this);
+        $CreateGameMutex(lpName);
     };
-};
 
-class memSafeHeapHandler
-{
-public:
-    void Init(void *memAllocator, unsigned int heapSize, bool p3, bool p4, bool checkAlloc) {
-        datArgParser::Get("heapsize", 0, &g_heapSize);
+    bool LoadAmbientSFX(LPCSTR name) {
+        LPCSTR szAmbientSFX = NULL;
 
-        // fast way of expanding to the proper size
-        // same as ((g_heapSize * 1024) * 1024)
-        heapSize = (g_heapSize << 20);
+        LPCSTR city = *cityName;
 
-        LogFile::Format("[memSafeHeap::Init]: Allocating %dMB heap (%d bytes)\n", g_heapSize, heapSize);
-        return $memSafeHeap_Init(this, memAllocator, heapSize, p3, p4, checkAlloc);
+        if ((_strcmpi(city, "sf") == 0) && (_strcmpi(city, "london") == 0))
+        {
+            char ambientSFX[80] = { NULL };
+
+            sprintf(ambientSFX, "%sambience", city);
+
+            bool exists = !(datAssetManager::Exists("aud\\dmusic\\csv_files", ambientSFX, "csv"));
+
+            // default to 'sfambience' instead of 'londonambience'
+            szAmbientSFX = (exists) ? ambientSFX : "sfambience";
+        }
+        else
+        {
+            szAmbientSFX = name;
+        }
+
+        LogFile::Format("AmbientSFX: %s\n", szAmbientSFX);
+
+        // pass to MM2
+        return reinterpret_cast<mmGameMusicData *>(this)->LoadAmbientSFX(szAmbientSFX);
     };
+
+    static void SetSirenCSVName(LPCSTR name) {
+        char siren_name[80] = { NULL };
+
+        sprintf(siren_name, "%spolicesiren", *cityName);
+
+        bool useDefault = !(datAssetManager::Exists("aud\\cardata\\player", siren_name, "csv"));
+
+        LPCSTR szSirenName = (useDefault) ? name : siren_name;
+
+        LogFile::Format("SirenCSVName: %s\n", szSirenName);
+
+        // pass to MM2
+        vehCarAudioContainer::SetSirenCSVName(szSirenName);
+    };
+
+    static void ageDebug(int enabled, LPCSTR format, ...) {
+        // this makes the game load up reeeeeally slow if enabled!
+        if (ageLogFile)
+        {
+            char buffer[1024];
+
+            va_list va;
+            va_start(va, format);
+            vsprintf(buffer, format, va);
+            va_end(va);
+
+            fputs(buffer, ageLogFile);
+            fputs("\n", ageLogFile);
+        }
+    };
+
+    static LPCSTR AngelReadString(UINT stringId) {
+        static const LPCSTR STRING_UNKNOWN = "?? lang:%d ??";
+
+        static HMODULE h_MMLANG = NULL;
+
+        static LocString string_buffer[8];
+        static int string_index = 0;
+
+        LPCSTR str = NULL;
+
+        L.getGlobal("GetLocaleString");
+        L.push(stringId);
+
+        if ((L.pcall(1, 1, 0) == LUA_OK) && !L.isNil(-1))
+            str = L.toString(-1);
+
+        // not found in Lua, let's look in MMLANG.DLL
+        if (str == NULL)
+        {
+            auto locStr = (char *)&string_buffer[(string_index++ & 0x7)];
+
+            // revert to MMLANG.DLL
+            if (h_MMLANG == NULL)
+            {
+                if ((h_MMLANG = LoadLibrary("MMLANG.DLL")) == NULL)
+                {
+                    MessageBox(NULL, "MMLANG.DLL not found.", "Midtown Madness 2", MB_ICONHAND);
+                    ExitProcess(0);
+                }
+            }
+
+            if ($MyLoadStringA(h_MMLANG, stringId, locStr, sizeof(LocString)) == 0)
+            {
+                // string wasn't in Lua or DLL, return an unknown string
+                // e.g. "?? lang:123 ??"
+                sprintf((char *)locStr, STRING_UNKNOWN, stringId);
+            }
+
+            str = locStr;
+        }
+
+        L.pop(1);
+        return str;
+    }
+
+    static BOOL __stdcall AutoDetectCallback(GUID *lpGUID, 
+                                             LPSTR lpDriverDescription, LPSTR lpDriverName, LPVOID lpContext)
+    {
+        Displayf("AutoDetect: GUID=%x, Description=%s, Name=%s", lpGUID, lpDriverDescription, lpDriverName);
+
+        if ($lpDirectDrawCreateEx(lpGUID, (LPVOID*)&lpDD, IID_IDirectDraw7, nullptr) == DD_OK)
+        {
+            gfxInterface *gfxInterface = &gfxInterfaces[gfxInterfaceCount];
+
+            strcpy (gfxInterface->Name, lpDriverDescription);
+
+            gfxInterface->DeviceCaps = 1;
+            gfxInterface->AcceptableDepths = gfxDepthFlags::Depth32;
+
+            DDDEVICEIDENTIFIER2 ddDeviceIdentifier = { NULL };
+
+            if (lpDD->GetDeviceIdentifier(&ddDeviceIdentifier, 0) == DD_OK)
+            {
+                gfxInterface->VendorID  = ddDeviceIdentifier.dwVendorId;
+                gfxInterface->DeviceID  = ddDeviceIdentifier.dwDeviceId;
+                gfxInterface->GUID      = ddDeviceIdentifier.guidDeviceIdentifier;
+            }
+
+            if (lpDD->QueryInterface(IID_IDirect3D7, (LPVOID*)&lpD3D) == DD_OK)
+            {
+                lpD3D->EnumDevices($DeviceCallback, gfxInterface);
+                lpD3D->Release();
+
+                *lpD3D = nullptr;
+            }
+
+            gfxInterface->DeviceType        = gfxDeviceType::HardwareWithTnL;
+
+            gfxInterface->ResolutionCount   = 0;
+            gfxInterface->ResolutionChoice  = 0;
+
+            DWORD availableMemory = 0x40000000; // 1GB = 1024 * 1024 * 1024
+            DDSCAPS2 ddsCaps = { NULL };
+
+            ddsCaps.dwCaps = DDSCAPS_VIDEOMEMORY | DDSCAPS_LOCALVIDMEM;
+
+            if (lpDD->GetAvailableVidMem(&ddsCaps, &availableMemory, NULL) != DD_OK)
+                Warningf("  Couldn't get video memory, using default");
+        
+            Displayf("  Total video memory: %dMB", (availableMemory >> 20));
+
+            gfxInterface->AvailableMemory = availableMemory;
+
+            *gfxMaxScreenWidth = 0;
+            *gfxMaxScreenHeight = 0;
+
+            lpDD->EnumDisplayModes(0, 0, gfxInterface, $ResCallback);
+            lpDD->Release();
+
+            *lpDD = nullptr;
+
+            ++*gfxInterfaceCount;
+        }
+
+        return TRUE;
+    }
 };
 
-class asCullManagerHandler
-{
+class ChatHandler {
 public:
-    void Init(int maxCullables, int maxCullables2D) {
-        maxCullables = 1024;
-        maxCullables2D = 256;
+    void Process(char *message) {
+        if (isConsoleOpen) {
+            MM2Lua::SendCommand(message);
 
-        LogFile::Format("[asCullManager::Init]: Increased Cullables to %d, %d\n", maxCullables, maxCullables2D);
+            // return normal chatbox behavior
+            isConsoleOpen = false;
+        } else {
+            LogFile::Format("Got chat message: %s\n", message);
+        }
+    }
+};
 
-        $asCullManagerInit(this, maxCullables, maxCullables2D);
+class PrintHandler {
+public:
+    static void PrintString(LPCSTR message) {
+        // TODO: redirect to a log file?
+        $DefaultPrintString(message);
+    };
+
+    static void Print(int level, LPCSTR message, va_list va_args) {
+        static short printer_types[] = {
+            FOREGROUND_INTENSITY, // print
+            FOREGROUND_INTENSITY, // message
+            FOREGROUND_INTENSITY, // display
+            FOREGROUND_YELLOW | FOREGROUND_INTENSITY, // warning
+            FOREGROUND_RED | FOREGROUND_INTENSITY, // error
+            FOREGROUND_RED | FOREGROUND_INTENSITY, // quit/abort
+        };
+
+        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+        SetConsoleTextAttribute(hConsole, printer_types[level]);
+        $DefaultPrinter(level, message, va_args);
+        SetConsoleTextAttribute(hConsole, FOREGROUND_WHITE);
+    };
+
+    static void FatalError() {
+        // do something?
+    }
+};
+
+class TickHandler {
+public:
+    static void Reset(void) {
+        // TODO: reset tick stuff
+    }
+
+    static void Update(void) {
+        MM2Lua::OnTick();
+
+        // pass control back to MM2
+        datTimeManager::Update();
     }
 };
 
 class HookSystemHandler
 {
 private:
+    static void InstallCallbacks() {
+        LogFile::WriteLine("Installing callbacks / virtual tables...");
+
+        switch (gameVersion)
+        {
+            case MM2_BETA_1:
+            case MM2_BETA_2:
+            {
+                // Disables time check on betas
+                InstallGameCallback("TrialTimeExpired", &ReturnNullOrZero, {
+                    CB_HOOK<CALL>({ 0x4011B0, 0x4012AC, NULL }),
+                });
+            } break;
+            case MM2_RETAIL:
+            {
+                // mutex was introduced in retail
+                InstallGameCallback("CreateGameMutex", &CallbackHandler::CreateGameMutex, {
+                    CB_HOOK<CALL>({ NULL, NULL, 0x40128D }),
+                });
+            
+                // revert bridges/ferries to how they were in the betas
+                InstallGameCallback("Bridge/Ferry: Cull", &BridgeFerryHandler::Cull, {
+                    CB_HOOK<CALL>({ NULL, NULL, 0x5780BC }), // gizBridgeMgr::Cull
+                    CB_HOOK<CALL>({ NULL, NULL, 0x5798F0 }), // gizFerryMgr::Cull
+                });
+
+                InstallVTableHook("Bridge/Ferry: Draw", &BridgeFerryHandler::Draw, {
+                    { NULL, NULL, 0x5B5FB8 }, // gizBridge::Draw
+                    { NULL, NULL, 0x5B61AC }, // gizFerry::Draw
+                });
+            } break;
+        }
+
+        InstallGameCallback("ageDebug", &CallbackHandler::ageDebug, {
+            CB_HOOK<JMP>({ NULL, NULL, 0x402630 }),
+        });
+
+        InstallGameCallback("ProgressRect [white loading bar fix]", &CallbackHandler::ProgressRect, {
+            CB_HOOK<CALL>({ NULL, NULL, 0x401163 }),
+            CB_HOOK<CALL>({ NULL, NULL, 0x4011CC }),
+        });
+
+        if (!datArgParser::Get("oldautodetect"))
+        {
+            // Hook into the original AutoDetect and replace it with our own version
+            InstallGameCallback("AutoDetectCallback", &CallbackHandler::AutoDetectCallback, {
+                CB_HOOK<JMP>({ NULL, NULL, 0x4AC030 }),
+            });
+        }
+
+        InstallGameCallback("gfxPipeline::SetRes", &gfxPipelineHandler::SetRes, {
+            CB_HOOK<CALL>({ NULL, NULL, 0x401482 }),
+        });
+
+        InstallGameCallback("gfxPipeline::gfxWindowCreate", &gfxPipelineHandler::gfxWindowCreate, {
+            CB_HOOK<CALL>({ NULL, NULL, 0x4A94AA }),
+        });
+
+        InstallGameCallback("gfxLoadVideoDatabase [disable 'badvideo.txt']", &ReturnFalse, {
+            CB_HOOK<CALL>({ NULL, NULL, 0x4AC4F9 }),
+        });
+
+        InstallGameCallback("mmDirSnd::Init", &mmDirSndHandler::Init, {
+            CB_HOOK<CALL>({ NULL, NULL, 0x51941D }),
+        });
+    
+        InstallGameCallback("memSafeHeap::Init [Heap fix]", &memSafeHeapHandler::Init, {
+            CB_HOOK<CALL>({ NULL, NULL, 0x4015DD }),
+        });
+
+        InstallGameCallback("asCullManager::Init [Increase Max Cullables]", &asCullManagerHandler::Init, {
+            CB_HOOK<CALL>({ NULL, NULL, 0x401D5C }),
+        });
+
+        // NOTE: Completely overrides the original AngelReadString (will check Lua first then DLL)
+        InstallGameCallback("AngelReadString", &CallbackHandler::AngelReadString, {
+            CB_HOOK<JMP>({ NULL, NULL, 0x534790 }),
+        });
+
+        InstallGameCallback("datTimeManager::Update", &TickHandler::Update, {
+            CB_HOOK<CALL>({ NULL, NULL, 0x401A2F }),
+        });
+
+        InstallGameCallback("mmGame::SendChatMessage", &ChatHandler::Process, {
+            CB_HOOK<JMP>({ NULL, NULL, 0x414EB6 }),
+        });
+
+        InstallGameCallback("mmGameMusicData::LoadAmbientSFX", &CallbackHandler::LoadAmbientSFX, {
+            CB_HOOK<CALL>({ NULL, NULL, 0x433F93 }),
+        });
+
+        InstallGameCallback("vehCarAudioContainer::SetSirenCSVName", &CallbackHandler::SetSirenCSVName, {
+            CB_HOOK<CALL>({ NULL, NULL, 0x412783 }),
+            CB_HOOK<CALL>({ NULL, NULL, 0x412772 }),
+        });
+
+        // dashboard testing
+        InstallGameCallback("mmDashView::Update [EXPERIMENTAL]", &mmDashViewHandler::UpdateCS, {
+            CB_HOOK<CALL>({ NULL, NULL, 0x430F87 }), // replaces call to asLinearCS::Update
+        });
+
+        InstallGameCallback("zipFile::Init ['extraLen' spam fix]", &NullSub, {
+            CB_HOOK<CALL>({ NULL, NULL, 0x5738EA }), // 'extraLen=%d'
+        });
+
+        // install shading fix (for PSDL, etc.)
+        vglHandler::InstallCallbacks();
+    }
+
+    static void InstallPatches() {
+        LogFile::WriteLine("Installing patches...");
+
+        InstallGamePatch("Increase chat buffer size", { 60 }, {
+            { NULL, NULL, 0x4E68B5 },
+            { NULL, NULL, 0x4E68B9 },
+            { NULL, NULL, 0x50BBCF },
+        });
+
+        InstallGamePatch("Increase cop limit", { 0x40 }, {
+            { NULL, NULL, 0x55100B },
+        });
+
+        InstallGamePatch("Enables pointer in windowed mode", { 0x90, 0x90 }, {
+            { NULL, NULL, 0x4F136E },
+        });
+    }
+
     static void InitializeLua() {
         // Guaranteed to be loaded before anything vital is called (e.g. AngelReadString)
         if (gameVersion == MM2_RETAIL)
@@ -898,16 +1007,20 @@ private:
         }
     }
 public:
-    static void Initialize(int argv, char **argc) {
-        // initialize the Lua engine
+    static void Initialize(int argc, char **argv) {
+        // Install callbacks/patches
+        InstallCallbacks();
+        InstallPatches();
+        
+        // Initialize the Lua engine
         InitializeLua();
 
         if (gameVersion == MM2_RETAIL)
         {
             // hook into the printer
-            *$Printer           = &PrinterHandler::Print;
-            *$PrintString       = &PrinterHandler::PrintString;
-            *$FatalErrorHandler = &PrinterHandler::FatalError;
+            *$Printer           = &PrintHandler::Print;
+            *$PrintString       = &PrintHandler::PrintString;
+            *$FatalErrorHandler = &PrintHandler::FatalError;
 
             /* Won't write to the log file for some reason :(
             LogFile::Write("Redirecting MM2 output...");
@@ -922,14 +1035,6 @@ public:
             {
                 ageLogFile = fopen("AGE.log", "w+");
             }
-
-            //if (!datArgParser::Get("oldautodetect"))
-            //{
-            //    // Hook into the original AutoDetect and replace it with our own version
-            //    InstallGameCallback("AutoDetectCallback", &AutoDetectCallback, {
-            //        CB_HOOK<JMP>({ NULL, NULL, 0x4AC030 }),
-            //    });
-            //}
         }
     }
 
@@ -979,169 +1084,49 @@ public:
 /*
     ===========================================================================
 */
-
-bool InitializeFramework(MM2Version gameVersion) {
-    LogFile::Write("Hooking into the framework...");
-
-    if (gameVersion == MM2_INVALID || gameVersion > MM2_NUM_VERSIONS)
-    {
-        LogFile::WriteLine("FAIL!");
-        return false;
-    }
+void InstallFramework() {
+    LogFile::WriteLine("Installing framework...");
 
     *$__VtResumeSampling = &HookSystemHandler::Start;
     *$__VtPauseSampling = &HookSystemHandler::Stop;
 
-    LogFile::WriteLine("Done!");
-    return true;
-};
+    /*
+        We'll hook into ArchInit (an empty function), 
+        and use it to install our callbacks/patches.
 
-void InstallPatches(MM2Version gameVersion) {
-    LogFile::WriteLine("Installing patches...");
+        However, this time around, we can now use datArgParser
+        to determine if a patch/callback should be installed or not,
+        whereas before we needed to check after it was already hooked in.
 
-    InstallGamePatch("Increase chat buffer size", { 60 }, {
-        { NULL, NULL, 0x4E68B5 },
-        { NULL, NULL, 0x4E68B9 },
-        { NULL, NULL, 0x50BBCF },
-    });
+        Basically, this method is a lot safer, and guarantees
+        we'll have access to any arguments passed.
 
-    InstallGamePatch ("Increase cop limit", { 0x40 }, {
-        { NULL, NULL, 0x55100B },
-    });
+    */
 
-    InstallGamePatch("Enables pointer in windowed mode", { 0x90, 0x90 }, {
-        { NULL, NULL, 0x4F136E },
-    });
-};
-
-void InstallCallbacks(MM2Version gameVersion) {
-    LogFile::WriteLine("Installing callbacks / virtual tables...");
-
-    switch (gameVersion)
-    {
-        case MM2_BETA_1:
-        case MM2_BETA_2:
-        {
-            // Disables time check on betas
-            InstallGameCallback("TrialTimeExpired", &ReturnNullOrZero, {
-                CB_HOOK<CALL>({ 0x4011B0, 0x4012AC, NULL }),
-            });
-        } break;
-        case MM2_RETAIL:
-        {
-            // mutex was introduced in retail
-            InstallGameCallback("CreateGameMutex", &CallbackHandler::CreateGameMutex, {
-                CB_HOOK<CALL>({ NULL, NULL, 0x40128D }),
-            });
-            
-            // revert bridges/ferries to how they were in the betas
-            InstallGameCallback("Bridge/Ferry: Cull", &BridgeFerryHandler::Cull, {
-                CB_HOOK<CALL>({ NULL, NULL, 0x5780BC }), // gizBridgeMgr::Cull
-                CB_HOOK<CALL>({ NULL, NULL, 0x5798F0 }), // gizFerryMgr::Cull
-            });
-
-            InstallVTableHook("Bridge/Ferry: Draw", &BridgeFerryHandler::Draw, {
-                { NULL, NULL, 0x5B5FB8 }, // gizBridge::Draw
-                { NULL, NULL, 0x5B61AC }, // gizFerry::Draw
-            });
-        } break;
-    }
-
-    // Replaces a call to ArchInit (a null function) just before ExceptMain
-    // This is PERFECT for initializing everything before the game even starts!
-    //
-    // NOTE: Arguments passed to the game can be retrieved using datArgParser,
-    // since it gets initialized just before ArchInit.
-    InstallGameCallback("ArchInit", &HookSystemHandler::Initialize, {         
+    InstallGameCallback("ArchInit [Framework initialization]", &HookSystemHandler::Initialize, {
         CB_HOOK<CALL>({ NULL, NULL, 0x4023DB }),
     });
 
-    InstallGameCallback("ageDebug", &CallbackHandler::ageDebug, {
-        CB_HOOK<JMP>({ NULL, NULL, 0x402630 }),
-    });
-
-    InstallGameCallback("ProgressRect [white loading bar fix]", &CallbackHandler::ProgressRect, {
-        CB_HOOK<CALL>({ NULL, NULL, 0x401163 }),
-        CB_HOOK<CALL>({ NULL, NULL, 0x4011CC }),
-    });
-
-    InstallGameCallback("gfxPipeline::SetRes", &gfxHandler::setRes, {
-        CB_HOOK<CALL>({ NULL, NULL, 0x401482 }),
-    });
-
-    InstallGameCallback("gfxWindowCreate", &gfxHandler::gfxWindowCreate, {
-        CB_HOOK<CALL>({ NULL, NULL, 0x4A94AA }),
-    });
-
-    InstallGameCallback("gfxLoadVideoDatabase [disable 'badvideo.txt']", &ReturnFalse, {
-        CB_HOOK<CALL>({ NULL, NULL, 0x4AC4F9 }),
-    });
-
-    InstallGameCallback("mmDirSnd::Init", &mmDirSndHandler::Init, {
-        CB_HOOK<CALL>({ NULL, NULL, 0x51941D }),
-    });
-    
-    InstallGameCallback("memSafeHeap::Init [Heap fix]", &memSafeHeapHandler::Init, {
-        CB_HOOK<CALL>({ NULL, NULL, 0x4015DD }),
-    });
-
-    InstallGameCallback("asCullManager::Init [Increase Max Cullables]", &asCullManagerHandler::Init, {
-        CB_HOOK<CALL>({ NULL, NULL, 0x401D5C }),
-    });
-
-    // not supported for betas yet
-    if (gameVersion == MM2_RETAIL)
-    {
-        // NOTE: Completely overrides the original AngelReadString (will check Lua first then DLL)
-        InstallGameCallback("AngelReadString", &CallbackHandler::AngelReadString, {
-            CB_HOOK<CALL>({ NULL, NULL, 0x534790 }),
-        });
-    }
-
-    InstallGameCallback("datTimeManager::Update", &TickHandler::Update, {
-        CB_HOOK<CALL>({ NULL, NULL, 0x401A2F }),
-    });
-
-    InstallGameCallback("mmGame::SendChatMessage", &ChatHandler::Process, {
-        CB_HOOK<JMP>({ NULL, NULL, 0x414EB6 }),
-    });
-
-    InstallGameCallback("mmGameMusicData::LoadAmbientSFX", &CallbackHandler::LoadAmbientSFX, {
-        CB_HOOK<CALL>({ NULL, NULL, 0x433F93 }),
-    });
-
-    InstallGameCallback("vehCarAudioContainer::SetSirenCSVName", &CallbackHandler::SetSirenCSVName, {
-        CB_HOOK<CALL>({ NULL, NULL, 0x412783 }),
-        CB_HOOK<CALL>({ NULL, NULL, 0x412772 }),
-    });
-
-    // dashboard testing
-    InstallGameCallback("mmDashView::Update [EXPERIMENTAL]", &mmDashViewHandler::UpdateCS, {
-        CB_HOOK<CALL>({ NULL, NULL, 0x430F87 }), // replaces call to asLinearCS::Update
-    });
-
-    InstallGameCallback("zipFile::Init ['extraLen' spam fix]", &NullSub, {
-        CB_HOOK<CALL>({ NULL, NULL, 0x5738EA }), // 'extraLen=%d'
-    });
-
-    // install shading fix (for PSDL, etc.)
-    vglHandler::InstallCallbacks();
+    /*
+        IMPORTANT:
+          Add any patches/callbacks here that must be initialized prior to the game's entry point.
+          This should be used for very very advanced callbacks/patches only!
+    */
 };
 
 //
 // Initialize all the important stuff prior to MM2 starting up
+// NOTE: We do not have access to datArgParser yet.
 //
 void Initialize(ageInfoLookup &gameInfo) {
     // initialize game manager
     pMM2 = new CMidtownMadness2(gameInfo.info);
     pMM2->Initialize();
 
-    // TODO: Remove dependency on 'gameVersion'?
     gameVersion = pMM2->GetVersion();
 
-    if (InitializeFramework(gameVersion)) {
-        InstallCallbacks(gameVersion);
-        InstallPatches(gameVersion);
+    if ((gameVersion != MM2_INVALID) && (gameVersion < MM2_NUM_VERSIONS)) {
+        InstallFramework();
     } else {
         MessageBox(NULL, "MM2Hook was unable to initialize properly. The game will proceed normally.", "MM2Hook", MB_OK);
     }
