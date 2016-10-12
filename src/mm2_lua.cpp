@@ -72,8 +72,7 @@ LUAMOD_API int luaopen_MM2(lua_State * L)
         .endClass()
 
         .beginClass<mmHUD>("mmHUD")
-            .addFunction("SetMessage", &mmHUD::SetMessage)
-            .addFunction("SetMessage2", &mmHUD::SetMessage2)
+            .addFunction("SetMessage", static_cast<void (mmHUD::*)(LPCSTR, float, int)>(&mmHUD::SetMessage))
             .addFunction("PostChatMessage", &mmHUD::PostChatMessage)
         .endClass()
 

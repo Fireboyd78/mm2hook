@@ -160,19 +160,20 @@ namespace MM2
     private:
         byte _buffer[0xB9C]; // unconfirmed
     protected:
-        static MM2FnHook<void> $SetMessage;
-        static MM2FnHook<void> $SetMessage2;
+        static MM2FnHook<void> $SetMessage$1;
+        static MM2FnHook<void> $SetMessage$2;
+
         static MM2FnHook<void> $PostChatMessage;
     public:
-        AGE_API void SetMessage(THIS_ LPCSTR message, float duration, int p2) {
-            $SetMessage(this, message, duration, p2);
+        AGE_API void SetMessage(LPCSTR message, float duration, int p2) {
+            $SetMessage$1(this, message, duration, p2);
         };
 
-        AGE_API void SetMessage2(THIS_ LPCSTR message) {
-            $SetMessage2(this, message);
+        AGE_API void SetMessage(LPCSTR message) {
+            $SetMessage$2(this, message);
         };
 
-        AGE_API void PostChatMessage(THIS_ LPCSTR message) {
+        AGE_API void PostChatMessage(LPCSTR message) {
             $PostChatMessage(this, message);
         };
     };
@@ -207,19 +208,19 @@ namespace MM2
             return *getPtr<mmGame*>(this, 0x18);
         };
 
-        AGE_API int IsEnabled(THIS_ void) {
+        AGE_API int IsEnabled(void) {
             return $IsEnabled(this);
         };
 
-        AGE_API void Lock(THIS_ void) {
+        AGE_API void Lock(void) {
             $Lock(this);
         };
 
-        AGE_API void Unlock(THIS_ void) {
+        AGE_API void Unlock(void) {
             $Unlock(this);
         };
 
-        AGE_API void ProcessChat(THIS_ void) {
+        AGE_API void ProcessChat(void) {
             $ProcessChat(this);
         };
     };

@@ -4,8 +4,9 @@ using namespace MM2;
 /*
     mmHUD
 */
-MM2FnHook<void> mmHUD::$SetMessage                  ( NULL, NULL, 0x42E1F0 );
-MM2FnHook<void> mmHUD::$SetMessage2                 ( NULL, NULL, 0x42E240 );
+MM2FnHook<void> mmHUD::$SetMessage$1                ( NULL, NULL, 0x42E1F0 );
+MM2FnHook<void> mmHUD::$SetMessage$2                ( NULL, NULL, 0x42E240 );
+
 MM2FnHook<void> mmHUD::$PostChatMessage             ( NULL, NULL, 0x42D280 );
 
 /*
