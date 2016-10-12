@@ -94,6 +94,8 @@ MM2FnHook<void> $asCullManagerInit              ( NULL, NULL, 0x4A1290 );
 // Pointer hooks
 // ==========================
 
+MM2PtrHook<Stream *> datOutputStream            ( NULL, NULL, 0x6A3D40 );
+
 MM2PtrHook<cityTimeWeatherLighting> 
                 TIMEWEATHER                     ( NULL, NULL, 0x6299A8 );
 
@@ -638,6 +640,58 @@ public:
     }
 };
 
+/*
+    Custom coreFileMethods implementation for log files
+*/
+class coreLogFile {
+public:
+    static int Open(LPCSTR filename, bool) {
+        return (int)LogFileStream::Open(filename);
+    }
+
+    static int Create(LPCSTR filename) {
+        return (int)LogFileStream::Create(filename);
+    }
+
+    static int Read(int, LPVOID, int) {
+        return 0;
+    };
+
+    static int Write(int handle, const LPVOID buffer, int length) {
+        if (length > 0)
+        {
+            // ensure the buffer is clean
+            char buf[4096] = { NULL };
+            strncpy(buf, (LPCSTR)buffer, length);
+
+            reinterpret_cast<LogFileStream *>(handle)->Write(buf);
+        }
+        return length;
+    }
+
+    static int Close(int handle) {
+        reinterpret_cast<LogFileStream *>(handle)->Close();
+        return 0;
+    }
+
+    static int Flush(int handle) {
+        reinterpret_cast<LogFileStream *>(handle)->Flush(true);
+        return 0;
+    }
+};
+
+const coreFileMethods logFileMethods = {
+    &coreLogFile::Open,
+    &coreLogFile::Create,
+    &coreLogFile::Read,
+    &coreLogFile::Write,
+    NULL,
+    &coreLogFile::Close,
+    NULL,
+    NULL,
+    &coreLogFile::Flush,
+};
+
 // ==========================
 // Callback handlers
 // ==========================
@@ -814,7 +868,6 @@ public:
 class PrintHandler {
 public:
     static void PrintString(LPCSTR message) {
-        // TODO: redirect to a log file?
         $DefaultPrintString(message);
     }
 
@@ -1013,14 +1066,11 @@ public:
             *$PrintString       = &PrintHandler::PrintString;
             *$FatalErrorHandler = &PrintHandler::FatalError;
 
-            /* Won't write to the log file for some reason :(
             LogFile::Write("Redirecting MM2 output...");
 
-            if (datOutput::OpenLog("mm2.log"))
-            LogFile::Write("Done!\n");
-            else
-            LogFile::Write("FAIL!\n");
-            */
+            *datOutputStream = Stream::Create("mm2.log", &logFileMethods);
+
+            LogFile::WriteLine((*datOutputStream) ? "Done!" : "FAIL!");
 
             if (ageLogFile == NULL && datArgParser::Get("age_debug"))
             {
@@ -1056,6 +1106,9 @@ public:
 
             LogFile::Close();
             L.close(); // release Lua
+
+            // close datOutput log
+            datOutput::CloseLog();
 
             if (ageLogFile)
             {
