@@ -180,34 +180,44 @@ using MM2RawFnHook = MM2PtrHook<std::remove_pointer_t<TFunc>>;
 
 enum CB_HOOK_TYPE
 {
-    HOOK_JMP,
-    HOOK_CALL
+    HOOK_JMP = 0,
+    HOOK_CALL,
+
+    /* short-hand */
+
+    JMP = 0,
+    CALL,
 };
 
-template<int count = 1>
-struct VT_INSTALL_INFO
+struct CB_INSTALL_INFO
 {
-    static const int length = count;
+    MM2AddressData hookAddrs;
+    CB_HOOK_TYPE hookType;
+};
 
-    ANY_PTR dwHookAddr;
-    MM2AddressData addrData[count];
+template<CB_HOOK_TYPE hookType>
+struct CB_HOOK
+{
+    CB_INSTALL_INFO info;
+
+    constexpr CB_HOOK(const MM2AddressData &addrs) : info { addrs, hookType } {};
+
+    constexpr operator CB_INSTALL_INFO() const {
+        return info;
+    };
 };
 
 void InstallVTableHook(LPCSTR name, 
-                       MM2Version gameVersion,
-                       ANY_PTR lpHookAddr,
+                       auto_ptr lpHookAddr,
                        std::initializer_list<MM2AddressData> addresses);
 
 void InstallGamePatch(LPCSTR name,
-                      MM2Version gameVersion,
                       std::initializer_list<unsigned char> bytes,
                       std::initializer_list<MM2AddressData> addresses);
 
 void InstallGameCallback(LPCSTR name,
-                         MM2Version gameVersion,
-                         ANY_PTR lpCallback,
-                         CB_HOOK_TYPE type,
-                         std::initializer_list<MM2AddressData> addresses);
+                         auto_ptr lpCallback,
+                         std::initializer_list<CB_INSTALL_INFO> addresses);
 
 union COLOR_ARGB
 {

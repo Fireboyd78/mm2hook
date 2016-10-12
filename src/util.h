@@ -57,51 +57,26 @@
 // Pointer templates
 //
 
-/*
-    Allows casting between any pointer type (including member functions)
-*/
-template <typename In, typename Out>
-Out union_cast(In in)
+struct auto_ptr
 {
-    union
-    {
-        In in; Out out;
-    } union_caster { in };
-
-    return union_caster.out;
-}
-
-struct ANY_PTR
-{
-    const LPVOID lpHandler;
-
-    template<typename T>
-    constexpr ANY_PTR(T ptr)
-        : lpHandler(union_cast<T, LPVOID>(ptr))
-    { };
-
-    constexpr ANY_PTR(DWORD ptr)
-        : lpHandler(LPVOID(ptr))
-    { }
-
-    constexpr LPVOID get() const
-    {
-        return lpHandler;
-    }
-
-    constexpr DWORD dwGet() const
-    {
-        return DWORD(this->get());
-    }
-
-    constexpr operator LPVOID() const
-    {
-        return this->get();
+    union {
+        const DWORD dwHandler;
+        const LPVOID lpHandler;
     };
 
-    constexpr operator DWORD() const
-    {
-        return this->dwGet();
+    template<typename T>
+    constexpr auto_ptr(T ptr)
+        : dwHandler(*(DWORD*)&ptr) {};
+
+    constexpr auto_ptr(DWORD ptr)
+        : dwHandler(ptr) {};
+
+    constexpr operator LPVOID() const {
+        return lpHandler;
+    };
+
+    constexpr operator DWORD() const {
+        return dwHandler;
     };
 };
 

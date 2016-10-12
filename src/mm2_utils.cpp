@@ -62,37 +62,7 @@ int MM2HookMgr::Initialize(MM2Version version) {
     return HOOK_INIT_OK;
 };
 
-void InstallVTableHook(LPCSTR name, 
-                       MM2Version gameVersion,
-                       ANY_PTR lpHookAddr,
-                       std::initializer_list<MM2AddressData> addresses) {
-    LogFile::Format(" - Installing V-Table hook: '%s'...\n", name);
-
-    std::size_t count = 0;
-    for (auto patch : addresses)
-    {
-        auto addr = patch[gameVersion];
-
-        LogFile::Format("   - %08X => %08X :", addr, lpHookAddr);
-
-        if (addr != NULL)
-        {
-            InstallVTHook(addr, lpHookAddr);
-            LogFile::WriteLine("OK");
-
-            ++count;
-        }
-        else
-        {
-            LogFile::WriteLine("Not supported");
-        }
-    }
-
-    LogFile::Format("   - Installed %u / %u hooks\n", count, addresses.size());
-}
-
 void InstallGamePatch(LPCSTR name,
-                      MM2Version gameVersion,
                       std::initializer_list<unsigned char> bytes,
                       std::initializer_list<MM2AddressData> addresses)
 {
@@ -101,7 +71,7 @@ void InstallGamePatch(LPCSTR name,
     std::size_t count = 0;
     for (auto patch : addresses)
     {
-        auto addr = patch[gameVersion];
+        auto addr = patch[g_version];
 
         LogFile::Format("   - %08X : ", addr);
 
@@ -121,27 +91,58 @@ void InstallGamePatch(LPCSTR name,
     LogFile::Format("   - Installed %u / %u patches\n", count, addresses.size());
 }
 
-void InstallGameCallback(LPCSTR name, MM2Version gameVersion, ANY_PTR lpCallback, CB_HOOK_TYPE type, std::initializer_list<MM2AddressData> addresses)
+void InstallGameCallback(LPCSTR name,
+                         auto_ptr lpCallback,
+                         std::initializer_list<CB_INSTALL_INFO> callbacks)
 {
     LogFile::Format(" - Installing callback: '%s'...\n", name);
 
     std::size_t count = 0;
-    for (auto patch : addresses)
+    for (auto cb : callbacks)
     {
-        auto addr = patch[gameVersion];
+        auto addr = cb.hookAddrs[g_version];
+        auto type = cb.hookType;
 
         LogFile::Format("   - %08X => %08X : ", addr, lpCallback);
+
         if (addr != NULL && InstallCallbackHook(addr, lpCallback, type == HOOK_CALL))
         {
+            LogFile::WriteLine("OK");
+
+            ++count;
+        } else
+        {
+            LogFile::WriteLine("Not Supported");
+        }
+    }
+
+    LogFile::Format("   - Installed %u / %u callbacks\n", count, callbacks.size());
+}
+
+void InstallVTableHook(LPCSTR name, 
+                       auto_ptr lpHookAddr,
+                       std::initializer_list<MM2AddressData> addresses) {
+    LogFile::Format(" - Installing V-Table hook: '%s'...\n", name);
+
+    std::size_t count = 0;
+    for (auto patch : addresses)
+    {
+        auto addr = patch[g_version];
+
+        LogFile::Format("   - %08X => %08X :", addr, lpHookAddr);
+
+        if (addr != NULL)
+        {
+            InstallVTHook(addr, lpHookAddr);
             LogFile::WriteLine("OK");
 
             ++count;
         }
         else
         {
-            LogFile::WriteLine("Not Supported");
+            LogFile::WriteLine("Not supported");
         }
     }
 
-    LogFile::Format("   - Installed %u / %u callbacks\n", count, addresses.size());
+    LogFile::Format("   - Installed %u / %u hooks\n", count, addresses.size());
 }

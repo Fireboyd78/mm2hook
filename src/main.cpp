@@ -6,17 +6,19 @@ LPFNDIRECTINPUTCREATE lpDICreate;
 
 // Export as 'DirectInputCreateA/W' so we can hook into MM2
 // (Apparently DirectInputCreateW gets called sometimes...)
-#pragma comment(linker, "/EXPORT:DirectInputCreateA=_DirectInputCreateA_Impl")
-#pragma comment(linker, "/EXPORT:DirectInputCreateW=_DirectInputCreateA_Impl")
-HRESULT NAKED DirectInputCreateA_Impl(HINSTANCE hinst, DWORD dwVersion, LPVOID *ppDI, LPUNKNOWN punkOuter)
-{
-    _asm jmp DWORD PTR ds:lpDICreate
+#pragma comment(linker, "/EXPORT:DirectInputCreateA=_DirectInputCreate_Impl")
+#pragma comment(linker, "/EXPORT:DirectInputCreateW=_DirectInputCreate_Impl")
+HRESULT NAKED DirectInputCreate_Impl(HINSTANCE hinst, DWORD dwVersion, LPVOID *ppDI, LPUNKNOWN punkOuter) {
+    _asm jmp dword ptr ds:lpDICreate
 }
 
 CMidtownMadness2 *pMM2;
 
 MM2Version gameVersion;
 
+LRESULT APIENTRY WndProcNew(HWND, UINT, WPARAM, LPARAM);
+
+//bool isWindowSubclassed = false;
 bool isConsoleOpen = false;
 
 // ==========================
@@ -637,7 +639,7 @@ public:
     }
 };
 
-class GraphicsCallbackHandler
+class vglHandler
 {
 private:
     static UINT32 CalculateShadedColor(UINT32 color) {
@@ -681,28 +683,138 @@ public:
         *vglCurrentColor = vglColor;
         $vglEnd();
     }
-};
 
+    static void InstallCallbacks() {
+        LogFile::WriteLine(" - Installing shading fix...");
 
-mmDirSnd* mmDirSndInit(int sampleRate, bool enableStero, int a4, float volume, LPCSTR deviceName, bool enable3D)
-{
-    // TODO: Load the device name from player config?
-    if (*deviceName == '\0')
-    {
-        if (!datArgParser::Get("defaultsounddev", 0, &deviceName))
+        auto_ptr vglBeginCB = &vglBegin;
+        auto_ptr vglEndCB = &vglEnd;
+
+        // use a custom struct to make the process easier
+        // this allows us to have an entry representing each "frame" (vglBegin/vglEnd)
+        // and cuts down on the amount of time it takes to add a new entry
+        struct vgl_cb {
+            MM2AddressData begin_addrs; // vglBegin
+            MM2AddressData end_addrs; // vglEnd
+        };
+
+        std::initializer_list<vgl_cb> vglCBs = {
+            {{ NULL, NULL, 0x448424 }, { NULL, NULL, 0x4485D3 }}, 
+            {{ NULL, NULL, 0x448697 }, { NULL, NULL, 0x448B82 }}, 
+            {{ NULL, NULL, 0x448903 }, { NULL, NULL, 0x448D8C }}, 
+            {{ NULL, NULL, 0x448BFD }, { NULL, NULL, 0x448FB7 }}, 
+            {{ NULL, NULL, 0x448DE4 }, { NULL, NULL, 0x449219 }}, 
+            {{ NULL, NULL, 0x44902A }, { NULL, NULL, 0x449480 }}, 
+            {{ NULL, NULL, 0x4492A4 }, { NULL, NULL, 0x44963E }}, 
+            {{ NULL, NULL, 0x4494C3 }, { NULL, NULL, 0x44983C }}, 
+            {{ NULL, NULL, 0x4496A5 }, { NULL, NULL, 0x4499D4 }}, 
+            {{ NULL, NULL, 0x44986B }, { NULL, NULL, 0x449BAA }}, 
+            {{ NULL, NULL, 0x449A13 }, { NULL, NULL, 0x449D42 }}, 
+            {{ NULL, NULL, 0x449BD9 }, { NULL, NULL, 0x449F5A }}, 
+            {{ NULL, NULL, 0x449D82 }, { NULL, NULL, 0x44A146 }}, 
+            {{ NULL, NULL, 0x449F67 }, { NULL, NULL, 0x44A3F8 }}, 
+            {{ NULL, NULL, 0x44A21C }, { NULL, NULL, 0x44A5BF }}, 
+            {{ NULL, NULL, 0x44A444 }, { NULL, NULL, 0x44A7C0 }}, 
+            {{ NULL, NULL, 0x44A629 }, { NULL, NULL, 0x44A958 }}, 
+            {{ NULL, NULL, 0x44A7EF }, { NULL, NULL, 0x44AB2E }}, 
+            {{ NULL, NULL, 0x44A997 }, { NULL, NULL, 0x44ACC6 }}, 
+            {{ NULL, NULL, 0x44AB5D }, { NULL, NULL, 0x44AEBC }}, 
+            {{ NULL, NULL, 0x44AD06 }, { NULL, NULL, 0x44B083 }}, 
+            {{ NULL, NULL, 0x44AECA }, { NULL, NULL, 0x44B23D }}, 
+            {{ NULL, NULL, 0x44B0EC }, { NULL, NULL, 0x44B394 }}, 
+            {{ NULL, NULL, 0x44B24B }, { NULL, NULL, 0x44B531 }}, 
+            {{ NULL, NULL, 0x44B3B6 }, { NULL, NULL, 0x44B6E1 }}, 
+            {{ NULL, NULL, 0x44B557 }, { NULL, NULL, 0x44B895 }}, 
+            {{ NULL, NULL, 0x44B6F3 }, { NULL, NULL, 0x44BA7C }}, 
+            {{ NULL, NULL, 0x44B8F1 }, { NULL, NULL, 0x44BC03 }}, 
+            {{ NULL, NULL, 0x44BA8A }, { NULL, NULL, 0x44BE8E }}, 
+            {{ NULL, NULL, 0x44BC29 }, { NULL, NULL, 0x44C118 }}, 
+            {{ NULL, NULL, 0x44BE9C }, { NULL, NULL, 0x44C3EA }}, 
+            {{ NULL, NULL, 0x44C136 }, { NULL, NULL, 0x44C638 }}, 
+            {{ NULL, NULL, 0x44C40C }, { NULL, NULL, 0x44C77A }}, 
+            {{ NULL, NULL, 0x44C64A }, { NULL, NULL, 0x44C989 }}, 
+            {{ NULL, NULL, 0x44C7C0 }, { NULL, NULL, 0x44CC44 }}, 
+            {{ NULL, NULL, 0x44CAD6 }, { NULL, NULL, 0x44CE63 }}, 
+            {{ NULL, NULL, 0x44CCF5 }, { NULL, NULL, 0x44D04E }}, 
+            {{ NULL, NULL, 0x44CF6D }, { NULL, NULL, 0x44D403 }}, 
+            {{ NULL, NULL, 0x44D0D4 }, { NULL, NULL, 0x44D780 }}, 
+            {{ NULL, NULL, 0x44D5F7 }, { NULL, NULL, 0x44D8E9 }}, 
+            {{ NULL, NULL, 0x44D789 }, { NULL, NULL, 0x44E014 }}, 
+            {{ NULL, NULL, 0x44DC55 }, { NULL, NULL, 0x44E131 }}, 
+            {{ NULL, NULL, 0x44E050 }, { NULL, NULL, 0x44E22C }}, 
+            {{ NULL, NULL, 0x44E14B }, { NULL, NULL, 0x44E661 }}, 
+            {{ NULL, NULL, 0x44E2A3 }, { NULL, NULL, 0x44E785 }}, 
+            {{ NULL, NULL, 0x44E69D }, { NULL, NULL, 0x44E886 }}, 
+            {{ NULL, NULL, 0x44E79E }, { NULL, NULL, 0x44EB82 }}, 
+            {{ NULL, NULL, 0x44EAA0 }, { NULL, NULL, 0x44EDC3 }}, 
+            {{ NULL, NULL, 0x44EBA5 }, { NULL, NULL, 0x44F0B9 }}, 
+            {{ NULL, NULL, 0x44EFD0 }, { NULL, NULL, 0x44F316 }}, 
+            {{ NULL, NULL, 0x44F0DC }, { NULL, NULL, 0x44F64C }}, 
+            {{ NULL, NULL, 0x44F588 }, { NULL, NULL, 0x44FB9D }}, 
+            {{ NULL, NULL, 0x44F7E2 }, { NULL, NULL, 0x44FD30 }}, 
+            {{ NULL, NULL, 0x44FC1E }, { NULL, NULL, 0x44FE4E }}, 
+            {{ NULL, NULL, 0x44FDD4 }, { NULL, NULL, 0x44FFB3 }}, 
+            {{ NULL, NULL, 0x44FF10 }, { NULL, NULL, 0x450162 }}, 
+            {{ NULL, NULL, 0x450085 }, { NULL, NULL, 0x450390 }}, 
+            {{ NULL, NULL, 0x450269 }, { NULL, NULL, 0x45078C }}, 
+            // --------------------------------------------------
+            {{ NULL, NULL, 0x443B9D }, { NULL, NULL, 0x443DCC }}, // dgRoadDecalInstance
+            {{ NULL, NULL, 0x57AC4A }, { NULL, NULL, 0x57AD41 }}, // ped LODs
+        };
+
+        // mostly copied from InstallGameCallback
+        std::size_t count = 0;
+
+        for (auto cb : vglCBs)
         {
-            deviceName = "Primary Sound Driver";
+            auto begin = cb.begin_addrs[gameVersion];
+            auto end = cb.end_addrs[gameVersion];
+
+            LogFile::Format("   - { vglBegin: %08X => %08X, vglEnd: %08X => %08X } : ", begin, vglBeginCB, end, vglEndCB);
+
+            if ((begin != NULL) && (end != NULL))
+            {
+                if (InstallCallbackHook(begin, vglBeginCB, true) && InstallCallbackHook(end, vglEndCB, true))
+                {
+                    LogFile::WriteLine("OK");
+                    ++count;
+                } else {
+                    // let's hope this never happens...
+                    LogFile::WriteLine("FAIL!");
+                }
+
+                continue;
+            } else {
+                LogFile::WriteLine("Not Supported");
+            }
         }
 
-        LogFile::Format("mmDirSnd::Init - Default Device: %s\n", deviceName);
+        LogFile::Format("   - Installed %u / %u callbacks\n", count, vglCBs.size());
     }
+};
 
-    // TODO: Set sampling rate (see 0x519640 - int __thiscall AudManager::SetBitDepthAndSampleRate(int this, int bitDepth, int samplingRate))
-    // TODO: Redo SetPrimaryBufferFormat to set sampleSize? (see 0x5A5860 -void __thiscall DirSnd::SetPrimaryBufferFormat(mmDirSnd *this, int sampleRate, bool allowStero))
-    return mmDirSnd::Init(48000, enableStero, a4, volume, deviceName, enable3D);
-}
+class mmDirSndHandler
+{
+public:
+    static mmDirSnd* Init(int sampleRate, bool enableStero, int a4, float volume, LPCSTR deviceName, bool enable3D) {
+        // TODO: Load the device name from player config?
+        if (*deviceName == '\0')
+        {
+            if (!datArgParser::Get("defaultsounddev", 0, &deviceName))
+            {
+                deviceName = "Primary Sound Driver";
+            }
 
-class BridgeFerryCallbackHandler
+            LogFile::Format("mmDirSnd::Init - Default Device: %s\n", deviceName);
+        }
+
+        // TODO: Set sampling rate (see 0x519640 - int __thiscall AudManager::SetBitDepthAndSampleRate(int this, int bitDepth, int samplingRate))
+        // TODO: Redo SetPrimaryBufferFormat to set sampleSize? (see 0x5A5860 -void __thiscall DirSnd::SetPrimaryBufferFormat(mmDirSnd *this, int sampleRate, bool allowStero))
+        return mmDirSnd::Init(48000, enableStero, a4, volume, deviceName, enable3D);
+    }
+};
+
+class BridgeFerryHandler
 {
 public:
     void Cull(int lod) {
@@ -715,7 +827,7 @@ public:
     }
 };
 
-class mmDashViewCallbackHandler
+class mmDashViewHandler
 {
 public:
     void UpdateCS() {
@@ -741,7 +853,7 @@ public:
     };
 };
 
-class memSafeHeapCallbackHandler
+class memSafeHeapHandler
 {
 public:
     void Init(void *memAllocator, unsigned int heapSize, bool p3, bool p4, bool checkAlloc) {
@@ -751,20 +863,19 @@ public:
         // same as ((g_heapSize * 1024) * 1024)
         heapSize = (g_heapSize << 20);
 
-        LogFile::Format("memSafeHeap::Init -- Allocating %dMB heap (%d bytes)\n", g_heapSize, heapSize);
+        LogFile::Format("[memSafeHeap::Init]: Allocating %dMB heap (%d bytes)\n", g_heapSize, heapSize);
         return $memSafeHeap_Init(this, memAllocator, heapSize, p3, p4, checkAlloc);
     };
 };
 
-class asCullManager
+class asCullManagerHandler
 {
 public:
-    void Init(int maxCullables, int maxCullables2D)
-    {
+    void Init(int maxCullables, int maxCullables2D) {
         maxCullables = 1024;
         maxCullables2D = 256;
 
-        LogFile::Format("asCullManager::Init - Increased Cullables to %i, %i\n", maxCullables, maxCullables2D);
+        LogFile::Format("[asCullManager::Init]: Increased Cullables to %d, %d\n", maxCullables, maxCullables2D);
 
         $asCullManagerInit(this, maxCullables, maxCullables2D);
     }
@@ -773,8 +884,7 @@ public:
 class HookSystemHandler
 {
 private:
-    static void InitializeLua()
-    {
+    static void InitializeLua() {
         // Guaranteed to be loaded before anything vital is called (e.g. AngelReadString)
         if (gameVersion == MM2_RETAIL)
         {
@@ -788,8 +898,7 @@ private:
         }
     }
 public:
-    static void Initialize(int argv, char **argc)
-    {
+    static void Initialize(int argv, char **argc) {
         // initialize the Lua engine
         InitializeLua();
 
@@ -814,19 +923,17 @@ public:
                 ageLogFile = fopen("AGE.log", "w+");
             }
 
-            if (!datArgParser::Get("oldautodetect"))
-            {
-                // Hook into the original AutoDetect and replace it with our own version
-                InstallGameCallback("AutoDetectCallback", gameVersion, &AutoDetectCallback, HOOK_JMP,
-                {
-                    { NULL, NULL, 0x4AC030 },
-                });
-            }
+            //if (!datArgParser::Get("oldautodetect"))
+            //{
+            //    // Hook into the original AutoDetect and replace it with our own version
+            //    InstallGameCallback("AutoDetectCallback", &AutoDetectCallback, {
+            //        CB_HOOK<JMP>({ NULL, NULL, 0x4AC030 }),
+            //    });
+            //}
         }
     }
 
-    static void Reset(bool restarting)
-    {
+    static void Reset(bool restarting) {
         LogFile::Write("Hook reset request received: ");
         LogFile::WriteLine((restarting) ? "leaving GameLoop" : "entering GameLoop");
 
@@ -836,8 +943,7 @@ public:
         MM2Lua::Reset();
     }
 
-    static void Start()
-    {
+    static void Start() {
         if (!$gameClosing)
         {
             // GameLoop was restarted
@@ -849,8 +955,7 @@ public:
         }
     }
 
-    static void Stop()
-    {
+    static void Stop() {
         if ($gameClosing)
         {
             LogFile::WriteLine("Hook shutdown request received.");
@@ -892,23 +997,19 @@ bool InitializeFramework(MM2Version gameVersion) {
 };
 
 void InstallPatches(MM2Version gameVersion) {
-
     LogFile::WriteLine("Installing patches...");
 
-    InstallGamePatch("Increase chat buffer size", gameVersion, { 60 },
-    {
+    InstallGamePatch("Increase chat buffer size", { 60 }, {
         { NULL, NULL, 0x4E68B5 },
         { NULL, NULL, 0x4E68B9 },
         { NULL, NULL, 0x50BBCF },
     });
 
-    InstallGamePatch ("Increase cop limit", gameVersion, { 0x40 },
-    {
+    InstallGamePatch ("Increase cop limit", { 0x40 }, {
         { NULL, NULL, 0x55100B },
     });
 
-    InstallGamePatch("Enables pointer in windowed mode", gameVersion, { 0x90, 0x90 },
-    {
+    InstallGamePatch("Enables pointer in windowed mode", { 0x90, 0x90 }, {
         { NULL, NULL, 0x4F136E },
     });
 };
@@ -922,28 +1023,24 @@ void InstallCallbacks(MM2Version gameVersion) {
         case MM2_BETA_2:
         {
             // Disables time check on betas
-            InstallGameCallback("TrialTimeExpired", gameVersion, &ReturnNullOrZero, HOOK_CALL,
-            {
-                { 0x4011B0, 0x4012AC, NULL },
+            InstallGameCallback("TrialTimeExpired", &ReturnNullOrZero, {
+                CB_HOOK<CALL>({ 0x4011B0, 0x4012AC, NULL }),
             });
         } break;
         case MM2_RETAIL:
         {
             // mutex was introduced in retail
-            InstallGameCallback("CreateGameMutex", gameVersion, &CallbackHandler::CreateGameMutex, HOOK_CALL,
-            {
-                { NULL, NULL, 0x40128D },
+            InstallGameCallback("CreateGameMutex", &CallbackHandler::CreateGameMutex, {
+                CB_HOOK<CALL>({ NULL, NULL, 0x40128D }),
             });
             
             // revert bridges/ferries to how they were in the betas
-            InstallGameCallback("Bridge/Ferry: Cull", gameVersion, &BridgeFerryCallbackHandler::Cull, HOOK_CALL,
-            {
-                { NULL, NULL, 0x5780BC }, // gizBridgeMgr::Cull
-                { NULL, NULL, 0x5798F0 }, // gizFerryMgr::Cull
+            InstallGameCallback("Bridge/Ferry: Cull", &BridgeFerryHandler::Cull, {
+                CB_HOOK<CALL>({ NULL, NULL, 0x5780BC }), // gizBridgeMgr::Cull
+                CB_HOOK<CALL>({ NULL, NULL, 0x5798F0 }), // gizFerryMgr::Cull
             });
 
-            InstallVTableHook("Bridge/Ferry: Draw", gameVersion, &BridgeFerryCallbackHandler::Draw,
-            {
+            InstallVTableHook("Bridge/Ferry: Draw", &BridgeFerryHandler::Draw, {
                 { NULL, NULL, 0x5B5FB8 }, // gizBridge::Draw
                 { NULL, NULL, 0x5B61AC }, // gizFerry::Draw
             });
@@ -955,137 +1052,80 @@ void InstallCallbacks(MM2Version gameVersion) {
     //
     // NOTE: Arguments passed to the game can be retrieved using datArgParser,
     // since it gets initialized just before ArchInit.
-    InstallGameCallback("ArchInit", gameVersion, &HookSystemHandler::Initialize, HOOK_CALL,
-    {         
-        { NULL, NULL, 0x4023DB },
+    InstallGameCallback("ArchInit", &HookSystemHandler::Initialize, {         
+        CB_HOOK<CALL>({ NULL, NULL, 0x4023DB }),
     });
 
-    InstallGameCallback("ageDebug", gameVersion, &CallbackHandler::ageDebug, HOOK_JMP,
-    {
-        { NULL, NULL, 0x402630 },
+    InstallGameCallback("ageDebug", &CallbackHandler::ageDebug, {
+        CB_HOOK<JMP>({ NULL, NULL, 0x402630 }),
     });
 
-    InstallGameCallback("ProgressRect [white loading bar fix]", gameVersion, &CallbackHandler::ProgressRect, HOOK_CALL,
-    {
-        { NULL, NULL, 0x401163 },
-        { NULL, NULL, 0x4011CC },
+    InstallGameCallback("ProgressRect [white loading bar fix]", &CallbackHandler::ProgressRect, {
+        CB_HOOK<CALL>({ NULL, NULL, 0x401163 }),
+        CB_HOOK<CALL>({ NULL, NULL, 0x4011CC }),
     });
 
-    InstallGameCallback("gfxPipeline::SetRes", gameVersion, &gfxHandler::setRes, HOOK_CALL,
-    {
-        { NULL, NULL, 0x401482 },
+    InstallGameCallback("gfxPipeline::SetRes", &gfxHandler::setRes, {
+        CB_HOOK<CALL>({ NULL, NULL, 0x401482 }),
     });
 
-    InstallGameCallback("gfxWindowCreate", gameVersion, &gfxHandler::gfxWindowCreate, HOOK_CALL,
-    {
-        { NULL, NULL, 0x4A94AA },
+    InstallGameCallback("gfxWindowCreate", &gfxHandler::gfxWindowCreate, {
+        CB_HOOK<CALL>({ NULL, NULL, 0x4A94AA }),
     });
 
-    InstallGameCallback("gfxLoadVideoDatabase [disable 'badvideo.txt']", gameVersion, &ReturnFalse, HOOK_CALL,
-    {
-        { NULL, NULL, 0x4AC4F9 },
+    InstallGameCallback("gfxLoadVideoDatabase [disable 'badvideo.txt']", &ReturnFalse, {
+        CB_HOOK<CALL>({ NULL, NULL, 0x4AC4F9 }),
     });
 
-    InstallGameCallback("mmDirSnd::Init", gameVersion, &mmDirSndInit, HOOK_CALL,
-    {
-        { NULL, NULL, 0x51941D },
+    InstallGameCallback("mmDirSnd::Init", &mmDirSndHandler::Init, {
+        CB_HOOK<CALL>({ NULL, NULL, 0x51941D }),
     });
     
-    InstallGameCallback("memSafeHeap::Init [Heap fix]", gameVersion, &memSafeHeapCallbackHandler::Init, HOOK_CALL,
-    {
-        { NULL, NULL, 0x4015DD },
+    InstallGameCallback("memSafeHeap::Init [Heap fix]", &memSafeHeapHandler::Init, {
+        CB_HOOK<CALL>({ NULL, NULL, 0x4015DD }),
     });
 
-    InstallGameCallback("asCullManager::Init [Increase Max Cullables]", gameVersion, &asCullManager::Init, HOOK_CALL,
-    {
-        { NULL, NULL, 0x401D5C },
+    InstallGameCallback("asCullManager::Init [Increase Max Cullables]", &asCullManagerHandler::Init, {
+        CB_HOOK<CALL>({ NULL, NULL, 0x401D5C }),
     });
 
     // not supported for betas yet
     if (gameVersion == MM2_RETAIL)
     {
         // NOTE: Completely overrides the original AngelReadString (will check Lua first then DLL)
-        InstallGameCallback("AngelReadString", gameVersion, &CallbackHandler::AngelReadString, HOOK_JMP,
-        {
-            { NULL, NULL, 0x534790 },
+        InstallGameCallback("AngelReadString", &CallbackHandler::AngelReadString, {
+            CB_HOOK<CALL>({ NULL, NULL, 0x534790 }),
         });
     }
 
-    InstallGameCallback("vglBegin", gameVersion, &GraphicsCallbackHandler::vglBegin, HOOK_CALL,
-    {
-        { NULL, NULL, 0x448424 }, { NULL, NULL, 0x448697 }, { NULL, NULL, 0x448903 }, { NULL, NULL, 0x448BFD },
-        { NULL, NULL, 0x448DE4 }, { NULL, NULL, 0x44902A }, { NULL, NULL, 0x4492A4 }, { NULL, NULL, 0x4494C3 },
-        { NULL, NULL, 0x4496A5 }, { NULL, NULL, 0x44986B }, { NULL, NULL, 0x449A13 }, { NULL, NULL, 0x449BD9 },
-        { NULL, NULL, 0x449D82 }, { NULL, NULL, 0x449F67 }, { NULL, NULL, 0x44A21C }, { NULL, NULL, 0x44A444 },
-        { NULL, NULL, 0x44A629 }, { NULL, NULL, 0x44A7EF }, { NULL, NULL, 0x44A997 }, { NULL, NULL, 0x44AB5D },
-        { NULL, NULL, 0x44AD06 }, { NULL, NULL, 0x44AECA }, { NULL, NULL, 0x44B0EC }, { NULL, NULL, 0x44B24B },
-        { NULL, NULL, 0x44B3B6 }, { NULL, NULL, 0x44B557 }, { NULL, NULL, 0x44B6F3 }, { NULL, NULL, 0x44B8F1 },
-        { NULL, NULL, 0x44BA8A }, { NULL, NULL, 0x44BC29 }, { NULL, NULL, 0x44BE9C }, { NULL, NULL, 0x44C136 },
-        { NULL, NULL, 0x44C40C }, { NULL, NULL, 0x44C64A }, { NULL, NULL, 0x44C7C0 }, { NULL, NULL, 0x44CAD6 },
-        { NULL, NULL, 0x44CCF5 }, { NULL, NULL, 0x44CF6D }, { NULL, NULL, 0x44D0D4 }, { NULL, NULL, 0x44D5F7 },
-        { NULL, NULL, 0x44D789 }, { NULL, NULL, 0x44DC55 }, { NULL, NULL, 0x44E050 }, { NULL, NULL, 0x44E14B },
-        { NULL, NULL, 0x44E2A3 }, { NULL, NULL, 0x44E69D }, { NULL, NULL, 0x44E79E }, { NULL, NULL, 0x44EAA0 },
-        { NULL, NULL, 0x44EBA5 }, { NULL, NULL, 0x44EFD0 }, { NULL, NULL, 0x44F0DC }, { NULL, NULL, 0x44F588 },
-        { NULL, NULL, 0x44F7E2 }, { NULL, NULL, 0x44FC1E }, { NULL, NULL, 0x44FDD4 }, { NULL, NULL, 0x44FF10 },
-        { NULL, NULL, 0x450085 }, { NULL, NULL, 0x450269 },
-        // ------------------------------------
-        { NULL, NULL, 0x443B9D }, // dgRoadDecalInstance
-        { NULL, NULL, 0x57AC4A }, // ped LODs
+    InstallGameCallback("datTimeManager::Update", &TickHandler::Update, {
+        CB_HOOK<CALL>({ NULL, NULL, 0x401A2F }),
     });
 
-    InstallGameCallback("vglEnd", gameVersion, &GraphicsCallbackHandler::vglEnd, HOOK_CALL,
-    {
-        { NULL, NULL, 0x4485D3 }, { NULL, NULL, 0x448B82 }, { NULL, NULL, 0x448D8C }, { NULL, NULL, 0x448FB7 },
-        { NULL, NULL, 0x449219 }, { NULL, NULL, 0x449480 }, { NULL, NULL, 0x44963E }, { NULL, NULL, 0x44983C },
-        { NULL, NULL, 0x4499D4 }, { NULL, NULL, 0x449BAA }, { NULL, NULL, 0x449D42 }, { NULL, NULL, 0x449F5A },
-        { NULL, NULL, 0x44A146 }, { NULL, NULL, 0x44A3F8 }, { NULL, NULL, 0x44A5BF }, { NULL, NULL, 0x44A7C0 },
-        { NULL, NULL, 0x44A958 }, { NULL, NULL, 0x44AB2E }, { NULL, NULL, 0x44ACC6 }, { NULL, NULL, 0x44AEBC },
-        { NULL, NULL, 0x44B083 }, { NULL, NULL, 0x44B23D }, { NULL, NULL, 0x44B394 }, { NULL, NULL, 0x44B531 },
-        { NULL, NULL, 0x44B6E1 }, { NULL, NULL, 0x44B895 }, { NULL, NULL, 0x44BA7C }, { NULL, NULL, 0x44BC03 },
-        { NULL, NULL, 0x44BE8E }, { NULL, NULL, 0x44C118 }, { NULL, NULL, 0x44C3EA }, { NULL, NULL, 0x44C638 },
-        { NULL, NULL, 0x44C77A }, { NULL, NULL, 0x44C989 }, { NULL, NULL, 0x44CC44 }, { NULL, NULL, 0x44CE63 },
-        { NULL, NULL, 0x44D04E }, { NULL, NULL, 0x44D403 }, { NULL, NULL, 0x44D780 }, { NULL, NULL, 0x44D8E9 },
-        { NULL, NULL, 0x44E014 }, { NULL, NULL, 0x44E131 }, { NULL, NULL, 0x44E22C }, { NULL, NULL, 0x44E661 },
-        { NULL, NULL, 0x44E785 }, { NULL, NULL, 0x44E886 }, { NULL, NULL, 0x44EB82 }, { NULL, NULL, 0x44EDC3 },
-        { NULL, NULL, 0x44F0B9 }, { NULL, NULL, 0x44F316 }, { NULL, NULL, 0x44F64C }, { NULL, NULL, 0x44FB9D },
-        { NULL, NULL, 0x44FD30 }, { NULL, NULL, 0x44FE4E }, { NULL, NULL, 0x44FFB3 }, { NULL, NULL, 0x450162 },
-        { NULL, NULL, 0x450390 }, { NULL, NULL, 0x45078C },
-        // ------------------------------------
-        { NULL, NULL, 0x443DCC }, // road decals
-        { NULL, NULL, 0x57AD41 }, // ped LODs
+    InstallGameCallback("mmGame::SendChatMessage", &ChatHandler::Process, {
+        CB_HOOK<JMP>({ NULL, NULL, 0x414EB6 }),
     });
 
-    InstallGameCallback("datTimeManager::Update", gameVersion, &TickHandler::Update, HOOK_CALL,
-    {
-        { NULL, NULL, 0x401A2F },
+    InstallGameCallback("mmGameMusicData::LoadAmbientSFX", &CallbackHandler::LoadAmbientSFX, {
+        CB_HOOK<CALL>({ NULL, NULL, 0x433F93 }),
     });
 
-    InstallGameCallback("mmGame::SendChatMessage", gameVersion, &ChatHandler::Process, HOOK_JMP,
-    {
-        { NULL, NULL, 0x414EB6 },
-    });
-
-    InstallGameCallback("mmGameMusicData::LoadAmbientSFX", gameVersion, &CallbackHandler::LoadAmbientSFX, HOOK_CALL,
-    {
-        { NULL, NULL, 0x433F93 },
-    });
-
-    InstallGameCallback("vehCarAudioContainer::SetSirenCSVName", gameVersion, &CallbackHandler::SetSirenCSVName, HOOK_CALL,
-    {
-        { NULL, NULL, 0x412783 },
-        { NULL, NULL, 0x412772 },
+    InstallGameCallback("vehCarAudioContainer::SetSirenCSVName", &CallbackHandler::SetSirenCSVName, {
+        CB_HOOK<CALL>({ NULL, NULL, 0x412783 }),
+        CB_HOOK<CALL>({ NULL, NULL, 0x412772 }),
     });
 
     // dashboard testing
-    InstallGameCallback("mmDashView::Update [EXPERIMENTAL]", gameVersion, &mmDashViewCallbackHandler::UpdateCS, HOOK_CALL,
-    {
-        { NULL, NULL, 0x430F87 }, // replaces call to asLinearCS::Update
+    InstallGameCallback("mmDashView::Update [EXPERIMENTAL]", &mmDashViewHandler::UpdateCS, {
+        CB_HOOK<CALL>({ NULL, NULL, 0x430F87 }), // replaces call to asLinearCS::Update
     });
 
-    InstallGameCallback("zipFile::Init ['extraLen' spam fix]", gameVersion, &NullSub, HOOK_CALL,
-    {
-        { NULL, NULL, 0x5738EA }, // 'extraLen=%d'
+    InstallGameCallback("zipFile::Init ['extraLen' spam fix]", &NullSub, {
+        CB_HOOK<CALL>({ NULL, NULL, 0x5738EA }), // 'extraLen=%d'
     });
+
+    // install shading fix (for PSDL, etc.)
+    vglHandler::InstallCallbacks();
 };
 
 //

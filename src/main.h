@@ -8,6 +8,6 @@
 #include "mm2_lua.h"
 
 EXTERN_C LPFNDIRECTINPUTCREATE lpDICreate;
-EXTERN_C HRESULT DirectInputCreateA_Impl(HINSTANCE hinst, DWORD dwVersion, LPVOID *ppDI, LPUNKNOWN punkOuter);
+EXTERN_C HRESULT DirectInputCreate_Impl(HINSTANCE hinst, DWORD dwVersion, LPVOID *ppDI, LPUNKNOWN punkOuter);
 
 LuaState L;
