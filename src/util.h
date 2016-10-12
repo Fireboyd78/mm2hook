@@ -57,15 +57,39 @@
 // Console color macros
 //
 
-#define FOREGROUND_PINK (FOREGROUND_BLUE | FOREGROUND_RED)
-#define FOREGROUND_TEAL (FOREGROUND_BLUE | FOREGROUND_GREEN)
-#define FOREGROUND_YELLOW (FOREGROUND_RED | FOREGROUND_GREEN)
-#define FOREGROUND_WHITE (FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE)
+#define TEXTCOLOR_BLACK             0
+#define TEXTCOLOR_BLUE              1
+#define TEXTCOLOR_GREEN             2
+#define TEXTCOLOR_CYAN              3 
+#define TEXTCOLOR_RED               4
+#define TEXTCOLOR_MAGENTA           5
+#define TEXTCOLOR_BROWN             6
+#define TEXTCOLOR_LIGHTGRAY         7
+#define TEXTCOLOR_DARKGRAY          8
+#define TEXTCOLOR_LIGHTBLUE         9
+#define TEXTCOLOR_LIGHTGREEN        10
+#define TEXTCOLOR_LIGHTCYAN         11
+#define TEXTCOLOR_LIGHTRED          12
+#define TEXTCOLOR_LIGHTMAGENTA      13
+#define TEXTCOLOR_YELLOW            14
+#define TEXTCOLOR_WHITE             15
 
-#define BACKGROUND_PINK (BACKGROUND_BLUE | BACKGROUND_RED)
-#define BACKGROUND_TEAL (BACKGROUND_BLUE | BACKGROUND_GREEN)
-#define BACKGROUND_YELLOW (BACKGROUND_RED | BACKGROUND_GREEN)
-#define BACKGROUND_WHITE (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE)
+#define BACKCOLOR_BLACK             ( 0  << 4 )
+#define BACKCOLOR_BLUE              ( 1  << 4 )
+#define BACKCOLOR_GREEN             ( 2  << 4 )
+#define BACKCOLOR_CYAN              ( 3  << 4 )
+#define BACKCOLOR_RED               ( 4  << 4 )
+#define BACKCOLOR_MAGENTA           ( 5  << 4 )
+#define BACKCOLOR_BROWN             ( 6  << 4 )
+#define BACKCOLOR_LIGHTGRAY         ( 7  << 4 )
+#define BACKCOLOR_DARKGRAY          ( 8  << 4 )
+#define BACKCOLOR_LIGHTBLUE         ( 9  << 4 )
+#define BACKCOLOR_LIGHTGREEN        ( 10 << 4 )
+#define BACKCOLOR_LIGHTCYAN         ( 11 << 4 )
+#define BACKCOLOR_LIGHTRED          ( 12 << 4 )
+#define BACKCOLOR_LIGHTMAGENTA      ( 13 << 4 )
+#define BACKCOLOR_YELLOW            ( 14 << 4 )
+#define BACKCOLOR_WHITE             ( 15 << 4 )
 
 //
 // Pointer templates

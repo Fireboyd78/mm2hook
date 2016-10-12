@@ -820,20 +820,20 @@ public:
 
     static void Print(int level, LPCSTR message, va_list va_args) {
         static short printer_types[] = {
-            FOREGROUND_INTENSITY, // print
-            FOREGROUND_INTENSITY, // message
-            FOREGROUND_INTENSITY, // display
-            FOREGROUND_YELLOW | FOREGROUND_INTENSITY, // warning
-            FOREGROUND_RED | FOREGROUND_INTENSITY, // error
-            FOREGROUND_RED | FOREGROUND_INTENSITY, // quit/abort
+            TEXTCOLOR_DARKGRAY, // print
+            TEXTCOLOR_DARKGRAY, // message
+            TEXTCOLOR_DARKGRAY, // display
+            TEXTCOLOR_YELLOW, // warning
+            TEXTCOLOR_LIGHTRED, // error
+            TEXTCOLOR_LIGHTRED, // quit/abort
         };
 
         HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
         SetConsoleTextAttribute(hConsole, printer_types[level]);
         $DefaultPrinter(level, message, va_args);
-        SetConsoleTextAttribute(hConsole, FOREGROUND_WHITE);
-    };
+        SetConsoleTextAttribute(hConsole, TEXTCOLOR_LIGHTGRAY);
+    }
 
     static void FatalError() {
         // do something?
