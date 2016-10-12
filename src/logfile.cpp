@@ -65,7 +65,6 @@ void LogFileStream::Write(LPCSTR str)
     if (strLen > 0)
     {
         fputs(str, m_file);
-        Flush(false);
 
 #ifndef LOGFILE_NO_DEBUG
         // also output a debug message
@@ -113,6 +112,7 @@ void LogFile::Initialize(LPCSTR filename, LPCSTR title) {
 };
 
 void LogFile::Close(void) {
+    g_logfile->Flush(false);
     g_logfile->Close();
 
     if (hConsole != NULL)
@@ -121,16 +121,20 @@ void LogFile::Close(void) {
 
 void LogFile::AppendLine(void) {
     g_logfile->AppendLine();
+
     write_console("\n", 1);
 };
 
 void LogFile::Write(LPCSTR str) {
     g_logfile->Write(str);
+    g_logfile->Flush(false);
+
     write_console(str);
 };
 
 void LogFile::WriteLine(LPCSTR str) {
     g_logfile->WriteLine(str);
+
     write_console(str);
     write_console("\n", 1);
 };
