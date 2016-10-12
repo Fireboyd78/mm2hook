@@ -255,10 +255,10 @@ struct ColorFlags
 };
 
 template <
-    std::uint8_t OA, std::uint8_t OR, std::uint8_t OG, std::uint8_t OB,
-    std::uint8_t NA, std::uint8_t NR, std::uint8_t NG, std::uint8_t NB
+    int OA, int OR, int OG, int OB,
+    int NA, int NR, int NG, int NB
 >
-constexpr inline std::uint32_t ConvertColor(const std::uint32_t color)
+constexpr inline UINT32 ConvertColor(const UINT32 color)
 {
     using OF = ColorFlags<OA, OR, OG, OB>;
     using NF = ColorFlags<NA, NR, NG, NB>;
@@ -275,10 +275,10 @@ inline UINT32 GetPixelFormatColor(LPDDPIXELFORMAT lpDDPixelFormat, UINT32 color)
     {
         // 555
         case 0x3E0:
-            return ConvertColor<8, 8, 8, 8, 1, 5, 5, 5>(color);
+            return ConvertColor<0, 8, 8, 8, 0, 5, 5, 5>(color);
         // 565
         case 0x7E0:
-            return ConvertColor<8, 8, 8, 8, 0, 5, 6, 5>(color);
+            return ConvertColor<0, 8, 8, 8, 0, 5, 6, 5>(color);
         // 888
         case 0xFF00:
             // already in the right format

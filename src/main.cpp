@@ -975,11 +975,11 @@ private:
             { NULL, NULL, 0x50BBCF },
         });
 
-        InstallGamePatch("Increase cop limit", { 0x40 }, {
+        InstallGamePatch("Increase cop limit", { 64 }, {
             { NULL, NULL, 0x55100B },
         });
 
-        InstallGamePatch("Enables pointer in windowed mode", { 0x90, 0x90 }, {
+        InstallGamePatch("Enable pointer in windowed mode", { 0x90, 0x90 }, {
             { NULL, NULL, 0x4F136E },
         });
     }
