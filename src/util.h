@@ -157,6 +157,10 @@ constexpr inline void setPtr(const TC *p, int offset, TV value) {
 #define __DWPTR(src)            __PTR_(dword,src) // dword ptr[src]
 #define __DWPTR_DS(src)         __PTR_DS_(dword,src) // dword ptr ds:[src]
 
+// jump to function at pointer
+#define JMP_PTR(x) \
+    __asm jmp dword ptr ds:x
+
 //
 // Debugging utilities
 //

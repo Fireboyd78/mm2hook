@@ -9,7 +9,7 @@ LPFNDIRECTINPUTCREATE lpDICreate;
 #pragma comment(linker, "/EXPORT:DirectInputCreateA=_DirectInputCreate_Impl")
 #pragma comment(linker, "/EXPORT:DirectInputCreateW=_DirectInputCreate_Impl")
 HRESULT NAKED DirectInputCreate_Impl(HINSTANCE hinst, DWORD dwVersion, LPVOID *ppDI, LPUNKNOWN punkOuter) {
-    _asm jmp dword ptr ds:lpDICreate
+    JMP_PTR(lpDICreate);
 }
 
 CMidtownMadness2 *pMM2;
