@@ -3,6 +3,9 @@
 
 namespace MM2
 {
+    // Forward declarations
+    extern class Stream;
+
     typedef void (*EnumFilesCallback)(LPCSTR, bool, LPVOID);
 
     enum seekWhence {
@@ -23,6 +26,11 @@ namespace MM2
         int (*size)(int handle);
         int (*flush)(int handle); // usually set to null
     };
+
+    AGE_API void fprintf(Stream *stream, char const *format, ...);
+    AGE_API int fscanf(Stream *stream, char const *format, ...);
+    AGE_API int fseek(Stream *stream, int position, seekWhence whence);
+    AGE_API int fgets(char *buffer, int length, Stream *stream);
 
     class Stream {
     protected:

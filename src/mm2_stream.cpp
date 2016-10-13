@@ -18,3 +18,24 @@ MM2FnHook<int> Stream::$Tell            ( NULL, NULL, 0x4C9DB0 );
 MM2FnHook<int> Stream::$Close           ( NULL, NULL, 0x4C9DC0 );
 MM2FnHook<int> Stream::$Size            ( NULL, NULL, 0x4C9E00 );
 MM2FnHook<int> Stream::$Flush           ( NULL, NULL, 0x4C9E60 );
+
+MM2FnHook<void> $fprintf                ( NULL, NULL, 0x4C9ED0 );
+MM2FnHook<int> $fseek                   ( NULL, NULL, 0x4C9F20 );
+MM2FnHook<int> $fgets                   ( NULL, NULL, 0x4C9F80 );
+MM2FnHook<int> $fscanf                  ( NULL, NULL, 0x4C9FF0 );
+
+AGE_API NAKED void fprintf(Stream *stream, char const *format, ...) {
+    JMP_PTR($fprintf);
+};
+
+AGE_API NAKED int fscanf(Stream *stream, char const *format, ...) {
+    JMP_PTR($fscanf);
+};
+
+AGE_API int fseek(Stream *stream, int position, seekWhence whence) {
+    return $fseek(stream, position, whence);
+};
+
+AGE_API int fgets(char *buffer, int length, Stream *stream) {
+    return $fgets(buffer, length, stream);
+};
