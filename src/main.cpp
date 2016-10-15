@@ -283,8 +283,6 @@ public:
         if (lpWindowTitle)
             lpWindowName = lpWindowTitle;
 
-        *hasBorder = !datArgParser::Get("noborder");
-
         if (!ATOM_Class)
         {
             WNDCLASSA wc = { NULL };
@@ -322,7 +320,7 @@ public:
             {
                 dwStyle = WS_CHILD;
             }
-            else if (hasBorder)
+            else if (*hasBorder = !datArgParser::Get("noborder"))
             {
                 dwStyle = WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
             }
