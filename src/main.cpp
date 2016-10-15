@@ -70,7 +70,7 @@ AGEHook<0x5346B0>::Func<int>::StdCall $MyLoadStringA;
 AGEHook<0x450880>::Func<UINT32> $sdlPage16_GetShadedColor;
 
 /*
-    TODO: Move VGL stuff to a separate file?    
+    TODO: Move VGL stuff to a separate file?
 */
 
 AGEHook<0x4A5500>::Func<void> $vglBegin;
@@ -78,7 +78,7 @@ AGEHook<0x4A5A90>::Func<void> $vglEnd;
 
 AGEHook<0x4A88F0>::Func<WNDPROC> $gfxPipeline_gfxWindowProc;
 
-AGEHook<0x4AC3D0>::Func<LPD3DENUMDEVICESCALLBACK7>  $DeviceCallback;
+AGEHook<0x4AC3D0>::Func<LPD3DENUMDEVICESCALLBACK7> $DeviceCallback;
 AGEHook<0x4AC6F0>::Func<LPDDENUMMODESCALLBACK2> $ResCallback;
 
 AGEHook<0x4A1290>::Func<void> $asCullManagerInit;
@@ -149,8 +149,9 @@ bool HandleKeyPress(DWORD vKey)
 
     switch (vKey) {
         // '~'
-        case VK_OEM_2:
-        case VK_OEM_3:
+        case VK_OEM_2: case VK_OEM_3:
+        // '`'
+        case VK_OEM_8:
         {
             // tell the game to open a chat box,
             // and then use a local variable to check if it's open
@@ -173,6 +174,7 @@ bool HandleKeyPress(DWORD vKey)
             }
         } return true;
     }
+
     return false;
 }
 
@@ -215,12 +217,26 @@ public:
         maxCullables = 1024;
         maxCullables2D = 256;
 
-        LogFile::Format("[asCullManager::Init]: Increased Cullables to %d, %d\n", maxCullables, maxCullables2D);
+        LogFile::Format("[asCullManager::Init]: Increased Max Cullables to %d, %d\n", maxCullables, maxCullables2D);
 
         $asCullManagerInit(this, maxCullables, maxCullables2D);
     }
 };
 
+/*
+    By default, bridges are treated as "Cullables" instead of "Drawables" (MM2 is weird)
+
+    Before the patch, Cull calls dgBangerInstance::Draw, and Draw does nothing.
+    With the patch, these 2 functions are swapped around, so Draw calls dgBangerInstance::Draw, and Cull does nothing.
+
+    Problem solved, right? Nope. Cull is called by gizBridgeMgr::Cull, where as Draw is called by cityLevel::DrawRooms.
+
+    gizBridgeMgr has it's own maximum draw distance for bridges, so gizBridgeMgr::Cull draws them fine at range.
+    But cityLevel::DrawRooms uses the prop lod distances, so the bridges end up disappearing a lot sooner.
+
+    A "solution" is to manually set the LOD distance values (see cityLevel::SetObjectDetail).
+    But that would cause everything to be drawn further, and decrase FPS.
+*/
 class BridgeFerryHandler {
 public:
     void Cull(int lod) {
@@ -267,8 +283,6 @@ public:
         if (lpWindowTitle)
             lpWindowName = lpWindowTitle;
 
-        *hasBorder = !datArgParser::Get("noborder");
-
         if (!ATOM_Class)
         {
             WNDCLASSA wc = { NULL };
@@ -306,7 +320,7 @@ public:
             {
                 dwStyle = WS_CHILD;
             }
-            else if (hasBorder)
+            else if (*hasBorder = !datArgParser::Get("noborder"))
             {
                 dwStyle = WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
             }
@@ -511,104 +525,46 @@ public:
         // use a custom struct to make the process easier
         // this allows us to have an entry representing each "frame" (vglBegin/vglEnd)
         // and cuts down on the amount of time it takes to add a new entry
-        struct vgl_cb {
-            MM2AddressData begin_addr; // vglBegin
-            MM2AddressData end_addr; // vglEnd
+        struct vgl_pair {
+            DWORD begin_addr; // vglBegin
+            DWORD end_addr; // vglEnd
         };
 
         // TODO: Remove tunnels from the list so they're fullbright (or at least see how it looks)
-        std::initializer_list<vgl_cb> vglCBs = {
-            { 0x448424, 0x4485D3 }, 
-            { 0x448697, 0x448B82 }, 
-            { 0x448903, 0x448D8C }, 
-            { 0x448BFD, 0x448FB7 }, 
-            { 0x448DE4, 0x449219 }, 
-            { 0x44902A, 0x449480 }, 
-            { 0x4492A4, 0x44963E }, 
-            { 0x4494C3, 0x44983C }, 
-            { 0x4496A5, 0x4499D4 }, 
-            { 0x44986B, 0x449BAA }, 
-            { 0x449A13, 0x449D42 }, 
-            { 0x449BD9, 0x449F5A }, 
-            { 0x449D82, 0x44A146 }, 
-            { 0x449F67, 0x44A3F8 }, 
-            { 0x44A21C, 0x44A5BF }, 
-            { 0x44A444, 0x44A7C0 }, 
-            { 0x44A629, 0x44A958 }, 
-            { 0x44A7EF, 0x44AB2E }, 
-            { 0x44A997, 0x44ACC6 }, 
-            { 0x44AB5D, 0x44AEBC }, 
-            { 0x44AD06, 0x44B083 }, 
-            { 0x44AECA, 0x44B23D }, 
-            { 0x44B0EC, 0x44B394 }, 
-            { 0x44B24B, 0x44B531 }, 
-            { 0x44B3B6, 0x44B6E1 }, 
-            { 0x44B557, 0x44B895 }, 
-            { 0x44B6F3, 0x44BA7C }, 
-            { 0x44B8F1, 0x44BC03 }, 
-            { 0x44BA8A, 0x44BE8E }, 
-            { 0x44BC29, 0x44C118 }, 
-            { 0x44BE9C, 0x44C3EA }, 
-            { 0x44C136, 0x44C638 }, 
-            { 0x44C40C, 0x44C77A }, 
-            { 0x44C64A, 0x44C989 }, 
-            { 0x44C7C0, 0x44CC44 }, 
-            { 0x44CAD6, 0x44CE63 }, 
-            { 0x44CCF5, 0x44D04E }, 
-            { 0x44CF6D, 0x44D403 }, 
-            { 0x44D0D4, 0x44D780 }, 
-            { 0x44D5F7, 0x44D8E9 }, 
-            { 0x44D789, 0x44E014 }, 
-            { 0x44DC55, 0x44E131 }, 
-            { 0x44E050, 0x44E22C }, 
-            { 0x44E14B, 0x44E661 }, 
-            { 0x44E2A3, 0x44E785 }, 
-            { 0x44E69D, 0x44E886 }, 
-            { 0x44E79E, 0x44EB82 }, 
-            { 0x44EAA0, 0x44EDC3 }, 
-            { 0x44EBA5, 0x44F0B9 }, 
-            { 0x44EFD0, 0x44F316 }, 
-            { 0x44F0DC, 0x44F64C }, 
-            { 0x44F588, 0x44FB9D }, 
-            { 0x44F7E2, 0x44FD30 }, 
-            { 0x44FC1E, 0x44FE4E }, 
-            { 0x44FDD4, 0x44FFB3 }, 
-            { 0x44FF10, 0x450162 }, 
-            { 0x450085, 0x450390 }, 
-            { 0x450269, 0x45078C }, 
+        std::initializer_list<vgl_pair> vglCBs = {
+            { 0x448424, 0x4485D3 }, { 0x448697, 0x448B82 }, { 0x448903, 0x448D8C }, { 0x448BFD, 0x448FB7 },
+            { 0x448DE4, 0x449219 }, { 0x44902A, 0x449480 }, { 0x4492A4, 0x44963E }, { 0x4494C3, 0x44983C },
+            { 0x4496A5, 0x4499D4 }, { 0x44986B, 0x449BAA }, { 0x449A13, 0x449D42 }, { 0x449BD9, 0x449F5A },
+            { 0x449D82, 0x44A146 }, { 0x449F67, 0x44A3F8 }, { 0x44A21C, 0x44A5BF }, { 0x44A444, 0x44A7C0 },
+            { 0x44A629, 0x44A958 }, { 0x44A7EF, 0x44AB2E }, { 0x44A997, 0x44ACC6 }, { 0x44AB5D, 0x44AEBC },
+            { 0x44AD06, 0x44B083 }, { 0x44AECA, 0x44B23D }, { 0x44B0EC, 0x44B394 }, { 0x44B24B, 0x44B531 },
+            { 0x44B3B6, 0x44B6E1 }, { 0x44B557, 0x44B895 }, { 0x44B6F3, 0x44BA7C }, { 0x44B8F1, 0x44BC03 },
+            { 0x44BA8A, 0x44BE8E }, { 0x44BC29, 0x44C118 }, { 0x44BE9C, 0x44C3EA }, { 0x44C136, 0x44C638 },
+            { 0x44C40C, 0x44C77A }, { 0x44C64A, 0x44C989 }, { 0x44C7C0, 0x44CC44 }, { 0x44CAD6, 0x44CE63 },
+            { 0x44CCF5, 0x44D04E }, { 0x44CF6D, 0x44D403 }, { 0x44D0D4, 0x44D780 }, { 0x44D5F7, 0x44D8E9 },
+            { 0x44D789, 0x44E014 }, { 0x44DC55, 0x44E131 }, { 0x44E050, 0x44E22C }, { 0x44E14B, 0x44E661 },
+            { 0x44E2A3, 0x44E785 }, { 0x44E69D, 0x44E886 }, { 0x44E79E, 0x44EB82 }, { 0x44EAA0, 0x44EDC3 },
+            { 0x44EBA5, 0x44F0B9 }, { 0x44EFD0, 0x44F316 }, { 0x44F0DC, 0x44F64C }, { 0x44F588, 0x44FB9D },
+            { 0x44F7E2, 0x44FD30 }, { 0x44FC1E, 0x44FE4E }, { 0x44FDD4, 0x44FFB3 }, { 0x44FF10, 0x450162 },
+            { 0x450085, 0x450390 }, { 0x450269, 0x45078C },
             // ---------------------
             { 0x443B9D, 0x443DCC }, // dgRoadDecalInstance
             { 0x57AC4A, 0x57AD41 }, // ped LODs
         };
 
         // mostly copied from InstallGameCallback
-        std::size_t count = 0;
-
-        for (auto cb : vglCBs)
+        for (auto pair : vglCBs)
         {
-            auto begin = cb.begin_addr;
-            auto end = cb.end_addr;
+            auto begin = pair.begin_addr;
+            auto end = pair.end_addr;
 
-            LogFile::Format("   - { vglBegin: %08X => %08X, vglEnd: %08X => %08X } : ", begin, vglBeginCB, end, vglEndCB);
+            InstallGameCallback(vglBeginCB, { begin,    CALL });
+            InstallGameCallback(vglEndCB,   { end,      CALL });
 
-            if ((begin != NULL) && (end != NULL))
-            {
-                if (InstallCallbackHook(begin, vglBeginCB, true) && InstallCallbackHook(end, vglEndCB, true))
-                {
-                    LogFile::WriteLine("OK");
-                    ++count;
-                } else {
-                    // let's hope this never happens...
-                    LogFile::WriteLine("FAIL!");
-                }
-
-                continue;
-            } else {
-                LogFile::WriteLine("Not Supported");
-            }
+            LogFile::Format("   - { vglBegin: %08X => %08X, vglEnd: %08X => %08X }\n", begin, vglBeginCB, end, vglEndCB);
         }
 
-        LogFile::Format("   - Installed %d / %d callbacks\n", count, vglCBs.size());
+        LogFile::Format("   - Installed %d callbacks\n", vglCBs.size());
     }
 };
 
@@ -760,7 +716,7 @@ public:
         return str;
     }
 
-    static BOOL __stdcall AutoDetectCallback(GUID *lpGUID, 
+    static BOOL __stdcall AutoDetectCallback(GUID *lpGUID,
                                              LPSTR lpDriverDescription, LPSTR lpDriverName, LPVOID lpContext)
     {
         Displayf("AutoDetect: GUID=%x, Description=%s, Name=%s", lpGUID, lpDriverDescription, lpDriverName);
@@ -803,7 +759,7 @@ public:
 
             if (lpDD->GetAvailableVidMem(&ddsCaps, &availableMemory, NULL) != DD_OK)
                 Warningf("  Couldn't get video memory, using default");
-        
+
             Displayf("  Total video memory: %dMB", (availableMemory >> 20));
 
             gfxInterface->AvailableMemory = availableMemory;
@@ -932,7 +888,7 @@ private:
         InstallGameCallback("mmDirSnd::Init", &mmDirSndHandler::Init, {
             CB_HOOK<CALL>(0x51941D),
         });
-    
+
         InstallGameCallback("memSafeHeap::Init [Heap fix]", &memSafeHeapHandler::Init, {
             CB_HOOK<CALL>(0x4015DD),
         });
@@ -998,7 +954,7 @@ public:
         // Install callbacks/patches
         InstallCallbacks();
         InstallPatches();
-        
+
         // Initialize the Lua engine
         MM2Lua::Initialize();
 
@@ -1069,7 +1025,7 @@ void InstallFramework() {
     *$__VtPauseSampling = &HookSystemHandler::Stop;
 
     /*
-        We'll hook into ArchInit (an empty function), 
+        We'll hook into ArchInit (an empty function),
         and use it to install our callbacks/patches.
 
         However, this time around, we can now use datArgParser
@@ -1170,4 +1126,3 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 	}
 	return TRUE;
 }
-

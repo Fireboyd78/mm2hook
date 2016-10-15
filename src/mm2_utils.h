@@ -4,48 +4,47 @@
 // resolves externals for static AGEHook members in classes
 #define DECLARE_HOOK(x) decltype(x) x
 
-typedef DWORD MM2AddressData;
-
 /*
     Game patching functions
 */
 
-enum CB_HOOK_TYPE
+enum HOOK_TYPE : unsigned int
 {
-    HOOK_JMP = 0,
-    HOOK_CALL,
-
-    /* short-hand */
-
-    JMP = 0,
+    JMP,
     CALL,
+    PUSH,
+
+    COUNT,
 };
 
 struct CB_INSTALL_INFO
 {
-    MM2AddressData hookAddr;
-    CB_HOOK_TYPE hookType;
+    DWORD hookAddr;
+    HOOK_TYPE hookType;
 };
 
-template<CB_HOOK_TYPE hookType>
+template<HOOK_TYPE hookType>
 struct CB_HOOK
 {
     CB_INSTALL_INFO info;
 
-    constexpr CB_HOOK(const MM2AddressData &addrs) : info { addrs, hookType } {};
+    constexpr CB_HOOK(const DWORD addrs) : info { addrs, hookType } {};
 
     constexpr operator CB_INSTALL_INFO() const {
         return info;
     };
 };
 
-void InstallVTableHook(LPCSTR name, 
+void InstallVTableHook(LPCSTR name,
                        auto_ptr lpHookAddr,
-                       std::initializer_list<MM2AddressData> addresses);
+                       std::initializer_list<DWORD> addresses);
 
 void InstallGamePatch(LPCSTR name,
                       std::initializer_list<unsigned char> bytes,
-                      std::initializer_list<MM2AddressData> addresses);
+                      std::initializer_list<DWORD> addresses);
+
+void InstallGameCallback(auto_ptr lpCallback,
+                         CB_INSTALL_INFO info);
 
 void InstallGameCallback(LPCSTR name,
                          auto_ptr lpCallback,
