@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 //
 // Useful preprocessor directives
 //
@@ -193,4 +195,27 @@ inline bool file_exists(LPCSTR filename) {
         return true;
     }
     return false;
+}
+
+namespace variadic
+{
+    template <std::uint64_t...>
+    constexpr std::uint64_t sum = 0;
+
+    template <std::uint64_t S, std::uint64_t... SS>
+    constexpr std::uint64_t sum<S, SS...> = S + sum<SS...>;
+
+    // true_for_all
+    template <bool...>
+    constexpr bool true_for_all = true;
+
+    template <bool B, bool... BB>
+    constexpr bool true_for_all<B, BB...> = B && true_for_all<BB...>;
+
+    // true_for_any
+    template <bool...>
+    constexpr bool true_for_any = false;
+
+    template <bool B, bool... BB>
+    constexpr bool true_for_any<B, BB...> = B || true_for_any<BB...>;
 }
