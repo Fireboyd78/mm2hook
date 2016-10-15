@@ -8,9 +8,9 @@ namespace MM2
 
     class aiMap {
     protected:
-        static MM2FnHook<void> $Dump;
+        static AGEHook<0x538840>::Func<void> $Dump;
 
-        static MM2PtrHook<aiMap> $AIMAP;
+        static AGEHook<0x6B2E10>::Type<aiMap> $AIMAP;
     public:
         AGE_API void Dump(void) {
             $Dump(this);

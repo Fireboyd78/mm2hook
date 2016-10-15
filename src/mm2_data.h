@@ -18,10 +18,10 @@ namespace MM2
 
     class datArgParser {
     protected:
-        static MM2FnHook<bool> $Get_$1;
-        static MM2FnHook<bool> $Get_$2;
-        static MM2FnHook<bool> $Get_$3;
-        static MM2FnHook<bool> $Get_$4;
+        static AGEHook<0x4C6190>::Func<bool> $Get_$1;
+        static AGEHook<0x4C61C0>::Func<bool> $Get_$2;
+        static AGEHook<0x4C6210>::Func<bool> $Get_$3;
+        static AGEHook<0x4C6260>::Func<bool> $Get_$4;
     public:
         AGE_API static bool Get(LPCSTR arg) {
             return $Get_$1(arg);
@@ -42,10 +42,10 @@ namespace MM2
 
     class datAssetManager {
     protected:
-        static MM2FnHook<void> $FullPath_$1;
-        static MM2FnHook<void> $FullPath_$2;
-        static MM2FnHook<bool> $Exists_$1;
-        static MM2FnHook<bool> $Exists_$2;
+        static AGEHook<0x4C55E0>::Func<void> $FullPath_$1;
+        static AGEHook<0x4C56F0>::Func<void> $FullPath_$2;
+        static AGEHook<0x4C59B0>::Func<bool> $Exists_$1;
+        static AGEHook<0x4C59E0>::Func<bool> $Exists_$2;
     public:
         /* TODO?
         static Stream * Open(char const *,char const *,bool,bool);
@@ -102,17 +102,17 @@ namespace MM2
         */
         void *context;
     protected:
-        static MM2FnHook<void> $$ctor$void;
+        static AGEHook<0x4C7A40>::Func<void> $$ctor$void;
 
-        static MM2FnHook<void> $$ctor$ThisCB_$1;
-        static MM2FnHook<void> $$ctor$ThisCB_$2;
-        static MM2FnHook<void> $$ctor$ThisCB_$3;
+        static AGEHook<0x4C7A50>::Func<void> $$ctor$ThisCB_$1;
+        static AGEHook<0x4C7A80>::Func<void> $$ctor$ThisCB_$2;
+        static AGEHook<0x4C7AA0>::Func<void> $$ctor$ThisCB_$3;
 
-        static MM2FnHook<void> $$ctor$CB_$1;
-        static MM2FnHook<void> $$ctor$CB_$2;
-        static MM2FnHook<void> $$ctor$CB_$3;
+        static AGEHook<0x4C7AC0>::Func<void> $$ctor$CB_$1;
+        static AGEHook<0x4C7AF0>::Func<void> $$ctor$CB_$2;
+        static AGEHook<0x4C7B20>::Func<void> $$ctor$CB_$3;
 
-        static MM2FnHook<void> $Call;
+        static AGEHook<0x4C7B50>::Func<void> $Call;
     public:
         AGE_API datCallback(void) {
             $$ctor$void(this);
@@ -145,9 +145,9 @@ namespace MM2
 
     class datOutput {
     protected:
-        static MM2FnHook<void> $CloseLog;
-        static MM2FnHook<bool> $OpenLog;
-        static MM2FnHook<void> $SetOutputMask;
+        static AGEHook<0x4C9530>::Func<void> $CloseLog;
+        static AGEHook<0x4C9590>::Func<bool> $OpenLog;
+        static AGEHook<0x4C95A0>::Func<void> $SetOutputMask;
     public:
         AGE_API static bool OpenLog(LPCSTR filename) {
             return $OpenLog(filename);
@@ -198,19 +198,19 @@ namespace MM2
 
     class datParser {
     protected:
-        static MM2FnHook<void> $$ctor;
-        static MM2FnHook<void> $$dtor;
+        static AGEHook<0x4A78E0>::Func<void> $$ctor;
+        static AGEHook<0x4A7920>::Func<void> $$dtor;
 
-        static MM2FnHook<datParser *> $AddParser;
-        static MM2FnHook<datParserRecord &> $AddRecord;
+        static AGEHook<0x4A7980>::Func<datParser *> $AddParser;
+        static AGEHook<0x4A79D0>::Func<datParserRecord &> $AddRecord;
 
-        static MM2FnHook<bool> $Load_$1;
-        static MM2FnHook<bool> $Load_$2;
-        static MM2FnHook<bool> $Load_$3;
+        static AGEHook<0x4A7A90>::Func<bool> $Load_$1;
+        static AGEHook<0x4A7AF0>::Func<bool> $Load_$2;
+        static AGEHook<0x4A7B40>::Func<bool> $Load_$3;
 
-        static MM2FnHook<bool> $Save_$1;
-        static MM2FnHook<bool> $Save_$2;
-        static MM2FnHook<bool> $Save_$3;
+        static AGEHook<0x4A7B90>::Func<bool> $Save_$1;
+        static AGEHook<0x4A7C00>::Func<bool> $Save_$2;
+        static AGEHook<0x4A7C50>::Func<bool> $Save_$3;
     private:
         char name[64];
 
@@ -324,8 +324,8 @@ namespace MM2
 
     class datTimeManager {
     protected:
-        static MM2FnHook<void> $Reset;
-        static MM2FnHook<void> $Update;
+        static AGEHook<0x4C6300>::Func<void> $Reset;
+        static AGEHook<0x4C6340>::Func<void> $Update;
     public:
         AGE_API static void Reset(void) {
             $Reset();

@@ -30,10 +30,10 @@ namespace MM2
 
     class ioEventQueue {
     protected:
-        static MM2FnHook<bool> $Pop;
-        static MM2FnHook<bool> $Peek;
-        static MM2FnHook<void> $Queue;
-        static MM2FnHook<void> $Command;
+        static AGEHook<0x4BA930>::Func<bool> $Pop;
+        static AGEHook<0x4BA980>::Func<bool> $Peek;
+        static AGEHook<0x4BA9D0>::Func<void> $Queue;
+        static AGEHook<0x4BAA50>::Func<void> $Command;
     public:
         AGE_API static bool Pop(ioEvent *outEvent) {
             return $Pop(outEvent);

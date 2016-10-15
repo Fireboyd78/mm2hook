@@ -24,30 +24,30 @@ namespace MM2
 
     class mmGame : public asNode {
     protected:
-        static MM2FnHook<void> $$ctor;
-        static MM2FnHook<void> $$dtor;
-
+        static AGEHook<0x412550>::Func<void> $$ctor;
+        static AGEHook<0x413940>::Func<void> $$dtor;
+        
         /*
             overrides
         */
-        static MM2FnHook<void> $Update;
-        static MM2FnHook<void> $UpdatePaused;
-        static MM2FnHook<void> $Reset;
+        static AGEHook<0x413E90>::Func<void> $Update;
+        static AGEHook<0x4144A0>::Func<void> $UpdatePaused;
+        static AGEHook<0x413D40>::Func<void> $Reset;
         
         /*
             virtuals
         */
-        static MM2FnHook<int> $Init;
+        static AGEHook<0x412710>::Func<int>  $Init;
 
-        static MM2FnHook<void> $InitGameStrings;
-        static MM2FnHook<void> $InitOtherPlayers;
+        static AGEHook<0x413650>::Func<void> $InitGameStrings;
+        static AGEHook<0x4133F0>::Func<void> $InitOtherPlayers;
 
-        static MM2FnHook<void> $HitWaterHandler;
+        static AGEHook<0x414290>::Func<void> $HitWaterHandler;
 
-        static MM2FnHook<void> $DropThruCityHandler;
-        static MM2FnHook<void> $SendChatMessage;
+        static AGEHook<0x414280>::Func<void> $DropThruCityHandler;
+        static AGEHook<0x414E50>::Func<void> $SendChatMessage;
 
-        static MM2FnHook<void> $BeDone;
+        static AGEHook<0x414D30>::Func<void> $BeDone;
     public:
         AGE_API mmGame(void) {
             PUSH_VTABLE();
@@ -125,7 +125,7 @@ namespace MM2
     private:
         byte _buffer[0x1B8];
     protected:
-        static MM2PtrHook<mmGameManager*> $Instance;
+        static AGEHook<0x5E0D08>::Type<mmGameManager *> $Instance;
     public:
         inline mmGame* getGame(void) const {
             return *getPtr<mmGame*>(this, 0x188);
@@ -142,14 +142,14 @@ namespace MM2
         void mmGameManager::ForceReplayUI(void)
         */
 
-        static MM2PtrHook<mmGameManager*> Instance(void) {
+        static mmGameManager * Instance(void) {
             return $Instance;
         };
     };
 
     class mmGameMusicData {
     protected:
-        static MM2FnHook<bool> $LoadAmbientSFX;
+        static AGEHook<0x434060>::Func<bool> $LoadAmbientSFX;
     public:
         AGE_API bool LoadAmbientSFX(LPCSTR name) {
             return $LoadAmbientSFX(this, name);
@@ -160,10 +160,10 @@ namespace MM2
     private:
         byte _buffer[0xB9C]; // unconfirmed
     protected:
-        static MM2FnHook<void> $SetMessage$1;
-        static MM2FnHook<void> $SetMessage$2;
+        static AGEHook<0x42E1F0>::Func<void> $SetMessage$1;
+        static AGEHook<0x42E240>::Func<void> $SetMessage$2;
 
-        static MM2FnHook<void> $PostChatMessage;
+        static AGEHook<0x42D280>::Func<void> $PostChatMessage;
     public:
         AGE_API void SetMessage(LPCSTR message, float duration, int p2) {
             $SetMessage$1(this, message, duration, p2);
@@ -199,10 +199,10 @@ namespace MM2
     private:
         byte _buffer[0x60];
     protected:
-        static MM2FnHook<int>  $IsEnabled;
-        static MM2FnHook<void> $Lock;
-        static MM2FnHook<void> $Unlock;
-        static MM2FnHook<void> $ProcessChat;
+        static AGEHook<0x42A280>::Func<int>  $IsEnabled;
+        static AGEHook<0x42B4F0>::Func<void> $Lock;
+        static AGEHook<0x42B500>::Func<void> $Unlock;
+        static AGEHook<0x42A400>::Func<void> $ProcessChat;
     public:
         inline mmGame* getGame(void) const {
             return *getPtr<mmGame*>(this, 0x18);

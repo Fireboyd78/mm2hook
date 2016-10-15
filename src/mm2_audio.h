@@ -62,31 +62,31 @@ namespace MM2
             Function hooks
         */
 
-        static MM2FnHook<void> $$ctor;
-        static MM2FnHook<void> $$dtor;
+        static AGEHook<0x5A4ED0>::Func<void> $$ctor;
+        static AGEHook<0x5A4F30>::Func<void> $$dtor;
 
-        static MM2FnHook<void> $DeInit;
+        static AGEHook<0x5A4FD0>::Func<void> $DeInit;
 
-        static MM2FnHook<DirSnd *> $Init;
-        static MM2FnHook<int> $Init3DListener;
+        static AGEHook<0x5A5080>::Func<DirSnd *> $Init;
+        static AGEHook<0x5A5160>::Func<int> $Init3DListener;
 
-        static MM2FnHook<int> $IsDSDeviceInList;
-        static MM2FnHook<void> $SetDeviceRating;
-        static MM2FnHook<int> $EnumDSDevices;
+        static AGEHook<0x5A51C0>::Func<int> $IsDSDeviceInList;
+        static AGEHook<0x5A5390>::Func<void> $SetDeviceRating;
+        static AGEHook<0x5A5510>::Func<int> $EnumDSDevices;
 
-        static MM2FnHook<int> $InitPrimarySoundBuffer;
-        static MM2FnHook<int> $CreatePrimaryInterfaceAndBuffer;
+        static AGEHook<0x5A5530>::Func<int> $InitPrimarySoundBuffer;
+        static AGEHook<0x5A5770>::Func<int> $CreatePrimaryInterfaceAndBuffer;
 
-        static MM2FnHook<void> $ClearDSDeviceList;
+        static AGEHook<0x5A5860>::Func<void> $ClearDSDeviceList;
 
-        static MM2FnHook<void> $SetPrimaryBufferFormat;
+        static AGEHook<0x5A5950>::Func<void> $SetPrimaryBufferFormat;
 
-        static MM2FnHook<void> $ScanAvailableDSFormats;
-        static MM2FnHook<char *> $TranslateDSError;
+        static AGEHook<0x5A5A30>::Func<void> $ScanAvailableDSFormats;
+        static AGEHook<0x5A5BB0>::Func<char *> $TranslateDSError;
 
-        static MM2FnHook<void> $SetBitDepth;
-        static MM2FnHook<char **> $GetDeviceNames;
-        static MM2FnHook<UINT> $GetNum3DHallBufs;
+        static AGEHook<0x5A5BD0>::Func<void> $SetBitDepth;
+        static AGEHook<0x5A5C00>::Func<char **> $GetDeviceNames;
+        static AGEHook<0x5A5630>::Func<UINT> $GetNum3DHallBufs;
 
         AGE_API int CreatePrimaryInterfaceAndBuffer(DSBUFFERDESC *p1) {
             return $CreatePrimaryInterfaceAndBuffer(this, p1);
@@ -171,16 +171,16 @@ namespace MM2
             Function hooks    
         */
 
-        static MM2FnHook<void> $$ctor;
-        static MM2FnHook<void> $$dtor;
+        static AGEHook<0x51CBE0>::Func<void> $$ctor;
+        static AGEHook<0x51CC00>::Func<void> $$dtor;
 
-        static MM2FnHook<void> $DeInit;
-        static MM2FnHook<mmDirSnd *> $Init;
+        static AGEHook<0x51CC10>::Func<void> $DeInit;
+        static AGEHook<0x51CC50>::Func<mmDirSnd *> $Init;
 
-        static MM2FnHook<int> $InitPrimarySoundBuffer;
+        static AGEHook<0x51CD90>::Func<int> $InitPrimarySoundBuffer;
 
-        static MM2FnHook<UINT> $EAXEnabled;
-        static MM2FnHook<UINT> $DSound3DEnabled;
+        static AGEHook<0x51CE60>::Func<UINT> $EAXEnabled;
+        static AGEHook<0x51CE70>::Func<UINT> $DSound3DEnabled;
     public:
         AGE_API mmDirSnd() {
             PUSH_VTABLE();

@@ -1,28 +1,28 @@
 #include "mm2_stream.h"
 using namespace MM2;
 
-MM2FnHook<void> Stream::$DumpOpenFiles  ( NULL, NULL, 0x4C9970 );
+DECLARE_HOOK(Stream::$DumpOpenFiles);
 
-MM2FnHook<Stream *> Stream::$Open$1     ( NULL, NULL, 0x4C99C0 );
-MM2FnHook<Stream *> Stream::$Create$1   ( NULL, NULL, 0x4C9A00 );
+DECLARE_HOOK(Stream::$Open$1);
+DECLARE_HOOK(Stream::$Create$1);
 
-MM2FnHook<Stream *> Stream::$Open$2     ( NULL, NULL, 0x4C9A40);
-MM2FnHook<Stream *> Stream::$Create$2   ( NULL, NULL, 0x4C9A70);
+DECLARE_HOOK(Stream::$Open$2);
+DECLARE_HOOK(Stream::$Create$2);
 
-MM2FnHook<int> Stream::$Read            ( NULL, NULL, 0x4C9AA0 );
-MM2FnHook<int> Stream::$Write           ( NULL, NULL, 0x4C9BF0 );
-MM2FnHook<int> Stream::$GetCh           ( NULL, NULL, 0x4C9D00 );
-MM2FnHook<int> Stream::$PutCh           ( NULL, NULL, 0x4C9D30 );
-MM2FnHook<int> Stream::$Seek            ( NULL, NULL, 0x4C9D60 );
-MM2FnHook<int> Stream::$Tell            ( NULL, NULL, 0x4C9DB0 );
-MM2FnHook<int> Stream::$Close           ( NULL, NULL, 0x4C9DC0 );
-MM2FnHook<int> Stream::$Size            ( NULL, NULL, 0x4C9E00 );
-MM2FnHook<int> Stream::$Flush           ( NULL, NULL, 0x4C9E60 );
+DECLARE_HOOK(Stream::$Read);
+DECLARE_HOOK(Stream::$Write);
+DECLARE_HOOK(Stream::$GetCh);
+DECLARE_HOOK(Stream::$PutCh);
+DECLARE_HOOK(Stream::$Seek);
+DECLARE_HOOK(Stream::$Tell);
+DECLARE_HOOK(Stream::$Close);
+DECLARE_HOOK(Stream::$Size);
+DECLARE_HOOK(Stream::$Flush);
 
-MM2FnHook<void> $fprintf                ( NULL, NULL, 0x4C9ED0 );
-MM2FnHook<int> $fseek                   ( NULL, NULL, 0x4C9F20 );
-MM2FnHook<int> $fgets                   ( NULL, NULL, 0x4C9F80 );
-MM2FnHook<int> $fscanf                  ( NULL, NULL, 0x4C9FF0 );
+AGEHook<0x4C9ED0>::Func<void> $fprintf;
+AGEHook<0x4C9F20>::Func<int> $fseek;
+AGEHook<0x4C9F80>::Func<int> $fgets;
+AGEHook<0x4C9FF0>::Func<int> $fscanf;
 
 AGE_API NAKED void fprintf(Stream *stream, char const *format, ...) {
     JMP_PTR($fprintf);

@@ -2,50 +2,48 @@
 using namespace MM2;
 
 /*
-    mmHUD
-*/
-MM2FnHook<void> mmHUD::$SetMessage$1                ( NULL, NULL, 0x42E1F0 );
-MM2FnHook<void> mmHUD::$SetMessage$2                ( NULL, NULL, 0x42E240 );
-
-MM2FnHook<void> mmHUD::$PostChatMessage             ( NULL, NULL, 0x42D280 );
-
-/*
     mmGame
 */
-MM2FnHook<void> mmGame::$$ctor                      ( NULL, NULL, 0x412550 );
-MM2FnHook<void> mmGame::$$dtor                      ( NULL, NULL, 0x413940 );
+DECLARE_HOOK(mmGame::$$ctor);
+DECLARE_HOOK(mmGame::$$dtor);
 
-MM2FnHook<void> mmGame::$Update                     ( NULL, NULL, 0x413E90 );
-MM2FnHook<void> mmGame::$UpdatePaused               ( NULL, NULL, 0x4144A0 );
-MM2FnHook<void> mmGame::$Reset                      ( NULL, NULL, 0x413D40 );
+DECLARE_HOOK(mmGame::$Update);
+DECLARE_HOOK(mmGame::$UpdatePaused);
+DECLARE_HOOK(mmGame::$Reset);
 
-MM2FnHook<int>  mmGame::$Init                       ( NULL, NULL, 0x412710 );
+DECLARE_HOOK(mmGame::$Init);
 
-MM2FnHook<void> mmGame::$InitGameStrings            ( NULL, NULL, 0x413650 );
-MM2FnHook<void> mmGame::$InitOtherPlayers           ( NULL, NULL, 0x4133F0 );
+DECLARE_HOOK(mmGame::$InitGameStrings);
+DECLARE_HOOK(mmGame::$InitOtherPlayers);
 
-MM2FnHook<void> mmGame::$HitWaterHandler            ( NULL, NULL, 0x414290 );
+DECLARE_HOOK(mmGame::$HitWaterHandler);
 
-MM2FnHook<void> mmGame::$DropThruCityHandler        ( NULL, NULL, 0x414280 );
-MM2FnHook<void> mmGame::$SendChatMessage            ( NULL, NULL, 0x414E50 );
+DECLARE_HOOK(mmGame::$DropThruCityHandler);
+DECLARE_HOOK(mmGame::$SendChatMessage);
 
-MM2FnHook<void> mmGame::$BeDone                     ( NULL, NULL, 0x414D30 );
+DECLARE_HOOK(mmGame::$BeDone);
 
 /*
     mmGameManager
 */
-MM2PtrHook<mmGameManager *>
-                mmGameManager::$Instance            ( NULL, NULL, 0x5E0D08 );
+DECLARE_HOOK(mmGameManager::$Instance);
 
 /*
     mmGameMusicData
 */
-MM2FnHook<bool> mmGameMusicData::$LoadAmbientSFX    ( NULL, NULL, 0x434060 );
+DECLARE_HOOK(mmGameMusicData::$LoadAmbientSFX);
+
+/*
+    mmHUD
+*/
+DECLARE_HOOK(mmHUD::$SetMessage$1);
+DECLARE_HOOK(mmHUD::$SetMessage$2);
+DECLARE_HOOK(mmHUD::$PostChatMessage);
 
 /*
     mmPopup
 */
-MM2FnHook<int>  mmPopup::$IsEnabled                 ( NULL, NULL, 0x42A280 );
-MM2FnHook<void> mmPopup::$Lock                      ( NULL, NULL, 0x42B4F0 );
-MM2FnHook<void> mmPopup::$Unlock                    ( NULL, NULL, 0x42B500 );
-MM2FnHook<void> mmPopup::$ProcessChat               ( NULL, NULL, 0x42A400 );
+DECLARE_HOOK(mmPopup::$IsEnabled);
+DECLARE_HOOK(mmPopup::$Lock);
+DECLARE_HOOK(mmPopup::$Unlock);
+DECLARE_HOOK(mmPopup::$ProcessChat);

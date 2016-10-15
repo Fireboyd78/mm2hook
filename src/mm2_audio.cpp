@@ -4,44 +4,42 @@ using namespace MM2;
 /*
     DirSnd
 */
-MM2FnHook<void>     DirSnd::$$ctor                              ( NULL, NULL, 0x5A4ED0 );
-MM2FnHook<void>     DirSnd::$$dtor                              ( NULL, NULL, 0x5A4F30 );
+DECLARE_HOOK(DirSnd::$$ctor);
+DECLARE_HOOK(DirSnd::$$dtor);
 
-MM2FnHook<void>     DirSnd::$DeInit                             ( NULL, NULL, 0x5A4FD0 );
+DECLARE_HOOK(DirSnd::$DeInit);
 
-MM2FnHook<DirSnd *> DirSnd::$Init                               ( NULL, NULL, 0x5A5080 );
-MM2FnHook<int>      DirSnd::$Init3DListener                     ( NULL, NULL, 0x5A5160 );
+DECLARE_HOOK(DirSnd::$Init);
+DECLARE_HOOK(DirSnd::$Init3DListener);
 
-MM2FnHook<int>      DirSnd::$IsDSDeviceInList                   ( NULL, NULL, 0x5A51C0 );
-MM2FnHook<void>     DirSnd::$SetDeviceRating                    ( NULL, NULL, 0x5A5390 );
-MM2FnHook<int>      DirSnd::$EnumDSDevices                      ( NULL, NULL, 0x5A5510 );
+DECLARE_HOOK(DirSnd::$IsDSDeviceInList);
+DECLARE_HOOK(DirSnd::$SetDeviceRating);
+DECLARE_HOOK(DirSnd::$EnumDSDevices);
 
-MM2FnHook<int>      DirSnd::$InitPrimarySoundBuffer             ( NULL, NULL, 0x5A5530 );
-MM2FnHook<int>      DirSnd::$CreatePrimaryInterfaceAndBuffer    ( NULL, NULL, 0x5A5770 );
+DECLARE_HOOK(DirSnd::$InitPrimarySoundBuffer);
+DECLARE_HOOK(DirSnd::$CreatePrimaryInterfaceAndBuffer);
 
-MM2FnHook<void>     DirSnd::$ClearDSDeviceList                  ( NULL, NULL, 0x5A5860 );
+DECLARE_HOOK(DirSnd::$ClearDSDeviceList);
 
-MM2FnHook<void>     DirSnd::$SetPrimaryBufferFormat             ( NULL, NULL, 0x5A5950 );
+DECLARE_HOOK(DirSnd::$SetPrimaryBufferFormat);
 
-MM2FnHook<void>     DirSnd::$ScanAvailableDSFormats             ( NULL, NULL, 0x5A5A30 );
-MM2FnHook<char *>   DirSnd::$TranslateDSError                   ( NULL, NULL, 0x5A5BB0 );
+DECLARE_HOOK(DirSnd::$ScanAvailableDSFormats);
+DECLARE_HOOK(DirSnd::$TranslateDSError);
 
-MM2FnHook<void>     DirSnd::$SetBitDepth                        ( NULL, NULL, 0x5A5BD0 );
-MM2FnHook<char **>  DirSnd::$GetDeviceNames                     ( NULL, NULL, 0x5A5C00 );
-MM2FnHook<UINT>     DirSnd::$GetNum3DHallBufs                   ( NULL, NULL, 0x5A5630 );
+DECLARE_HOOK(DirSnd::$SetBitDepth);
+DECLARE_HOOK(DirSnd::$GetDeviceNames);
+DECLARE_HOOK(DirSnd::$GetNum3DHallBufs);
+                                                                
+/*                                                              
+    mmDirSnd                                                    
+*/                                                              
+DECLARE_HOOK(mmDirSnd::$$ctor);
+DECLARE_HOOK(mmDirSnd::$$dtor);
 
-/*
-    mmDirSnd
-*/
- MM2FnHook<void>    mmDirSnd::$$ctor                            ( NULL, NULL, 0x51CBE0 );
- MM2FnHook<void>    mmDirSnd::$$dtor                            ( NULL, NULL, 0x51CC00 );
+DECLARE_HOOK(mmDirSnd::$DeInit);
+DECLARE_HOOK(mmDirSnd::$Init);
 
- MM2FnHook<void>    mmDirSnd::$DeInit                           ( NULL, NULL, 0x51CC10 );
+DECLARE_HOOK(mmDirSnd::$InitPrimarySoundBuffer);
 
- MM2FnHook<mmDirSnd *>
-                    mmDirSnd::$Init                             ( NULL, NULL, 0x51CC50 );
-
- MM2FnHook<int>     mmDirSnd::$InitPrimarySoundBuffer           ( NULL, NULL, 0x51CD90 );
-
- MM2FnHook<UINT>    mmDirSnd::$EAXEnabled                       ( NULL, NULL, 0x51CE60 );
- MM2FnHook<UINT>    mmDirSnd::$DSound3DEnabled                  ( NULL, NULL, 0x51CE70 );
+DECLARE_HOOK(mmDirSnd::$EAXEnabled);
+DECLARE_HOOK(mmDirSnd::$DSound3DEnabled);

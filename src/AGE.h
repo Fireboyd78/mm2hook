@@ -84,7 +84,143 @@ public:
         return m_info.engineVersion;
     };
 
-    virtual HWND GetMainWindowHwnd() const PURE;
-
     virtual void Initialize() {};
+};
+
+template <int address>
+class AGEHook {
+public:
+    template <typename TType>
+    class Type {
+    protected:
+        TType *lpValue;
+    public:
+        constexpr Type() : lpValue((TType*)address) {};
+
+        inline TType* get() const {
+            return this->lpValue;
+        }
+
+        inline void set(TType value) {
+            *this->get() = value;
+        }
+
+        /*
+            TType*->TMember - Pointer to struct of TType
+        */
+        inline TType& operator->() const {
+            return *this->get();
+        };
+
+        /*
+            &TType - Instance of TType
+        */
+        inline TType* operator&() const {
+            return this->get();
+        };
+
+        /*
+            *TType - Pointer to TType
+        */
+        inline TType& operator*() const {
+            return *this->get();
+        };
+
+
+        /*
+            TType*(this) - Convert this to TType pointer
+        */
+        explicit inline operator TType*() const {
+            return this->get();
+        }
+
+        /*
+            TType&(this) - Convert this to TType reference
+        */
+        inline operator TType&() const {
+            return *this->get();
+        }
+
+        /*
+            TType[0] - Pointer is TType array
+        */
+        inline TType& operator[ ](std::size_t index) const {
+            return this->get()[index];
+        }
+
+        /*
+            this() - TType is function pointer
+        */
+        template <typename... TArgs>
+        inline auto operator()(TArgs... args) {
+            return (*this->get())(args...);
+        }
+    };
+
+    template <typename TRet, typename... TArgs>
+    using MethodCall = TRet (*)(TArgs...);
+
+    template <typename TRet, class TThis, typename... TArgs>
+    using MemberCall = TRet (__thiscall *)(const TThis, TArgs...);
+
+    template <typename TRet, typename... TArgs>
+    using StdMethodCall = TRet (__stdcall *)(TArgs...);
+
+    template <typename TRet>
+    class Func {
+    protected:
+        LPVOID lpFunc;
+    public:
+        constexpr Func() : lpFunc((LPVOID)address) {};
+
+        template<typename ...TArgs>
+        constexpr TRet operator()(TArgs ...args) const {
+            return static_cast<MethodCall<TRet, TArgs...>>(lpFunc)(args...);
+        };
+
+        template<typename ...TArgs, class TThis>
+        constexpr TRet operator()(const TThis &&This, TArgs ...args) const {
+            return static_cast<MemberCall<TRet, TThis, TArgs...>>(lpFunc)(This, args...);
+        };
+
+        class StdCall : protected Func<TRet> {
+        public:
+            template<typename ...TArgs>
+            constexpr TRet operator()(TArgs ...args) const {
+                return static_cast<StdMethodCall<TRet, TArgs...>>(lpFunc)(args...);
+            };
+        };
+    };
+
+    /*
+         __cdecl function declaration
+    */
+    template <typename TRet, typename... TArgs>
+    class Func<MethodCall<TRet, TArgs...>> : protected Func<TRet> {
+        using MethodCall = MethodCall<TRet, TArgs...>;
+    public:
+        constexpr TRet operator()(TArgs ...args) const {
+            return static_cast<MethodCall>(lpFunc)(args...);
+        };
+
+        constexpr operator MethodCall() const {
+            return static_cast<MethodCall>(lpFunc);
+        };
+    };
+
+    /*
+        __stdcall function declaration
+    */
+    template <typename TRet, typename... TArgs>
+    class Func<StdMethodCall<TRet, TArgs...>> : protected Func<TRet> {
+        using StdMethodCall = StdMethodCall<TRet, TArgs...>;
+    public:
+        constexpr TRet operator()(TArgs ...args) const {
+            return static_cast<StdMethodCall>(lpFunc)(args...);
+        };
+
+        constexpr operator StdMethodCall() const {
+            return static_cast<StdMethodCall>(lpFunc);
+        };
+    };
 };

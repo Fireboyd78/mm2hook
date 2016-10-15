@@ -13,9 +13,9 @@ namespace MM2
 
     class Base {
     protected:
-        static MM2FnHook<void> $$dtor;
+        static AGEHook<0x4C8200>::Func<void> $$dtor;
     public:
-        virtual ~Base() {
+        AGE_API virtual ~Base() {
             PUSH_VTABLE();
             $$dtor(this);
             POP_VTABLE();
@@ -24,16 +24,16 @@ namespace MM2
 
     class asCullable : public Base {
     protected:
-        static MM2FnHook<void> $$dtor;
-        static MM2FnHook<void> $Cull;
+        static AGEHook<0x460EA0>::Func<void> $$dtor;
+        static AGEHook<0x4A3440>::Func<void> $Cull;
     public:
-        virtual ~asCullable() {
+        AGE_API virtual ~asCullable() {
             PUSH_VTABLE();
             $$dtor(this);
             POP_VTABLE();
         };
 
-        virtual void Cull(void) {
+        AGE_API virtual void Cull(void) {
             $Cull(this);
         };
     };
@@ -47,37 +47,37 @@ namespace MM2
 
         LPCSTR name;
     protected:
-        static MM2FnHook<void> $FileIO;
-        static MM2FnHook<void> $AfterLoad;
-        static MM2FnHook<void> $BeforeSave;
+        static AGEHook<0x403330>::Func<void> $FileIO;
+        static AGEHook<0x403340>::Func<void> $AfterLoad;
+        static AGEHook<0x403350>::Func<void> $BeforeSave;
 
-        static MM2FnHook<char *> $GetClassNameA;
+        static AGEHook<0x403360>::Func<char *> $GetClassNameA;
 
-        static MM2FnHook<void> $$ctor;
-        static MM2FnHook<void> $$dtor;
+        static AGEHook<0x4A0CE0>::Func<void> $$ctor;
+        static AGEHook<0x4A0D00>::Func<void> $$dtor;
 
-        static MM2FnHook<void> $SetName;
+        static AGEHook<0x4A0D70>::Func<void> $SetName;
 
-        static MM2FnHook<const char *> $GetDirName;
+        static AGEHook<0x4A0DA0>::Func<const char *> $GetDirName;
 
-        static MM2FnHook<void> $Update;
-        static MM2FnHook<void> $UpdatePaused;
-        static MM2FnHook<void> $Reset;
-        static MM2FnHook<void> $ResChange;
+        static AGEHook<0x4A0DB0>::Func<void> $Update;
+        static AGEHook<0x4A0DD0>::Func<void> $UpdatePaused;
+        static AGEHook<0x4A0E10>::Func<void> $Reset;
+        static AGEHook<0x4A0E30>::Func<void> $ResChange;
 
-        static MM2FnHook<int> $AddChild;
-        static MM2FnHook<int> $InsertChild;
-        static MM2FnHook<int> $RemoveChild_$1;
-        static MM2FnHook<int> $RemoveChild_$2;
-        static MM2FnHook<void> $RemoveAllChildren;
-        static MM2FnHook<asNode *> $GetChild;
-        static MM2FnHook<asNode *> $GetNext;
-        static MM2FnHook<asNode *> $GetLastChild;
-        static MM2FnHook<int> $NumChildren;
-        static MM2FnHook<void> $SwitchTo;
+        static AGEHook<0x4A0E60>::Func<int> $AddChild;
+        static AGEHook<0x4A0EE0>::Func<int> $InsertChild;
+        static AGEHook<0x4A0F50>::Func<int> $RemoveChild_$1;
+        static AGEHook<0x4A0FD0>::Func<int> $RemoveChild_$2;
+        static AGEHook<0x4A1010>::Func<void> $RemoveAllChildren;
+        static AGEHook<0x4A1030>::Func<asNode *> $GetChild;
+        static AGEHook<0x4A1060>::Func<asNode *> $GetNext;
+        static AGEHook<0x4A1070>::Func<asNode *> $GetLastChild;
+        static AGEHook<0x4A10A0>::Func<int> $NumChildren;
+        static AGEHook<0x4A10C0>::Func<void> $SwitchTo;
 
-        static MM2FnHook<bool> $Load;
-        static MM2FnHook<bool> $Save;
+        static AGEHook<0x4A1120>::Func<bool> $Load;
+        static AGEHook<0x4A11D0>::Func<bool> $Save;
     public:
         AGE_API asNode() {
             PUSH_VTABLE();

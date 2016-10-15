@@ -15,19 +15,33 @@
 #include "mm2_stream.h"
 #include "mm2_vehicle.h"
 
+enum MM2Version
+{
+    MM2_INVALID = -1,
+
+    MM2_BETA_1 = 0,
+    MM2_BETA_2 = 1,
+    MM2_RETAIL = 2,
+
+    MM2_NUM_VERSIONS,
+
+    // versions that cannot load
+    MM2_BETA_2_PETITE
+};
+
 static const ageInfoLookup g_mm2_info[] = {
-    { 0x5AB7F8, true, { MM2_BETA_1, 3323, "Angel: 3323 / Jun 29 2000 11:52:28" }},
-    { 0x5C18EC, true, { MM2_BETA_2, 3366, "Angel: 3366 / Aug  8 2000 10:08:04" }},
     { 0x5C28FC, true, { MM2_RETAIL, 3393, "Angel: 3393 / Nov  3 2000 14:34:22" }},
 
+    /* no longer supported */
+    { 0x5AB7F8, false, { MM2_BETA_1, 3323, "Angel: 3323 / Jun 29 2000 11:52:28" }},
+    { 0x5C18EC, false, { MM2_BETA_2, 3366, "Angel: 3366 / Aug  8 2000 10:08:04" }},
+
     // PEtite'd Beta 2...
-    { 0x6B602D, false, { MM2_BETA_2_PETITE, 3366, "ERROR!" }},
+    { 0x6B602D, false,{ MM2_BETA_2_PETITE, 3366, "ERROR!" }},
     { NULL },
 };
 
 class CMidtownMadness2 : public ageGame {
-protected:
-    static MM2PtrHook<HWND> $hwndMain;
 public:
     CMidtownMadness2(const ageInfo &gameInfo)
         : ageGame(gameInfo) {};
@@ -42,13 +56,5 @@ public:
 
     MM2Version GetVersion() const {
         return (MM2Version)m_info.gameVersion;
-    };
-
-    virtual HWND GetMainWindowHwnd() const {
-        return $hwndMain;
-    };
-
-    virtual void Initialize() {
-        MM2HookMgr::Initialize(GetVersion());
     };
 };

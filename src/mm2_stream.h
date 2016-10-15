@@ -34,23 +34,23 @@ namespace MM2
 
     class Stream {
     protected:
-        static MM2FnHook<void> $DumpOpenFiles;
+        static AGEHook<0x4C9970>::Func<void> $DumpOpenFiles;
 
-        static MM2FnHook<Stream*> $Open$1;
-        static MM2FnHook<Stream*> $Create$1;
+        static AGEHook<0x4C99C0>::Func<Stream*> $Open$1;
+        static AGEHook<0x4C9A00>::Func<Stream*> $Create$1;
 
-        static MM2FnHook<Stream*> $Open$2;
-        static MM2FnHook<Stream*> $Create$2;
+        static AGEHook<0x4C9A40>::Func<Stream*> $Open$2;
+        static AGEHook<0x4C9A70>::Func<Stream*> $Create$2;
 
-        static MM2FnHook<int> $Read;
-        static MM2FnHook<int> $Write;
-        static MM2FnHook<int> $GetCh;
-        static MM2FnHook<int> $PutCh;
-        static MM2FnHook<int> $Seek;
-        static MM2FnHook<int> $Tell;
-        static MM2FnHook<int> $Close;
-        static MM2FnHook<int> $Size;
-        static MM2FnHook<int> $Flush;
+        static AGEHook<0x4C9AA0>::Func<int> $Read;
+        static AGEHook<0x4C9BF0>::Func<int> $Write;
+        static AGEHook<0x4C9D00>::Func<int> $GetCh;
+        static AGEHook<0x4C9D30>::Func<int> $PutCh;
+        static AGEHook<0x4C9D60>::Func<int> $Seek;
+        static AGEHook<0x4C9DB0>::Func<int> $Tell;
+        static AGEHook<0x4C9DC0>::Func<int> $Close;
+        static AGEHook<0x4C9E00>::Func<int> $Size;
+        static AGEHook<0x4C9E60>::Func<int> $Flush;
     public:
         AGE_API static void DumpOpenFiles(void) {
             $DumpOpenFiles();

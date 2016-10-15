@@ -8,7 +8,7 @@ namespace MM2
 
     class vehCarAudioContainer {
     protected:
-        static MM2FnHook<void> $SetSirenCSVName;
+        static AGEHook<0x4D0C80>::Func<void> $SetSirenCSVName;
     public:
         AGE_API static void SetSirenCSVName(LPCSTR name) {
             $SetSirenCSVName(name);

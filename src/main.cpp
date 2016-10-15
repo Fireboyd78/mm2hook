@@ -14,8 +14,6 @@ HRESULT NAKED DirectInputCreate_Impl(HINSTANCE hinst, DWORD dwVersion, LPVOID *p
 
 CMidtownMadness2 *pMM2;
 
-MM2Version gameVersion;
-
 bool isConsoleOpen = false;
 
 // ==========================
@@ -53,106 +51,92 @@ static Matrix34 sm_DashOffset;
 // Function hooks
 // ==========================
 
-MM2FnHook<void> $CreateGameMutex                ( NULL, NULL, 0x402180 );
+AGEHook<0x402180>::Func<void> $CreateGameMutex;
 
-MM2FnHook<void> $dgBangerInstance_Draw          ( NULL, NULL, 0x4415E0 );
+AGEHook<0x4C9510>::Func<void> $DefaultPrintString;
+AGEHook<0x4C95F0>::Func<void> $DefaultPrinter;
 
-MM2FnHook<UINT32> $sdlPage16_GetShadedColor     ( NULL, NULL, 0x450880 );
+AGEHook<0x4A3370>::Func<void> $asLinearCS_Update;
 
-MM2FnHook<void> $asLinearCS_Update              ( NULL, NULL, 0x4A3370 );
+AGEHook<0x4415E0>::Func<void> $dgBangerInstance_Draw;
 
-MM2FnHook<bool> $gfxAutoDetect                  ( NULL, NULL, 0x4ABE00 );
+AGEHook<0x4ABE00>::Func<bool> $gfxAutoDetect;
+AGEHook<0x4A8CE0>::Func<void> $gfxPipeline_SetRes;
 
-MM2FnHook<void> $setRes                         ( NULL, NULL, 0x4A8CE0 );
+AGEHook<0x577210>::Func<void> $memSafeHeap_Init;
+
+AGEHook<0x5346B0>::Func<int>::StdCall $MyLoadStringA;
+
+AGEHook<0x450880>::Func<UINT32> $sdlPage16_GetShadedColor;
 
 /*
     TODO: Move VGL stuff to a separate file?    
 */
 
-MM2FnHook<void> $vglBegin                       ( NULL, NULL, 0x4A5500 );
-MM2FnHook<void> $vglEnd                         ( NULL, NULL, 0x4A5A90 );
+AGEHook<0x4A5500>::Func<void> $vglBegin;
+AGEHook<0x4A5A90>::Func<void> $vglEnd;
 
-MM2FnHook<void> $memSafeHeap_Init               ( NULL, NULL, 0x577210 );
+AGEHook<0x4A88F0>::Func<WNDPROC> $gfxPipeline_gfxWindowProc;
 
-MM2FnHook<void> $DefaultPrintString             ( NULL, NULL, 0x4C9510 );
-MM2FnHook<void> $DefaultPrinter                 ( NULL, NULL, 0x4C95F0 );
+AGEHook<0x4AC3D0>::Func<LPD3DENUMDEVICESCALLBACK7>  $DeviceCallback;
+AGEHook<0x4AC6F0>::Func<LPDDENUMMODESCALLBACK2> $ResCallback;
 
-MM2RawFnHook<int (__stdcall *)(HMODULE, UINT, char *, int)>
-                $MyLoadStringA                  ( NULL, NULL, 0x5346B0 );
-
-MM2RawFnHook<WNDPROC> $gfxWindowProc            ( NULL, NULL, 0x4A88F0 );
-
-MM2RawFnHook<LPD3DENUMDEVICESCALLBACK7> 
-                $DeviceCallback                 ( NULL, NULL, 0x4AC3D0 );
-MM2RawFnHook<LPDDENUMMODESCALLBACK2>
-                $ResCallback                    ( NULL, NULL, 0x4AC6F0 );
-
-MM2FnHook<void> $asCullManagerInit              ( NULL, NULL, 0x4A1290 );
-
+AGEHook<0x4A1290>::Func<void> $asCullManagerInit;
 
 // ==========================
 // Pointer hooks
 // ==========================
 
-MM2PtrHook<Stream *> datOutputStream            ( NULL, NULL, 0x6A3D40 );
+AGEHook<0x6A3D40>::Type<Stream *> datOutputStream;
 
-MM2PtrHook<cityTimeWeatherLighting> 
-                TIMEWEATHER                     ( NULL, NULL, 0x6299A8 );
+AGEHook<0x6299A8>::Type<cityTimeWeatherLighting> TIMEWEATHER;
 
-MM2PtrHook<int> timeOfDay                       ( NULL, NULL, 0x62B068 );
+AGEHook<0x62B068>::Type<int> timeOfDay;
 
-MM2PtrHook<char[40]> cityName                   ( NULL, NULL, 0x6B167C );
-MM2PtrHook<char[40]> cityName2                  ( NULL, NULL, 0x6B16A4 );
+AGEHook<0x6B167C>::Type<char[40]> cityName;
+AGEHook<0x6B16A4>::Type<char[40]> cityName2;
 
-MM2PtrHook<UINT32> vglCurrentColor              ( NULL, NULL, 0x661974 );
+AGEHook<0x661974>::Type<UINT32> vglCurrentColor;
 
-MM2PtrHook<asNode> ROOT                         ( NULL, NULL, 0x661738 );
+AGEHook<0x661738>::Type<asNode> ROOT;
 
-MM2PtrHook<void (*)(LPCSTR)>
-                $PrintString                    ( NULL, NULL, 0x5CECF0 );
-MM2PtrHook<void (*)(int, LPCSTR, va_list)>
-                $Printer                        ( NULL, NULL, 0x5CED24 );
-MM2PtrHook<void(*)(void)>
-                $FatalErrorHandler              ( NULL, NULL, 0x6A3D38 );
+AGEHook<0x5CECF0>::Type<void (*)(LPCSTR)> $PrintString;
+AGEHook<0x5CED24>::Type<void (*)(int, LPCSTR, va_list)> $Printer;
+AGEHook<0x6A3D38>::Type<void (*)(void)> $FatalErrorHandler;
 
-MM2PtrHook<LPDIRECTDRAWCREATEEX>
-                $lpDirectDrawCreateEx           ( NULL, NULL, 0x684518 );
+AGEHook<0x684518>::Type<LPDIRECTDRAWCREATEEX> $lpDirectDrawCreateEx;
 
-MM2PtrHook<IDirectDraw7 *> lpDD                 ( NULL, NULL, 0x6830A8 );
-MM2PtrHook<IDirect3D7 *> lpD3D                  ( NULL, NULL, 0x6830AC );
+AGEHook<0x6830A8>::Type<IDirectDraw7 *> lpDD;
+AGEHook<0x6830AC>::Type<IDirect3D7 *> lpD3D;
+AGEHook<0x6830CC>::Type<IDirectDrawSurface7 *> lpdsRend;
 
-MM2PtrHook<IDirectDrawSurface7 *> lpdsRend      ( NULL, NULL, 0x6830CC );
+AGEHook<0x683130>::Type<gfxInterface> gfxInterfaces;
+AGEHook<0x6844C0>::Type<uint32_t> gfxInterfaceCount;
 
-MM2PtrHook<gfxInterface> gfxInterfaces          ( NULL, NULL, 0x683130 );
-MM2PtrHook<uint32_t> gfxInterfaceCount          ( NULL, NULL, 0x6844C0 );
+AGEHook<0x6844FC>::Type<uint32_t> gfxMaxScreenWidth;
+AGEHook<0x6844D8>::Type<uint32_t> gfxMaxScreenHeight;
 
-MM2PtrHook<uint32_t> gfxMaxScreenWidth          ( NULL, NULL, 0x6844FC );
-MM2PtrHook<uint32_t> gfxMaxScreenHeight         ( NULL, NULL, 0x6844D8 );
+AGEHook<0x682FA0>::Type<HWND> hWndParent;
+AGEHook<0x6830B8>::Type<HWND> hWndMain;
 
-MM2PtrHook<HWND> hWndParent                     ( NULL, NULL, 0x682FA0 );
-MM2PtrHook<HWND> hWndMain                       ( NULL, NULL, 0x6830B8 );
+AGEHook<0x68311C>::Type<LPCSTR> lpWindowTitle;
 
-MM2PtrHook<LPCSTR> lpWindowTitle                ( NULL, NULL, 0x68311C );
+AGEHook<0x6830F0>::Type<ATOM> ATOM_Class;
+AGEHook<0x683108>::Type<LPCSTR> IconID;
 
-MM2PtrHook<ATOM> ATOM_Class                     ( NULL, NULL, 0x6830F0 );
-MM2PtrHook<LPCSTR> IconID                       ( NULL, NULL, 0x683108 );
+AGEHook<0x6830D0>::Type<BOOL> inWindow;
+AGEHook<0x6830D1>::Type<BOOL> isMaximized;
+AGEHook<0x5CA3ED>::Type<BOOL> hasBorder;
 
-MM2PtrHook<BOOL> inWindow                       ( NULL, NULL, 0x6830D0 );
-MM2PtrHook<BOOL> isMaximized                    ( NULL, NULL, 0x6830D1 );
-MM2PtrHook<BOOL> hasBorder                      ( NULL, NULL, 0x5CA3ED );
+AGEHook<0x6830EC>::Type<DWORD> WndPosX;
+AGEHook<0x683110>::Type<DWORD> WndPosY;
+AGEHook<0x683128>::Type<DWORD> WndWidth;
+AGEHook<0x683100>::Type<DWORD> WndHeight;
 
-MM2PtrHook<DWORD> WndPosX                       ( NULL, NULL, 0x6830EC );
-MM2PtrHook<DWORD> WndPosY                       ( NULL, NULL, 0x683110 );
-MM2PtrHook<DWORD> WndWidth                      ( NULL, NULL, 0x683128 );
-MM2PtrHook<DWORD> WndHeight                     ( NULL, NULL, 0x683100 );
+AGEHook<0x5E0CC4>::Type<void (*)(void)> $__VtResumeSampling;
+AGEHook<0x5E0CD8>::Type<void (*)(void)> $__VtPauseSampling;
 
-/*
-    !! THESE ARE ABSOLUTELY CRITICAL TO THE HOOK WORKING PROPERLY !!
-*/
-
-MM2PtrHook<void (*)(void)> $__VtResumeSampling  ( 0x5C86B8, 0x5DF710, 0x5E0CC4 );
-MM2PtrHook<void (*)(void)> $__VtPauseSampling   ( 0x5C86C8, 0x5DF724, 0x5E0CD8 );
-MM2PtrHook<BOOL> $gameClosing                   ( 0x667DEC, 0x6B0150, 0x6B1708 );
+AGEHook<0x6B1708>::Type<BOOL> $gameClosing;
 
 /*
     ===========================================================================
@@ -267,25 +251,21 @@ public:
                     return 0;
             } break;
         }
-        return $gfxWindowProc(hWnd, uMsg, wParam, lParam);
+        return $gfxPipeline_gfxWindowProc(hWnd, uMsg, wParam, lParam);
     }
 
     static void SetRes(int width, int height, int cdepth, int zdepth, bool detectArgs) {
         LogFile::WriteLine("[gfxPipeline::SetRes]: Additional graphics params enabled.");
 
-        $setRes(width, height, cdepth, zdepth, true);
+        $gfxPipeline_SetRes(width, height, cdepth, zdepth, true);
     }
 
     static void gfxWindowCreate(LPCSTR lpWindowName) {
         if (hWndMain)
-        {
             return;
-        }
 
         if (lpWindowTitle)
-        {
             lpWindowName = lpWindowTitle;
-        }
 
         *hasBorder = !datArgParser::Get("noborder");
 
@@ -313,14 +293,10 @@ public:
         ReleaseDC(0, hDC);
 
         if (WndPosX == -1)
-        {
             *WndPosX = (screenWidth - WndWidth) / 2;
-        }
 
         if (WndPosY == -1)
-        {
             *WndPosY = (screenHeight - WndHeight) / 2;
-        }
 
         DWORD dwStyle = NULL;
 
@@ -426,15 +402,10 @@ public:
 class mmDirSndHandler {
 public:
     static mmDirSnd* Init(int sampleRate, bool enableStero, int a4, float volume, LPCSTR deviceName, bool enable3D) {
-        // TODO: Load the device name from player config?
-        if (*deviceName == '\0')
-        {
-            if (!datArgParser::Get("defaultsounddev", 0, &deviceName))
-            {
-                deviceName = "Primary Sound Driver";
-            }
+        if (*deviceName == '\0') {
+            deviceName = "Primary Sound Driver";
 
-            LogFile::Format("[mmDirSnd::Init]: Default Device: %s\n", deviceName);
+            LogFile::WriteLine("[mmDirSnd::Init]: Using primary sound driver");
         }
 
         // TODO: Set sampling rate (see 0x519640 - int __thiscall AudManager::SetBitDepthAndSampleRate(int this, int bitDepth, int samplingRate))
@@ -541,72 +512,73 @@ public:
         // this allows us to have an entry representing each "frame" (vglBegin/vglEnd)
         // and cuts down on the amount of time it takes to add a new entry
         struct vgl_cb {
-            MM2AddressData begin_addrs; // vglBegin
-            MM2AddressData end_addrs; // vglEnd
+            MM2AddressData begin_addr; // vglBegin
+            MM2AddressData end_addr; // vglEnd
         };
 
+        // TODO: Remove tunnels from the list so they're fullbright (or at least see how it looks)
         std::initializer_list<vgl_cb> vglCBs = {
-            {{ NULL, NULL, 0x448424 }, { NULL, NULL, 0x4485D3 }}, 
-            {{ NULL, NULL, 0x448697 }, { NULL, NULL, 0x448B82 }}, 
-            {{ NULL, NULL, 0x448903 }, { NULL, NULL, 0x448D8C }}, 
-            {{ NULL, NULL, 0x448BFD }, { NULL, NULL, 0x448FB7 }}, 
-            {{ NULL, NULL, 0x448DE4 }, { NULL, NULL, 0x449219 }}, 
-            {{ NULL, NULL, 0x44902A }, { NULL, NULL, 0x449480 }}, 
-            {{ NULL, NULL, 0x4492A4 }, { NULL, NULL, 0x44963E }}, 
-            {{ NULL, NULL, 0x4494C3 }, { NULL, NULL, 0x44983C }}, 
-            {{ NULL, NULL, 0x4496A5 }, { NULL, NULL, 0x4499D4 }}, 
-            {{ NULL, NULL, 0x44986B }, { NULL, NULL, 0x449BAA }}, 
-            {{ NULL, NULL, 0x449A13 }, { NULL, NULL, 0x449D42 }}, 
-            {{ NULL, NULL, 0x449BD9 }, { NULL, NULL, 0x449F5A }}, 
-            {{ NULL, NULL, 0x449D82 }, { NULL, NULL, 0x44A146 }}, 
-            {{ NULL, NULL, 0x449F67 }, { NULL, NULL, 0x44A3F8 }}, 
-            {{ NULL, NULL, 0x44A21C }, { NULL, NULL, 0x44A5BF }}, 
-            {{ NULL, NULL, 0x44A444 }, { NULL, NULL, 0x44A7C0 }}, 
-            {{ NULL, NULL, 0x44A629 }, { NULL, NULL, 0x44A958 }}, 
-            {{ NULL, NULL, 0x44A7EF }, { NULL, NULL, 0x44AB2E }}, 
-            {{ NULL, NULL, 0x44A997 }, { NULL, NULL, 0x44ACC6 }}, 
-            {{ NULL, NULL, 0x44AB5D }, { NULL, NULL, 0x44AEBC }}, 
-            {{ NULL, NULL, 0x44AD06 }, { NULL, NULL, 0x44B083 }}, 
-            {{ NULL, NULL, 0x44AECA }, { NULL, NULL, 0x44B23D }}, 
-            {{ NULL, NULL, 0x44B0EC }, { NULL, NULL, 0x44B394 }}, 
-            {{ NULL, NULL, 0x44B24B }, { NULL, NULL, 0x44B531 }}, 
-            {{ NULL, NULL, 0x44B3B6 }, { NULL, NULL, 0x44B6E1 }}, 
-            {{ NULL, NULL, 0x44B557 }, { NULL, NULL, 0x44B895 }}, 
-            {{ NULL, NULL, 0x44B6F3 }, { NULL, NULL, 0x44BA7C }}, 
-            {{ NULL, NULL, 0x44B8F1 }, { NULL, NULL, 0x44BC03 }}, 
-            {{ NULL, NULL, 0x44BA8A }, { NULL, NULL, 0x44BE8E }}, 
-            {{ NULL, NULL, 0x44BC29 }, { NULL, NULL, 0x44C118 }}, 
-            {{ NULL, NULL, 0x44BE9C }, { NULL, NULL, 0x44C3EA }}, 
-            {{ NULL, NULL, 0x44C136 }, { NULL, NULL, 0x44C638 }}, 
-            {{ NULL, NULL, 0x44C40C }, { NULL, NULL, 0x44C77A }}, 
-            {{ NULL, NULL, 0x44C64A }, { NULL, NULL, 0x44C989 }}, 
-            {{ NULL, NULL, 0x44C7C0 }, { NULL, NULL, 0x44CC44 }}, 
-            {{ NULL, NULL, 0x44CAD6 }, { NULL, NULL, 0x44CE63 }}, 
-            {{ NULL, NULL, 0x44CCF5 }, { NULL, NULL, 0x44D04E }}, 
-            {{ NULL, NULL, 0x44CF6D }, { NULL, NULL, 0x44D403 }}, 
-            {{ NULL, NULL, 0x44D0D4 }, { NULL, NULL, 0x44D780 }}, 
-            {{ NULL, NULL, 0x44D5F7 }, { NULL, NULL, 0x44D8E9 }}, 
-            {{ NULL, NULL, 0x44D789 }, { NULL, NULL, 0x44E014 }}, 
-            {{ NULL, NULL, 0x44DC55 }, { NULL, NULL, 0x44E131 }}, 
-            {{ NULL, NULL, 0x44E050 }, { NULL, NULL, 0x44E22C }}, 
-            {{ NULL, NULL, 0x44E14B }, { NULL, NULL, 0x44E661 }}, 
-            {{ NULL, NULL, 0x44E2A3 }, { NULL, NULL, 0x44E785 }}, 
-            {{ NULL, NULL, 0x44E69D }, { NULL, NULL, 0x44E886 }}, 
-            {{ NULL, NULL, 0x44E79E }, { NULL, NULL, 0x44EB82 }}, 
-            {{ NULL, NULL, 0x44EAA0 }, { NULL, NULL, 0x44EDC3 }}, 
-            {{ NULL, NULL, 0x44EBA5 }, { NULL, NULL, 0x44F0B9 }}, 
-            {{ NULL, NULL, 0x44EFD0 }, { NULL, NULL, 0x44F316 }}, 
-            {{ NULL, NULL, 0x44F0DC }, { NULL, NULL, 0x44F64C }}, 
-            {{ NULL, NULL, 0x44F588 }, { NULL, NULL, 0x44FB9D }}, 
-            {{ NULL, NULL, 0x44F7E2 }, { NULL, NULL, 0x44FD30 }}, 
-            {{ NULL, NULL, 0x44FC1E }, { NULL, NULL, 0x44FE4E }}, 
-            {{ NULL, NULL, 0x44FDD4 }, { NULL, NULL, 0x44FFB3 }}, 
-            {{ NULL, NULL, 0x44FF10 }, { NULL, NULL, 0x450162 }}, 
-            {{ NULL, NULL, 0x450085 }, { NULL, NULL, 0x450390 }}, 
-            {{ NULL, NULL, 0x450269 }, { NULL, NULL, 0x45078C }}, 
-            // --------------------------------------------------
-            {{ NULL, NULL, 0x443B9D }, { NULL, NULL, 0x443DCC }}, // dgRoadDecalInstance
-            {{ NULL, NULL, 0x57AC4A }, { NULL, NULL, 0x57AD41 }}, // ped LODs
+            { 0x448424, 0x4485D3 }, 
+            { 0x448697, 0x448B82 }, 
+            { 0x448903, 0x448D8C }, 
+            { 0x448BFD, 0x448FB7 }, 
+            { 0x448DE4, 0x449219 }, 
+            { 0x44902A, 0x449480 }, 
+            { 0x4492A4, 0x44963E }, 
+            { 0x4494C3, 0x44983C }, 
+            { 0x4496A5, 0x4499D4 }, 
+            { 0x44986B, 0x449BAA }, 
+            { 0x449A13, 0x449D42 }, 
+            { 0x449BD9, 0x449F5A }, 
+            { 0x449D82, 0x44A146 }, 
+            { 0x449F67, 0x44A3F8 }, 
+            { 0x44A21C, 0x44A5BF }, 
+            { 0x44A444, 0x44A7C0 }, 
+            { 0x44A629, 0x44A958 }, 
+            { 0x44A7EF, 0x44AB2E }, 
+            { 0x44A997, 0x44ACC6 }, 
+            { 0x44AB5D, 0x44AEBC }, 
+            { 0x44AD06, 0x44B083 }, 
+            { 0x44AECA, 0x44B23D }, 
+            { 0x44B0EC, 0x44B394 }, 
+            { 0x44B24B, 0x44B531 }, 
+            { 0x44B3B6, 0x44B6E1 }, 
+            { 0x44B557, 0x44B895 }, 
+            { 0x44B6F3, 0x44BA7C }, 
+            { 0x44B8F1, 0x44BC03 }, 
+            { 0x44BA8A, 0x44BE8E }, 
+            { 0x44BC29, 0x44C118 }, 
+            { 0x44BE9C, 0x44C3EA }, 
+            { 0x44C136, 0x44C638 }, 
+            { 0x44C40C, 0x44C77A }, 
+            { 0x44C64A, 0x44C989 }, 
+            { 0x44C7C0, 0x44CC44 }, 
+            { 0x44CAD6, 0x44CE63 }, 
+            { 0x44CCF5, 0x44D04E }, 
+            { 0x44CF6D, 0x44D403 }, 
+            { 0x44D0D4, 0x44D780 }, 
+            { 0x44D5F7, 0x44D8E9 }, 
+            { 0x44D789, 0x44E014 }, 
+            { 0x44DC55, 0x44E131 }, 
+            { 0x44E050, 0x44E22C }, 
+            { 0x44E14B, 0x44E661 }, 
+            { 0x44E2A3, 0x44E785 }, 
+            { 0x44E69D, 0x44E886 }, 
+            { 0x44E79E, 0x44EB82 }, 
+            { 0x44EAA0, 0x44EDC3 }, 
+            { 0x44EBA5, 0x44F0B9 }, 
+            { 0x44EFD0, 0x44F316 }, 
+            { 0x44F0DC, 0x44F64C }, 
+            { 0x44F588, 0x44FB9D }, 
+            { 0x44F7E2, 0x44FD30 }, 
+            { 0x44FC1E, 0x44FE4E }, 
+            { 0x44FDD4, 0x44FFB3 }, 
+            { 0x44FF10, 0x450162 }, 
+            { 0x450085, 0x450390 }, 
+            { 0x450269, 0x45078C }, 
+            // ---------------------
+            { 0x443B9D, 0x443DCC }, // dgRoadDecalInstance
+            { 0x57AC4A, 0x57AD41 }, // ped LODs
         };
 
         // mostly copied from InstallGameCallback
@@ -614,8 +586,8 @@ public:
 
         for (auto cb : vglCBs)
         {
-            auto begin = cb.begin_addrs[gameVersion];
-            auto end = cb.end_addrs[gameVersion];
+            auto begin = cb.begin_addr;
+            auto end = cb.end_addr;
 
             LogFile::Format("   - { vglBegin: %08X => %08X, vglEnd: %08X => %08X } : ", begin, vglBeginCB, end, vglEndCB);
 
@@ -913,106 +885,91 @@ private:
     static void InstallCallbacks() {
         LogFile::WriteLine("Installing callbacks / virtual tables...");
 
-        switch (gameVersion)
-        {
-            case MM2_BETA_1:
-            case MM2_BETA_2:
-            {
-                // Disables time check on betas
-                InstallGameCallback("TrialTimeExpired", &ReturnNullOrZero, {
-                    CB_HOOK<CALL>({ 0x4011B0, 0x4012AC, NULL }),
-                });
-            } break;
-            case MM2_RETAIL:
-            {
-                // mutex was introduced in retail
-                InstallGameCallback("CreateGameMutex", &CallbackHandler::CreateGameMutex, {
-                    CB_HOOK<CALL>({ NULL, NULL, 0x40128D }),
-                });
-            
-                // revert bridges/ferries to how they were in the betas
-                InstallGameCallback("Bridge/Ferry: Cull", &BridgeFerryHandler::Cull, {
-                    CB_HOOK<CALL>({ NULL, NULL, 0x5780BC }), // gizBridgeMgr::Cull
-                    CB_HOOK<CALL>({ NULL, NULL, 0x5798F0 }), // gizFerryMgr::Cull
-                });
+        InstallGameCallback("CreateGameMutex", &CallbackHandler::CreateGameMutex, {
+            CB_HOOK<CALL>(0x40128D),
+        });
 
-                InstallVTableHook("Bridge/Ferry: Draw", &BridgeFerryHandler::Draw, {
-                    { NULL, NULL, 0x5B5FB8 }, // gizBridge::Draw
-                    { NULL, NULL, 0x5B61AC }, // gizFerry::Draw
-                });
-            } break;
-        }
+        // revert bridges/ferries to how they were in the betas
+        InstallGameCallback("Bridge/Ferry: Cull", &BridgeFerryHandler::Cull, {
+            CB_HOOK<CALL>(0x5780BC), // gizBridgeMgr::Cull
+            CB_HOOK<CALL>(0x5798F0), // gizFerryMgr::Cull
+        });
+
+        InstallVTableHook("Bridge/Ferry: Draw", &BridgeFerryHandler::Draw, {
+            0x5B5FB8, // gizBridge::Draw
+            0x5B61AC, // gizFerry::Draw
+        });
 
         InstallGameCallback("ageDebug", &CallbackHandler::ageDebug, {
-            CB_HOOK<JMP>({ NULL, NULL, 0x402630 }),
+            CB_HOOK<JMP>(0x402630),
         });
 
         InstallGameCallback("ProgressRect [white loading bar fix]", &CallbackHandler::ProgressRect, {
-            CB_HOOK<CALL>({ NULL, NULL, 0x401163 }),
-            CB_HOOK<CALL>({ NULL, NULL, 0x4011CC }),
+            CB_HOOK<CALL>(0x401163),
+            CB_HOOK<CALL>(0x4011CC),
         });
 
         if (!datArgParser::Get("oldautodetect"))
         {
             // Hook into the original AutoDetect and replace it with our own version
             InstallGameCallback("AutoDetectCallback", &CallbackHandler::AutoDetectCallback, {
-                CB_HOOK<JMP>({ NULL, NULL, 0x4AC030 }),
+                CB_HOOK<JMP>(0x4AC030),
             });
         }
 
         InstallGameCallback("gfxPipeline::SetRes", &gfxPipelineHandler::SetRes, {
-            CB_HOOK<CALL>({ NULL, NULL, 0x401482 }),
+            CB_HOOK<CALL>(0x401482),
         });
 
         InstallGameCallback("gfxPipeline::gfxWindowCreate", &gfxPipelineHandler::gfxWindowCreate, {
-            CB_HOOK<CALL>({ NULL, NULL, 0x4A94AA }),
+            CB_HOOK<CALL>(0x4A94AA),
         });
 
         InstallGameCallback("gfxLoadVideoDatabase [disable 'badvideo.txt']", &ReturnFalse, {
-            CB_HOOK<CALL>({ NULL, NULL, 0x4AC4F9 }),
+            CB_HOOK<CALL>(0x4AC4F9),
         });
 
         InstallGameCallback("mmDirSnd::Init", &mmDirSndHandler::Init, {
-            CB_HOOK<CALL>({ NULL, NULL, 0x51941D }),
+            CB_HOOK<CALL>(0x51941D),
         });
     
         InstallGameCallback("memSafeHeap::Init [Heap fix]", &memSafeHeapHandler::Init, {
-            CB_HOOK<CALL>({ NULL, NULL, 0x4015DD }),
+            CB_HOOK<CALL>(0x4015DD),
         });
 
         InstallGameCallback("asCullManager::Init [Increase Max Cullables]", &asCullManagerHandler::Init, {
-            CB_HOOK<CALL>({ NULL, NULL, 0x401D5C }),
+            CB_HOOK<CALL>(0x401D5C),
         });
 
         // NOTE: Completely overrides the original AngelReadString (will check Lua first then DLL)
         InstallGameCallback("AngelReadString", &CallbackHandler::AngelReadString, {
-            CB_HOOK<JMP>({ NULL, NULL, 0x534790 }),
+            CB_HOOK<JMP>(0x534790),
         });
 
         InstallGameCallback("datTimeManager::Update", &TickHandler::Update, {
-            CB_HOOK<CALL>({ NULL, NULL, 0x401A2F }),
+            CB_HOOK<CALL>(0x401A2F),
         });
 
         InstallGameCallback("mmGame::SendChatMessage", &ChatHandler::Process, {
-            CB_HOOK<JMP>({ NULL, NULL, 0x414EB6 }),
+            CB_HOOK<JMP>(0x414EB6),
         });
 
         InstallGameCallback("mmGameMusicData::LoadAmbientSFX", &mmGameMusicDataHandler::LoadAmbientSFX, {
-            CB_HOOK<CALL>({ NULL, NULL, 0x433F93 }),
+            CB_HOOK<CALL>(0x433F93),
         });
 
         InstallGameCallback("vehCarAudioContainer::SetSirenCSVName", &vehCarAudioContainerHandler::SetSirenCSVName, {
-            CB_HOOK<CALL>({ NULL, NULL, 0x412783 }),
-            CB_HOOK<CALL>({ NULL, NULL, 0x412772 }),
+            CB_HOOK<CALL>(0x412783),
+            CB_HOOK<CALL>(0x412772),
         });
 
         // dashboard testing
         InstallGameCallback("mmDashView::Update [EXPERIMENTAL]", &mmDashViewHandler::UpdateCS, {
-            CB_HOOK<CALL>({ NULL, NULL, 0x430F87 }), // replaces call to asLinearCS::Update
+            CB_HOOK<CALL>(0x430F87), // replaces call to asLinearCS::Update
         });
 
         InstallGameCallback("zipFile::Init ['extraLen' spam fix]", &NullSub, {
-            CB_HOOK<CALL>({ NULL, NULL, 0x5738EA }), // 'extraLen=%d'
+            CB_HOOK<CALL>(0x5738EA), // 'extraLen=%d'
         });
 
         // install shading fix (for PSDL, etc.)
@@ -1023,32 +980,18 @@ private:
         LogFile::WriteLine("Installing patches...");
 
         InstallGamePatch("Increase chat buffer size", { 60 }, {
-            { NULL, NULL, 0x4E68B5 },
-            { NULL, NULL, 0x4E68B9 },
-            { NULL, NULL, 0x50BBCF },
+            0x4E68B5,
+            0x4E68B9,
+            0x50BBCF,
         });
 
         InstallGamePatch("Increase cop limit", { 64 }, {
-            { NULL, NULL, 0x55100B },
+            0x55100B,
         });
 
         InstallGamePatch("Enable pointer in windowed mode", { 0x90, 0x90 }, {
-            { NULL, NULL, 0x4F136E },
+            0x4F136E,
         });
-    }
-
-    static void InitializeLua() {
-        // Guaranteed to be loaded before anything vital is called (e.g. AngelReadString)
-        if (gameVersion == MM2_RETAIL)
-        {
-            MM2Lua::Initialize();
-        }
-        else
-        {
-            // no lua support for betas yet
-            MessageBox(NULL, "NOTE: This game version does not currently support Lua scripting.", "MM2Hook", MB_OK | MB_ICONINFORMATION);
-            return;
-        }
     }
 public:
     static void Initialize(int argc, char **argv) {
@@ -1057,25 +1000,22 @@ public:
         InstallPatches();
         
         // Initialize the Lua engine
-        InitializeLua();
+        MM2Lua::Initialize();
 
-        if (gameVersion == MM2_RETAIL)
+        // hook into the printer
+        *$Printer = &PrintHandler::Print;
+        *$PrintString = &PrintHandler::PrintString;
+        *$FatalErrorHandler = &PrintHandler::FatalError;
+
+        LogFile::Write("Redirecting MM2 output...");
+
+        *datOutputStream = Stream::Create("mm2.log", &logFileMethods);
+
+        LogFile::WriteLine((*datOutputStream) ? "Done!" : "FAIL!");
+
+        if (ageLogFile == NULL && datArgParser::Get("age_debug"))
         {
-            // hook into the printer
-            *$Printer           = &PrintHandler::Print;
-            *$PrintString       = &PrintHandler::PrintString;
-            *$FatalErrorHandler = &PrintHandler::FatalError;
-
-            LogFile::Write("Redirecting MM2 output...");
-
-            *datOutputStream = Stream::Create("mm2.log", &logFileMethods);
-
-            LogFile::WriteLine((*datOutputStream) ? "Done!" : "FAIL!");
-
-            if (ageLogFile == NULL && datArgParser::Get("age_debug"))
-            {
-                ageLogFile = fopen("AGE.log", "w+");
-            }
+            ageLogFile = fopen("AGE.log", "w+");
         }
     }
 
@@ -1111,9 +1051,7 @@ public:
             datOutput::CloseLog();
 
             if (ageLogFile)
-            {
                 fclose(ageLogFile);
-            }
         } else {
             // GameLoop is restarting
             Reset(true);
@@ -1144,7 +1082,7 @@ void InstallFramework() {
     */
 
     InstallGameCallback("ArchInit [Framework initialization]", &HookSystemHandler::Initialize, {
-        CB_HOOK<CALL>({ NULL, NULL, 0x4023DB }),
+        CB_HOOK<CALL>(0x4023DB),
     });
 
     /*
@@ -1163,13 +1101,7 @@ void Initialize(ageInfoLookup &gameInfo) {
     pMM2 = new CMidtownMadness2(gameInfo.info);
     pMM2->Initialize();
 
-    gameVersion = pMM2->GetVersion();
-
-    if ((gameVersion != MM2_INVALID) && (gameVersion < MM2_NUM_VERSIONS)) {
-        InstallFramework();
-    } else {
-        MessageBox(NULL, "MM2Hook was unable to initialize properly. The game will proceed normally.", "MM2Hook", MB_OK);
-    }
+    InstallFramework();
 }
 
 bool IsGameSupported(ageInfoLookup &gameInfo) {
