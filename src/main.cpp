@@ -217,7 +217,7 @@ public:
         maxCullables = 1024;
         maxCullables2D = 256;
 
-        LogFile::Format("[asCullManager::Init]: Increased Cullables to %d, %d\n", maxCullables, maxCullables2D);
+        LogFile::Format("[asCullManager::Init]: Increased Max Cullables to %d, %d\n", maxCullables, maxCullables2D);
 
         $asCullManagerInit(this, maxCullables, maxCullables2D);
     }
