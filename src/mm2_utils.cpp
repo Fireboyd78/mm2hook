@@ -2,86 +2,82 @@
 #include "patch.h"
 
 void InstallGamePatch(LPCSTR name,
-                      std::initializer_list<unsigned char> bytes,
-                      std::initializer_list<MM2AddressData> addresses)
+                      std::initializer_list<byte> bytes,
+                      std::initializer_list<DWORD> addresses)
 {
     LogFile::Format(" - Installing patch: '%s'...\n", name);
 
-    std::size_t count = 0;
     for (auto addr : addresses)
     {
-        LogFile::Format("   - %08X : ", addr);
+        LogFile::Format("   - %08X", addr);
 
-        if (addr != NULL)
-        {
-            InstallPatch(addr, bytes.begin(), bytes.size());
-            LogFile::WriteLine("OK");
-
-            count++;
-        }
-        else
-        {
-            LogFile::WriteLine("Not Supported");
-        }
+        mem::write_buffer(LPVOID(addr), bytes.begin(), bytes.size());
     }
 
-    LogFile::Format("   - Installed %u / %u patches\n", count, addresses.size());
+    LogFile::Format("   - Installed %u patches\n", addresses.size());
+}
+
+void InstallGameCallback(auto_ptr lpCallback,
+                         CB_INSTALL_INFO info)
+{
+    auto addr = info.hookAddr;
+    auto type = info.hookType;
+
+    DWORD dwRVA = lpCallback - (addr + 5);
+
+    switch (type)
+    {
+        case HOOK_TYPE::CALL:
+        {
+            mem::write_args<byte, DWORD>(LPVOID(addr), 0xE8, dwRVA);
+        } break;
+
+        case HOOK_TYPE::JMP:
+        {
+            mem::write_args<byte, DWORD>(LPVOID(addr), 0xE9, dwRVA);
+        } break;
+
+        case HOOK_TYPE::PUSH:
+        {
+            mem::write_args<byte, DWORD>(LPVOID(addr), 0x68, lpCallback);
+        } break;
+    }
 }
 
 void InstallGameCallback(LPCSTR name,
                          auto_ptr lpCallback,
                          std::initializer_list<CB_INSTALL_INFO> callbacks)
 {
-    static const char *hook_types[] = {
-        "jmp",
-        "call"
-    };
-
     LogFile::Format(" - Installing callback: '%s'...\n", name);
 
-    std::size_t count = 0;
+    const char* hook_types[HOOK_TYPE::COUNT] =
+    {
+        "jmp",
+        "call",
+        "push"
+    };
+
     for (auto cb : callbacks)
     {
-        auto addr = cb.hookAddr;
-        auto type = cb.hookType;
+        InstallGameCallback(lpCallback, cb);
 
-        LogFile::Format("   - [%s] %08X => %08X : ", hook_types[type], addr, lpCallback);
-
-        if (addr != NULL && InstallCallbackHook(addr, lpCallback, type == HOOK_CALL))
-        {
-            LogFile::WriteLine("OK");
-
-            ++count;
-        } else
-        {
-            LogFile::WriteLine("Not Supported");
-        }
+        LogFile::Format("   - [%s] %08X => %08X\n", hook_types[cb.hookType], cb.hookAddr, lpCallback);
     }
 
-    LogFile::Format("   - Installed %u / %u callbacks\n", count, callbacks.size());
+    LogFile::Format("   - Installed %u callbacks\n", callbacks.size());
 }
 
 void InstallVTableHook(LPCSTR name, 
                        auto_ptr lpHookAddr,
-                       std::initializer_list<MM2AddressData> addresses) {
+                       std::initializer_list<DWORD> addresses) {
     LogFile::Format(" - Installing V-Table hook: '%s'...\n", name);
 
     std::size_t count = 0;
     for (auto addr : addresses)
     {
-        LogFile::Format("   - %08X => %08X :", addr, lpHookAddr);
+        mem::write_args<DWORD>(LPVOID(addr), lpHookAddr);
 
-        if (addr != NULL)
-        {
-            InstallVTHook(addr, lpHookAddr);
-            LogFile::WriteLine("OK");
-
-            ++count;
-        }
-        else
-        {
-            LogFile::WriteLine("Not supported");
-        }
+        LogFile::Format("   - %08X => %08X", addr, lpHookAddr);
     }
 
     LogFile::Format("   - Installed %u / %u hooks\n", count, addresses.size());

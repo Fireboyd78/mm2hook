@@ -555,31 +555,18 @@ public:
         // mostly copied from InstallGameCallback
         std::size_t count = 0;
 
-        for (auto cb : vglCBs)
+        for (auto pair : vglCBs)
         {
-            auto begin = cb.begin_addr;
-            auto end = cb.end_addr;
+            auto begin = pair.begin_addr;
+            auto end = pair.end_addr;
 
-            LogFile::Format("   - { vglBegin: %08X => %08X, vglEnd: %08X => %08X } : ", begin, vglBeginCB, end, vglEndCB);
+            InstallGameCallback(vglBeginCB, { begin,    CALL });
+            InstallGameCallback(vglEndCB,   { end,      CALL });
 
-            if ((begin != NULL) && (end != NULL))
-            {
-                if (InstallCallbackHook(begin, vglBeginCB, true) && InstallCallbackHook(end, vglEndCB, true))
-                {
-                    LogFile::WriteLine("OK");
-                    ++count;
-                } else {
-                    // let's hope this never happens...
-                    LogFile::WriteLine("FAIL!");
-                }
-
-                continue;
-            } else {
-                LogFile::WriteLine("Not Supported");
-            }
+            LogFile::Format("   - { vglBegin: %08X => %08X, vglEnd: %08X => %08X }\n", begin, vglBeginCB, end, vglEndCB);
         }
 
-        LogFile::Format("   - Installed %d / %d callbacks\n", count, vglCBs.size());
+        LogFile::Format("   - Installed %d allbacks\n", vglCBs.size());
     }
 };
 

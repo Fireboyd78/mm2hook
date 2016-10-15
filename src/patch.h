@@ -1,25 +1,58 @@
 #pragma once
 #include "common.h"
 
+#include <cstdint>
+#include <type_traits>
+
 /*
     Patching utilities/structs
 */
 
-#define MAX_PATCHES_OPEN 32
+namespace mem
+{
+    inline bool write_buffer(void* lpAddress, const void* lpReadAddress, std::size_t dwReadSize)
+    {
+        DWORD dwOldProtect;
+        if (VirtualProtect(lpAddress, dwReadSize, PAGE_EXECUTE_READWRITE, &dwOldProtect))
+        {
+            std::memcpy(lpAddress, lpReadAddress, dwReadSize),
 
-struct PATCH_INFO {
-    LPVOID lpPatchAddr;
-    DWORD dwPatchSize;
-    DWORD flOldProtect;
-};
+            VirtualProtect(lpAddress, dwReadSize, dwOldProtect, NULL);
 
-BOOL PushPatch(LPVOID lpHookAddr, DWORD dwPatchSize, PATCH_INFO *pPatch = NULL);
-BOOL PopPatch(PATCH_INFO *pPatch = NULL);
+            return true;
+        }
 
-void InstallVTHook(DWORD dwHookAddr, DWORD dwNewAddr);
-void InstallVTHook(DWORD dwHookAddr, DWORD dwNewAddr, LPDWORD lpdwOldAddr);
+        return false;
+    }
 
-bool InstallCallbackHook(DWORD dwAddress, DWORD fnDest, bool isCall);
-bool InstallFunctionHook(DWORD dwAddress, DWORD jmpDest);
+    template <typename... TArgs>
+    inline bool write_args(void* lpAddress, TArgs... args)
+    {
+        static_assert(sizeof...(args) > 0,
+                      "No arguments provided");
 
-void InstallPatch(DWORD dwAddress, const void* patchData, std::size_t dwSize);
+        static_assert(variadic::true_for_all<std::is_trivially_copyable<TArgs>::value...>,
+                      "Not all arguments are trivially copyable");
+
+        constexpr std::size_t totalSize = variadic::sum<sizeof(TArgs)...>;
+
+        DWORD dwOldProtect;
+        if (VirtualProtect(lpAddress, totalSize, PAGE_EXECUTE_READWRITE, &dwOldProtect))
+        {
+            (void) std::initializer_list<int>
+            {
+                (
+                    //*static_cast<TArgs*>(lpAddress) = args,
+                    std::memcpy(lpAddress, &args, sizeof(args)),
+                    lpAddress = static_cast<char*>(lpAddress) + sizeof(args),
+                0)...
+            };
+
+            VirtualProtect(lpAddress, totalSize, dwOldProtect, NULL);
+
+            return true;
+        }
+
+        return false;
+    }
+}
