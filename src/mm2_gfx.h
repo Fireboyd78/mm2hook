@@ -4,7 +4,8 @@
 namespace MM2
 {
     // Forward declarations
-    extern struct gfxInterface;
+    extern struct gfxInterface3;
+    extern struct gfxInterface5;
 
     enum gfxDeviceType {
         Software = 0,    // Software (No 3D Video Card)
@@ -25,19 +26,27 @@ namespace MM2
         uint16_t Is16BitColor;    // = (ColorDepth == 16) + 6 // Always 7
     };
 
-    struct gfxInterface {
+    struct gfxInterfaceBase {
         /*0x00*/ GUID GUID;
         /*0x10*/ char Name[64];
- 
+
         /*0x50*/ uint32_t DeviceCaps;
- 
+
         /*0x54*/ gfxDeviceType DeviceType;
- 
+
         /*0x58*/ uint32_t ResolutionCount;   // Max of 64 resolutions
         /*0x5C*/ uint32_t ResolutionChoice;
- 
+
         /*0x60*/ gfxDepthFlags AcceptableDepths;  // Used to check if mmResolution::Depth is allowed
- 
+    };
+
+    /* Beta 1 */
+    struct gfxInterface3 : gfxInterfaceBase {
+        /*0x64*/ gfxResData Resolutions[64];
+    };
+
+    /* Beta 2 / Retail */
+    struct gfxInterface5 : gfxInterfaceBase {
         /*0x64*/ uint32_t AvailableMemory;
         /*0x68*/ uint32_t VendorID;
         /*0x6C*/ uint32_t DeviceID;

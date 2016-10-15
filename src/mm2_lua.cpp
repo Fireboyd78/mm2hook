@@ -262,6 +262,9 @@ void MM2Lua::OnShutdown()
 
 void MM2Lua::OnKeyPress(DWORD vKey)
 {
+    if (!isMainLuaLoaded)
+        return;
+
     Lua::setGlobal(L, "lastKey", vKey);
 
     switch (vKey)

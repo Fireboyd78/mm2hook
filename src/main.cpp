@@ -53,17 +53,13 @@ static Matrix34 sm_DashOffset;
 // Function hooks
 // ==========================
 
-MM2FnHook<void> $CreateGameMutex                ( NULL, NULL, 0x402180 );
+MM2FnHook<void> $CreateGameMutex                ( 0x401E80, 0x402220, 0x402180 );
 
 MM2FnHook<void> $dgBangerInstance_Draw          ( NULL, NULL, 0x4415E0 );
 
 MM2FnHook<UINT32> $sdlPage16_GetShadedColor     ( NULL, NULL, 0x450880 );
 
 MM2FnHook<void> $asLinearCS_Update              ( NULL, NULL, 0x4A3370 );
-
-MM2FnHook<bool> $gfxAutoDetect                  ( NULL, NULL, 0x4ABE00 );
-
-MM2FnHook<void> $setRes                         ( NULL, NULL, 0x4A8CE0 );
 
 /*
     TODO: Move VGL stuff to a separate file?    
@@ -79,13 +75,6 @@ MM2FnHook<void> $DefaultPrinter                 ( NULL, NULL, 0x4C95F0 );
 
 MM2RawFnHook<int (__stdcall *)(HMODULE, UINT, char *, int)>
                 $MyLoadStringA                  ( NULL, NULL, 0x5346B0 );
-
-MM2RawFnHook<WNDPROC> $gfxWindowProc            ( NULL, NULL, 0x4A88F0 );
-
-MM2RawFnHook<LPD3DENUMDEVICESCALLBACK7> 
-                $DeviceCallback                 ( NULL, NULL, 0x4AC3D0 );
-MM2RawFnHook<LPDDENUMMODESCALLBACK2>
-                $ResCallback                    ( NULL, NULL, 0x4AC6F0 );
 
 MM2FnHook<void> $asCullManagerInit              ( NULL, NULL, 0x4A1290 );
 
@@ -115,40 +104,53 @@ MM2PtrHook<void (*)(int, LPCSTR, va_list)>
 MM2PtrHook<void(*)(void)>
                 $FatalErrorHandler              ( NULL, NULL, 0x6A3D38 );
 
-MM2PtrHook<LPDIRECTDRAWCREATEEX>
-                $lpDirectDrawCreateEx           ( NULL, NULL, 0x684518 );
-
-MM2PtrHook<IDirectDraw7 *> lpDD                 ( NULL, NULL, 0x6830A8 );
-MM2PtrHook<IDirect3D7 *> lpD3D                  ( NULL, NULL, 0x6830AC );
-
-MM2PtrHook<IDirectDrawSurface7 *> lpdsRend      ( NULL, NULL, 0x6830CC );
-
-MM2PtrHook<gfxInterface> gfxInterfaces          ( NULL, NULL, 0x683130 );
-MM2PtrHook<uint32_t> gfxInterfaceCount          ( NULL, NULL, 0x6844C0 );
-
-MM2PtrHook<uint32_t> gfxMaxScreenWidth          ( NULL, NULL, 0x6844FC );
-MM2PtrHook<uint32_t> gfxMaxScreenHeight         ( NULL, NULL, 0x6844D8 );
-
-MM2PtrHook<HWND> hWndParent                     ( NULL, NULL, 0x682FA0 );
-MM2PtrHook<HWND> hWndMain                       ( NULL, NULL, 0x6830B8 );
-
-MM2PtrHook<LPCSTR> lpWindowTitle                ( NULL, NULL, 0x68311C );
-
-MM2PtrHook<ATOM> ATOM_Class                     ( NULL, NULL, 0x6830F0 );
-MM2PtrHook<LPCSTR> IconID                       ( NULL, NULL, 0x683108 );
-
-MM2PtrHook<BOOL> inWindow                       ( NULL, NULL, 0x6830D0 );
-MM2PtrHook<BOOL> isMaximized                    ( NULL, NULL, 0x6830D1 );
-MM2PtrHook<BOOL> hasBorder                      ( NULL, NULL, 0x5CA3ED );
-
-MM2PtrHook<DWORD> WndPosX                       ( NULL, NULL, 0x6830EC );
-MM2PtrHook<DWORD> WndPosY                       ( NULL, NULL, 0x683110 );
-MM2PtrHook<DWORD> WndWidth                      ( NULL, NULL, 0x683128 );
-MM2PtrHook<DWORD> WndHeight                     ( NULL, NULL, 0x683100 );
-
 /*
-    !! THESE ARE ABSOLUTELY CRITICAL TO THE HOOK WORKING PROPERLY !!
+!! THESE ARE ABSOLUTELY CRITICAL TO THE HOOK WORKING PROPERLY !!
 */
+
+MM2FnHook<bool> $gfxAutoDetect                  ( 0x49FEF0, 0x4AC1E0, 0x4ABE00 );
+
+MM2FnHook<void> $setRes                         ( 0x49CED0, 0x4A90C0, 0x4A8CE0 );
+
+MM2RawFnHook<LPD3DENUMDEVICESCALLBACK7> 
+                $DeviceCallback                 ( 0x4A03E0, 0x4AC7B0, 0x4AC3D0 );
+MM2RawFnHook<LPDDENUMMODESCALLBACK2>
+                $ResCallback                    ( 0x4A0540, 0x4ACAD0, 0x4AC6F0 );
+
+MM2RawFnHook<WNDPROC> $gfxWindowProc            ( 0x49CBC0, 0x4A8D80, 0x4A88F0 );
+
+MM2PtrHook<LPDIRECTDRAWCREATEEX>
+                $lpDirectDrawCreateEx           ( 0x64AD0C, 0x682F58, 0x684518 );
+
+MM2PtrHook<IDirectDraw7 *> lpDD                 ( 0x64992C, 0x681AF0, 0x6830A8 );
+MM2PtrHook<IDirect3D7 *> lpD3D                  ( 0x649930, 0x681AF4, 0x6830AC );
+
+MM2PtrHook<IDirectDrawSurface7 *> lpdsRend      ( 0x649950, 0x681B14, 0x6830CC );
+
+MM2PtrHook<gfxInterface5> gfxInterfaces         ( 0x6499A8, 0x681B70, 0x683130 );
+
+MM2PtrHook<uint32_t> gfxInterfaceCount          ( 0x64ACD4, 0x682F00, 0x6844C0 );
+
+MM2PtrHook<uint32_t> gfxMaxScreenWidth          ( 0x64AD04, 0x682F3C, 0x6844FC );
+MM2PtrHook<uint32_t> gfxMaxScreenHeight         ( 0x64ACE4, 0x682F18, 0x6844D8 );
+
+MM2PtrHook<HWND> hWndParent                     ( 0x649824, 0x6819E8, 0x682FA0 );
+MM2PtrHook<HWND> hWndMain                       ( 0x64993C, 0x681B00, 0x6830B8 );
+
+MM2PtrHook<LPCSTR> lpWindowTitle                ( 0x649994, 0x681B60, 0x68311C );
+
+MM2PtrHook<ATOM> ATOM_Class                     ( 0x64996C, 0x681B34, 0x6830F0 );
+
+MM2PtrHook<DWORD> IconID                        ( NULL, 0x681B4C, 0x683108 ); // no IconID in Beta 1
+
+MM2PtrHook<BOOL> inWindow                       ( 0x649954, 0x681B18, 0x6830D0 );
+MM2PtrHook<BOOL> isMaximized                    ( 0x649955, 0x681B19, 0x6830D1 );
+MM2PtrHook<BOOL> hasBorder                      ( 0x5B2D01, 0x5C8FA9, 0x5CA3ED );
+
+MM2PtrHook<DWORD> WndPosX                       ( 0x649968, 0x681B30, 0x6830EC );
+MM2PtrHook<DWORD> WndPosY                       ( 0x649988, 0x681B54, 0x683110 );
+MM2PtrHook<DWORD> WndWidth                      ( 0x6499A0, 0x681B6C, 0x683128 );
+MM2PtrHook<DWORD> WndHeight                     ( 0x64997C, 0x681B44, 0x683100 );
 
 MM2PtrHook<void (*)(void)> $__VtResumeSampling  ( 0x5C86B8, 0x5DF710, 0x5E0CC4 );
 MM2PtrHook<void (*)(void)> $__VtPauseSampling   ( 0x5C86C8, 0x5DF724, 0x5E0CD8 );
@@ -298,7 +300,7 @@ public:
             wc.cbClsExtra = 0;
             wc.cbWndExtra = 0;
             wc.hInstance = 0;
-            wc.hIcon = LoadIconA(GetModuleHandleA(NULL), IconID ? IconID : IDI_APPLICATION);
+            wc.hIcon = LoadIconA(GetModuleHandleA(NULL), (!IconID.is_null() && IconID) ? MAKEINTRESOURCE(IconID) : IDI_APPLICATION);
             wc.hCursor = LoadCursorA(0, IDC_ARROW);
             wc.hbrBackground = CreateSolidBrush(NULL);
             wc.lpszMenuName = NULL;
@@ -375,8 +377,11 @@ public:
                 0);
         }
 
-        SetCursor(NULL);
-        ShowCursor(FALSE);
+        if (gameVersion > MM2_BETA_1)
+        {
+            SetCursor(NULL);
+            ShowCursor(FALSE);
+        }
 
         ShowWindow(hWND, TRUE);
         UpdateWindow(hWND);
@@ -791,24 +796,42 @@ public:
     static BOOL __stdcall AutoDetectCallback(GUID *lpGUID, 
                                              LPSTR lpDriverDescription, LPSTR lpDriverName, LPVOID lpContext)
     {
-        Displayf("AutoDetect: GUID=%x, Description=%s, Name=%s", lpGUID, lpDriverDescription, lpDriverName);
+        LogFile::Format("AutoDetect: GUID=%x, Description=%s, Name=%s\n", lpGUID, lpDriverDescription, lpDriverName);
 
         if ($lpDirectDrawCreateEx(lpGUID, (LPVOID*)&lpDD, IID_IDirectDraw7, nullptr) == DD_OK)
         {
-            gfxInterface *gfxInterface = &gfxInterfaces[gfxInterfaceCount];
+            DDDEVICEIDENTIFIER2 ddDeviceIdentifier = { NULL };
 
-            strcpy (gfxInterface->Name, lpDriverDescription);
+            gfxInterfaceBase *gfxInterface = NULL;
+            
+            gfxInterface3 *gfxInterface_3 = NULL;
+            gfxInterface5 *gfxInterface_5 = NULL;
+
+            if (gameVersion == MM2_BETA_1)
+            {
+                gfxInterface = &((gfxInterface3 *)&gfxInterfaces)[gfxInterfaceCount];
+                gfxInterface_3 = (gfxInterface3 *)gfxInterface;
+            }
+            else
+            {
+                gfxInterface = &((gfxInterface5 *)&gfxInterfaces)[gfxInterfaceCount];
+                gfxInterface_5 = (gfxInterface5 *)gfxInterface;
+            }
+
+            strcpy(gfxInterface->Name, lpDriverDescription);
 
             gfxInterface->DeviceCaps = 1;
             gfxInterface->AcceptableDepths = gfxDepthFlags::Depth32;
 
-            DDDEVICEIDENTIFIER2 ddDeviceIdentifier = { NULL };
-
             if (lpDD->GetDeviceIdentifier(&ddDeviceIdentifier, 0) == DD_OK)
             {
-                gfxInterface->VendorID  = ddDeviceIdentifier.dwVendorId;
-                gfxInterface->DeviceID  = ddDeviceIdentifier.dwDeviceId;
-                gfxInterface->GUID      = ddDeviceIdentifier.guidDeviceIdentifier;
+                gfxInterface->GUID = ddDeviceIdentifier.guidDeviceIdentifier;
+
+                if (gfxInterface_5)
+                {
+                    gfxInterface_5->VendorID = ddDeviceIdentifier.dwVendorId;
+                    gfxInterface_5->DeviceID = ddDeviceIdentifier.dwDeviceId;
+                }
             }
 
             if (lpDD->QueryInterface(IID_IDirect3D7, (LPVOID*)&lpD3D) == DD_OK)
@@ -819,10 +842,10 @@ public:
                 *lpD3D = nullptr;
             }
 
-            gfxInterface->DeviceType        = gfxDeviceType::HardwareWithTnL;
+            gfxInterface->DeviceType = gfxDeviceType::HardwareWithTnL;
 
-            gfxInterface->ResolutionCount   = 0;
-            gfxInterface->ResolutionChoice  = 0;
+            gfxInterface->ResolutionCount = 0;
+            gfxInterface->ResolutionChoice = 0;
 
             DWORD availableMemory = 0x40000000; // 1GB = 1024 * 1024 * 1024
             DDSCAPS2 ddsCaps = { NULL };
@@ -830,11 +853,12 @@ public:
             ddsCaps.dwCaps = DDSCAPS_VIDEOMEMORY | DDSCAPS_LOCALVIDMEM;
 
             if (lpDD->GetAvailableVidMem(&ddsCaps, &availableMemory, NULL) != DD_OK)
-                Warningf("  Couldn't get video memory, using default");
-        
-            Displayf("  Total video memory: %dMB", (availableMemory >> 20));
+                LogFile::WriteLine("  Couldn't get video memory, using default");
 
-            gfxInterface->AvailableMemory = availableMemory;
+            LogFile::Format("  Total video memory: %dMB\n", (availableMemory >> 20));
+
+            if (gfxInterface_5)
+                gfxInterface_5->AvailableMemory = availableMemory;
 
             *gfxMaxScreenWidth = 0;
             *gfxMaxScreenHeight = 0;
@@ -925,11 +949,6 @@ private:
             } break;
             case MM2_RETAIL:
             {
-                // mutex was introduced in retail
-                InstallGameCallback("CreateGameMutex", &CallbackHandler::CreateGameMutex, {
-                    CB_HOOK<CALL>({ NULL, NULL, 0x40128D }),
-                });
-            
                 // revert bridges/ferries to how they were in the betas
                 InstallGameCallback("Bridge/Ferry: Cull", &BridgeFerryHandler::Cull, {
                     CB_HOOK<CALL>({ NULL, NULL, 0x5780BC }), // gizBridgeMgr::Cull
@@ -947,6 +966,10 @@ private:
             CB_HOOK<JMP>({ NULL, NULL, 0x402630 }),
         });
 
+        InstallGameCallback("CreateGameMutex", &CallbackHandler::CreateGameMutex, {
+            CB_HOOK<CALL>({ 0x4011D0, 0x40132D, 0x40128D }),
+        });
+
         InstallGameCallback("ProgressRect [white loading bar fix]", &CallbackHandler::ProgressRect, {
             CB_HOOK<CALL>({ NULL, NULL, 0x401163 }),
             CB_HOOK<CALL>({ NULL, NULL, 0x4011CC }),
@@ -956,16 +979,16 @@ private:
         {
             // Hook into the original AutoDetect and replace it with our own version
             InstallGameCallback("AutoDetectCallback", &CallbackHandler::AutoDetectCallback, {
-                CB_HOOK<JMP>({ NULL, NULL, 0x4AC030 }),
+                CB_HOOK<JMP>({ 0x4A0050, 0x4AC410, 0x4AC030 }),
             });
         }
 
         InstallGameCallback("gfxPipeline::SetRes", &gfxPipelineHandler::SetRes, {
-            CB_HOOK<CALL>({ NULL, NULL, 0x401482 }),
+            CB_HOOK<CALL>({ 0x40134E, 0x40150E, 0x401482 }),
         });
 
         InstallGameCallback("gfxPipeline::gfxWindowCreate", &gfxPipelineHandler::gfxWindowCreate, {
-            CB_HOOK<CALL>({ NULL, NULL, 0x4A94AA }),
+            CB_HOOK<CALL>({ 0x49D67A, 0x4A988A, 0x4A94AA }),
         });
 
         InstallGameCallback("gfxLoadVideoDatabase [disable 'badvideo.txt']", &ReturnFalse, {
@@ -1033,7 +1056,7 @@ private:
         });
 
         InstallGamePatch("Enable pointer in windowed mode", { 0x90, 0x90 }, {
-            { NULL, NULL, 0x4F136E },
+            { NULL, 0x4F114E, 0x4F136E },
         });
     }
 
@@ -1105,14 +1128,18 @@ public:
             LogFile::WriteLine("Hook shutdown request received.");
 
             LogFile::Close();
-            L.close(); // release Lua
 
-            // close datOutput log
-            datOutput::CloseLog();
-
-            if (ageLogFile)
+            if (gameVersion == MM2_RETAIL)
             {
-                fclose(ageLogFile);
+                L.close(); // release Lua
+
+                // close datOutput log
+                datOutput::CloseLog();
+
+                if (ageLogFile)
+                {
+                    fclose(ageLogFile);
+                }
             }
         } else {
             // GameLoop is restarting
@@ -1140,11 +1167,10 @@ void InstallFramework() {
 
         Basically, this method is a lot safer, and guarantees
         we'll have access to any arguments passed.
-
     */
 
     InstallGameCallback("ArchInit [Framework initialization]", &HookSystemHandler::Initialize, {
-        CB_HOOK<CALL>({ NULL, NULL, 0x4023DB }),
+        CB_HOOK<CALL>({ 0x4020DB, 0x40247B, 0x4023DB }),
     });
 
     /*
@@ -1169,6 +1195,7 @@ void Initialize(ageInfoLookup &gameInfo) {
         InstallFramework();
     } else {
         MessageBox(NULL, "MM2Hook was unable to initialize properly. The game will proceed normally.", "MM2Hook", MB_OK);
+        LogFile::Close(); // make sure we release the log file
     }
 }
 

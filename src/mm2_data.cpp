@@ -4,10 +4,10 @@ using namespace MM2;
 /*
     datArgParser
 */
-MM2FnHook<bool> datArgParser::$Get_$1           ( NULL, NULL, 0x4C6190 );
-MM2FnHook<bool> datArgParser::$Get_$2           ( NULL, NULL, 0x4C61C0 );
-MM2FnHook<bool> datArgParser::$Get_$3           ( NULL, NULL, 0x4C6210 );
-MM2FnHook<bool> datArgParser::$Get_$4           ( NULL, NULL, 0x4C6260 );
+MM2FnHook<bool> datArgParser::$Get_$1           ( 0x4B9940, 0x4C6580, 0x4C6190 );
+MM2FnHook<bool> datArgParser::$Get_$2           ( 0x4B9970, 0x4C65B0, 0x4C61C0 );
+MM2FnHook<bool> datArgParser::$Get_$3           ( 0x4B99C0, 0x4C6600, 0x4C6210 );
+MM2FnHook<bool> datArgParser::$Get_$4           ( 0x4B9A10, 0x4C6650, 0x4C6260 );
 
 /*
     datAssetManager
@@ -63,4 +63,4 @@ MM2FnHook<bool> datParser::$Save_$3             ( NULL, NULL, 0x4A7C50 );
     datTimeManager
 */
 MM2FnHook<void> datTimeManager::$Reset          ( NULL, NULL, 0x4C6300 );
-MM2FnHook<void> datTimeManager::$Update         ( NULL, NULL, 0x4C6340 );
+MM2FnHook<void> datTimeManager::$Update         ( 0x4B9AF0, 0x4C6730, 0x4C6340 );
