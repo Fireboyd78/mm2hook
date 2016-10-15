@@ -28,14 +28,14 @@ struct CB_HOOK
 {
     CB_INSTALL_INFO info;
 
-    constexpr CB_HOOK(const DWORD &addrs) : info { addrs, hookType } {};
+    constexpr CB_HOOK(const DWORD addrs) : info { addrs, hookType } {};
 
     constexpr operator CB_INSTALL_INFO() const {
         return info;
     };
 };
 
-void InstallVTableHook(LPCSTR name, 
+void InstallVTableHook(LPCSTR name,
                        auto_ptr lpHookAddr,
                        std::initializer_list<DWORD> addresses);
 
