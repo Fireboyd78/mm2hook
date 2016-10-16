@@ -4,10 +4,11 @@ using namespace MM2;
 /*
     datArgParser
 */
-DECLARE_HOOK(datArgParser::$Get_$1);
-DECLARE_HOOK(datArgParser::$Get_$2);
-DECLARE_HOOK(datArgParser::$Get_$3);
-DECLARE_HOOK(datArgParser::$Get_$4);
+DECLARE_HOOK(datArgParser::$Get_Any);
+DECLARE_HOOK(datArgParser::$Get_Int);
+DECLARE_HOOK(datArgParser::$Get_Float);
+DECLARE_HOOK(datArgParser::$Get_String);
+DECLARE_HOOK(datArgParser::$Get_WordCount);
 
 /*
     datAssetManager

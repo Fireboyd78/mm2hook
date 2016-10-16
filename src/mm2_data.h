@@ -18,25 +18,30 @@ namespace MM2
 
     class datArgParser {
     protected:
-        static AGEHook<0x4C6190>::Func<bool> $Get_$1;
-        static AGEHook<0x4C61C0>::Func<bool> $Get_$2;
-        static AGEHook<0x4C6210>::Func<bool> $Get_$3;
-        static AGEHook<0x4C6260>::Func<bool> $Get_$4;
+        static AGEHook<0x4C6190>::Func<bool> $Get_Any;
+        static AGEHook<0x4C61C0>::Func<bool> $Get_Int;
+        static AGEHook<0x4C6210>::Func<bool> $Get_Float;
+        static AGEHook<0x4C6260>::Func<bool> $Get_String;
+        static AGEHook<0x4C62A0>::Func<unsigned> $Get_WordCount;
     public:
         AGE_API static bool Get(LPCSTR arg) {
-            return $Get_$1(arg);
+            return $Get_Any(arg);
         };
 
         AGE_API static bool Get(LPCSTR arg, UINT index, int *out) {
-            return $Get_$2(arg, index, out);
+            return $Get_Int(arg, index, out);
         };
 
         AGE_API static bool Get(LPCSTR arg, UINT index, float *out) {
-            return $Get_$3(arg, index, out);
+            return $Get_Float(arg, index, out);
         };
 
         AGE_API static bool Get(LPCSTR arg, UINT index, LPCSTR *out) {
-            return $Get_$4(arg, index, out);
+            return $Get_String(arg, index, out);
+        };
+
+        AGE_API static unsigned GetWordCount(LPCSTR arg) {
+            return $Get_WordCount(arg);
         };
     };
 
@@ -89,8 +94,8 @@ namespace MM2
         Base *base; // when not null, means this callback uses __thiscall
 
         /*
-            by default, flags stored in upper 24 bits (mask: 0x3000000)          
-            
+            by default, flags stored in upper 24 bits (mask: 0x3000000)
+
             BUG: hooked function callbacks will FAIL if our function is above 0xFFFFFF
             TODO: make a patch to fix crashes for hooked functions
         */
