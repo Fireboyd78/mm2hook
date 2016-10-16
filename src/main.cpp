@@ -627,14 +627,11 @@ const coreFileMethods logFileMethods = {
 class CallbackHandler {
 public:
     static void ProgressRect(int x, int y, int width, int height, UINT color) {
-        DDPIXELFORMAT ddPixelFormat = { NULL };
-        DDBLTFX ddBltFx = { NULL };
 
-        ddBltFx.dwSize = 0x64;
-        ddPixelFormat.dwSize = 0x20;
-
+        DDPIXELFORMAT ddPixelFormat = { sizeof(ddPixelFormat) };
         lpdsRend->GetPixelFormat(&ddPixelFormat);
 
+        DDBLTFX ddBltFx = { sizeof(ddBltFx) };
         ddBltFx.dwFillColor = GetPixelFormatColor(&ddPixelFormat, color);
 
         RECT position = {
