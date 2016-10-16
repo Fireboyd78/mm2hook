@@ -90,6 +90,11 @@ AGEHook<0x443E50>::Func<void> $cityLevelSetObjectDetail;
 
 AGEHook<0x6A3D40>::Type<Stream *> datOutputStream;
 
+AGEHook<0x5C571C>::Type<float> lvl_lodMax;
+AGEHook<0x5C6658>::Type<float> lvl_lodLevel3;
+AGEHook<0x5C665C>::Type<float> lvl_lodLevel2;
+AGEHook<0x5C6660>::Type<float> lvl_lodLevel1;
+
 AGEHook<0x6299A8>::Type<cityTimeWeatherLighting> TIMEWEATHER;
 
 AGEHook<0x62B068>::Type<int> timeOfDay;
@@ -138,11 +143,6 @@ AGEHook<0x5E0CC4>::Type<void (*)(void)> $__VtResumeSampling;
 AGEHook<0x5E0CD8>::Type<void (*)(void)> $__VtPauseSampling;
 
 AGEHook<0x6B1708>::Type<BOOL> $gameClosing;
-
-AGEHook<0x5C571C>::Type<float> $cityLevelLODMax;
-AGEHook<0x5C6658>::Type<float> $cityLevelLODFar;
-AGEHook<0x5C665C>::Type<float> $cityLevelLODNormal;
-AGEHook<0x5C6660>::Type<float> $cityLevelLODClose;
 
 /*
     ===========================================================================
@@ -229,6 +229,47 @@ public:
     }
 };
 
+class cityLevelHandler {
+public:
+    // TODO: Factor in 'Visibility' level somehow?
+    void SetObjectDetail(int lod) {
+        /* Default MM2 values (leaving this here for reference)
+        static float lodLevels[][4] = {
+        { 200.0f, 150.0f, 70.0f, 20.0f, }, // Low
+        { 250.0f, 175.0f, 90.0f, 30.0f, }, // Medium
+        { 300.0f, 200.0f, 100.0f, 40.0f, }, // High
+        { 300.0f, 200.0f, 130.0f, 70.0f, }, // Very high
+        };
+        */
+
+        static const char *lodLevelNames[4] = {
+            "Low",
+            "Medium",
+            "High",
+            "Very High",
+        };
+
+        // 'Low' now uses 'Medium' values, 'Medium' uses 'High', etc.
+        // 'Very high' now renders a bit farther than before, but not to an extreme.
+        // Performance drops are to be expected until bugs can be ironed out.
+        // Poor PVS optimization seems to be the reason why values were so low.
+        static float lodLevels[][4] = {
+            { 250.0f, 175.0f, 90.0f, 30.0f, }, // Low (Default: Medium)
+            { 300.0f, 200.0f, 100.0f, 40.0f, }, // Medium (Default: High)
+            { 300.0f, 200.0f, 130.0f, 70.0f, }, // High (Default: Very High)
+            { 640.0f, 480.0f, 160.0f, 80.0f, }, // Very high (NEW)
+        };
+
+        *lvl_lodMax = lodLevels[lod][0]; // VL: <level 3> - <max>
+        *lvl_lodLevel3 = lodLevels[lod][1]; // L: <level 2> - <level 3>
+        *lvl_lodLevel2 = lodLevels[lod][2]; // M: <level 1> - <level 2>
+        *lvl_lodLevel1 = lodLevels[lod][3]; // H: 0.0 - <level 1>
+
+        LogFile::Format("[cityLevel::SetObjectDetail]: '%s' : { %.4f, %.4f, %.4f, %.4f }\n",
+            lodLevelNames[lod], *lvl_lodMax, *lvl_lodLevel3, *lvl_lodLevel2, *lvl_lodLevel1);
+    }
+};
+
 /*
     By default, bridges are treated as "Cullables" instead of "Drawables" (MM2 is weird)
 
@@ -246,21 +287,6 @@ public:
 */
 class BridgeFerryHandler {
 public:
-    static void __stdcall SetObjectDetail(int lod) { // Yes, this IS a __stdcall
-        float lod_max    = 300.f,
-              lod_far    = 250.f,
-              lod_normal = 200.f,
-              lod_close  = 150.f;
-
-        *$cityLevelLODMax    = lod_max;
-        *$cityLevelLODFar    = lod_far;
-        *$cityLevelLODNormal = lod_normal;
-        *$cityLevelLODClose  = lod_close;
-
-        LogFile::Format("[cityLevel::SetObjectDetail]: %f, %f, %f, %f\n",
-                        lod_max, lod_far, lod_normal, lod_close);
-    }
-
     void Cull(int lod) {
         // wtf
         //setPtr(this, 0x1B, (char)++lod);
@@ -875,7 +901,7 @@ private:
             0x5B61AC, // gizFerry::Draw
         });
 
-        InstallVTableHook("cityLevel::SetObjectDetail", &BridgeFerryHandler::SetObjectDetail, {
+        InstallVTableHook("cityLevel::SetObjectDetail", &cityLevelHandler::SetObjectDetail, {
             0x5B16E0
         });
 
