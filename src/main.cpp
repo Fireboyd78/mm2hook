@@ -82,6 +82,7 @@ AGEHook<0x4AC3D0>::Func<LPD3DENUMDEVICESCALLBACK7> $DeviceCallback;
 AGEHook<0x4AC6F0>::Func<LPDDENUMMODESCALLBACK2> $ResCallback;
 
 AGEHook<0x4A1290>::Func<void> $asCullManagerInit;
+AGEHook<0x443E50>::Func<void> $cityLevelSetObjectDetail;
 
 // ==========================
 // Pointer hooks
@@ -137,6 +138,11 @@ AGEHook<0x5E0CC4>::Type<void (*)(void)> $__VtResumeSampling;
 AGEHook<0x5E0CD8>::Type<void (*)(void)> $__VtPauseSampling;
 
 AGEHook<0x6B1708>::Type<BOOL> $gameClosing;
+
+AGEHook<0x5C571C>::Type<float> $cityLevelLODMax;
+AGEHook<0x5C6658>::Type<float> $cityLevelLODFar;
+AGEHook<0x5C665C>::Type<float> $cityLevelLODNormal;
+AGEHook<0x5C6660>::Type<float> $cityLevelLODClose;
 
 /*
     ===========================================================================
@@ -236,9 +242,25 @@ public:
 
     A "solution" is to manually set the LOD distance values (see cityLevel::SetObjectDetail).
     But that would cause everything to be drawn further, and decrase FPS.
+    It also seems to create rendering artifacts when set too high.
 */
 class BridgeFerryHandler {
 public:
+    static void __stdcall SetObjectDetail(int lod) { // Yes, this IS a __stdcall
+        float lod_max    = 300.f,
+              lod_far    = 250.f,
+              lod_normal = 200.f,
+              lod_close  = 150.f;
+
+        *$cityLevelLODMax    = lod_max;
+        *$cityLevelLODFar    = lod_far;
+        *$cityLevelLODNormal = lod_normal;
+        *$cityLevelLODClose  = lod_close;
+
+        LogFile::Format("[cityLevel::SetObjectDetail]: %f, %f, %f, %f\n",
+                        lod_max, lod_far, lod_normal, lod_close);
+    }
+
     void Cull(int lod) {
         // wtf
         //setPtr(this, 0x1B, (char)++lod);
@@ -851,6 +873,10 @@ private:
         InstallVTableHook("Bridge/Ferry: Draw", &BridgeFerryHandler::Draw, {
             0x5B5FB8, // gizBridge::Draw
             0x5B61AC, // gizFerry::Draw
+        });
+
+        InstallVTableHook("cityLevel::SetObjectDetail", &BridgeFerryHandler::SetObjectDetail, {
+            0x5B16E0
         });
 
         InstallGameCallback("ageDebug", &CallbackHandler::ageDebug, {
