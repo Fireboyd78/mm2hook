@@ -67,12 +67,11 @@ void InstallGameCallback(LPCSTR name,
     LogFile::Format("   - Installed %u callbacks\n", callbacks.size());
 }
 
-void InstallVTableHook(LPCSTR name, 
+void InstallVTableHook(LPCSTR name,
                        auto_ptr lpHookAddr,
                        std::initializer_list<DWORD> addresses) {
     LogFile::Format(" - Installing V-Table hook: '%s'...\n", name);
 
-    std::size_t count = 0;
     for (auto addr : addresses)
     {
         mem::write_args<DWORD>(LPVOID(addr), lpHookAddr);
@@ -80,5 +79,5 @@ void InstallVTableHook(LPCSTR name,
         LogFile::Format("   - %08X => %08X", addr, lpHookAddr);
     }
 
-    LogFile::Format("   - Installed %u / %u hooks\n", count, addresses.size());
+    LogFile::Format("   - Installed %u / %u hooks\n", addresses.size());
 }
