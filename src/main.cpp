@@ -90,10 +90,15 @@ AGEHook<0x443E50>::Func<void> $cityLevelSetObjectDetail;
 
 AGEHook<0x6A3D40>::Type<Stream *> datOutputStream;
 
-AGEHook<0x5C571C>::Type<float> lvl_lodMax;
-AGEHook<0x5C6658>::Type<float> lvl_lodLevel3;
-AGEHook<0x5C665C>::Type<float> lvl_lodLevel2;
-AGEHook<0x5C6660>::Type<float> lvl_lodLevel1;
+AGEHook<0x5C571C>::Type<float> obj_NoDrawThresh; // default: 300.0
+
+AGEHook<0x5C6658>::Type<float> obj_VLowThresh;  // default: 200.0
+AGEHook<0x5C665C>::Type<float> obj_LowThresh;   // default: 100.0
+AGEHook<0x5C6660>::Type<float> obj_MedThresh;   // default: 40.0
+
+AGEHook<0x5C5708>::Type<float> sdl_VLowThresh;  // default: 300.0
+AGEHook<0x5C570C>::Type<float> sdl_LowThresh;   // default: 100.0
+AGEHook<0x5C5710>::Type<float> sdl_MedThresh;   // default: 50.0
 
 AGEHook<0x6299A8>::Type<cityTimeWeatherLighting> TIMEWEATHER;
 
@@ -260,13 +265,34 @@ public:
             { 640.0f, 480.0f, 160.0f, 80.0f, }, // Very high (NEW)
         };
 
-        *lvl_lodMax = lodLevels[lod][0]; // VL: <level 3> - <max>
-        *lvl_lodLevel3 = lodLevels[lod][1]; // L: <level 2> - <level 3>
-        *lvl_lodLevel2 = lodLevels[lod][2]; // M: <level 1> - <level 2>
-        *lvl_lodLevel1 = lodLevels[lod][3]; // H: 0.0 - <level 1>
+        // using temporary variables so we don't need to constantly access pointers
+        float objNoDrawThresh   = lodLevels[lod][0]; // VL: <VLowThresh> - <NoDrawThresh>
+        float objVLowThresh     = lodLevels[lod][1]; // L: <LowThresh> - <VLowThresh>
+        float objLowThresh      = lodLevels[lod][2]; // M: <MedThresh> - <LowThresh>
+        float objMedThresh      = lodLevels[lod][3]; // H: 0.0 - <MedThresh>
 
-        LogFile::Format("[cityLevel::SetObjectDetail]: '%s' : { %.4f, %.4f, %.4f, %.4f }\n",
-            lodLevelNames[lod], *lvl_lodMax, *lvl_lodLevel3, *lvl_lodLevel2, *lvl_lodLevel1);
+        *obj_NoDrawThresh = objNoDrawThresh;
+        *obj_VLowThresh = objVLowThresh;
+        *obj_LowThresh = objLowThresh;
+        *obj_MedThresh = objMedThresh;
+
+        // By default, the game doesn't set these values based on the detail level
+        // They are hardcoded to what is considered 'High' by default,
+        // however this is now known as 'Medium' (lod = 1; see above)
+        // 
+        // 'Medium' and below (default 'High') uses the defaults.
+        float sdlVLowThresh     = (lod > 1) ? (objVLowThresh + 100.0f) : 300.0f;
+        float sdlLowThresh      = (lod > 1) ? (objLowThresh + 25.0f) : 100.0f;
+        float sdlMedThresh      = (lod > 1) ? (objMedThresh + 10.0f) : 50.0f;
+
+        *sdl_VLowThresh = sdlVLowThresh;
+        *sdl_LowThresh = sdlLowThresh;
+        *sdl_MedThresh = sdlMedThresh;
+        
+        LogFile::Format("[cityLevel::SetObjectDetail]: '%s'\r\n\t- OBJ { %.4f, %.4f, %.4f, %.4f }\r\n\t- SDL { %.4f, %.4f, %.4f }\n",
+            lodLevelNames[lod],
+            objNoDrawThresh, objVLowThresh, objLowThresh, objMedThresh,
+            sdlVLowThresh, sdlLowThresh, sdlMedThresh);
     }
 };
 
