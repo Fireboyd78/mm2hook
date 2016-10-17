@@ -1,7 +1,6 @@
 #pragma once
 #include "common.h"
 
-#include <cstdint>
 #include <type_traits>
 
 /*
@@ -15,7 +14,7 @@ namespace mem
         DWORD dwOldProtect;
         if (VirtualProtect(lpAddress, dwReadSize, PAGE_EXECUTE_READWRITE, &dwOldProtect))
         {
-            std::memcpy(lpAddress, lpReadAddress, dwReadSize),
+            memcpy(lpAddress, lpReadAddress, dwReadSize),
 
             VirtualProtect(lpAddress, dwReadSize, dwOldProtect, NULL);
 
@@ -39,11 +38,13 @@ namespace mem
         DWORD dwOldProtect;
         if (VirtualProtect(lpAddress, totalSize, PAGE_EXECUTE_READWRITE, &dwOldProtect))
         {
-            (void) std::initializer_list<int>
+            using variadic_unpacker_t = int[ ];
+
+            (void) variadic_unpacker_t
             {
                 (
                     //*static_cast<TArgs*>(lpAddress) = args,
-                    std::memcpy(lpAddress, &args, sizeof(args)),
+                    memcpy(lpAddress, &args, sizeof(args)),
                     lpAddress = static_cast<char*>(lpAddress) + sizeof(args),
                 0)...
             };

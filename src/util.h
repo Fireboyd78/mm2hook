@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstdint>
-
 //
 // Useful preprocessor directives
 //
@@ -62,7 +60,7 @@
 #define TEXTCOLOR_BLACK             0
 #define TEXTCOLOR_BLUE              1
 #define TEXTCOLOR_GREEN             2
-#define TEXTCOLOR_CYAN              3 
+#define TEXTCOLOR_CYAN              3
 #define TEXTCOLOR_RED               4
 #define TEXTCOLOR_MAGENTA           5
 #define TEXTCOLOR_BROWN             6
@@ -199,11 +197,11 @@ inline bool file_exists(LPCSTR filename) {
 
 namespace variadic
 {
-    template <std::uint64_t...>
-    constexpr std::uint64_t sum = 0;
+    template <unsigned long long...>
+    constexpr unsigned long long sum = 0;
 
-    template <std::uint64_t S, std::uint64_t... SS>
-    constexpr std::uint64_t sum<S, SS...> = S + sum<SS...>;
+    template <unsigned long long S, unsigned long long... SS>
+    constexpr unsigned long long sum<S, SS...> = S + sum<SS...>;
 
     // true_for_all
     template <bool...>

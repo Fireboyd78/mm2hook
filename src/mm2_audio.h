@@ -104,8 +104,8 @@ namespace MM2
             POP_VTABLE();
         };
 
-        AGE_API static DirSnd * Init(DWORD p1, byte p2, bool p3, char *p4) {
-            return $Init(p1, p2, p3, p4);
+        AGE_API static DirSnd * Init(DWORD sampleRate, bool enableStero, bool enable3D, const char *deviceName) {
+            return $Init(sampleRate, enableStero, enable3D, deviceName);
         };
 
         AGE_API int Init3DListener(float p1, float p2, float p3, float p4, float p5) {
@@ -168,7 +168,7 @@ namespace MM2
         UINT dsound3DEnabled;
 
         /*
-            Function hooks    
+            Function hooks
         */
 
         static AGEHook<0x51CBE0>::Func<void> $$ctor;

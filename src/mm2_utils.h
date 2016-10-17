@@ -37,11 +37,11 @@ struct CB_HOOK
 
 void InstallVTableHook(LPCSTR name,
                        auto_ptr lpHookAddr,
-                       std::initializer_list<DWORD> addresses);
+                       std::initializer_list<unsigned int> addresses);
 
 void InstallGamePatch(LPCSTR name,
                       std::initializer_list<unsigned char> bytes,
-                      std::initializer_list<DWORD> addresses);
+                      std::initializer_list<unsigned int> addresses);
 
 void InstallGameCallback(auto_ptr lpCallback,
                          CB_INSTALL_INFO info);
@@ -57,13 +57,15 @@ union COLOR_ARGB
         byte b, g, r, a;
     };
 
-    UINT32 color;
+    unsigned int color;
 };
 
-template <std::uint8_t A, std::uint8_t R, std::uint8_t G, std::uint8_t B>
+template <
+    unsigned int A, unsigned int R, unsigned int G, unsigned int B
+>
 struct ColorFlags
 {
-    enum : std::uint32_t
+    enum : unsigned int
     {
         // Bit Shifts (created in reverse order)
         SB = 0,
@@ -86,10 +88,10 @@ struct ColorFlags
 };
 
 template <
-    int OA, int OR, int OG, int OB,
-    int NA, int NR, int NG, int NB
+    unsigned int OA, unsigned int OR, unsigned int OG, unsigned int OB,
+    unsigned int NA, unsigned int NR, unsigned int NG, unsigned int NB
 >
-constexpr inline UINT32 ConvertColor(const UINT32 color)
+inline unsigned int ConvertColor(const unsigned int color)
 {
     using OF = ColorFlags<OA, OR, OG, OB>;
     using NF = ColorFlags<NA, NR, NG, NB>;
@@ -101,7 +103,7 @@ constexpr inline UINT32 ConvertColor(const UINT32 color)
         (((color & OF::SMB) >> OF::SB) * NF::MB / (OF::MB ? OF::MB : 1) << NF::SB);
 }
 
-inline UINT32 GetPixelFormatColor(LPDDPIXELFORMAT lpDDPixelFormat, UINT32 color) {
+inline unsigned int GetPixelFormatColor(LPDDPIXELFORMAT lpDDPixelFormat, unsigned int color) {
     switch (lpDDPixelFormat->dwGBitMask)
     {
         // 555

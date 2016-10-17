@@ -6,7 +6,6 @@
 #define DIRECTX_VERSION 0x0700
 
 #include "common.h"
-#include "hook.h"
 
 #include "AGE.h"
 

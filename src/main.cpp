@@ -32,8 +32,8 @@ int g_heapSize = 128;
 
 const double cosNum = 1.570796;
 
-UINT32 vglColor;
-UINT32 vglCalculatedColor = 0xFFFFFFFF;
+unsigned int vglColor;
+unsigned int vglCalculatedColor = 0xFFFFFFFF;
 
 Vector3 vglAmbient;
 Vector3 vglKeyColor;
@@ -67,7 +67,7 @@ AGEHook<0x577210>::Func<void> $memSafeHeap_Init;
 
 AGEHook<0x5346B0>::Func<int>::StdCall $MyLoadStringA;
 
-AGEHook<0x450880>::Func<UINT32> $sdlPage16_GetShadedColor;
+AGEHook<0x450880>::Func<unsigned int> $sdlPage16_GetShadedColor;
 
 /*
     TODO: Move VGL stuff to a separate file?
@@ -100,14 +100,14 @@ AGEHook<0x5C5708>::Type<float> sdl_VLowThresh;  // default: 300.0
 AGEHook<0x5C570C>::Type<float> sdl_LowThresh;   // default: 100.0
 AGEHook<0x5C5710>::Type<float> sdl_MedThresh;   // default: 50.0
 
-AGEHook<0x6299A8>::Type<cityTimeWeatherLighting> TIMEWEATHER;
+AGEHook<0x6299A8>::Type<cityTimeWeatherLighting[16]> timeWeathers;
 
 AGEHook<0x62B068>::Type<int> timeOfDay;
 
 AGEHook<0x6B167C>::Type<char[40]> cityName;
 AGEHook<0x6B16A4>::Type<char[40]> cityName2;
 
-AGEHook<0x661974>::Type<UINT32> vglCurrentColor;
+AGEHook<0x661974>::Type<unsigned int> vglCurrentColor;
 
 AGEHook<0x661738>::Type<asNode> ROOT;
 
@@ -122,10 +122,10 @@ AGEHook<0x6830AC>::Type<IDirect3D7 *> lpD3D;
 AGEHook<0x6830CC>::Type<IDirectDrawSurface7 *> lpdsRend;
 
 AGEHook<0x683130>::Type<gfxInterface> gfxInterfaces;
-AGEHook<0x6844C0>::Type<uint32_t> gfxInterfaceCount;
+AGEHook<0x6844C0>::Type<unsigned int> gfxInterfaceCount;
 
-AGEHook<0x6844FC>::Type<uint32_t> gfxMaxScreenWidth;
-AGEHook<0x6844D8>::Type<uint32_t> gfxMaxScreenHeight;
+AGEHook<0x6844FC>::Type<unsigned int> gfxMaxScreenWidth;
+AGEHook<0x6844D8>::Type<unsigned int> gfxMaxScreenHeight;
 
 AGEHook<0x682FA0>::Type<HWND> hWndParent;
 AGEHook<0x6830B8>::Type<HWND> hWndMain;
@@ -139,10 +139,10 @@ AGEHook<0x6830D0>::Type<BOOL> inWindow;
 AGEHook<0x6830D1>::Type<BOOL> isMaximized;
 AGEHook<0x5CA3ED>::Type<BOOL> hasBorder;
 
-AGEHook<0x6830EC>::Type<DWORD> WndPosX;
-AGEHook<0x683110>::Type<DWORD> WndPosY;
-AGEHook<0x683128>::Type<DWORD> WndWidth;
-AGEHook<0x683100>::Type<DWORD> WndHeight;
+AGEHook<0x6830EC>::Type<unsigned int> windowX;
+AGEHook<0x683110>::Type<unsigned int> windowY;
+AGEHook<0x683128>::Type<unsigned int> windowWidth;
+AGEHook<0x683100>::Type<unsigned int> windowHeight;
 
 AGEHook<0x5E0CC4>::Type<void (*)(void)> $__VtResumeSampling;
 AGEHook<0x5E0CD8>::Type<void (*)(void)> $__VtPauseSampling;
@@ -238,14 +238,13 @@ class cityLevelHandler {
 public:
     // TODO: Factor in 'Visibility' level somehow?
     void SetObjectDetail(int lod) {
-        /* Default MM2 values (leaving this here for reference)
-        static float lodLevels[][4] = {
-        { 200.0f, 150.0f, 70.0f, 20.0f, }, // Low
-        { 250.0f, 175.0f, 90.0f, 30.0f, }, // Medium
-        { 300.0f, 200.0f, 100.0f, 40.0f, }, // High
-        { 300.0f, 200.0f, 130.0f, 70.0f, }, // Very high
-        };
-        */
+        // Default MM2 values (leaving this here for reference)
+        // static float lodLevels[4][4] = {
+        //     { 200.0f, 150.0f,  70.0f, 20.0f }, // Low
+        //     { 250.0f, 175.0f,  90.0f, 30.0f }, // Medium
+        //     { 300.0f, 200.0f, 100.0f, 40.0f }, // High
+        //     { 300.0f, 200.0f, 130.0f, 70.0f }, // Very high
+        // };
 
         static const char *lodLevelNames[4] = {
             "Low",
@@ -258,41 +257,44 @@ public:
         // 'Very high' now renders a bit farther than before, but not to an extreme.
         // Performance drops are to be expected until bugs can be ironed out.
         // Poor PVS optimization seems to be the reason why values were so low.
-        static float lodLevels[][4] = {
-            { 250.0f, 175.0f, 90.0f, 30.0f, }, // Low (Default: Medium)
-            { 300.0f, 200.0f, 100.0f, 40.0f, }, // Medium (Default: High)
-            { 300.0f, 200.0f, 130.0f, 70.0f, }, // High (Default: Very High)
-            { 640.0f, 480.0f, 160.0f, 80.0f, }, // Very high (NEW)
+        static float lodLevels[4][4] = {
+            { 250.0f, 175.0f,  90.0f, 30.0f }, // Low       (Default: Medium)
+            { 300.0f, 200.0f, 100.0f, 40.0f }, // Medium    (Default: High)
+            { 300.0f, 200.0f, 130.0f, 70.0f }, // High      (Default: Very High)
+            { 640.0f, 480.0f, 160.0f, 80.0f }, // Very high (NEW)
         };
 
-        // using temporary variables so we don't need to constantly access pointers
-        float objNoDrawThresh   = lodLevels[lod][0]; // VL: <VLowThresh> - <NoDrawThresh>
-        float objVLowThresh     = lodLevels[lod][1]; // L: <LowThresh> - <VLowThresh>
-        float objLowThresh      = lodLevels[lod][2]; // M: <MedThresh> - <LowThresh>
-        float objMedThresh      = lodLevels[lod][3]; // H: 0.0 - <MedThresh>
+        // Using temporary variables so we don't need to constantly access pointers
+
+        float objNoDrawThresh = lodLevels[lod][0]; // VL: <VLowThresh> - <NoDrawThresh>
+        float objVLowThresh   = lodLevels[lod][1]; // L: <LowThresh> - <VLowThresh>
+        float objLowThresh    = lodLevels[lod][2]; // M: <MedThresh> - <LowThresh>
+        float objMedThresh    = lodLevels[lod][3]; // H: 0.0 - <MedThresh>
 
         *obj_NoDrawThresh = objNoDrawThresh;
-        *obj_VLowThresh = objVLowThresh;
-        *obj_LowThresh = objLowThresh;
-        *obj_MedThresh = objMedThresh;
+        *obj_VLowThresh   = objVLowThresh;
+        *obj_LowThresh    = objLowThresh;
+        *obj_MedThresh    = objMedThresh;
 
         // By default, the game doesn't set these values based on the detail level
         // They are hardcoded to what is considered 'High' by default,
         // however this is now known as 'Medium' (lod = 1; see above)
-        // 
+        //
         // 'Medium' and below (default 'High') uses the defaults.
-        float sdlVLowThresh     = (lod > 1) ? (objVLowThresh + 100.0f) : 300.0f;
-        float sdlLowThresh      = (lod > 1) ? (objLowThresh + 25.0f) : 100.0f;
-        float sdlMedThresh      = (lod > 1) ? (objMedThresh + 10.0f) : 50.0f;
+        float sdlVLowThresh = (lod > 1) ? (objVLowThresh + 100.0f) : 300.0f;
+        float sdlLowThresh  = (lod > 1) ? (objLowThresh + 25.0f) : 100.0f;
+        float sdlMedThresh  = (lod > 1) ? (objMedThresh + 10.0f) : 50.0f;
 
         *sdl_VLowThresh = sdlVLowThresh;
-        *sdl_LowThresh = sdlLowThresh;
-        *sdl_MedThresh = sdlMedThresh;
-        
-        LogFile::Format("[cityLevel::SetObjectDetail]: '%s'\r\n\t- OBJ { %.4f, %.4f, %.4f, %.4f }\r\n\t- SDL { %.4f, %.4f, %.4f }\n",
-            lodLevelNames[lod],
-            objNoDrawThresh, objVLowThresh, objLowThresh, objMedThresh,
-            sdlVLowThresh, sdlLowThresh, sdlMedThresh);
+        *sdl_LowThresh  = sdlLowThresh;
+        *sdl_MedThresh  = sdlMedThresh;
+
+        LogFile::Format("[cityLevel::SetObjectDetail]: '%s'\n"
+                        "    - OBJ { %.4f, %.4f, %.4f, %.4f }\n"
+                        "    - SDL { %.4f, %.4f, %.4f }\n",
+                        lodLevelNames[lod],
+                        objNoDrawThresh, objVLowThresh, objLowThresh, objMedThresh,
+                        sdlVLowThresh, sdlLowThresh, sdlMedThresh);
     }
 };
 
@@ -376,15 +378,15 @@ public:
         }
 
         HDC hDC = GetDC(0);
-        DWORD screenWidth = GetDeviceCaps(hDC, HORZRES);
-        DWORD screenHeight = GetDeviceCaps(hDC, VERTRES);
+        int screenWidth  = GetDeviceCaps(hDC, HORZRES);
+        int screenHeight = GetDeviceCaps(hDC, VERTRES);
         ReleaseDC(0, hDC);
 
-        if (WndPosX == -1)
-            *WndPosX = (screenWidth - WndWidth) / 2;
+        if (windowX == -1)
+            *windowX = (screenWidth - windowWidth) / 2;
 
-        if (WndPosY == -1)
-            *WndPosY = (screenHeight - WndHeight) / 2;
+        if (windowY == -1)
+            *windowY = (screenHeight - windowHeight) / 2;
 
         DWORD dwStyle = NULL;
 
@@ -413,8 +415,8 @@ public:
             "gfxWindow",
             lpWindowName,
             dwStyle,
-            WndPosX,
-            WndPosY,
+            windowX,
+            windowY,
             640,
             480,
             hWndParent,
@@ -432,10 +434,10 @@ public:
 
             MoveWindow(
                 hWND,
-                WndPosX,
-                WndPosY,
-                2 * WndWidth - rect.right,
-                2 * WndWidth - rect.bottom,
+                windowX,
+                windowY,
+                2 * windowWidth - rect.right,
+                2 * windowHeight - rect.bottom,
                 0);
         }
 
@@ -548,10 +550,10 @@ public:
 
 class vglHandler {
 private:
-    static UINT32 CalculateShadedColor(UINT32 color) {
-        auto timeWeather = &TIMEWEATHER[timeOfDay];
+    static unsigned int CalculateShadedColor(unsigned int color) {
+        auto timeWeather = *timeWeathers + timeOfDay;
 
-        vglKeyColor = addPitch(&timeWeather->KeyColor, timeWeather->KeyPitch);
+        vglKeyColor   = addPitch(&timeWeather->KeyColor,   timeWeather->KeyPitch);
         vglFill1Color = addPitch(&timeWeather->Fill1Color, timeWeather->Fill1Pitch);
         vglFill2Color = addPitch(&timeWeather->Fill2Color, timeWeather->Fill2Pitch);
 
@@ -560,15 +562,15 @@ private:
 
         // compute le values
         vglShadedColor = {
-            normalize((vglKeyColor.X + vglFill1Color.X + vglFill2Color.X) + vglAmbient.X),
-            normalize((vglKeyColor.Y + vglFill1Color.Y + vglFill2Color.Y) + vglAmbient.Y),
-            normalize((vglKeyColor.Z + vglFill1Color.Z + vglFill2Color.Z) + vglAmbient.Z),
+            normalize(vglKeyColor.X + vglFill1Color.X + vglFill2Color.X + vglAmbient.X),
+            normalize(vglKeyColor.Y + vglFill1Color.Y + vglFill2Color.Y + vglAmbient.Y),
+            normalize(vglKeyColor.Z + vglFill1Color.Z + vglFill2Color.Z + vglAmbient.Z),
         };
 
-        vglResultColor.r = (byte)(vglShadedColor.X * 255.999);
-        vglResultColor.g = (byte)(vglShadedColor.Y * 255.999);
-        vglResultColor.b = (byte)(vglShadedColor.Z * 255.999);
-        vglResultColor.a = (byte)255;
+        vglResultColor.r = byte(vglShadedColor.X * 255.f);
+        vglResultColor.g = byte(vglShadedColor.Y * 255.f);
+        vglResultColor.b = byte(vglShadedColor.Z * 255.f);
+        vglResultColor.a = 255;
 
         return $sdlPage16_GetShadedColor(color, vglResultColor.color);
     }
@@ -600,8 +602,8 @@ public:
         // this allows us to have an entry representing each "frame" (vglBegin/vglEnd)
         // and cuts down on the amount of time it takes to add a new entry
         struct vgl_pair {
-            DWORD begin_addr; // vglBegin
-            DWORD end_addr; // vglEnd
+            unsigned int begin; // vglBegin
+            unsigned int end;   // vglEnd
         };
 
         // TODO: Remove tunnels from the list so they're fullbright (or at least see how it looks)
@@ -629,11 +631,11 @@ public:
         // mostly copied from InstallGameCallback
         for (auto pair : vglCBs)
         {
-            auto begin = pair.begin_addr;
-            auto end = pair.end_addr;
+            auto begin = pair.begin;
+            auto end   = pair.end;
 
-            InstallGameCallback(vglBeginCB, { begin,    CALL });
-            InstallGameCallback(vglEndCB,   { end,      CALL });
+            InstallGameCallback(vglBeginCB, { begin, CALL });
+            InstallGameCallback(vglEndCB,   { end,   CALL });
 
             LogFile::Format("   - { vglBegin: %08X => %08X, vglEnd: %08X => %08X }\n", begin, vglBeginCB, end, vglEndCB);
         }
@@ -726,19 +728,17 @@ public:
         }
     }
 
-    static void ageDebug(int enabled, LPCSTR format, ...) {
-        // this makes the game load up reeeeeally slow if enabled!
+    static void ageDebug(bool enabled, const char* format, ...) {
         if (ageLogFile)
         {
-            char buffer[1024];
-
             va_list va;
+
             va_start(va, format);
-            vsprintf(buffer, format, va);
+            vfprintf(ageLogFile, format, va);
             va_end(va);
 
-            fputs(buffer, ageLogFile);
-            fputs("\n", ageLogFile);
+            fputc('\n', ageLogFile);
+            // fflush(ageLogFile);
         }
     }
 

@@ -121,7 +121,6 @@
   -->
   <ItemGroup>
     <ClInclude Include="src\common.h" />
-    <ClInclude Include="src\hook.h" />
     <ClInclude Include="src\logfile.h" />
     <ClInclude Include="src\patch.h" />
     <ClInclude Include="src\util.h" />
