@@ -100,7 +100,7 @@ AGEHook<0x5C5708>::Type<float> sdl_VLowThresh;  // default: 300.0
 AGEHook<0x5C570C>::Type<float> sdl_LowThresh;   // default: 100.0
 AGEHook<0x5C5710>::Type<float> sdl_MedThresh;   // default: 50.0
 
-AGEHook<0x6299A8>::Type<cityTimeWeatherLighting> TIMEWEATHER;
+AGEHook<0x6299A8>::Type<cityTimeWeatherLighting[16]> timeWeathers;
 
 AGEHook<0x62B068>::Type<int> timeOfDay;
 
@@ -551,9 +551,9 @@ public:
 class vglHandler {
 private:
     static unsigned int CalculateShadedColor(unsigned int color) {
-        auto timeWeather = &TIMEWEATHER[timeOfDay];
+        auto timeWeather = &(*timeWeathers)[timeOfDay];
 
-        vglKeyColor = addPitch(&timeWeather->KeyColor, timeWeather->KeyPitch);
+        vglKeyColor   = addPitch(&timeWeather->KeyColor,   timeWeather->KeyPitch);
         vglFill1Color = addPitch(&timeWeather->Fill1Color, timeWeather->Fill1Pitch);
         vglFill2Color = addPitch(&timeWeather->Fill2Color, timeWeather->Fill2Pitch);
 
@@ -562,15 +562,15 @@ private:
 
         // compute le values
         vglShadedColor = {
-            normalize((vglKeyColor.X + vglFill1Color.X + vglFill2Color.X) + vglAmbient.X),
-            normalize((vglKeyColor.Y + vglFill1Color.Y + vglFill2Color.Y) + vglAmbient.Y),
-            normalize((vglKeyColor.Z + vglFill1Color.Z + vglFill2Color.Z) + vglAmbient.Z),
+            normalize(vglKeyColor.X + vglFill1Color.X + vglFill2Color.X + vglAmbient.X),
+            normalize(vglKeyColor.Y + vglFill1Color.Y + vglFill2Color.Y + vglAmbient.Y),
+            normalize(vglKeyColor.Z + vglFill1Color.Z + vglFill2Color.Z + vglAmbient.Z),
         };
 
-        vglResultColor.r = (byte)(vglShadedColor.X * 255.999);
-        vglResultColor.g = (byte)(vglShadedColor.Y * 255.999);
-        vglResultColor.b = (byte)(vglShadedColor.Z * 255.999);
-        vglResultColor.a = (byte)255;
+        vglResultColor.r = byte(vglShadedColor.X * 255.f);
+        vglResultColor.g = byte(vglShadedColor.Y * 255.f);
+        vglResultColor.b = byte(vglShadedColor.Z * 255.f);
+        vglResultColor.a = 255;
 
         return $sdlPage16_GetShadedColor(color, vglResultColor.color);
     }
