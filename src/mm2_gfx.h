@@ -21,9 +21,9 @@ namespace MM2
         gfxInterface
     */
     enum gfxDeviceType {
-        Software                = 0,    // Software (No 3D Video Card)
-        Hardware                = 1,    // Hardware (3D Video Card)
-        HardwareWithTnL         = 2     // Hardware (3D Video Card With T&L)
+        Software        = 0,    // Software (No 3D Video Card)
+        Hardware        = 1,    // Hardware (3D Video Card)
+        HardwareWithTnL = 2     // Hardware (3D Video Card With T&L)
     };
 
     enum gfxDepthFlags {
@@ -33,29 +33,29 @@ namespace MM2
     };
 
     struct gfxResData {
-        uint16_t ScreenWidth;
-        uint16_t ScreenHeight;
-        uint16_t ColorDepth;
-        uint16_t Flags; // = ((ColorDepth == 16) + 6)
+        unsigned short ScreenWidth;
+        unsigned short ScreenHeight;
+        unsigned short ColorDepth;
+        unsigned short Flags; // = ((ColorDepth == 16) + 6)
     };
 
     struct gfxInterface {
         /*0x00*/ GUID GUID;
         /*0x10*/ char Name[64];
- 
-        /*0x50*/ uint32_t DeviceCaps;
- 
+
+        /*0x50*/ unsigned int DeviceCaps;
+
         /*0x54*/ gfxDeviceType DeviceType;
- 
-        /*0x58*/ uint32_t ResolutionCount;   // Max of 64 resolutions
-        /*0x5C*/ uint32_t ResolutionChoice;
- 
+
+        /*0x58*/ unsigned int ResolutionCount;   // Max of 64 resolutions
+        /*0x5C*/ unsigned int ResolutionChoice;
+
         /*0x60*/ gfxDepthFlags AcceptableDepths;  // Used to check if mmResolution::Depth is allowed
- 
-        /*0x64*/ uint32_t AvailableMemory;
-        /*0x68*/ uint32_t VendorID;
-        /*0x6C*/ uint32_t DeviceID;
- 
+
+        /*0x64*/ unsigned int AvailableMemory;
+        /*0x68*/ unsigned int VendorID;
+        /*0x6C*/ unsigned int DeviceID;
+
         /*0x70*/ gfxResData Resolutions[64];
     };
 }

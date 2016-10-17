@@ -32,8 +32,8 @@ int g_heapSize = 128;
 
 const double cosNum = 1.570796;
 
-UINT32 vglColor;
-UINT32 vglCalculatedColor = 0xFFFFFFFF;
+unsigned int vglColor;
+unsigned int vglCalculatedColor = 0xFFFFFFFF;
 
 Vector3 vglAmbient;
 Vector3 vglKeyColor;
@@ -67,7 +67,7 @@ AGEHook<0x577210>::Func<void> $memSafeHeap_Init;
 
 AGEHook<0x5346B0>::Func<int>::StdCall $MyLoadStringA;
 
-AGEHook<0x450880>::Func<UINT32> $sdlPage16_GetShadedColor;
+AGEHook<0x450880>::Func<unsigned int> $sdlPage16_GetShadedColor;
 
 /*
     TODO: Move VGL stuff to a separate file?
@@ -107,7 +107,7 @@ AGEHook<0x62B068>::Type<int> timeOfDay;
 AGEHook<0x6B167C>::Type<char[40]> cityName;
 AGEHook<0x6B16A4>::Type<char[40]> cityName2;
 
-AGEHook<0x661974>::Type<UINT32> vglCurrentColor;
+AGEHook<0x661974>::Type<unsigned int> vglCurrentColor;
 
 AGEHook<0x661738>::Type<asNode> ROOT;
 
@@ -122,10 +122,10 @@ AGEHook<0x6830AC>::Type<IDirect3D7 *> lpD3D;
 AGEHook<0x6830CC>::Type<IDirectDrawSurface7 *> lpdsRend;
 
 AGEHook<0x683130>::Type<gfxInterface> gfxInterfaces;
-AGEHook<0x6844C0>::Type<uint32_t> gfxInterfaceCount;
+AGEHook<0x6844C0>::Type<unsigned int> gfxInterfaceCount;
 
-AGEHook<0x6844FC>::Type<uint32_t> gfxMaxScreenWidth;
-AGEHook<0x6844D8>::Type<uint32_t> gfxMaxScreenHeight;
+AGEHook<0x6844FC>::Type<unsigned int> gfxMaxScreenWidth;
+AGEHook<0x6844D8>::Type<unsigned int> gfxMaxScreenHeight;
 
 AGEHook<0x682FA0>::Type<HWND> hWndParent;
 AGEHook<0x6830B8>::Type<HWND> hWndMain;
@@ -550,7 +550,7 @@ public:
 
 class vglHandler {
 private:
-    static UINT32 CalculateShadedColor(UINT32 color) {
+    static unsigned int CalculateShadedColor(unsigned int color) {
         auto timeWeather = &TIMEWEATHER[timeOfDay];
 
         vglKeyColor = addPitch(&timeWeather->KeyColor, timeWeather->KeyPitch);
