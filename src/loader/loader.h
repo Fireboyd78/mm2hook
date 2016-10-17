@@ -7,7 +7,6 @@
 #define NO_LUAINTF
 
 #include "common.h"
-#include "hook.h"
 #include "patch.h"
 
 // dinput hooking

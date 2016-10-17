@@ -1,7 +1,6 @@
 #pragma once
 
 #include "common.h"
-#include "hook.h"
 #include "patch.h"
 
 #include "mm2.h"
