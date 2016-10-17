@@ -139,10 +139,10 @@ AGEHook<0x6830D0>::Type<BOOL> inWindow;
 AGEHook<0x6830D1>::Type<BOOL> isMaximized;
 AGEHook<0x5CA3ED>::Type<BOOL> hasBorder;
 
-AGEHook<0x6830EC>::Type<DWORD> WndPosX;
-AGEHook<0x683110>::Type<DWORD> WndPosY;
-AGEHook<0x683128>::Type<DWORD> WndWidth;
-AGEHook<0x683100>::Type<DWORD> WndHeight;
+AGEHook<0x6830EC>::Type<unsigned int> windowX;
+AGEHook<0x683110>::Type<unsigned int> windowY;
+AGEHook<0x683128>::Type<unsigned int> windowWidth;
+AGEHook<0x683100>::Type<unsigned int> windowHeight;
 
 AGEHook<0x5E0CC4>::Type<void (*)(void)> $__VtResumeSampling;
 AGEHook<0x5E0CD8>::Type<void (*)(void)> $__VtPauseSampling;
@@ -378,15 +378,15 @@ public:
         }
 
         HDC hDC = GetDC(0);
-        DWORD screenWidth = GetDeviceCaps(hDC, HORZRES);
-        DWORD screenHeight = GetDeviceCaps(hDC, VERTRES);
+        int screenWidth  = GetDeviceCaps(hDC, HORZRES);
+        int screenHeight = GetDeviceCaps(hDC, VERTRES);
         ReleaseDC(0, hDC);
 
-        if (WndPosX == -1)
-            *WndPosX = (screenWidth - WndWidth) / 2;
+        if (windowX == -1)
+            *windowX = (screenWidth - windowWidth) / 2;
 
-        if (WndPosY == -1)
-            *WndPosY = (screenHeight - WndHeight) / 2;
+        if (windowY == -1)
+            *windowY = (screenHeight - windowHeight) / 2;
 
         DWORD dwStyle = NULL;
 
@@ -415,8 +415,8 @@ public:
             "gfxWindow",
             lpWindowName,
             dwStyle,
-            WndPosX,
-            WndPosY,
+            windowX,
+            windowY,
             640,
             480,
             hWndParent,
@@ -434,10 +434,10 @@ public:
 
             MoveWindow(
                 hWND,
-                WndPosX,
-                WndPosY,
-                2 * WndWidth - rect.right,
-                2 * WndWidth - rect.bottom,
+                windowX,
+                windowY,
+                2 * windowWidth - rect.right,
+                2 * windowHeight - rect.bottom,
                 0);
         }
 
