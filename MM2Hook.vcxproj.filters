@@ -369,9 +369,6 @@
     <ClInclude Include="src\util.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\hook.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\logfile.h">
       <Filter>Source Files</Filter>
     </ClInclude>
