@@ -567,9 +567,9 @@ private:
             normalize(vglKeyColor.Z + vglFill1Color.Z + vglFill2Color.Z + vglAmbient.Z),
         };
 
-        vglResultColor.r = byte(vglShadedColor.X * 255.f);
-        vglResultColor.g = byte(vglShadedColor.Y * 255.f);
-        vglResultColor.b = byte(vglShadedColor.Z * 255.f);
+        vglResultColor.r = byte(vglShadedColor.X * 255.999f);
+        vglResultColor.g = byte(vglShadedColor.Y * 255.999f);
+        vglResultColor.b = byte(vglShadedColor.Z * 255.999f);
         vglResultColor.a = 255;
 
         return $sdlPage16_GetShadedColor(color, vglResultColor.color);
