@@ -602,8 +602,8 @@ public:
         // this allows us to have an entry representing each "frame" (vglBegin/vglEnd)
         // and cuts down on the amount of time it takes to add a new entry
         struct vgl_pair {
-            DWORD begin_addr; // vglBegin
-            DWORD end_addr; // vglEnd
+            unsigned int begin; // vglBegin
+            unsigned int end;   // vglEnd
         };
 
         // TODO: Remove tunnels from the list so they're fullbright (or at least see how it looks)
@@ -631,11 +631,11 @@ public:
         // mostly copied from InstallGameCallback
         for (auto pair : vglCBs)
         {
-            auto begin = pair.begin_addr;
-            auto end = pair.end_addr;
+            auto begin = pair.begin;
+            auto end   = pair.end;
 
-            InstallGameCallback(vglBeginCB, { begin,    CALL });
-            InstallGameCallback(vglEndCB,   { end,      CALL });
+            InstallGameCallback(vglBeginCB, { begin, CALL });
+            InstallGameCallback(vglEndCB,   { end,   CALL });
 
             LogFile::Format("   - { vglBegin: %08X => %08X, vglEnd: %08X => %08X }\n", begin, vglBeginCB, end, vglEndCB);
         }
