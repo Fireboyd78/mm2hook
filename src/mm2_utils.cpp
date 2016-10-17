@@ -2,8 +2,8 @@
 #include "patch.h"
 
 void InstallGamePatch(LPCSTR name,
-                      std::initializer_list<byte> bytes,
-                      std::initializer_list<DWORD> addresses)
+                      std::initializer_list<unsigned char> bytes,
+                      std::initializer_list<unsigned int> addresses)
 {
     LogFile::Format(" - Installing patch: '%s'...\n", name);
 
@@ -23,23 +23,23 @@ void InstallGameCallback(auto_ptr lpCallback,
     auto addr = info.hookAddr;
     auto type = info.hookType;
 
-    DWORD dwRVA = lpCallback - (addr + 5);
+    unsigned int dwRVA = lpCallback - (addr + 5);
 
     switch (type)
     {
         case HOOK_TYPE::CALL:
         {
-            mem::write_args<byte, DWORD>(LPVOID(addr), 0xE8, dwRVA);
+            mem::write_args<unsigned char, unsigned int>(LPVOID(addr), 0xE8, dwRVA);
         } break;
 
         case HOOK_TYPE::JMP:
         {
-            mem::write_args<byte, DWORD>(LPVOID(addr), 0xE9, dwRVA);
+            mem::write_args<unsigned char, unsigned int>(LPVOID(addr), 0xE9, dwRVA);
         } break;
 
         case HOOK_TYPE::PUSH:
         {
-            mem::write_args<byte, DWORD>(LPVOID(addr), 0x68, lpCallback);
+            mem::write_args<unsigned char, unsigned int>(LPVOID(addr), 0x68, lpCallback);
         } break;
     }
 }
@@ -69,12 +69,12 @@ void InstallGameCallback(LPCSTR name,
 
 void InstallVTableHook(LPCSTR name,
                        auto_ptr lpHookAddr,
-                       std::initializer_list<DWORD> addresses) {
+                       std::initializer_list<unsigned int> addresses) {
     LogFile::Format(" - Installing V-Table hook: '%s'...\n", name);
 
     for (auto addr : addresses)
     {
-        mem::write_args<DWORD>(LPVOID(addr), lpHookAddr);
+        mem::write_args<unsigned int>(LPVOID(addr), lpHookAddr);
 
         LogFile::Format("   - %08X => %08X", addr, lpHookAddr);
     }

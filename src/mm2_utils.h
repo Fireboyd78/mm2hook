@@ -37,11 +37,11 @@ struct CB_HOOK
 
 void InstallVTableHook(LPCSTR name,
                        auto_ptr lpHookAddr,
-                       std::initializer_list<DWORD> addresses);
+                       std::initializer_list<unsigned int> addresses);
 
 void InstallGamePatch(LPCSTR name,
                       std::initializer_list<unsigned char> bytes,
-                      std::initializer_list<DWORD> addresses);
+                      std::initializer_list<unsigned int> addresses);
 
 void InstallGameCallback(auto_ptr lpCallback,
                          CB_INSTALL_INFO info);
