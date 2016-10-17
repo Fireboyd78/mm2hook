@@ -238,14 +238,13 @@ class cityLevelHandler {
 public:
     // TODO: Factor in 'Visibility' level somehow?
     void SetObjectDetail(int lod) {
-        /* Default MM2 values (leaving this here for reference)
-        static float lodLevels[][4] = {
-        { 200.0f, 150.0f, 70.0f, 20.0f, }, // Low
-        { 250.0f, 175.0f, 90.0f, 30.0f, }, // Medium
-        { 300.0f, 200.0f, 100.0f, 40.0f, }, // High
-        { 300.0f, 200.0f, 130.0f, 70.0f, }, // Very high
-        };
-        */
+        // Default MM2 values (leaving this here for reference)
+        // static float lodLevels[4][4] = {
+        //     { 200.0f, 150.0f,  70.0f, 20.0f }, // Low
+        //     { 250.0f, 175.0f,  90.0f, 30.0f }, // Medium
+        //     { 300.0f, 200.0f, 100.0f, 40.0f }, // High
+        //     { 300.0f, 200.0f, 130.0f, 70.0f }, // Very high
+        // };
 
         static const char *lodLevelNames[4] = {
             "Low",
@@ -258,41 +257,44 @@ public:
         // 'Very high' now renders a bit farther than before, but not to an extreme.
         // Performance drops are to be expected until bugs can be ironed out.
         // Poor PVS optimization seems to be the reason why values were so low.
-        static float lodLevels[][4] = {
-            { 250.0f, 175.0f, 90.0f, 30.0f, }, // Low (Default: Medium)
-            { 300.0f, 200.0f, 100.0f, 40.0f, }, // Medium (Default: High)
-            { 300.0f, 200.0f, 130.0f, 70.0f, }, // High (Default: Very High)
-            { 640.0f, 480.0f, 160.0f, 80.0f, }, // Very high (NEW)
+        static float lodLevels[4][4] = {
+            { 250.0f, 175.0f,  90.0f, 30.0f }, // Low       (Default: Medium)
+            { 300.0f, 200.0f, 100.0f, 40.0f }, // Medium    (Default: High)
+            { 300.0f, 200.0f, 130.0f, 70.0f }, // High      (Default: Very High)
+            { 640.0f, 480.0f, 160.0f, 80.0f }, // Very high (NEW)
         };
 
-        // using temporary variables so we don't need to constantly access pointers
-        float objNoDrawThresh   = lodLevels[lod][0]; // VL: <VLowThresh> - <NoDrawThresh>
-        float objVLowThresh     = lodLevels[lod][1]; // L: <LowThresh> - <VLowThresh>
-        float objLowThresh      = lodLevels[lod][2]; // M: <MedThresh> - <LowThresh>
-        float objMedThresh      = lodLevels[lod][3]; // H: 0.0 - <MedThresh>
+        // Using temporary variables so we don't need to constantly access pointers
+
+        float objNoDrawThresh = lodLevels[lod][0]; // VL: <VLowThresh> - <NoDrawThresh>
+        float objVLowThresh   = lodLevels[lod][1]; // L: <LowThresh> - <VLowThresh>
+        float objLowThresh    = lodLevels[lod][2]; // M: <MedThresh> - <LowThresh>
+        float objMedThresh    = lodLevels[lod][3]; // H: 0.0 - <MedThresh>
 
         *obj_NoDrawThresh = objNoDrawThresh;
-        *obj_VLowThresh = objVLowThresh;
-        *obj_LowThresh = objLowThresh;
-        *obj_MedThresh = objMedThresh;
+        *obj_VLowThresh   = objVLowThresh;
+        *obj_LowThresh    = objLowThresh;
+        *obj_MedThresh    = objMedThresh;
 
         // By default, the game doesn't set these values based on the detail level
         // They are hardcoded to what is considered 'High' by default,
         // however this is now known as 'Medium' (lod = 1; see above)
         //
         // 'Medium' and below (default 'High') uses the defaults.
-        float sdlVLowThresh     = (lod > 1) ? (objVLowThresh + 100.0f) : 300.0f;
-        float sdlLowThresh      = (lod > 1) ? (objLowThresh + 25.0f) : 100.0f;
-        float sdlMedThresh      = (lod > 1) ? (objMedThresh + 10.0f) : 50.0f;
+        float sdlVLowThresh = (lod > 1) ? (objVLowThresh + 100.0f) : 300.0f;
+        float sdlLowThresh  = (lod > 1) ? (objLowThresh + 25.0f) : 100.0f;
+        float sdlMedThresh  = (lod > 1) ? (objMedThresh + 10.0f) : 50.0f;
 
         *sdl_VLowThresh = sdlVLowThresh;
-        *sdl_LowThresh = sdlLowThresh;
-        *sdl_MedThresh = sdlMedThresh;
+        *sdl_LowThresh  = sdlLowThresh;
+        *sdl_MedThresh  = sdlMedThresh;
 
-        LogFile::Format("[cityLevel::SetObjectDetail]: '%s'\r\n\t- OBJ { %.4f, %.4f, %.4f, %.4f }\r\n\t- SDL { %.4f, %.4f, %.4f }\n",
-            lodLevelNames[lod],
-            objNoDrawThresh, objVLowThresh, objLowThresh, objMedThresh,
-            sdlVLowThresh, sdlLowThresh, sdlMedThresh);
+        LogFile::Format("[cityLevel::SetObjectDetail]: '%s'\n"
+                        "    - OBJ { %.4f, %.4f, %.4f, %.4f }\n"
+                        "    - SDL { %.4f, %.4f, %.4f }\n",
+                        lodLevelNames[lod],
+                        objNoDrawThresh, objVLowThresh, objLowThresh, objMedThresh,
+                        sdlVLowThresh, sdlLowThresh, sdlMedThresh);
     }
 };
 
