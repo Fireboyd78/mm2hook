@@ -551,7 +551,7 @@ public:
 class vglHandler {
 private:
     static unsigned int CalculateShadedColor(unsigned int color) {
-        auto timeWeather = &(*timeWeathers)[timeOfDay];
+        auto timeWeather = *timeWeathers + timeOfDay;
 
         vglKeyColor   = addPitch(&timeWeather->KeyColor,   timeWeather->KeyPitch);
         vglFill1Color = addPitch(&timeWeather->Fill1Color, timeWeather->Fill1Pitch);
