@@ -6,10 +6,24 @@ namespace MM2
     // Forward declarations
     extern struct gfxInterface;
 
+    // what kind of primitive to draw
+    // same values as D3DPRIMITIVETYPE
+    enum gfxDrawMode {
+        DRAWMODE_POINTLIST      = 1,
+        DRAWMODE_LINELIST       = 2,
+        DRAWMODE_LINESTRIP      = 3,
+        DRAWMODE_TRIANGLELIST   = 4,
+        DRAWMODE_TRIANGLESTRIP  = 5,
+        DRAWMODE_TRIANGLEFAN    = 6,
+    };
+
+    /*
+        gfxInterface
+    */
     enum gfxDeviceType {
-        Software = 0,    // Software (No 3D Video Card)
-        Hardware = 1,    // Hardware (3D Video Card)
-        HardwareWithTnL = 2     // Hardware (3D Video Card With T&L)
+        Software                = 0,    // Software (No 3D Video Card)
+        Hardware                = 1,    // Hardware (3D Video Card)
+        HardwareWithTnL         = 2     // Hardware (3D Video Card With T&L)
     };
 
     enum gfxDepthFlags {
@@ -21,8 +35,8 @@ namespace MM2
     struct gfxResData {
         uint16_t ScreenWidth;
         uint16_t ScreenHeight;
-        uint16_t ColorDepth;      // Always 16
-        uint16_t Is16BitColor;    // = (ColorDepth == 16) + 6 // Always 7
+        uint16_t ColorDepth;
+        uint16_t Flags; // = ((ColorDepth == 16) + 6)
     };
 
     struct gfxInterface {
