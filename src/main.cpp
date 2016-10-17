@@ -279,7 +279,7 @@ public:
         // By default, the game doesn't set these values based on the detail level
         // They are hardcoded to what is considered 'High' by default,
         // however this is now known as 'Medium' (lod = 1; see above)
-        // 
+        //
         // 'Medium' and below (default 'High') uses the defaults.
         float sdlVLowThresh     = (lod > 1) ? (objVLowThresh + 100.0f) : 300.0f;
         float sdlLowThresh      = (lod > 1) ? (objLowThresh + 25.0f) : 100.0f;
@@ -288,7 +288,7 @@ public:
         *sdl_VLowThresh = sdlVLowThresh;
         *sdl_LowThresh = sdlLowThresh;
         *sdl_MedThresh = sdlMedThresh;
-        
+
         LogFile::Format("[cityLevel::SetObjectDetail]: '%s'\r\n\t- OBJ { %.4f, %.4f, %.4f, %.4f }\r\n\t- SDL { %.4f, %.4f, %.4f }\n",
             lodLevelNames[lod],
             objNoDrawThresh, objVLowThresh, objLowThresh, objMedThresh,
@@ -726,19 +726,17 @@ public:
         }
     }
 
-    static void ageDebug(int enabled, LPCSTR format, ...) {
-        // this makes the game load up reeeeeally slow if enabled!
+    static void ageDebug(bool enabled, const char* format, ...) {
         if (ageLogFile)
         {
-            char buffer[1024];
-
             va_list va;
+
             va_start(va, format);
-            vsprintf(buffer, format, va);
+            vfprintf(ageLogFile, format, va);
             va_end(va);
 
-            fputs(buffer, ageLogFile);
-            fputs("\n", ageLogFile);
+            fputc('\n', ageLogFile);
+            // fflush(ageLogFile);
         }
     }
 
