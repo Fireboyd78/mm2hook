@@ -511,7 +511,7 @@ public:
 
         LPCSTR city = *cityName;
 
-        if ((_strcmpi(city, "sf") == 0) && (_strcmpi(city, "london") == 0))
+        if ((_strcmpi(city, "sf") != 0) && (_strcmpi(city, "london") != 0))
         {
             char ambientSFX[80] = { NULL };
 
