@@ -67,6 +67,7 @@ AGEHook<0x577210>::Func<void> $memSafeHeap_Init;
 
 AGEHook<0x5346B0>::Func<int>::StdCall $MyLoadStringA;
 
+AGEHook<0x448330>::Func<void> $sdlPage16_Draw;
 AGEHook<0x450880>::Func<unsigned int> $sdlPage16_GetShadedColor;
 
 /*
@@ -534,42 +535,89 @@ public:
     }
 };
 
+bool bSDLShadingDebug = false;
+
+class sdlPage16Handler {
+public:
+    static LPVOID blockPtr; // current block pointer ;)
+public:
+    // this MUST clean up the stack, hence the stdcall
+    static void __stdcall SetBlockPointer(LPVOID lpBlock) {
+        blockPtr = lpBlock;
+    };
+
+    void Draw(int p1, unsigned int p2) {
+        $sdlPage16_Draw(this, p1, p2);
+
+        blockPtr = NULL; // lets vglHandler know we're not checking for SDL stuff
+    };
+};
+
+LPVOID sdlPage16Handler::blockPtr;
+
 class vglHandler {
 private:
-    static unsigned int CalculateShadedColor(unsigned int color) {
-        auto timeWeather = *timeWeathers + timeOfDay;
+    static unsigned int CalculateShadedColor(gfxDrawMode drawMode, unsigned int color) {
+        if (sdlPage16Handler::blockPtr != NULL)
+        {
+            // we can finally check for attributes...
+            int block = *(short*)sdlPage16Handler::blockPtr;
+            
+            int type = ((block >> 3) & 0xF);
+            int subtype = block & 0x7;
 
-        vglKeyColor   = addPitch(&timeWeather->KeyColor,   timeWeather->KeyPitch);
-        vglFill1Color = addPitch(&timeWeather->Fill1Color, timeWeather->Fill1Pitch);
-        vglFill2Color = addPitch(&timeWeather->Fill2Color, timeWeather->Fill2Pitch);
+            if (type == 0x9 && subtype == 0x0)
+                return color;
+        }
 
-        // convert the ambient to a vector3 for better accuracy
-        vglAmbient = intToColor(timeWeather->Ambient);
+        if (bSDLShadingDebug) {
+            // visualize what's being drawn
+            static ColorARGB drawModeColors[] = {
+                { 255, 0, 0, 255 }, // POINTLIST (RED)
+                { 0, 255, 0, 255 }, // LINELIST (GREEN)
+                { 0, 0, 255, 255 }, // LINESTRIP (BLUE)
 
-        // compute le values
-        vglShadedColor = {
-            normalize(vglKeyColor.X + vglFill1Color.X + vglFill2Color.X + vglAmbient.X),
-            normalize(vglKeyColor.Y + vglFill1Color.Y + vglFill2Color.Y + vglAmbient.Y),
-            normalize(vglKeyColor.Z + vglFill1Color.Z + vglFill2Color.Z + vglAmbient.Z),
-        };
+                { 255, 255, 0, 255 }, // TRIANGLELIST (YELLOW)
+                { 255, 0, 255, 255 }, // TRIANGLESTRIP (PINK)
+                { 0, 255, 255, 255 }, // TRIANGLEFAN (TEAL)
+            };
 
-        vglResultColor.r = byte(vglShadedColor.X * 255.999f);
-        vglResultColor.g = byte(vglShadedColor.Y * 255.999f);
-        vglResultColor.b = byte(vglShadedColor.Z * 255.999f);
-        vglResultColor.a = 255;
+            return drawModeColors[drawMode - 1].color;
+        } else {
+            auto timeWeather = *timeWeathers + timeOfDay;
 
-        return $sdlPage16_GetShadedColor(color, vglResultColor.color);
+            vglKeyColor = addPitch(&timeWeather->KeyColor, timeWeather->KeyPitch);
+            vglFill1Color = addPitch(&timeWeather->Fill1Color, timeWeather->Fill1Pitch);
+            vglFill2Color = addPitch(&timeWeather->Fill2Color, timeWeather->Fill2Pitch);
+
+            // convert the ambient to a vector3 for better accuracy
+            vglAmbient = intToColor(timeWeather->Ambient);
+
+            // compute le values
+            vglShadedColor = {
+                normalize(vglKeyColor.X + vglFill1Color.X + vglFill2Color.X + vglAmbient.X),
+                normalize(vglKeyColor.Y + vglFill1Color.Y + vglFill2Color.Y + vglAmbient.Y),
+                normalize(vglKeyColor.Z + vglFill1Color.Z + vglFill2Color.Z + vglAmbient.Z),
+            };
+
+            vglResultColor.r = byte(vglShadedColor.X * 255.999f);
+            vglResultColor.g = byte(vglShadedColor.Y * 255.999f);
+            vglResultColor.b = byte(vglShadedColor.Z * 255.999f);
+            vglResultColor.a = 255;
+
+            return $sdlPage16_GetShadedColor(color, vglResultColor.color);
+        }
     }
 public:
-    static void vglBegin(int gfxMode, int p1) {
+    static void vglBegin(gfxDrawMode drawMode, int p1) {
         // Save current vgl color
         vglColor = *vglCurrentColor;
 
         // calculate a nice shaded color ;)
-        vglCalculatedColor = CalculateShadedColor(vglColor);
+        vglCalculatedColor = CalculateShadedColor(drawMode, vglColor);
         *vglCurrentColor = vglCalculatedColor;
 
-        $vglBegin(gfxMode, p1);
+        $vglBegin(drawMode, p1);
     }
 
     static void vglEnd(void) {
@@ -592,7 +640,6 @@ public:
             unsigned int end;   // vglEnd
         };
 
-        // TODO: Remove tunnels from the list so they're fullbright (or at least see how it looks)
         std::initializer_list<vgl_pair> vglCBs = {
             { 0x448424, 0x4485D3 }, { 0x448697, 0x448B82 }, { 0x448903, 0x448D8C }, { 0x448BFD, 0x448FB7 },
             { 0x448DE4, 0x449219 }, { 0x44902A, 0x449480 }, { 0x4492A4, 0x44963E }, { 0x4494C3, 0x44983C },
@@ -1010,6 +1057,14 @@ private:
 
         // install shading fix (for PSDL, etc.)
         vglHandler::InstallCallbacks();
+
+        InstallCallback("cityLevel::DrawRooms [sdlPage16::Draw call hook]", &sdlPage16Handler::Draw, {
+            cbHook<CALL>(0x4459D2),
+        });
+
+        InstallCallback("sdlPage16::Draw [SetBlockPointer implementation]", &sdlPage16Handler::SetBlockPointer, {
+            cbHook<CALL>(0x448372), // 448371 + 1, after our 'push edi' instruction (SEE BELOW)
+        });
     }
 
     static void InstallPatches() {
@@ -1028,12 +1083,39 @@ private:
         InstallPatch("Enable pointer in windowed mode", { 0x90, 0x90 }, {
             0x4F136E,
         });
+
+        // even the slightest modification will f$!% this up, DO NOT TOUCH THIS
+        InstallPatch("Free up some space in sdlPage16::Draw", {
+            0x57,                               // push edi
+            0xE8, 0xCD, 0xCD, 0xCD, 0xCD,       // call <...> !!! (WILL BE INITIALIZED AS A CALLBACK) !!!
+            0x53,                               // push ebx
+            0x0F, 0xB7, 0x0F,                   // movzx ecx, word ptr [edi]
+            0x0F, 0xB7, 0x57, 0x02,             // movzx edx, word ptr [edi+2]
+            0x89, 0x8D, 0xE8, 0xFE, 0xFF, 0xFF, // mov [ebp-118], ecx
+            0x83, 0xC7, 0x02,                   // add edi, 2
+            0x8B, 0xC1,                         // mov eax, ecx
+            0x83, 0xE0, 0x07,                   // and eax, 07
+            0x8B, 0xD8,                         // mov ebx, eax
+            0x75, 0x06,                         // jnz short subtype_not_zero
+
+            0x0F, 0xB7, 0x1F,                   // movzx ebx, word ptr [edi]
+            0x83, 0xC7, 0x02,                   // add edi, 2
+
+            // subtype_not_zero:
+            0x89, 0x5D, 0xFC,                   // mov [ebp-04], ebx
+            0xC1, 0xE0, 0x08,                   // shl eax, 8
+            0x09, 0xD0,                         // or eax, edx
+            0x5B,                               // pop ebx
+
+            0x90, 0x90, 0x90, 0x90,             // nop out the rest
+        }, {
+            0x448371,
+        });
     }
 public:
     static void Initialize(int argc, char **argv) {
-        // Install callbacks/patches
-        InstallCallbacks();
         InstallPatches();
+        InstallCallbacks();
 
         // Initialize the Lua engine
         MM2Lua::Initialize();
