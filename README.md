@@ -1,6 +1,6 @@
 MM2Hook
 =======
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/Fireboyd78/mm2hook?branch=master&svg=true)](https://ci.appveyor.com/project/crosire/scripthookvdotnet)
+[![Build Status](https://ci.appveyor.com/api/projects/status/github/Fireboyd78/mm2hook?branch=master&svg=true)](https://ci.appveyor.com/project/Fireboyd78/mm2hook)
 
 A simple DLL-injection module for hooking into Midtown Madness 2, allowing for further control of the game.
 
