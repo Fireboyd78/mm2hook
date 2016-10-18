@@ -848,6 +848,11 @@ public:
 
         return TRUE;
     }
+
+    static bool isVehInfoFile(const char *filename) {
+        auto ext = strrchr(filename, '.');
+        return (ext != NULL) ? (_strcmpi(ext, ".info") == 0) : false;
+    }
 };
 
 class ChatHandler {
@@ -947,6 +952,10 @@ private:
                 CB_HOOK<JMP>(0x4AC030),
             });
         }
+
+        InstallGameCallback("isVehInfoFile [fix random crashes]", &CallbackHandler::isVehInfoFile, {
+            CB_HOOK<CALL>(0x5248E1),
+        });
 
         InstallGameCallback("gfxPipeline::SetRes", &gfxPipelineHandler::SetRes, {
             CB_HOOK<CALL>(0x401482),
