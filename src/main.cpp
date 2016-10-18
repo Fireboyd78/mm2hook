@@ -744,6 +744,8 @@ public:
         if ((L.pcall(1, 1, 0) == LUA_OK) && !L.isNil(-1))
             str = L.toString(-1);
 
+        L.pop(1);
+
         // not found in Lua, let's look in MMLANG.DLL
         if (str == NULL)
         {
@@ -769,7 +771,6 @@ public:
             str = locStr;
         }
 
-        L.pop(1);
         return str;
     }
 
