@@ -61,3 +61,13 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
+
+###############################################################################
+# remove lua libs from linguist
+#
+# Marks the lua librarys as documentation, so they aren't counted as part of
+# the project. This will make the project be marked as a C++ project
+# instead of a C project.
+###############################################################################
+src/lua/*       linguist-documentation
+src/LuaIntf/*   linguist-documentation
