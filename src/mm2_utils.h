@@ -8,7 +8,7 @@
     Game patching functions
 */
 
-enum HOOK_TYPE : unsigned int
+enum hookType : unsigned int
 {
     JMP,
     CALL,
@@ -17,40 +17,40 @@ enum HOOK_TYPE : unsigned int
     COUNT,
 };
 
-struct CB_INSTALL_INFO
+struct cbInfo
 {
-    DWORD hookAddr;
-    HOOK_TYPE hookType;
+    auto_ptr addr;
+    hookType type;
 };
 
-template<HOOK_TYPE hookType>
-struct CB_HOOK
+template<hookType type>
+struct cbHook
 {
-    CB_INSTALL_INFO info;
+    cbInfo info;
 
-    constexpr CB_HOOK(const DWORD addrs) : info { addrs, hookType } {};
+    constexpr cbHook(const DWORD addrs) : info { addrs, type } {};
 
-    constexpr operator CB_INSTALL_INFO() const {
+    constexpr operator cbInfo() const {
         return info;
     };
 };
 
 void InstallVTableHook(LPCSTR name,
-                       auto_ptr lpHookAddr,
+                       auto_ptr lpAddr,
                        std::initializer_list<unsigned int> addresses);
 
-void InstallGamePatch(LPCSTR name,
-                      std::initializer_list<unsigned char> bytes,
-                      std::initializer_list<unsigned int> addresses);
+void InstallPatch(LPCSTR name,
+                  std::initializer_list<unsigned char> bytes,
+                  std::initializer_list<unsigned int> addresses);
 
-void InstallGameCallback(auto_ptr lpCallback,
-                         CB_INSTALL_INFO info);
+void InstallCallback(auto_ptr lpAddr,
+                     cbInfo callback);
 
-void InstallGameCallback(LPCSTR name,
-                         auto_ptr lpCallback,
-                         std::initializer_list<CB_INSTALL_INFO> addresses);
+void InstallCallback(LPCSTR name,
+                     auto_ptr lpAddr,
+                     std::initializer_list<cbInfo> callbacks);
 
-union COLOR_ARGB
+union ColorARGB
 {
     struct
     {

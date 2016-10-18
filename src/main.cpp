@@ -41,7 +41,7 @@ Vector3 vglFill1Color;
 Vector3 vglFill2Color;
 Vector3 vglShadedColor;
 
-COLOR_ARGB vglResultColor;
+ColorARGB vglResultColor;
 
 /* Dashboard experiment */
 
@@ -614,14 +614,14 @@ public:
             { 0x57AC4A, 0x57AD41 }, // ped LODs
         };
 
-        // mostly copied from InstallGameCallback
+        // mostly copied from InstallCallback
         for (auto pair : vglCBs)
         {
             auto begin = pair.begin;
             auto end   = pair.end;
 
-            InstallGameCallback(vglBeginCB, { begin, CALL });
-            InstallGameCallback(vglEndCB,   { end,   CALL });
+            InstallCallback(vglBeginCB, { begin, CALL });
+            InstallCallback(vglEndCB,   { end,   CALL });
 
             LogFile::Format("   - { vglBegin: %08X => %08X, vglEnd: %08X => %08X }\n", begin, vglBeginCB, end, vglEndCB);
         }
@@ -909,14 +909,14 @@ private:
     static void InstallCallbacks() {
         LogFile::WriteLine("Installing callbacks / virtual tables...");
 
-        InstallGameCallback("CreateGameMutex", &CallbackHandler::CreateGameMutex, {
-            CB_HOOK<CALL>(0x40128D),
+        InstallCallback("CreateGameMutex", &CallbackHandler::CreateGameMutex, {
+            cbHook<CALL>(0x40128D),
         });
 
         // revert bridges/ferries to how they were in the betas
-        InstallGameCallback("Bridge/Ferry: Cull", &BridgeFerryHandler::Cull, {
-            CB_HOOK<CALL>(0x5780BC), // gizBridgeMgr::Cull
-            CB_HOOK<CALL>(0x5798F0), // gizFerryMgr::Cull
+        InstallCallback("Bridge/Ferry: Cull", &BridgeFerryHandler::Cull, {
+            cbHook<CALL>(0x5780BC), // gizBridgeMgr::Cull
+            cbHook<CALL>(0x5798F0), // gizFerryMgr::Cull
         });
 
         InstallVTableHook("Bridge/Ferry: Draw", &BridgeFerryHandler::Draw, {
@@ -928,84 +928,84 @@ private:
             0x5B16E0
         });
 
-        InstallGameCallback("ageDebug", &CallbackHandler::ageDebug, {
-            CB_HOOK<JMP>(0x402630),
+        InstallCallback("ageDebug", &CallbackHandler::ageDebug, {
+            cbHook<JMP>(0x402630),
         });
 
-        InstallGameCallback("ProgressRect [white loading bar fix]", &CallbackHandler::ProgressRect, {
-            CB_HOOK<CALL>(0x401163),
-            CB_HOOK<CALL>(0x4011CC),
+        InstallCallback("ProgressRect [white loading bar fix]", &CallbackHandler::ProgressRect, {
+            cbHook<CALL>(0x401163),
+            cbHook<CALL>(0x4011CC),
         });
 
         if (!datArgParser::Get("oldautodetect"))
         {
-            // Hook into the original AutoDetect and replace it with our own version
-            InstallGameCallback("AutoDetectCallback", &CallbackHandler::AutoDetectCallback, {
-                CB_HOOK<JMP>(0x4AC030),
+            // cbHook into the original AutoDetect and replace it with our own version
+            InstallCallback("AutoDetectCallback", &CallbackHandler::AutoDetectCallback, {
+                cbHook<JMP>(0x4AC030),
             });
         }
 
-        InstallGameCallback("isVehInfoFile [fix random crashes]", &CallbackHandler::isVehInfoFile, {
-            CB_HOOK<CALL>(0x5248E1),
+        InstallCallback("isVehInfoFile [fix random crashes]", &CallbackHandler::isVehInfoFile, {
+            cbHook<CALL>(0x5248E1),
         });
 
-        InstallGameCallback("isCityInfoFile [fix random crashes]", &CallbackHandler::isCityInfoFile, {
-            CB_HOOK<CALL>(0x5244CF),
+        InstallCallback("isCityInfoFile [fix random crashes]", &CallbackHandler::isCityInfoFile, {
+            cbHook<CALL>(0x5244CF),
         });
 
-        InstallGameCallback("gfxPipeline::SetRes", &gfxPipelineHandler::SetRes, {
-            CB_HOOK<CALL>(0x401482),
+        InstallCallback("gfxPipeline::SetRes", &gfxPipelineHandler::SetRes, {
+            cbHook<CALL>(0x401482),
         });
 
-        InstallGameCallback("gfxPipeline::gfxWindowCreate", &gfxPipelineHandler::gfxWindowCreate, {
-            CB_HOOK<CALL>(0x4A94AA),
+        InstallCallback("gfxPipeline::gfxWindowCreate", &gfxPipelineHandler::gfxWindowCreate, {
+            cbHook<CALL>(0x4A94AA),
         });
 
-        InstallGameCallback("gfxLoadVideoDatabase [disable 'badvideo.txt']", &ReturnFalse, {
-            CB_HOOK<CALL>(0x4AC4F9),
+        InstallCallback("gfxLoadVideoDatabase [disable 'badvideo.txt']", &ReturnFalse, {
+            cbHook<CALL>(0x4AC4F9),
         });
 
-        InstallGameCallback("mmDirSnd::Init", &mmDirSndHandler::Init, {
-            CB_HOOK<CALL>(0x51941D),
+        InstallCallback("mmDirSnd::Init", &mmDirSndHandler::Init, {
+            cbHook<CALL>(0x51941D),
         });
 
-        InstallGameCallback("memSafeHeap::Init [Heap fix]", &memSafeHeapHandler::Init, {
-            CB_HOOK<CALL>(0x4015DD),
+        InstallCallback("memSafeHeap::Init [Heap fix]", &memSafeHeapHandler::Init, {
+            cbHook<CALL>(0x4015DD),
         });
 
-        InstallGameCallback("asCullManager::Init [Increase Max Cullables]", &asCullManagerHandler::Init, {
-            CB_HOOK<CALL>(0x401D5C),
+        InstallCallback("asCullManager::Init [Increase Max Cullables]", &asCullManagerHandler::Init, {
+            cbHook<CALL>(0x401D5C),
         });
 
         // NOTE: Completely overrides the original AngelReadString (will check Lua first then DLL)
-        InstallGameCallback("AngelReadString", &CallbackHandler::AngelReadString, {
-            CB_HOOK<JMP>(0x534790),
+        InstallCallback("AngelReadString", &CallbackHandler::AngelReadString, {
+            cbHook<JMP>(0x534790),
         });
 
-        InstallGameCallback("datTimeManager::Update", &TickHandler::Update, {
-            CB_HOOK<CALL>(0x401A2F),
+        InstallCallback("datTimeManager::Update", &TickHandler::Update, {
+            cbHook<CALL>(0x401A2F),
         });
 
-        InstallGameCallback("mmGame::SendChatMessage", &ChatHandler::Process, {
-            CB_HOOK<JMP>(0x414EB6),
+        InstallCallback("mmGame::SendChatMessage", &ChatHandler::Process, {
+            cbHook<JMP>(0x414EB6),
         });
 
-        InstallGameCallback("mmGameMusicData::LoadAmbientSFX", &mmGameMusicDataHandler::LoadAmbientSFX, {
-            CB_HOOK<CALL>(0x433F93),
+        InstallCallback("mmGameMusicData::LoadAmbientSFX", &mmGameMusicDataHandler::LoadAmbientSFX, {
+            cbHook<CALL>(0x433F93),
         });
 
-        InstallGameCallback("vehCarAudioContainer::SetSirenCSVName", &vehCarAudioContainerHandler::SetSirenCSVName, {
-            CB_HOOK<CALL>(0x412783),
-            CB_HOOK<CALL>(0x412772),
+        InstallCallback("vehCarAudioContainer::SetSirenCSVName", &vehCarAudioContainerHandler::SetSirenCSVName, {
+            cbHook<CALL>(0x412783),
+            cbHook<CALL>(0x412772),
         });
 
         // dashboard testing
-        InstallGameCallback("mmDashView::Update [EXPERIMENTAL]", &mmDashViewHandler::UpdateCS, {
-            CB_HOOK<CALL>(0x430F87), // replaces call to asLinearCS::Update
+        InstallCallback("mmDashView::Update [EXPERIMENTAL]", &mmDashViewHandler::UpdateCS, {
+            cbHook<CALL>(0x430F87), // replaces call to asLinearCS::Update
         });
 
-        InstallGameCallback("zipFile::Init ['extraLen' spam fix]", &NullSub, {
-            CB_HOOK<CALL>(0x5738EA), // 'extraLen=%d'
+        InstallCallback("zipFile::Init ['extraLen' spam fix]", &NullSub, {
+            cbHook<CALL>(0x5738EA), // 'extraLen=%d'
         });
 
         // install shading fix (for PSDL, etc.)
@@ -1015,17 +1015,17 @@ private:
     static void InstallPatches() {
         LogFile::WriteLine("Installing patches...");
 
-        InstallGamePatch("Increase chat buffer size", { 60 }, {
+        InstallPatch("Increase chat buffer size", { 60 }, {
             0x4E68B5,
             0x4E68B9,
             0x50BBCF,
         });
 
-        InstallGamePatch("Increase cop limit", { 64 }, {
+        InstallPatch("Increase cop limit", { 64 }, {
             0x55100B,
         });
 
-        InstallGamePatch("Enable pointer in windowed mode", { 0x90, 0x90 }, {
+        InstallPatch("Enable pointer in windowed mode", { 0x90, 0x90 }, {
             0x4F136E,
         });
     }
@@ -1117,8 +1117,8 @@ void InstallFramework() {
 
     */
 
-    InstallGameCallback("ArchInit [Framework initialization]", &HookSystemHandler::Initialize, {
-        CB_HOOK<CALL>(0x4023DB),
+    InstallCallback("ArchInit [Framework initialization]", &HookSystemHandler::Initialize, {
+        cbHook<CALL>(0x4023DB),
     });
 
     /*

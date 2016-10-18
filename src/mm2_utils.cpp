@@ -1,9 +1,9 @@
 #include "mm2_utils.h"
 #include "patch.h"
 
-void InstallGamePatch(LPCSTR name,
-                      std::initializer_list<unsigned char> bytes,
-                      std::initializer_list<unsigned int> addresses)
+void InstallPatch(LPCSTR name,
+                  std::initializer_list<unsigned char> bytes,
+                  std::initializer_list<unsigned int> addresses)
 {
     LogFile::Format(" - Installing patch: '%s'...\n", name);
 
@@ -14,43 +14,43 @@ void InstallGamePatch(LPCSTR name,
         mem::write_buffer(LPVOID(addr), bytes.begin(), bytes.size());
     }
 
-    LogFile::Format("   - Installed %u patches\n", addresses.size());
+    LogFile::Format("   - Installed %d patches\n", addresses.size());
 }
 
-void InstallGameCallback(auto_ptr lpCallback,
-                         CB_INSTALL_INFO info)
+void InstallCallback(auto_ptr lpAddr,
+                     cbInfo callback)
 {
-    auto addr = info.hookAddr;
-    auto type = info.hookType;
+    auto addr = callback.addr;
+    auto type = callback.type;
 
-    unsigned int dwRVA = lpCallback - (addr + 5);
+    unsigned int dwRVA = lpAddr - (addr + 5);
 
     switch (type)
     {
-        case HOOK_TYPE::CALL:
+        case hookType::CALL:
         {
-            mem::write_args<unsigned char, unsigned int>(LPVOID(addr), 0xE8, dwRVA);
+            mem::write_args<unsigned char, unsigned int>(addr, 0xE8, dwRVA);
         } break;
 
-        case HOOK_TYPE::JMP:
+        case hookType::JMP:
         {
-            mem::write_args<unsigned char, unsigned int>(LPVOID(addr), 0xE9, dwRVA);
+            mem::write_args<unsigned char, unsigned int>(addr, 0xE9, dwRVA);
         } break;
 
-        case HOOK_TYPE::PUSH:
+        case hookType::PUSH:
         {
-            mem::write_args<unsigned char, unsigned int>(LPVOID(addr), 0x68, lpCallback);
+            mem::write_args<unsigned char, unsigned int>(addr, 0x68, lpAddr);
         } break;
     }
 }
 
-void InstallGameCallback(LPCSTR name,
-                         auto_ptr lpCallback,
-                         std::initializer_list<CB_INSTALL_INFO> callbacks)
+void InstallCallback(LPCSTR name,
+                     auto_ptr lpAddr,
+                     std::initializer_list<cbInfo> callbacks)
 {
     LogFile::Format(" - Installing callback: '%s'...\n", name);
 
-    const char* hook_types[HOOK_TYPE::COUNT] =
+    const char* hook_types[hookType::COUNT] =
     {
         "jmp",
         "call",
@@ -59,12 +59,12 @@ void InstallGameCallback(LPCSTR name,
 
     for (auto cb : callbacks)
     {
-        InstallGameCallback(lpCallback, cb);
+        InstallCallback(lpAddr, cb);
 
-        LogFile::Format("   - [%s] %08X => %08X\n", hook_types[cb.hookType], cb.hookAddr, lpCallback);
+        LogFile::Format("   - [%s] %08X => %08X\n", hook_types[cb.type], cb.addr, lpAddr);
     }
 
-    LogFile::Format("   - Installed %u callbacks\n", callbacks.size());
+    LogFile::Format("   - Installed %d callbacks\n", callbacks.size());
 }
 
 void InstallVTableHook(LPCSTR name,
@@ -79,5 +79,5 @@ void InstallVTableHook(LPCSTR name,
         LogFile::Format("   - %08X => %08X", addr, lpHookAddr);
     }
 
-    LogFile::Format("   - Installed %u / %u hooks\n", addresses.size());
+    LogFile::Format("   - Installed %d / %d hooks\n", addresses.size());
 }
