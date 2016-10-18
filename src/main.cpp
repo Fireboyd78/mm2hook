@@ -507,23 +507,11 @@ public:
 class mmGameMusicDataHandler {
 public:
     bool LoadAmbientSFX(LPCSTR name) {
-        LPCSTR szAmbientSFX = NULL;
+        char buffer[80];
+        sprintf(buffer, "%sambience", *cityName);
 
-        LPCSTR city = *cityName;
-
-        if ((_strcmpi(city, "sf") != 0) && (_strcmpi(city, "london") != 0))
-        {
-            char ambientSFX[80] = { NULL };
-
-            sprintf(ambientSFX, "%sambience", city);
-
-            bool exists = !(datAssetManager::Exists("aud\\dmusic\\csv_files", ambientSFX, "csv"));
-
-            // default to 'sfambience' instead of 'londonambience'
-            szAmbientSFX = (exists) ? ambientSFX : "sfambience";
-        } else {
-            szAmbientSFX = name;
-        }
+        bool exists = datAssetManager::Exists("aud\\dmusic\\csv_files", buffer, "csv");
+        LPCSTR szAmbientSFX = exists ? buffer : "sfambience";
 
         LogFile::Format("AmbientSFX: %s\n", szAmbientSFX);
 
@@ -534,13 +522,11 @@ public:
 class vehCarAudioContainerHandler {
 public:
     static void SetSirenCSVName(LPCSTR name) {
-        char siren_name[80] = { NULL };
+        char buffer[80];
+        sprintf(buffer, "%spolicesiren", *cityName);
 
-        sprintf(siren_name, "%spolicesiren", *cityName);
-
-        bool useDefault = !(datAssetManager::Exists("aud\\cardata\\player", siren_name, "csv"));
-
-        LPCSTR szSirenName = (useDefault) ? name : siren_name;
+        bool exists = datAssetManager::Exists("aud\\cardata\\player", buffer, "csv");
+        LPCSTR szSirenName = exists ? buffer : "sfpolicesiren";
 
         LogFile::Format("SirenCSVName: %s\n", szSirenName);
 
