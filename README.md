@@ -16,5 +16,5 @@ If you'd like to contribute to the project, please [fork](https://help.github.co
  
 All contributions are welcomed, including ones that fix something as simple as a typo.
  
-### Coding Style
+#### Coding Style
 Please use spaces instead of tabs, and try to keep your code consistent with the rest of the project.
