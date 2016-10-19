@@ -120,6 +120,7 @@ AGEHook<0x684518>::Type<LPDIRECTDRAWCREATEEX> $lpDirectDrawCreateEx;
 
 AGEHook<0x6830A8>::Type<IDirectDraw7 *> lpDD;
 AGEHook<0x6830AC>::Type<IDirect3D7 *> lpD3D;
+AGEHook<0x6830C8>::Type<IDirect3DDevice7 *> lpD3DDev;
 AGEHook<0x6830CC>::Type<IDirectDrawSurface7 *> lpdsRend;
 
 AGEHook<0x683130>::Type<gfxInterface> gfxInterfaces;
@@ -1123,6 +1124,28 @@ private:
 
         InstallPatch("Enable pointer in windowed mode", { 0x90, 0x90 }, {
             0x4F136E,
+        });
+
+        /*
+            So this might be a placebo effect, but damnit I want to believe it's working! :P
+        */
+
+        // mipfilter
+        InstallPatch("Mipmap filtering fix #1", { D3DTFP_POINT }, {
+            0x4B2046,
+            0x4B20EE,
+        });
+
+        // minfilter
+        InstallPatch("Mipmap filtering fix #2", { D3DTFN_ANISOTROPIC }, {
+            0x4B2032,
+            0x4B20DB,
+        });
+
+        // magfilter
+        InstallPatch("Mipmap filtering fix #3", { D3DTFG_ANISOTROPIC }, {
+            0x4B201E,
+            0x4B20C7,
         });
 
         // even the slightest modification will f$!% this up, DO NOT TOUCH THIS
