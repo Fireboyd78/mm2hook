@@ -535,42 +535,100 @@ public:
     }
 };
 
-bool bSDLShadingDebug = false;
+// HACK HACK HACK!
+// Doesn't work well for subway stations :(
+bool insideTunnel = false;
 
 class sdlPage16Handler {
 public:
-    static LPVOID blockPtr; // current block pointer ;)
+    static LPVOID blockPtr; // current block pointer
+    static LPVOID attributePtr; // current attribute pointer
 public:
     // this MUST clean up the stack, hence the stdcall
     static void __stdcall SetBlockPointer(LPVOID lpBlock) {
-        blockPtr = lpBlock;
+        attributePtr = lpBlock;
     };
 
     void Draw(int p1, unsigned int p2) {
+        blockPtr = this;
         $sdlPage16_Draw(this, p1, p2);
 
-        blockPtr = NULL; // lets vglHandler know we're not checking for SDL stuff
+        // not in a block anymore
+        blockPtr = NULL;
+        attributePtr = NULL; // lets vglHandler know we're not checking for SDL stuff
+
+        // so hacky
+        insideTunnel = false;
     };
 };
 
 LPVOID sdlPage16Handler::blockPtr;
+LPVOID sdlPage16Handler::attributePtr;
+
+bool bVGLShadingDebug = false;
 
 class vglHandler {
 private:
     static unsigned int CalculateShadedColor(gfxDrawMode drawMode, unsigned int color) {
         if (sdlPage16Handler::blockPtr != NULL)
         {
-            // we can finally check for attributes...
-            int block = *(short*)sdlPage16Handler::blockPtr;
-            
-            int type = ((block >> 3) & 0xF);
-            int subtype = block & 0x7;
+            static ColorARGB sdlTunnelColors[] = {
+                // debug colors
+                { 0, 0, 255, 255 },
+                { 0, 255, 0, 255 },
+                { 255, 0, 0, 255 },
 
-            if (type == 0x9 && subtype == 0x0)
-                return color;
+                // fullbright
+                { 255, 255, 255, 255 },
+            };
+
+            // we can finally check for attributes...
+            short *attr = (short*)sdlPage16Handler::attributePtr;
+
+            int type = ((*attr >> 3) & 0xF);
+            int subtype = *attr & 0x7;
+
+            if (type == 9) {
+                // junction ceiling (?)
+                // may need verification
+                if (subtype == 0){
+                    int flags = attr[2];
+                    int unk = attr[5];
+
+                    if (!(flags & 0x4)) {
+                        if (!(flags & 0x4000)) {
+                            // not culled
+                            insideTunnel = true;
+                            return sdlTunnelColors[3].color;
+                        } else {
+                            // culled
+                            insideTunnel = false;
+                            return sdlTunnelColors[0].color;
+                        }
+                    }
+                }
+                if (subtype == 3) {
+                    int flags = attr[1];
+
+                    if ((flags > 10) && !(flags & 0x4)) {
+                        if (!(flags & 0x4000)) {
+                            // not culled
+                            insideTunnel = true;
+                            return sdlTunnelColors[3].color;
+                        }
+                    } else {
+                        insideTunnel = false;
+                    }
+                }
+            } else {
+                // lol hack
+                if (insideTunnel) {
+                    return sdlTunnelColors[3].color;
+                }
+            }
         }
 
-        if (bSDLShadingDebug) {
+        if (bVGLShadingDebug) {
             // visualize what's being drawn
             static ColorARGB drawModeColors[] = {
                 { 255, 0, 0, 255 }, // POINTLIST (RED)
