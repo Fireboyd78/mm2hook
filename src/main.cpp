@@ -543,9 +543,9 @@ class sdlPage16Handler {
 public:
     static LPVOID blockPtr; // current block pointer
     static LPVOID attributePtr; // current attribute pointer
-public:
+
     // this MUST clean up the stack, hence the stdcall
-    static void __stdcall SetBlockPointer(LPVOID lpBlock) {
+    static void __stdcall SetAttributePointer(LPVOID lpBlock) {
         attributePtr = lpBlock;
     };
 
@@ -588,9 +588,9 @@ private:
             int type = ((*attr >> 3) & 0xF);
             int subtype = *attr & 0x7;
 
+            // best way to check for tunnels
+            // doesn't seem to have any repercussions (yet)
             if (type == 9) {
-                // junction ceiling (?)
-                // may need verification
                 if (subtype == 0){
                     int flags = attr[2];
                     int unk = attr[5];
@@ -599,7 +599,6 @@ private:
                         if (!(flags & 0x4000)) {
                             // not culled
                             insideTunnel = true;
-                            return sdlTunnelColors[3].color;
                         } else {
                             // culled
                             insideTunnel = false;
@@ -613,57 +612,42 @@ private:
                         if (!(flags & 0x4000)) {
                             // not culled
                             insideTunnel = true;
-                            return sdlTunnelColors[3].color;
                         }
                     } else {
+                        // unlikely to be a tunnel
                         insideTunnel = false;
                     }
                 }
-            } else {
-                // lol hack
-                if (insideTunnel) {
-                    return sdlTunnelColors[3].color;
-                }
             }
+
+            // use fullbright inside tunnels instead of the calculated colors below
+            // will still preserve shading as well
+            if (insideTunnel)
+                return $sdlPage16_GetShadedColor(color, sdlTunnelColors[3].color);
         }
 
-        if (bVGLShadingDebug) {
-            // visualize what's being drawn
-            static ColorARGB drawModeColors[] = {
-                { 255, 0, 0, 255 }, // POINTLIST (RED)
-                { 0, 255, 0, 255 }, // LINELIST (GREEN)
-                { 0, 0, 255, 255 }, // LINESTRIP (BLUE)
+        auto timeWeather = *timeWeathers + timeOfDay;
 
-                { 255, 255, 0, 255 }, // TRIANGLELIST (YELLOW)
-                { 255, 0, 255, 255 }, // TRIANGLESTRIP (PINK)
-                { 0, 255, 255, 255 }, // TRIANGLEFAN (TEAL)
-            };
+        vglKeyColor = addPitch(&timeWeather->KeyColor, timeWeather->KeyPitch);
+        vglFill1Color = addPitch(&timeWeather->Fill1Color, timeWeather->Fill1Pitch);
+        vglFill2Color = addPitch(&timeWeather->Fill2Color, timeWeather->Fill2Pitch);
 
-            return drawModeColors[drawMode - 1].color;
-        } else {
-            auto timeWeather = *timeWeathers + timeOfDay;
+        // convert the ambient to a vector3 for better accuracy
+        vglAmbient = intToColor(timeWeather->Ambient);
 
-            vglKeyColor = addPitch(&timeWeather->KeyColor, timeWeather->KeyPitch);
-            vglFill1Color = addPitch(&timeWeather->Fill1Color, timeWeather->Fill1Pitch);
-            vglFill2Color = addPitch(&timeWeather->Fill2Color, timeWeather->Fill2Pitch);
+        // compute le values
+        vglShadedColor = {
+            normalize(vglKeyColor.X + vglFill1Color.X + vglFill2Color.X + vglAmbient.X),
+            normalize(vglKeyColor.Y + vglFill1Color.Y + vglFill2Color.Y + vglAmbient.Y),
+            normalize(vglKeyColor.Z + vglFill1Color.Z + vglFill2Color.Z + vglAmbient.Z),
+        };
 
-            // convert the ambient to a vector3 for better accuracy
-            vglAmbient = intToColor(timeWeather->Ambient);
+        vglResultColor.r = byte(vglShadedColor.X * 255.999f);
+        vglResultColor.g = byte(vglShadedColor.Y * 255.999f);
+        vglResultColor.b = byte(vglShadedColor.Z * 255.999f);
+        vglResultColor.a = 255;
 
-            // compute le values
-            vglShadedColor = {
-                normalize(vglKeyColor.X + vglFill1Color.X + vglFill2Color.X + vglAmbient.X),
-                normalize(vglKeyColor.Y + vglFill1Color.Y + vglFill2Color.Y + vglAmbient.Y),
-                normalize(vglKeyColor.Z + vglFill1Color.Z + vglFill2Color.Z + vglAmbient.Z),
-            };
-
-            vglResultColor.r = byte(vglShadedColor.X * 255.999f);
-            vglResultColor.g = byte(vglShadedColor.Y * 255.999f);
-            vglResultColor.b = byte(vglShadedColor.Z * 255.999f);
-            vglResultColor.a = 255;
-
-            return $sdlPage16_GetShadedColor(color, vglResultColor.color);
-        }
+        return $sdlPage16_GetShadedColor(color, vglResultColor.color);
     }
 public:
     static void vglBegin(gfxDrawMode drawMode, int p1) {
@@ -1119,7 +1103,7 @@ private:
             cbHook<CALL>(0x4459D2),
         });
 
-        InstallCallback("sdlPage16::Draw [SetBlockPointer implementation]", &sdlPage16Handler::SetBlockPointer, {
+        InstallCallback("sdlPage16::Draw [SetAttributePointer implementation]", &sdlPage16Handler::SetAttributePointer, {
             cbHook<CALL>(0x448372), // 448371 + 1, after our 'push edi' instruction (SEE BELOW)
         });
     }
