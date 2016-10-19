@@ -603,7 +603,6 @@ private:
                         } else {
                             // culled
                             insideTunnel = false;
-                            return sdlTunnelColors[0].color;
                         }
                     }
                 }
