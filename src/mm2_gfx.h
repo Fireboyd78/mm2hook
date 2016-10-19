@@ -58,4 +58,33 @@ namespace MM2
 
         /*0x70*/ gfxResData Resolutions[64];
     };
+
+    /* Basically a 1:1 copy of D3DLIGHT */
+    struct gfxLight {
+    protected:
+        static AGEHook<0x4B1C00>::Func<void> $Reset;
+    public:
+        D3DLIGHTTYPE Type;
+
+        Vector4 Diffuse;
+        Vector4 Specular;
+        Vector4 Ambient;
+
+        Vector3 Position;
+        Vector3 Direction;
+
+        float Range;
+        float Falloff;
+
+        float Attenuation0;
+        float Attenuation1;
+        float Attenuation2;
+
+        float Theta;
+        float Phi;
+
+        void Reset(void) {
+            $Reset(this);
+        };
+    };
 }
