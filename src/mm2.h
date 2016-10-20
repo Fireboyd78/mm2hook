@@ -17,16 +17,17 @@
 
 enum MM2Version
 {
-    MM2_INVALID = -1,
-
-    MM2_BETA_1 = 0,
-    MM2_BETA_2 = 1,
-    MM2_RETAIL = 2,
-
+    MM2_RETAIL = 0,
+    
+    // number of supported versions
     MM2_NUM_VERSIONS,
 
-    // versions that cannot load
-    MM2_BETA_2_PETITE
+    // unsupported versions
+    MM2_BETA_1,
+    MM2_BETA_2,
+    MM2_BETA_2_PETITE,
+
+    MM2_INVALID = -1,
 };
 
 static const ageInfoLookup g_mm2_info[] = {
