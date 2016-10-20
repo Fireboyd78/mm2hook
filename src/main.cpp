@@ -56,6 +56,11 @@ AGEHook<0x402180>::Func<void> $CreateGameMutex;
 AGEHook<0x4C9510>::Func<void> $DefaultPrintString;
 AGEHook<0x4C95F0>::Func<void> $DefaultPrinter;
 
+AGEHook<0x544150>::Func<void> $aiPath_UpdatePedestrians;
+AGEHook<0x54B9C0>::Func<void> $aiPedestrian_Update;
+
+AGEHook<0x550EF0>::Func<void> $aiPoliceForce_Reset;
+
 AGEHook<0x4A3370>::Func<void> $asLinearCS_Update;
 
 AGEHook<0x4415E0>::Func<void> $dgBangerInstance_Draw;
@@ -63,9 +68,13 @@ AGEHook<0x4415E0>::Func<void> $dgBangerInstance_Draw;
 AGEHook<0x4ABE00>::Func<bool> $gfxAutoDetect;
 AGEHook<0x4A8CE0>::Func<void> $gfxPipeline_SetRes;
 
+AGEHook<0x4BA910>::Func<void> $ioInput_Update;
+
 AGEHook<0x577210>::Func<void> $memSafeHeap_Init;
 
 AGEHook<0x5346B0>::Func<int>::StdCall $MyLoadStringA;
+
+AGEHook<0x448090>::Func<void> $sdlCommon_UpdateLighting;
 
 AGEHook<0x448330>::Func<void> $sdlPage16_Draw;
 AGEHook<0x450880>::Func<unsigned int> $sdlPage16_GetShadedColor;
@@ -88,6 +97,8 @@ AGEHook<0x443E50>::Func<void> $cityLevelSetObjectDetail;
 // ==========================
 // Pointer hooks
 // ==========================
+
+AGEHook<0x6AFFE4>::Type<int> vehPoliceCarAudio_iNumCopsPursuingPlayer;
 
 AGEHook<0x6A3D40>::Type<Stream *> datOutputStream;
 
@@ -126,8 +137,13 @@ AGEHook<0x6830CC>::Type<IDirectDrawSurface7 *> lpdsRend;
 AGEHook<0x683130>::Type<gfxInterface> gfxInterfaces;
 AGEHook<0x6844C0>::Type<unsigned int> gfxInterfaceCount;
 
-AGEHook<0x6844FC>::Type<unsigned int> gfxMaxScreenWidth;
-AGEHook<0x6844D8>::Type<unsigned int> gfxMaxScreenHeight;
+AGEHook<0x6844B0>::Type<int> gfxMinScreenWidth;
+AGEHook<0x6844CC>::Type<int> gfxMinScreenHeight;
+
+AGEHook<0x6844FC>::Type<int> gfxMaxScreenWidth;
+AGEHook<0x6844D8>::Type<int> gfxMaxScreenHeight;
+
+AGEHook<0x684D36>::Type<bool> gfxTexture_Allow32;
 
 AGEHook<0x682FA0>::Type<HWND> hWndParent;
 AGEHook<0x6830B8>::Type<HWND> hWndMain;
@@ -141,15 +157,20 @@ AGEHook<0x6830D0>::Type<BOOL> inWindow;
 AGEHook<0x6830D1>::Type<BOOL> isMaximized;
 AGEHook<0x5CA3ED>::Type<BOOL> hasBorder;
 
-AGEHook<0x6830EC>::Type<unsigned int> windowX;
-AGEHook<0x683110>::Type<unsigned int> windowY;
-AGEHook<0x683128>::Type<unsigned int> windowWidth;
-AGEHook<0x683100>::Type<unsigned int> windowHeight;
+AGEHook<0x6830EC>::Type<int> windowX;
+AGEHook<0x683110>::Type<int> windowY;
+AGEHook<0x683128>::Type<int> windowWidth;
+AGEHook<0x683100>::Type<int> windowHeight;
 
 AGEHook<0x5E0CC4>::Type<void (*)(void)> $__VtResumeSampling;
 AGEHook<0x5E0CD8>::Type<void (*)(void)> $__VtPauseSampling;
 
 AGEHook<0x6B1708>::Type<BOOL> $gameClosing;
+
+AGEHook<0x6A3AA8>::Type<int> joyDebug;
+AGEHook<0x6A3C0C>::Type<int> assetDebug;
+AGEHook<0x683104>::Type<int> gfxDebug;
+AGEHook<0x6B4C24>::Type<int> audDebug;
 
 /*
     ===========================================================================
@@ -224,6 +245,63 @@ Vector3 intToColor(int value) {
 // ==========================
 // Specialized handlers
 // ==========================
+
+int numPedUpdateAttempts = 0;
+
+class aiPathHandler {
+public:
+    void UpdatePedestrians(void) {
+        numPedUpdateAttempts = 0;
+        $aiPath_UpdatePedestrians(this);
+    }
+
+    static void Install() {
+        InstallCallback("aiPath::UpdatePedestrians", "Limits the number of update attempts for pedestrians.",
+            &UpdatePedestrians, {
+                cbHook<CALL>(0x536FE0), // aiMap::Update
+            }
+        );
+    }
+};
+
+class aiPedestrianHandler {
+public:
+    void Update(void) {
+        if (numPedUpdateAttempts < 256) {
+            ++numPedUpdateAttempts;
+            $aiPedestrian_Update(this);
+        }
+    }
+
+    static void Install() {
+        InstallCallback("aiPedestrian::Update", "Limits the number of update attempts for a pedestrian.",
+            &Update, {
+                cbHook<CALL>(0x544191), // aiPath::UpdatePedestrians
+            }
+        );
+    }
+};
+
+class aiPoliceForceHandler {
+public:
+    void Reset(void) {
+        // reset number of cops pursuing player
+        // fixes incorrect music bug
+        *vehPoliceCarAudio_iNumCopsPursuingPlayer = 0;
+
+        $aiPoliceForce_Reset(this);
+    }
+
+    static void Install() {
+        InstallCallback("aiPoliceForce::Reset", "Resets the number of cops pursuing the player upon reset.",
+            &Reset, {
+                cbHook<CALL>(0x536AAE),
+                cbHook<CALL>(0x550ECA),
+            }
+        );
+    }
+};
+
 class asCullManagerHandler {
 public:
     void Init(int maxCullables, int maxCullables2D) {
@@ -234,10 +312,24 @@ public:
 
         $asCullManagerInit(this, maxCullables, maxCullables2D);
     }
+
+    static void Install() {
+        InstallCallback("asCullManager::Init", "Increases max cullables.",
+            &Init, {
+                cbHook<CALL>(0x401D5C),
+            }
+        );
+    }
 };
 
 class cityLevelHandler {
 public:
+    // jumped to at the end of cityLevel::Update
+    void PostUpdate() {
+        // update the SDL lighting
+        $sdlCommon_UpdateLighting();
+    }
+
     // TODO: Factor in 'Visibility' level somehow?
     void SetObjectDetail(int lod) {
         // Default MM2 values (leaving this here for reference)
@@ -292,11 +384,23 @@ public:
         *sdl_MedThresh  = sdlMedThresh;
 
         LogFile::Format("[cityLevel::SetObjectDetail]: '%s'\n"
-                        "    - OBJ { %.4f, %.4f, %.4f, %.4f }\n"
-                        "    - SDL { %.4f, %.4f, %.4f }\n",
+                        " - OBJ { %.4f, %.4f, %.4f, %.4f }\n"
+                        " - SDL { %.4f, %.4f, %.4f }\n",
                         lodLevelNames[lod],
                         objNoDrawThresh, objVLowThresh, objLowThresh, objMedThresh,
                         sdlVLowThresh, sdlLowThresh, sdlMedThresh);
+    }
+
+    static void Install() {
+        InstallVTableHook("cityLevel::SetObjectDetail", &SetObjectDetail, {
+            0x5B16E0
+        });
+
+        InstallCallback("cityLevel::Update", "Adds PostUpdate handler.",
+            &PostUpdate, {
+                cbHook<JMP>(0x4452D0), // jump to PostUpdate at the very end
+            }
+        );
     }
 };
 
@@ -325,6 +429,21 @@ public:
     void Draw(int lod) {
         $dgBangerInstance_Draw(this, lod);
     }
+
+    static void Install() {
+        // revert bridges/ferries to how they were in the betas
+        InstallCallback("Bridge/Ferry: Cull",
+            &Cull, {
+                cbHook<CALL>(0x5780BC), // gizBridgeMgr::Cull
+                cbHook<CALL>(0x5798F0), // gizFerryMgr::Cull
+            }
+        );
+
+        InstallVTableHook("Bridge/Ferry: Draw", &Draw, {
+            0x5B5FB8, // gizBridge::Draw
+            0x5B61AC, // gizFerry::Draw
+        });
+    }
 };
 
 class gfxPipelineHandler {
@@ -332,24 +451,28 @@ public:
     static LRESULT APIENTRY gfxWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         switch (uMsg)
         {
+            case WM_ACTIVATEAPP:
+            {
+                if ((wParam == FALSE) && datArgParser::Get("nopause"))
+                    return 0;
+            } break;
+
             case WM_KEYUP:
             case WM_SYSKEYUP:
             {
                 if (HandleKeyPress(wParam))
                     return 0;
             } break;
-
-            case WM_ACTIVATEAPP:
-            {
-                if ((wParam == FALSE) && datArgParser::Get("nopause"))
-                    return 0;
-            } break;
         }
+
         return $gfxPipeline_gfxWindowProc(hWnd, uMsg, wParam, lParam);
     }
 
     static void SetRes(int width, int height, int cdepth, int zdepth, bool detectArgs) {
-        LogFile::WriteLine("[gfxPipeline::SetRes]: Additional graphics params enabled.");
+        // support for 32-bit textures?
+        *gfxTexture_Allow32 = (cdepth == 32);
+        
+        LogFile::Format("[gfxPipeline::SetRes]: %dx%dx%dx%d\n", width, height, cdepth, zdepth);
 
         $gfxPipeline_SetRes(width, height, cdepth, zdepth, true);
     }
@@ -366,7 +489,7 @@ public:
             WNDCLASSA wc = { NULL };
 
             wc.style = CS_HREDRAW | CS_VREDRAW;
-            wc.lpfnWndProc = gfxPipelineHandler::gfxWindowProc;
+            wc.lpfnWndProc = gfxWindowProc;
             wc.cbClsExtra = 0;
             wc.cbWndExtra = 0;
             wc.hInstance = 0;
@@ -450,6 +573,40 @@ public:
         UpdateWindow(hWND);
         SetFocus(hWND);
     }
+
+    static void Install() {
+        InstallPatch("Enables pointer in windowed mode.", { 0x90, 0x90 }, {
+            0x4F136E,
+        });
+
+        if (!datArgParser::Get("16bit")) {
+            InstallPatch("Creates the initial window in 32-bit mode.", { 32 }, {
+                0x401475,
+                0x401477,
+            });
+        }
+
+        InstallCallback("gfxPipeline::SetRes", "Enables extra resolution parameters (e.g. '-window')",
+            &SetRes, {
+                cbHook<CALL>(0x401482), // Main
+                cbHook<CALL>(0x401BF0), // BeginPhase
+                cbHook<CALL>(0x4A6993), // rglOpenPipe (unused)
+                cbHook<CALL>(0x4A92CD), // gfxPipeline::SafeBeginGfx (unused)
+            }
+        );
+
+        InstallCallback("gfxPipeline::gfxWindowCreate", "Custom implementation allowing for more control of the window.",
+            &gfxWindowCreate, {
+                cbHook<CALL>(0x4A94AA),
+            }
+        );
+
+        InstallCallback("gfxLoadVideoDatabase", "Disables 'badvideo.txt' file.",
+            &ReturnFalse, {
+                cbHook<CALL>(0x4AC4F9),
+            }
+        );
+    }
 };
 
 class memSafeHeapHandler {
@@ -463,6 +620,14 @@ public:
 
         LogFile::Format("[memSafeHeap::Init]: Allocating %dMB heap (%d bytes)\n", g_heapSize, heapSize);
         return $memSafeHeap_Init(this, memAllocator, heapSize, p3, p4, checkAlloc);
+    }
+
+    static void Install() {
+        InstallCallback("memSafeHeap::Init", "Adds '-heapsize' parameter that takes a size in megabytes. Defaults to 128MB.",
+            &Init, {
+                cbHook<CALL>(0x4015DD),
+            }
+        );
     }
 };
 
@@ -489,6 +654,15 @@ public:
 
         $asLinearCS_Update(this);
     }
+
+    static void Install() {
+        // dashboard testing
+        InstallCallback("mmDashView::Update", "Experimental testing.",
+            &UpdateCS, {
+                cbHook<CALL>(0x430F87), // replaces call to asLinearCS::Update
+            }
+        );
+    }
 };
 
 class mmDirSndHandler {
@@ -503,6 +677,42 @@ public:
         // TODO: Set sampling rate (see 0x519640 - int __thiscall AudManager::SetBitDepthAndSampleRate(int this, int bitDepth, int samplingRate))
         // TODO: Redo SetPrimaryBufferFormat to set sampleSize? (see 0x5A5860 -void __thiscall DirSnd::SetPrimaryBufferFormat(mmDirSnd *this, int sampleRate, bool allowStero))
         return mmDirSnd::Init(48000, enableStero, a4, volume, deviceName, enable3D);
+    }
+    
+    static void Install() {
+        InstallCallback("mmDirSnd::Init", "Fixes no sound issue on startup.",
+            &Init, {
+                cbHook<CALL>(0x51941D),
+            }
+        );
+    }
+};
+
+class mmGameHandler {
+public:
+    void SendChatMessage(char *message) {
+        if (isConsoleOpen) {
+            MM2Lua::SendCommand(message);
+
+            // return normal chatbox behavior
+            isConsoleOpen = false;
+        } else {
+            LogFile::Format("Got chat message: %s\n", message);
+        }
+    }
+
+    static void Install() {
+        InstallPatch("Increases chat buffer size.", { 60 }, {
+            0x4E68B5,
+            0x4E68B9,
+            0x50BBCF,
+        });
+
+        InstallCallback("mmGame::SendChatMessage", "Passes any chat messages to the handler.",
+            &SendChatMessage, {
+                cbHook<JMP>(0x414EB6),
+            }
+        );
     }
 };
 
@@ -519,6 +729,14 @@ public:
 
         return reinterpret_cast<mmGameMusicData *>(this)->LoadAmbientSFX(szAmbientSFX);
     }
+
+    static void Install() {
+        InstallCallback("mmGameMusicData::LoadAmbientSFX", "Allows for custom ambient effects in addon cities.",
+            &LoadAmbientSFX, {
+                cbHook<CALL>(0x433F93),
+            }
+        );
+    }
 };
 
 class vehCarAudioContainerHandler {
@@ -534,6 +752,15 @@ public:
 
         vehCarAudioContainer::SetSirenCSVName(szSirenName);
     }
+
+    static void Install() {
+        InstallCallback("vehCarAudioContainer::SetSirenCSVName", "Allows for custom sirens in addon cities.",
+            &SetSirenCSVName, {
+                cbHook<CALL>(0x412783),
+                cbHook<CALL>(0x412772),
+            }
+        );
+    }
 };
 
 // HACK HACK HACK!
@@ -548,7 +775,7 @@ public:
     // this MUST clean up the stack, hence the stdcall
     static void __stdcall SetAttributePointer(LPVOID lpBlock) {
         attributePtr = lpBlock;
-    };
+    }
 
     void Draw(int p1, unsigned int p2) {
         blockPtr = this;
@@ -560,7 +787,49 @@ public:
 
         // so hacky
         insideTunnel = false;
-    };
+    }
+
+    static void Install() {
+        // even the slightest modification will f$!% this up, DO NOT TOUCH THIS
+        InstallPatch({
+            0x57,                               // push edi
+            0xE8, 0xCD, 0xCD, 0xCD, 0xCD,       // call <...> !!! (WILL BE INITIALIZED AS A CALLBACK) !!!
+            0x53,                               // push ebx
+            0x0F, 0xB7, 0x0F,                   // movzx ecx, word ptr [edi]
+            0x0F, 0xB7, 0x57, 0x02,             // movzx edx, word ptr [edi+2]
+            0x89, 0x8D, 0xE8, 0xFE, 0xFF, 0xFF, // mov [ebp-118], ecx
+            0x83, 0xC7, 0x02,                   // add edi, 2
+            0x8B, 0xC1,                         // mov eax, ecx
+            0x83, 0xE0, 0x07,                   // and eax, 07
+            0x8B, 0xD8,                         // mov ebx, eax
+            0x75, 0x06,                         // jnz short subtype_not_zero
+
+            0x0F, 0xB7, 0x1F,                   // movzx ebx, word ptr [edi]
+            0x83, 0xC7, 0x02,                   // add edi, 2
+
+            // subtype_not_zero:
+            0x89, 0x5D, 0xFC,                   // mov [ebp-04], ebx
+            0xC1, 0xE0, 0x08,                   // shl eax, 8
+            0x09, 0xD0,                         // or eax, edx
+            0x5B,                               // pop ebx
+
+            0x90, 0x90, 0x90, 0x90,             // nop out the rest
+        }, {
+            0x448371,
+        });
+
+        InstallCallback("sdlPage16::Draw", "SetAttributePointer implementation.",
+            &SetAttributePointer, {
+                cbHook<CALL>(0x448372), // 448371 + 1, after our 'push edi' instruction (SEE ABOVE)
+            }
+        );
+
+        InstallCallback("cityLevel::DrawRooms", "Intercepts a call to sdlPage16::Draw.",
+            &Draw, {
+                cbHook<CALL>(0x4459D2),
+            }
+        );
+    }
 };
 
 LPVOID sdlPage16Handler::blockPtr;
@@ -668,11 +937,14 @@ public:
         $vglEnd();
     }
 
-    static void InstallCallbacks() {
+    static void Install() {
         LogFile::WriteLine(" - Installing shading fix...");
 
         auto_ptr vglBeginCB = &vglBegin;
         auto_ptr vglEndCB = &vglEnd;
+
+        LogFile::Format(" - vglBeginCB: %08X\n", vglBeginCB);
+        LogFile::Format(" - vglEndCB: %08X\n", vglEndCB);
 
         // use a custom struct to make the process easier
         // this allows us to have an entry representing each "frame" (vglBegin/vglEnd)
@@ -712,10 +984,8 @@ public:
             InstallCallback(vglBeginCB, { begin, CALL });
             InstallCallback(vglEndCB,   { end,   CALL });
 
-            LogFile::Format("   - { vglBegin: %08X => %08X, vglEnd: %08X => %08X }\n", begin, vglBeginCB, end, vglEndCB);
+            LogFile::Format("   - { vglBegin: %08X, vglEnd: %08X }\n", begin, end);
         }
-
-        LogFile::Format("   - Installed %d callbacks\n", vglCBs.size());
     }
 };
 
@@ -803,10 +1073,12 @@ public:
         }
     }
 
-    static void ageDebug(bool enabled, const char* format, ...) {
+    static void ageDebug(int debug, const char* format, ...) {
+        va_list va;
+
         if (ageLogFile)
         {
-            va_list va;
+            // print to AGE.log if user specified -ageDebug
 
             va_start(va, format);
             vfprintf(ageLogFile, format, va);
@@ -814,6 +1086,13 @@ public:
 
             fputc('\n', ageLogFile);
             // fflush(ageLogFile);
+        } else if (debug) {
+            va_start(va, format);
+
+            // treat as Messagef
+            $Printer(1, format, va);
+
+            va_end(va);
         }
     }
 
@@ -866,6 +1145,11 @@ public:
     static BOOL __stdcall AutoDetectCallback(GUID *lpGUID,
                                              LPSTR lpDriverDescription, LPSTR lpDriverName, LPVOID lpContext)
     {
+        LARGE_INTEGER tStart, tEnd, tElapsed;
+        LARGE_INTEGER tFrequency;
+
+        QueryPerformanceFrequency(&tFrequency);
+
         Displayf("AutoDetect: GUID=%x, Description=%s, Name=%s", lpGUID, lpDriverDescription, lpDriverName);
 
         if ($lpDirectDrawCreateEx(lpGUID, (LPVOID*)&lpDD, IID_IDirectDraw7, nullptr) == DD_OK)
@@ -890,7 +1174,7 @@ public:
             {
                 lpD3D->EnumDevices($DeviceCallback, gfxInterface);
                 lpD3D->Release();
-
+                
                 *lpD3D = nullptr;
             }
 
@@ -900,6 +1184,7 @@ public:
             gfxInterface->ResolutionChoice  = 0;
 
             DWORD availableMemory = 0x40000000; // 1GB = 1024 * 1024 * 1024
+
             DDSCAPS2 ddsCaps = { NULL };
 
             ddsCaps.dwCaps = DDSCAPS_VIDEOMEMORY | DDSCAPS_LOCALVIDMEM;
@@ -914,8 +1199,16 @@ public:
             *gfxMaxScreenWidth = 0;
             *gfxMaxScreenHeight = 0;
 
+            QueryPerformanceCounter(&tStart);
             lpDD->EnumDisplayModes(0, 0, gfxInterface, $ResCallback);
             lpDD->Release();
+            QueryPerformanceCounter(&tEnd);
+
+            tElapsed.QuadPart = (tEnd.QuadPart - tStart.QuadPart);
+            tElapsed.QuadPart *= 1000000;
+            tElapsed.QuadPart /= tFrequency.QuadPart;
+
+            Displayf("  Enumerated display modes in %.4f ms", tElapsed.QuadPart * 0.001);
 
             *lpDD = nullptr;
 
@@ -934,19 +1227,83 @@ public:
         auto ext = strrchr(filename, '.');
         return (ext != NULL) ? (_strcmpi(ext, ".cinfo") == 0) : false;
     }
+
+    static void Install() {
+        InstallCallback("CreateGameMutex", "Adds '-nomutex' argument to allow multiple game processes.",
+            &CreateGameMutex, {
+                cbHook<CALL>(0x40128D),
+            }
+        );
+
+        InstallCallback("ageDebug", "Verbose debug logger.",
+            &ageDebug, {
+                cbHook<JMP>(0x402630),
+            }
+        );
+
+        InstallCallback("ProgressRect", "Fixes white loading bar in 32-bit display mode.",
+            &ProgressRect, {
+                cbHook<CALL>(0x401163),
+                cbHook<CALL>(0x4011CC),
+            }
+        );
+
+        if (!datArgParser::Get("oldautodetect"))
+        {
+            // cbHook into the original AutoDetect and replace it with our own version
+            InstallCallback("AutoDetectCallback", "Replaces the default AutoDetect method with a much faster one.",
+                &AutoDetectCallback, {
+                    cbHook<JMP>(0x4AC030),
+                }
+            );
+        }
+
+        InstallCallback("isVehInfoFile", "Fixes random crashes.",
+            &isVehInfoFile, {
+                cbHook<CALL>(0x5248E1),
+            }
+        );
+
+        InstallCallback("isCityInfoFile", "Fixes random crashes.",
+            &isCityInfoFile, {
+                cbHook<CALL>(0x5244CF),
+            }
+        );
+
+        // NOTE: Completely overrides the original AngelReadString (will check Lua first then DLL)
+        InstallCallback("AngelReadString", "Adds support for Lua-based locale. Uses MMLANG.DLL on Lua failure.",
+            &AngelReadString, {
+                cbHook<JMP>(0x534790),
+            }
+        );
+
+        InstallCallback("zipFile::Init", "Fixes 'extraLen' spam in the console/log.",
+            &NullSub, {
+                cbHook<CALL>(0x5738EA),
+            }
+        );
+    }
 };
 
-class ChatHandler {
+class TimeHandler {
 public:
-    void Process(char *message) {
-        if (isConsoleOpen) {
-            MM2Lua::SendCommand(message);
+    static void Reset(void) {
+        // TODO: reset tick stuff
+    }
 
-            // return normal chatbox behavior
-            isConsoleOpen = false;
-        } else {
-            LogFile::Format("Got chat message: %s\n", message);
-        }
+    static void Update(void) {
+        MM2Lua::OnTick();
+
+        // pass control back to MM2
+        datTimeManager::Update();
+    }
+
+    static void Install() {
+        InstallCallback("datTimeManager::Update", "Intercepts the call to update each tick.",
+            &Update, {
+                cbHook<CALL>(0x401A2F),
+            }
+        );
     }
 };
 
@@ -976,218 +1333,168 @@ public:
     static void FatalError() {
         // do something?
     }
-};
 
-class TickHandler {
-public:
-    static void Reset(void) {
-        // TODO: reset tick stuff
-    }
-
-    static void Update(void) {
-        MM2Lua::OnTick();
-
-        // pass control back to MM2
-        datTimeManager::Update();
+    static void Install() {
+        *$Printer = &Print;
+        *$PrintString = &PrintString;
+        *$FatalErrorHandler = &FatalError;
     }
 };
 
-class HookSystemHandler
+// make this clean up the stack since we'll be calling it a lot
+void __stdcall InstallHandler(LPCSTR name, void (*installHandler)(void)) {
+    LogFile::Format("Installing '%s' handler...\n", name);
+    installHandler();
+};
+
+/*
+    Assumes THandler is a class that implements a public,
+    static method called 'Install' with no return type.
+*/
+template <class THandler>
+inline void InstallHandler(LPCSTR name) {
+    InstallHandler(name, &THandler::Install);
+};
+
+class HookSystemFramework
 {
 private:
-    static void InstallCallbacks() {
-        LogFile::WriteLine("Installing callbacks / virtual tables...");
+    /*
+        Installs all of the callbacks for MM2Hook.
 
-        InstallCallback("CreateGameMutex", &CallbackHandler::CreateGameMutex, {
-            cbHook<CALL>(0x40128D),
-        });
+        The most important ones are initialized at the top,
+        but other than that there is no particular order.
+    */
+    static void InstallHandlers() {
+        /*
+            Initialize the really important handlers
+        */
+        InstallHandler<CallbackHandler>("Generic callbacks");
+        InstallHandler<PrintHandler>("Print system");
+        InstallHandler<TimeHandler>("Time manager");
 
-        // revert bridges/ferries to how they were in the betas
-        InstallCallback("Bridge/Ferry: Cull", &BridgeFerryHandler::Cull, {
-            cbHook<CALL>(0x5780BC), // gizBridgeMgr::Cull
-            cbHook<CALL>(0x5798F0), // gizFerryMgr::Cull
-        });
+        InstallHandler<gfxPipelineHandler>("gfxPipeline");
+        InstallHandler<memSafeHeapHandler>("memSafeHeap");
+        
+        /*
+            Initialize the rest of the handlers
+            Order doesn't really matter, just whatever looks neat
+        */
 
-        InstallVTableHook("Bridge/Ferry: Draw", &BridgeFerryHandler::Draw, {
-            0x5B5FB8, // gizBridge::Draw
-            0x5B61AC, // gizFerry::Draw
-        });
+        InstallHandler<aiPathHandler>("aiPath");
+        InstallHandler<aiPedestrianHandler>("aiPedestrian");
 
-        InstallVTableHook("cityLevel::SetObjectDetail", &cityLevelHandler::SetObjectDetail, {
-            0x5B16E0
-        });
+        InstallHandler<aiPoliceForceHandler>("aiPoliceForce");
 
-        InstallCallback("ageDebug", &CallbackHandler::ageDebug, {
-            cbHook<JMP>(0x402630),
-        });
+        InstallHandler<asCullManagerHandler>("asCullManager");
 
-        InstallCallback("ProgressRect [white loading bar fix]", &CallbackHandler::ProgressRect, {
-            cbHook<CALL>(0x401163),
-            cbHook<CALL>(0x4011CC),
-        });
+        InstallHandler<cityLevelHandler>("cityLevel");
 
-        if (!datArgParser::Get("oldautodetect"))
-        {
-            // cbHook into the original AutoDetect and replace it with our own version
-            InstallCallback("AutoDetectCallback", &CallbackHandler::AutoDetectCallback, {
-                cbHook<JMP>(0x4AC030),
-            });
-        }
+        InstallHandler<BridgeFerryHandler>("gizBridge/gizFerry");
+        
+        InstallHandler<mmDashViewHandler>("mmDashView");
+        InstallHandler<mmDirSndHandler>("mmDirSnd");
+        InstallHandler<mmGameHandler>("mmGame");
+        InstallHandler<mmGameMusicDataHandler>("mmGameMusicData");
 
-        InstallCallback("isVehInfoFile [fix random crashes]", &CallbackHandler::isVehInfoFile, {
-            cbHook<CALL>(0x5248E1),
-        });
+        InstallHandler<vehCarAudioContainerHandler>("vehCarAudioContainer");
 
-        InstallCallback("isCityInfoFile [fix random crashes]", &CallbackHandler::isCityInfoFile, {
-            cbHook<CALL>(0x5244CF),
-        });
-
-        InstallCallback("gfxPipeline::SetRes", &gfxPipelineHandler::SetRes, {
-            cbHook<CALL>(0x401482),
-        });
-
-        InstallCallback("gfxPipeline::gfxWindowCreate", &gfxPipelineHandler::gfxWindowCreate, {
-            cbHook<CALL>(0x4A94AA),
-        });
-
-        InstallCallback("gfxLoadVideoDatabase [disable 'badvideo.txt']", &ReturnFalse, {
-            cbHook<CALL>(0x4AC4F9),
-        });
-
-        InstallCallback("mmDirSnd::Init", &mmDirSndHandler::Init, {
-            cbHook<CALL>(0x51941D),
-        });
-
-        InstallCallback("memSafeHeap::Init [Heap fix]", &memSafeHeapHandler::Init, {
-            cbHook<CALL>(0x4015DD),
-        });
-
-        InstallCallback("asCullManager::Init [Increase Max Cullables]", &asCullManagerHandler::Init, {
-            cbHook<CALL>(0x401D5C),
-        });
-
-        // NOTE: Completely overrides the original AngelReadString (will check Lua first then DLL)
-        InstallCallback("AngelReadString", &CallbackHandler::AngelReadString, {
-            cbHook<JMP>(0x534790),
-        });
-
-        InstallCallback("datTimeManager::Update", &TickHandler::Update, {
-            cbHook<CALL>(0x401A2F),
-        });
-
-        InstallCallback("mmGame::SendChatMessage", &ChatHandler::Process, {
-            cbHook<JMP>(0x414EB6),
-        });
-
-        InstallCallback("mmGameMusicData::LoadAmbientSFX", &mmGameMusicDataHandler::LoadAmbientSFX, {
-            cbHook<CALL>(0x433F93),
-        });
-
-        InstallCallback("vehCarAudioContainer::SetSirenCSVName", &vehCarAudioContainerHandler::SetSirenCSVName, {
-            cbHook<CALL>(0x412783),
-            cbHook<CALL>(0x412772),
-        });
-
-        // dashboard testing
-        InstallCallback("mmDashView::Update [EXPERIMENTAL]", &mmDashViewHandler::UpdateCS, {
-            cbHook<CALL>(0x430F87), // replaces call to asLinearCS::Update
-        });
-
-        InstallCallback("zipFile::Init ['extraLen' spam fix]", &NullSub, {
-            cbHook<CALL>(0x5738EA), // 'extraLen=%d'
-        });
-
-        // install shading fix (for PSDL, etc.)
-        vglHandler::InstallCallbacks();
-
-        InstallCallback("cityLevel::DrawRooms [sdlPage16::Draw call hook]", &sdlPage16Handler::Draw, {
-            cbHook<CALL>(0x4459D2),
-        });
-
-        InstallCallback("sdlPage16::Draw [SetAttributePointer implementation]", &sdlPage16Handler::SetAttributePointer, {
-            cbHook<CALL>(0x448372), // 448371 + 1, after our 'push edi' instruction (SEE BELOW)
-        });
+        InstallHandler<sdlPage16Handler>("sdlPage16");
+        InstallHandler<vglHandler>("VGL drawing");
     }
 
     static void InstallPatches() {
-        LogFile::WriteLine("Installing patches...");
-
-        InstallPatch("Increase chat buffer size", { 60 }, {
-            0x4E68B5,
-            0x4E68B9,
-            0x50BBCF,
-        });
-
         InstallPatch("Increase cop limit", { 64 }, {
             0x55100B,
         });
 
-        InstallPatch("Enable pointer in windowed mode", { 0x90, 0x90 }, {
-            0x4F136E,
+        InstallPatch("Use all parked cars", { 4 }, {
+            0x579BE1,
         });
+
+        InstallPatch("Fix crash for missing images", { 0xEB /* jnz -> jmp */ }, {
+            0x4B329B, // gfxGetBitmap
+        });
+
+        /* Causes game crashes, needs fixing
+        InstallPatch("dgPhysManager [Raise MAX_MOVERS]", { 64 }, {
+            0x4683CE + 2, 0x468582 + 2,
+            0x46869C + 2, 0x46872E + 2,
+            0x468E16 + 1,
+        });
+
+        // from 0x12B0 to 0x24B0, since we're doubling the array size
+        InstallPatch("dgPhysManager [Increase structure size]", { 0x24 }, {
+            // mmGame::Init
+            0x4129C7 + 2, // operator new
+            0x412C52 + 3, 0x412C67 + 3,
+
+            // dgPhysManager::dgPhysManager(void)
+            0x46820C + 3, 0x468216 + 3,
+
+            // dgPhysManager::DeclareMover(lvlInstance *, int, int)
+            0x4683C8 + 3, 0x4683FD + 3, 0x468410 + 3, 0x468427 + 3,
+            0x46843B + 3, 0x4684FC + 3, 0x468506 + 3,
+
+            // dgPhysManager::NewMover(lvlInstance *, lvlInstance *)
+            0x46857C + 3, 0x4685B0 + 3, 0x4685C8 + 3, 0x46865E + 3,
+
+            // dgPhysManager::NewMover(lvlInstance *)
+            0x468696 + 3, 0x4686DE + 3, 0x4686E5 + 3,
+
+            // dgPhysManager::NewMover(lvlInstance *, lvlInstance *, lvlInstance *)
+            0x468728 + 3, 0x46879D + 3, 0x4687EE + 3, 0x46882E + 3,
+            0x468837 + 3,
+
+            // dgPhysManager::IgnoreMover(lvlInstance *)
+            0x468864 + 3,
+
+            // dgPhysManager::Update(void)
+            0x4688D5 + 3, 0x468934 + 3, 0x468948 + 3, 0x46896B + 3,
+            0x468976 + 3, 0x468998 + 3, 0x4689DA + 3, 0x4689EF + 3,
+            0x468A1B + 3, 0x468A4D + 3, 0x468A6F + 3, 0x468AAF + 3,
+            0x468AD8 + 3, 0x468B1A + 3, 0x468B52 + 3, 0x468BE6 + 3,
+            0x468C49 + 3, 0x468C8D + 3, 0x468CA6 + 3, 0x468CB6 + 3,
+            0x468CDD + 3, 0x468D31 + 3, 0x468D51 + 3, 0x468D65 + 3,
+            0x468DB1 + 3,
+
+            // dgPhysManager::ResetTable(void)
+            0x468E31 + 3,
+        });
+        */
 
         /*
             So this might be a placebo effect, but damnit I want to believe it's working! :P
         */
 
-        // mipfilter
-        InstallPatch("Mipmap filtering fix #1", { D3DTFP_POINT }, {
-            0x4B2046,
-            0x4B20EE,
-        });
+        if (!datArgParser::Get("nomipfix"))
+        {
+            // mipfilter
+            InstallPatch("Mipmap filtering fix #1", { D3DTFP_POINT }, {
+                0x4B2046,
+                0x4B20EE,
+            });
 
-        // minfilter
-        InstallPatch("Mipmap filtering fix #2", { D3DTFN_ANISOTROPIC }, {
-            0x4B2032,
-            0x4B20DB,
-        });
+            // minfilter
+            InstallPatch("Mipmap filtering fix #2", { D3DTFN_ANISOTROPIC }, {
+                0x4B2032,
+                0x4B20DB,
+            });
 
-        // magfilter
-        InstallPatch("Mipmap filtering fix #3", { D3DTFG_ANISOTROPIC }, {
-            0x4B201E,
-            0x4B20C7,
-        });
-
-        // even the slightest modification will f$!% this up, DO NOT TOUCH THIS
-        InstallPatch("Free up some space in sdlPage16::Draw", {
-            0x57,                               // push edi
-            0xE8, 0xCD, 0xCD, 0xCD, 0xCD,       // call <...> !!! (WILL BE INITIALIZED AS A CALLBACK) !!!
-            0x53,                               // push ebx
-            0x0F, 0xB7, 0x0F,                   // movzx ecx, word ptr [edi]
-            0x0F, 0xB7, 0x57, 0x02,             // movzx edx, word ptr [edi+2]
-            0x89, 0x8D, 0xE8, 0xFE, 0xFF, 0xFF, // mov [ebp-118], ecx
-            0x83, 0xC7, 0x02,                   // add edi, 2
-            0x8B, 0xC1,                         // mov eax, ecx
-            0x83, 0xE0, 0x07,                   // and eax, 07
-            0x8B, 0xD8,                         // mov ebx, eax
-            0x75, 0x06,                         // jnz short subtype_not_zero
-
-            0x0F, 0xB7, 0x1F,                   // movzx ebx, word ptr [edi]
-            0x83, 0xC7, 0x02,                   // add edi, 2
-
-            // subtype_not_zero:
-            0x89, 0x5D, 0xFC,                   // mov [ebp-04], ebx
-            0xC1, 0xE0, 0x08,                   // shl eax, 8
-            0x09, 0xD0,                         // or eax, edx
-            0x5B,                               // pop ebx
-
-            0x90, 0x90, 0x90, 0x90,             // nop out the rest
-        }, {
-            0x448371,
-        });
+            // magfilter
+            InstallPatch("Mipmap filtering fix #3", { D3DTFG_ANISOTROPIC }, {
+                0x4B201E,
+                0x4B20C7,
+            });
+        }
     }
 public:
     static void Initialize(int argc, char **argv) {
         InstallPatches();
-        InstallCallbacks();
+        InstallHandlers();
 
         // Initialize the Lua engine
         MM2Lua::Initialize();
-
-        // hook into the printer
-        *$Printer = &PrintHandler::Print;
-        *$PrintString = &PrintHandler::PrintString;
-        *$FatalErrorHandler = &PrintHandler::FatalError;
 
         LogFile::Write("Redirecting MM2 output...");
 
@@ -1195,9 +1502,23 @@ public:
 
         LogFile::WriteLine((*datOutputStream) ? "Done!" : "FAIL!");
 
-        if (ageLogFile == NULL && datArgParser::Get("age_debug"))
+        if (datArgParser::Get("age_debug") || datArgParser::Get("ageDebug"))
         {
+            // AGE.log is a catch-all debug log
+            // it will output _all_ debug to a file
+
             ageLogFile = fopen("AGE.log", "w+");
+        } else {
+            // these will output to the console and mm2.log if specified
+
+            if (datArgParser::Get("gfxDebug"))
+                *gfxDebug = 1;
+            if (datArgParser::Get("audDebug"))
+                *audDebug = 1;
+            if (datArgParser::Get("joyDebug"))
+                *joyDebug = 1;
+            if (datArgParser::Get("assetDebug"))
+                *assetDebug = 1;
         }
     }
 
@@ -1239,43 +1560,44 @@ public:
             Reset(true);
         }
     }
+
+    static void Install() {
+        LogFile::WriteLine("Installing framework...");
+
+        *$__VtResumeSampling = &Start;
+        *$__VtPauseSampling = &Stop;
+
+        /*
+            We'll hook into ArchInit (an empty function),
+            and use it to install our callbacks/patches.
+
+            However, this time around, we can now use datArgParser
+            to determine if a patch/callback should be installed or not,
+            whereas before we needed to check after it was already hooked in.
+
+            Basically, this method is a lot safer, and guarantees
+            we'll have access to any arguments passed.
+        */
+
+        InstallCallback("ArchInit", "Allows the hook to initialize before the game starts.",
+            &Initialize, {
+                cbHook<CALL>(0x4023DB),
+            }
+        );
+
+        /*
+            IMPORTANT:
+            Add any patches/callbacks here that must be initialized prior to the game's entry point.
+            This should be used for very very advanced callbacks/patches only!
+        */
+    }
 };
 
 /*
     ===========================================================================
 */
-void InstallFramework() {
-    LogFile::WriteLine("Installing framework...");
-
-    *$__VtResumeSampling = &HookSystemHandler::Start;
-    *$__VtPauseSampling = &HookSystemHandler::Stop;
-
-    /*
-        We'll hook into ArchInit (an empty function),
-        and use it to install our callbacks/patches.
-
-        However, this time around, we can now use datArgParser
-        to determine if a patch/callback should be installed or not,
-        whereas before we needed to check after it was already hooked in.
-
-        Basically, this method is a lot safer, and guarantees
-        we'll have access to any arguments passed.
-
-    */
-
-    InstallCallback("ArchInit [Framework initialization]", &HookSystemHandler::Initialize, {
-        cbHook<CALL>(0x4023DB),
-    });
-
-    /*
-        IMPORTANT:
-          Add any patches/callbacks here that must be initialized prior to the game's entry point.
-          This should be used for very very advanced callbacks/patches only!
-    */
-};
-
 //
-// Initialize all the important stuff prior to MM2 starting up
+// Initialize all the important stuff prior to MM2 starting up.
 // NOTE: We do not have access to datArgParser yet.
 //
 void Initialize(ageInfoLookup &gameInfo) {
@@ -1283,7 +1605,8 @@ void Initialize(ageInfoLookup &gameInfo) {
     pMM2 = new CMidtownMadness2(gameInfo.info);
     pMM2->Initialize();
 
-    InstallFramework();
+    // install the framework
+    HookSystemFramework::Install();
 }
 
 bool IsGameSupported(ageInfoLookup &gameInfo) {
@@ -1334,13 +1657,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
             else
             {
                 LogFile::WriteLine("Unsupported game version -- terminating...");
-
-                if (gameInfo.info.gameVersion == MM2_BETA_2_PETITE)
-                {
-                    MessageBox(NULL, "Sorry, this version of Beta 2 was compressed with PeTite -- you'll need an unpacked version.\n\nOtherwise, please remove MM2Hook to launch the game.", "MM2Hook", MB_OK | MB_ICONERROR);
-                } else {
-                    MessageBox(NULL, "Sorry, this version of MM2 is unsupported. Please remove MM2Hook to launch the game.", "MM2Hook", MB_OK | MB_ICONERROR);
-                }
+                MessageBox(NULL, "Sorry, this version of MM2 is unsupported. Please remove MM2Hook to launch the game.", "MM2Hook", MB_OK | MB_ICONERROR);
 
                 ExitProcess(EXIT_FAILURE);
             }

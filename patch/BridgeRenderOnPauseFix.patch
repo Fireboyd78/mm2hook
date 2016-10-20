@@ -1,0 +1,3 @@
+//makes bridges render when game paused
+177F86 B8000000007517
+177FA0 E5

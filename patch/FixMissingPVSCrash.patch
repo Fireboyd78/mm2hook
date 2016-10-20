@@ -1,0 +1,4 @@
+//fixes a crash when PVS is enabled
+//on a city without PVS
+43DF3 C60570B0620000E9BC030000
+440F6 F9FCFFFF

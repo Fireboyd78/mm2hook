@@ -35,20 +35,27 @@ struct cbHook
     };
 };
 
-void InstallVTableHook(LPCSTR name,
-                       auto_ptr lpAddr,
-                       std::initializer_list<unsigned int> addresses);
-
-void InstallPatch(LPCSTR name,
+void InstallPatch(LPCSTR description,
                   std::initializer_list<unsigned char> bytes,
                   std::initializer_list<unsigned int> addresses);
 
-void InstallCallback(auto_ptr lpAddr,
-                     cbInfo callback);
+inline void InstallPatch(std::initializer_list<unsigned char> bytes,
+                         std::initializer_list<unsigned int> addresses) {
+    InstallPatch(NULL, bytes, addresses);
+}
+
+void InstallCallback(auto_ptr lpAddr, cbInfo callback);
 
 void InstallCallback(LPCSTR name,
+                     LPCSTR description,
                      auto_ptr lpAddr,
                      std::initializer_list<cbInfo> callbacks);
+
+inline void InstallCallback(LPCSTR name, auto_ptr lpAddr, std::initializer_list<cbInfo> callbacks) {
+    InstallCallback(name, NULL, lpAddr, callbacks);
+}
+
+void InstallVTableHook(LPCSTR name, auto_ptr lpAddr, std::initializer_list<unsigned int> addresses);
 
 union ColorARGB
 {
