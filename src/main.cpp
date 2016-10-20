@@ -469,8 +469,9 @@ public:
     }
 
     static void SetRes(int width, int height, int cdepth, int zdepth, bool detectArgs) {
+        /* TODO: Move this check somewhere else */
         // support for 32-bit textures?
-        *gfxTexture_Allow32 = (cdepth == 32);
+        //*gfxTexture_Allow32 = (cdepth == 32);
         
         LogFile::Format("[gfxPipeline::SetRes]: %dx%dx%dx%d\n", width, height, cdepth, zdepth);
 
@@ -589,9 +590,6 @@ public:
         InstallCallback("gfxPipeline::SetRes", "Enables extra resolution parameters (e.g. '-window')",
             &SetRes, {
                 cbHook<CALL>(0x401482), // Main
-                cbHook<CALL>(0x401BF0), // BeginPhase
-                cbHook<CALL>(0x4A6993), // rglOpenPipe (unused)
-                cbHook<CALL>(0x4A92CD), // gfxPipeline::SafeBeginGfx (unused)
             }
         );
 
