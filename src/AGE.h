@@ -90,6 +90,8 @@ public:
 template <int address>
 class AGEHook {
 public:
+    static_assert((address != 0), "Address cannot be zero.");
+
     template <typename TType>
     class Type {
     protected:
