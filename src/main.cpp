@@ -137,6 +137,8 @@ AGEHook<0x6830CC>::Type<IDirectDrawSurface7 *> lpdsRend;
 AGEHook<0x683130>::Type<gfxInterface> gfxInterfaces;
 AGEHook<0x6844C0>::Type<unsigned int> gfxInterfaceCount;
 
+AGEHook<0x6844C8>::Type<int> gfxInterfaceChoice;
+
 AGEHook<0x6844B0>::Type<int> gfxMinScreenWidth;
 AGEHook<0x6844CC>::Type<int> gfxMinScreenHeight;
 
@@ -153,19 +155,47 @@ AGEHook<0x68311C>::Type<LPCSTR> lpWindowTitle;
 AGEHook<0x6830F0>::Type<ATOM> ATOM_Class;
 AGEHook<0x683108>::Type<LPCSTR> IconID;
 
+AGEHook<0x5CA3EC>::Type<bool> pageFlip;
+AGEHook<0x5CA3ED>::Type<BOOL> hasBorder;
+AGEHook<0x5CA3EE>::Type<bool> useMultiTexture;
+AGEHook<0x5CA664>::Type<bool> enableHWTnL;
+
+AGEHook<0x68451D>::Type<bool> novblank;
+
 AGEHook<0x6830D0>::Type<BOOL> inWindow;
 AGEHook<0x6830D1>::Type<BOOL> isMaximized;
-AGEHook<0x5CA3ED>::Type<BOOL> hasBorder;
+AGEHook<0x6830D2>::Type<bool> tripleBuffer;
+AGEHook<0x6830D3>::Type<bool> useReference;
+AGEHook<0x6830D4>::Type<bool> useSoftware;
+AGEHook<0x6830D5>::Type<bool> useAgeSoftware;
+AGEHook<0x6830D6>::Type<bool> useBlade;
+AGEHook<0x6830D7>::Type<bool> useSysMem;
 
-AGEHook<0x6830EC>::Type<int> windowX;
-AGEHook<0x683110>::Type<int> windowY;
-AGEHook<0x683128>::Type<int> windowWidth;
-AGEHook<0x683100>::Type<int> windowHeight;
+AGEHook<0x6830D8>::Type<int> useInterface;
+
+AGEHook<0x6830F4>::Type<float> window_fWidth;
+AGEHook<0x683120>::Type<float> window_fHeight;
+
+AGEHook<0x683128>::Type<int> window_iWidth;
+AGEHook<0x683100>::Type<int> window_iHeight;
+
+AGEHook<0x6830E4>::Type<int> window_ZDepth;
+AGEHook<0x6830F8>::Type<int> window_ColorDepth;
+
+AGEHook<0x6830EC>::Type<int> window_X;
+AGEHook<0x683110>::Type<int> window_Y;
+
+AGEHook<0x6A38EC>::Type<float> ioMouse_InvWidth;
+AGEHook<0x6A38D4>::Type<float> ioMouse_InvHeight;
 
 AGEHook<0x5E0CC4>::Type<void (*)(void)> $__VtResumeSampling;
 AGEHook<0x5E0CD8>::Type<void (*)(void)> $__VtPauseSampling;
 
 AGEHook<0x6B1708>::Type<BOOL> $gameClosing;
+
+// think this is actually some sort of game state
+// not sure how exactly it's supposed to work
+AGEHook<0x6B17C8>::Type<int> splashScreen; // -1 = ???, 0 = main menu, 1 = race
 
 AGEHook<0x6A3AA8>::Type<int> joyDebug;
 AGEHook<0x6A3C0C>::Type<int> assetDebug;
@@ -446,8 +476,40 @@ public:
     }
 };
 
+bool tex32 = false; /* result of checking for -tex32 argument */
+int window_bpp = 0; /* will use default cdepth/zdepth if set to 0 */
+
 class gfxPipelineHandler {
 public:
+    static void gfxApplySettings(void) {
+        auto gfxInterface = &gfxInterfaces[gfxInterfaceChoice];
+
+        auto deviceType = gfxInterface->DeviceType;
+
+        *enableHWTnL = (deviceType == gfxDeviceType::HardwareWithTnL);
+        *useBlade = (*useSoftware = (deviceType == gfxDeviceType::Software));
+
+        *useInterface = gfxInterfaceChoice;
+
+        if (gfxInterface->AcceptableDepths) {
+            auto depthFlags = gfxInterface->AcceptableDepths;
+
+            auto bpp = (depthFlags & gfxDepthFlags::Depth32) ? 32
+                : (depthFlags & gfxDepthFlags::Depth24) ? 24
+                : (depthFlags & gfxDepthFlags::Depth16) ? 16 : 0;
+
+            if (bpp) {
+                LogFile::Format("gfxApplySettings: Found acceptable bit-depth (%d bpp)\n", bpp);
+
+                // found a valid bit-depth, so set it
+                window_bpp = bpp;
+            }
+        }
+
+        if (!window_bpp)
+            LogFile::WriteLine("gfxApplySettings: Could not find acceptable bit-depth, defaults will be used.");
+    }
+
     static LRESULT APIENTRY gfxWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
         switch (uMsg)
         {
@@ -468,14 +530,177 @@ public:
         return $gfxPipeline_gfxWindowProc(hWnd, uMsg, wParam, lParam);
     }
 
-    static void SetRes(int width, int height, int cdepth, int zdepth, bool detectArgs) {
-        /* TODO: Move this check somewhere else */
-        // support for 32-bit textures?
-        //*gfxTexture_Allow32 = (cdepth == 32);
+    static void gfxWindowMove(bool isOpen) {
+        HDC hDeviceCaps = GetDC(NULL);
+        int screenWidth = GetDeviceCaps(hDeviceCaps, HORZRES);
+        int screenHeight = GetDeviceCaps(hDeviceCaps, VERTRES);
+        ReleaseDC(0, hDeviceCaps);
+
+        *window_X = (screenWidth - window_iWidth) / 2;
+        *window_Y = (screenHeight - window_iHeight) / 2;
+
+        // window may or may not be initialized yet
+        if (isOpen) {
+            MoveWindow(
+                hWndMain,
+                window_X,
+                window_Y,
+                window_iWidth,
+                window_iHeight,
+                0);
+        }
+    }
+
+    static void gfxWindowUpdate(bool isOpen) {
+        RECT rect;
+        GetClientRect(hWndMain, &rect);
+
+        MoveWindow(
+            hWndMain,
+            window_X,
+            window_Y,
+            (2 * window_iWidth - rect.right),
+            (2 * window_iHeight - rect.bottom),
+            isOpen /* repaint if open */);
+    }
+
+    static void SetRes(int width, int height, int cdepth, int zdepth, bool parseArgs) {
+        bool forceCDepth, forceZDepth;
+        if (parseArgs)
+        {
+            if (datArgParser::Get("ref")) {
+                *useSoftware = 1;
+                *useReference = 1;
+            } else if (datArgParser::Get("blade") || datArgParser::Get("bladed")) {
+                *useSoftware = 1;
+                *useBlade = 1;
+            } else if (datArgParser::Get("swage")) {
+                *useSoftware = 1;
+                *useAgeSoftware = 1;
+            } else if (datArgParser::Get("sw")) {
+                *useSoftware = 1;
+            }
+
+            if (datArgParser::Get("sysmem")) {
+                *useSysMem = 1;
+            }
+            if (datArgParser::Get("triple")) {
+                *tripleBuffer = 1;
+            }
+
+            if (datArgParser::Get("nomultitexture") || datArgParser::Get("nomt")) {
+                *useMultiTexture = 0;
+            }
+            if (datArgParser::Get("novblank")) {
+                *novblank = 1;
+            }
+            if (datArgParser::Get("nohwtnl")) {
+                *enableHWTnL = 0;
+            }
+
+            if (datArgParser::Get("tex32")) {
+                *gfxTexture_Allow32 = 1;
+            }
+
+            if (datArgParser::Get("primary")) {
+                *useInterface = 0;
+            } else {
+                datArgParser::Get("display", 0, &useInterface);
+            }
+            if (datArgParser::Get("single")) {
+                *pageFlip = 0;
+            }
+
+            if (datArgParser::Get("window")) {
+                *inWindow = 1;
+            } else if (datArgParser::Get("max")) {
+                *isMaximized = 1;
+                *inWindow = 1;
+            } else if (datArgParser::Get("fs") || datArgParser::Get("fullscreen")) {
+                *inWindow = 0;
+            }
+
+            datArgParser::Get("width", 0, &width);
+            datArgParser::Get("height", 0, &height);
+
+            // this will take priority over bpp if set
+            forceCDepth = datArgParser::Get("cdepth", 0, &cdepth);
+            forceZDepth = datArgParser::Get("zdepth", 0, &zdepth);
+
+            // force bit-depth override
+            datArgParser::Get("bpp", 0, &window_bpp);
+            
+            if (isMaximized)
+            {
+                width = GetSystemMetrics(SM_CXFULLSCREEN);
+                height = GetSystemMetrics(SM_CYFULLSCREEN);
+
+                *window_Y = 0;
+                *window_X = 0;
+            }
+        }
+
+        *useSysMem = useSoftware;
+
+        *window_iWidth = width;
+        *window_iHeight = height;
         
+        *window_fWidth = (float)width;
+        *window_fHeight = (float)height;
+
+        // override?
+        if (window_bpp)
+        {
+            // don't make changes if user explictly
+            // called for cdepth/zdepth
+            if (!forceCDepth)
+                cdepth = window_bpp;
+            if (!forceZDepth)
+                zdepth = window_bpp;
+        }
+
+        *window_ColorDepth = cdepth;
+        *window_ZDepth = zdepth;
+
         LogFile::Format("[gfxPipeline::SetRes]: %dx%dx%dx%d\n", width, height, cdepth, zdepth);
 
-        $gfxPipeline_SetRes(width, height, cdepth, zdepth, true);
+        // was -tex32 override already specified?
+        // if not, check for 32-bit texture support
+        if (!tex32) {
+            *gfxTexture_Allow32 = (cdepth == 32);
+        }
+
+        LogFile::Format("[gfxPipeline::SetRes]: 32-bit textures are%s allowed.\n", (*gfxTexture_Allow32) ? "" : " NOT" );
+
+        if (lpDD)
+        {
+            if (inWindow)
+            {
+                gfxWindowMove(true);
+                gfxWindowUpdate(true);
+            } else {
+                DDSURFACEDESC2 ddSurfaceDesc;
+
+                ddSurfaceDesc.dwSize = 0x7C;
+
+                if ((lpDD->GetDisplayMode(&ddSurfaceDesc) != DD_OK)
+                    || (ddSurfaceDesc.dwWidth != window_iWidth)
+                    || (ddSurfaceDesc.dwHeight != window_iHeight))
+                {
+                    if (lpDD->SetDisplayMode(
+                        window_iWidth,
+                        window_iHeight,
+                        window_ColorDepth,
+                        0,
+                        0) != DD_OK) {
+                        LogFile::WriteLine("[gfxPipeline::SetRes]: SHIT! Failed to set the display mode!");
+                    }
+                }
+            }
+        }
+
+        *ioMouse_InvWidth = (1.0f / window_fWidth);
+        *ioMouse_InvHeight = (1.0f / window_fHeight);
     }
 
     static void gfxWindowCreate(LPCSTR lpWindowName) {
@@ -487,34 +712,24 @@ public:
 
         if (!ATOM_Class)
         {
-            WNDCLASSA wc = { NULL };
-
-            wc.style = CS_HREDRAW | CS_VREDRAW;
-            wc.lpfnWndProc = gfxWindowProc;
-            wc.cbClsExtra = 0;
-            wc.cbWndExtra = 0;
-            wc.hInstance = 0;
-            wc.hIcon = LoadIconA(GetModuleHandleA(NULL), IconID ? IconID : IDI_APPLICATION);
-            wc.hCursor = LoadCursorA(0, IDC_ARROW);
-            wc.hbrBackground = CreateSolidBrush(NULL);
-            wc.lpszMenuName = NULL;
-            wc.lpszClassName = "gfxWindow";
+            WNDCLASSA wc = { 
+                CS_HREDRAW | CS_VREDRAW,    /* style */
+                gfxWindowProc,              /* lpfnWndProc */
+                0,                          /* cbClsExtra */
+                0,                          /* cbWndExtra */
+                0,                          /* hInstance */
+                LoadIconA(GetModuleHandleA(NULL), IconID ? IconID : IDI_APPLICATION), 
+                                            /* hIcon */
+                LoadCursorA(0, IDC_ARROW),  /* hCursor */
+                CreateSolidBrush(NULL),     /* hbrBackground */
+                NULL,                       /* lpszMenuName */
+                "gfxWindow",                /* lpszClassName */
+            };
 
             *ATOM_Class = RegisterClassA(&wc);
         }
 
-        HDC hDC = GetDC(0);
-        int screenWidth  = GetDeviceCaps(hDC, HORZRES);
-        int screenHeight = GetDeviceCaps(hDC, VERTRES);
-        ReleaseDC(0, hDC);
-
-        if (windowX == -1)
-            *windowX = (screenWidth - windowWidth) / 2;
-
-        if (windowY == -1)
-            *windowY = (screenHeight - windowHeight) / 2;
-
-        DWORD dwStyle = NULL;
+        DWORD dwStyle = WS_POPUP;
 
         if (inWindow)
         {
@@ -522,27 +737,27 @@ public:
             {
                 dwStyle = WS_CHILD;
             }
-            else if (*hasBorder = !datArgParser::Get("noborder"))
-            {
-                dwStyle = WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
-            }
             else
             {
-                dwStyle = WS_POPUP;
+                if (*hasBorder = !datArgParser::Get("noborder"))
+                    dwStyle |= (WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
             }
         }
         else
         {
-            dwStyle = WS_POPUP | WS_SYSMENU;
+            dwStyle |= WS_SYSMENU;
         }
+
+        // update the position
+        gfxWindowMove(false);
 
         HWND hWND = CreateWindowExA(
             WS_EX_APPWINDOW,
             "gfxWindow",
             lpWindowName,
             dwStyle,
-            windowX,
-            windowY,
+            window_X,
+            window_Y,
             640,
             480,
             hWndParent,
@@ -553,19 +768,7 @@ public:
         *hWndMain = hWND;
 
         if (inWindow)
-        {
-            RECT rect;
-
-            GetClientRect(hWND, &rect);
-
-            MoveWindow(
-                hWND,
-                windowX,
-                windowY,
-                2 * windowWidth - rect.right,
-                2 * windowHeight - rect.bottom,
-                0);
-        }
+            gfxWindowUpdate(false);
 
         SetCursor(NULL);
         ShowCursor(FALSE);
@@ -580,22 +783,25 @@ public:
             0x4F136E,
         });
 
-        if (!datArgParser::Get("16bit")) {
-            InstallPatch("Creates the initial window in 32-bit mode.", { 32 }, {
-                0x401475,
-                0x401477,
-            });
-        }
+        InstallPatch("Enables extra arguments for gfxPipeline::SetArgs on startup.", { 1 }, {
+            0x401473,
+        });
 
-        InstallCallback("gfxPipeline::SetRes", "Enables extra resolution parameters (e.g. '-window')",
+        InstallCallback("gfxPipeline::SetRes", "Custom implementation allowing for more control of the window.",
             &SetRes, {
-                cbHook<CALL>(0x401482), // Main
+                cbHook<JMP>(0x4A8CE0),
             }
         );
 
         InstallCallback("gfxPipeline::gfxWindowCreate", "Custom implementation allowing for more control of the window.",
             &gfxWindowCreate, {
-                cbHook<CALL>(0x4A94AA),
+                cbHook<JMP>(0x4A8A90),
+            }
+        );
+
+        InstallCallback("gfxApplySettings", "Custom implementation allowing for more control of the graphical settings.",
+            &gfxApplySettings, {
+                cbHook<JMP>(0x4AC870),
             }
         );
 
@@ -604,6 +810,31 @@ public:
                 cbHook<CALL>(0x4AC4F9),
             }
         );
+
+        /*
+        So this might be a placebo effect, but damnit I want to believe it's working! :P
+        */
+
+        if (!datArgParser::Get("nomipfix"))
+        {
+            // mipfilter
+            InstallPatch("Mipmap filtering fix #1", { D3DTFP_POINT }, {
+                0x4B2046,
+                0x4B20EE,
+            });
+
+            // minfilter
+            InstallPatch("Mipmap filtering fix #2", { D3DTFN_ANISOTROPIC }, {
+                0x4B2032,
+                0x4B20DB,
+            });
+
+            // magfilter
+            InstallPatch("Mipmap filtering fix #3", { D3DTFG_ANISOTROPIC }, {
+                0x4B201E,
+                0x4B20C7,
+            });
+        }
     }
 };
 
@@ -1460,31 +1691,6 @@ private:
             0x468E31 + 3,
         });
         */
-
-        /*
-            So this might be a placebo effect, but damnit I want to believe it's working! :P
-        */
-
-        if (!datArgParser::Get("nomipfix"))
-        {
-            // mipfilter
-            InstallPatch("Mipmap filtering fix #1", { D3DTFP_POINT }, {
-                0x4B2046,
-                0x4B20EE,
-            });
-
-            // minfilter
-            InstallPatch("Mipmap filtering fix #2", { D3DTFN_ANISOTROPIC }, {
-                0x4B2032,
-                0x4B20DB,
-            });
-
-            // magfilter
-            InstallPatch("Mipmap filtering fix #3", { D3DTFG_ANISOTROPIC }, {
-                0x4B201E,
-                0x4B20C7,
-            });
-        }
     }
 public:
     static void Initialize(int argc, char **argv) {
