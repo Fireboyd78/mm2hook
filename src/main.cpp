@@ -158,14 +158,14 @@ AGEHook<0x6830F0>::Type<ATOM> ATOM_Class;
 AGEHook<0x683108>::Type<LPCSTR> IconID;
 
 AGEHook<0x5CA3EC>::Type<bool> pageFlip;
-AGEHook<0x5CA3ED>::Type<BOOL> hasBorder;
+AGEHook<0x5CA3ED>::Type<bool> hasBorder;
 AGEHook<0x5CA3EE>::Type<bool> useMultiTexture;
 AGEHook<0x5CA664>::Type<bool> enableHWTnL;
 
 AGEHook<0x68451D>::Type<bool> novblank;
 
-AGEHook<0x6830D0>::Type<BOOL> inWindow;
-AGEHook<0x6830D1>::Type<BOOL> isMaximized;
+AGEHook<0x6830D0>::Type<bool> inWindow;
+AGEHook<0x6830D1>::Type<bool> isMaximized;
 AGEHook<0x6830D2>::Type<bool> tripleBuffer;
 AGEHook<0x6830D3>::Type<bool> useReference;
 AGEHook<0x6830D4>::Type<bool> useSoftware;
