@@ -1589,7 +1589,7 @@ private:
         InstallHandler<sdlPage16Handler>("sdlPage16");
         InstallHandler<vglHandler>("VGL drawing");
 
-        InstallHandler<gfxImageHandler>("gfxImage Handler");
+        InstallHandler<gfxImageHandler>("gfxImage");
     }
 
     static void InstallPatches() {
