@@ -606,7 +606,6 @@ public:
 
         // We don't want to set the width/height if we are in a menu, it just fucks it up
         if (*splashScreen != 0) {
-            // The "max" arg doesn't
             if (datArgParser::Get("max")) {
                 HDC hDC = GetDC(NULL);
                 width  = GetDeviceCaps(hDC, HORZRES);
