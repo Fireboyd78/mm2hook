@@ -587,10 +587,6 @@ public:
 
         if (datArgParser::Get("window") || datArgParser::Get("windowed")) {
             *inWindow = 1;
-
-            if (datArgParser::Get("noborder") || datArgParser::Get("borderless")) {
-                *hasBorder = false;
-            }
         } else if (datArgParser::Get("fs") || datArgParser::Get("fullscreen")) {
             *inWindow = 0;
         }
@@ -701,10 +697,9 @@ public:
             {
                 dwStyle = WS_CHILD;
             }
-            else
+            else if (*hasBorder = !(datArgParser::Get("noborder") || datArgParser::Get("borderless")))
             {
-                if (*hasBorder)
-                    dwStyle |= (WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
+                dwStyle |= (WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
             }
         }
         else
