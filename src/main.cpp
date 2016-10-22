@@ -748,9 +748,10 @@ public:
             0x4F136E,
         });
 
-        InstallPatch("Enables extra arguments for gfxPipeline::SetArgs on startup.", { 1 }, {
-            0x401473,
-        });
+        // No longer needed with the custom SetRes function
+        // InstallPatch("Enables extra arguments for gfxPipeline::SetArgs on startup.", { 1 }, {
+        //     0x401473,
+        // });
 
         InstallCallback("gfxPipeline::SetRes", "Custom implementation allowing for more control of the window.",
             &SetRes, {
