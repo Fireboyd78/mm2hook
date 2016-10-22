@@ -79,6 +79,8 @@ AGEHook<0x448090>::Func<void> $sdlCommon_UpdateLighting;
 AGEHook<0x448330>::Func<void> $sdlPage16_Draw;
 AGEHook<0x450880>::Func<unsigned int> $sdlPage16_GetShadedColor;
 
+AGEHook<0x4AEDC0>::Func<void> $gfxImage_Scale;
+
 /*
     TODO: Move VGL stuff to a separate file?
 */
@@ -860,6 +862,24 @@ public:
     }
 };
 
+class gfxImageHandler {
+public:
+    void Scale(int width, int height) {
+        width  = *window_iWidth;
+        height = *window_iHeight;
+
+        $gfxImage_Scale(this, width, height);
+    }
+
+    static void Install() {
+        InstallCallback("gfxImage::Scale", "Fixes loading screen image scaling",
+            &Scale, {
+                cbHook<CALL>(0x401C75),
+            }
+        );
+    }
+};
+
 class mmDashViewHandler {
 public:
     void UpdateCS() {
@@ -1630,6 +1650,8 @@ private:
 
         InstallHandler<sdlPage16Handler>("sdlPage16");
         InstallHandler<vglHandler>("VGL drawing");
+
+        InstallHandler<gfxImageHandler>("gfxImage Handler");
     }
 
     static void InstallPatches() {
