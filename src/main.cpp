@@ -812,31 +812,6 @@ public:
                 cbHook<CALL>(0x4AC4F9),
             }
         );
-
-        /*
-        So this might be a placebo effect, but damnit I want to believe it's working! :P
-        */
-
-        if (!datArgParser::Get("nomipfix"))
-        {
-            // mipfilter
-            InstallPatch("Mipmap filtering fix #1", { D3DTFP_POINT }, {
-                0x4B2046,
-                0x4B20EE,
-            });
-
-            // minfilter
-            InstallPatch("Mipmap filtering fix #2", { D3DTFN_ANISOTROPIC }, {
-                0x4B2032,
-                0x4B20DB,
-            });
-
-            // magfilter
-            InstallPatch("Mipmap filtering fix #3", { D3DTFG_ANISOTROPIC }, {
-                0x4B201E,
-                0x4B20C7,
-            });
-        }
     }
 };
 
