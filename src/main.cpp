@@ -596,7 +596,7 @@ public:
         }
 
         int bitDepth = 0;
-        if (datArgParser::Get("bitdepth", 0, &bitDepth)) {
+        if (datArgParser::Get("bpp", 0, &bitDepth) || datArgParser::Get("bitdepth", 0, &bitDepth)) {
             cdepth = bitDepth;
             zdepth = bitDepth;
         } else {
