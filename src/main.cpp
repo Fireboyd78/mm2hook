@@ -79,6 +79,8 @@ AGEHook<0x448090>::Func<void> $sdlCommon_UpdateLighting;
 AGEHook<0x448330>::Func<void> $sdlPage16_Draw;
 AGEHook<0x450880>::Func<unsigned int> $sdlPage16_GetShadedColor;
 
+AGEHook<0x4AEDC0>::Func<void> $gfxImage_Scale;
+
 /*
     TODO: Move VGL stuff to a separate file?
 */
@@ -156,14 +158,14 @@ AGEHook<0x6830F0>::Type<ATOM> ATOM_Class;
 AGEHook<0x683108>::Type<LPCSTR> IconID;
 
 AGEHook<0x5CA3EC>::Type<bool> pageFlip;
-AGEHook<0x5CA3ED>::Type<BOOL> hasBorder;
+AGEHook<0x5CA3ED>::Type<bool> hasBorder;
 AGEHook<0x5CA3EE>::Type<bool> useMultiTexture;
 AGEHook<0x5CA664>::Type<bool> enableHWTnL;
 
 AGEHook<0x68451D>::Type<bool> novblank;
 
-AGEHook<0x6830D0>::Type<BOOL> inWindow;
-AGEHook<0x6830D1>::Type<BOOL> isMaximized;
+AGEHook<0x6830D0>::Type<bool> inWindow;
+AGEHook<0x6830D1>::Type<bool> isMaximized;
 AGEHook<0x6830D2>::Type<bool> tripleBuffer;
 AGEHook<0x6830D3>::Type<bool> useReference;
 AGEHook<0x6830D4>::Type<bool> useSoftware;
@@ -476,38 +478,17 @@ public:
     }
 };
 
-bool tex32 = false; /* result of checking for -tex32 argument */
-int window_bpp = 0; /* will use default cdepth/zdepth if set to 0 */
-
 class gfxPipelineHandler {
 public:
     static void gfxApplySettings(void) {
-        auto gfxInterface = &gfxInterfaces[gfxInterfaceChoice];
+        auto gfxInterface   = &gfxInterfaces[gfxInterfaceChoice];
 
         auto deviceType = gfxInterface->DeviceType;
 
         *enableHWTnL = (deviceType == gfxDeviceType::HardwareWithTnL);
-        *useBlade = (*useSoftware = (deviceType == gfxDeviceType::Software));
+        *useBlade    = (*useSoftware = (deviceType == gfxDeviceType::Software));
 
         *useInterface = gfxInterfaceChoice;
-
-        if (gfxInterface->AcceptableDepths) {
-            auto depthFlags = gfxInterface->AcceptableDepths;
-
-            auto bpp = (depthFlags & gfxDepthFlags::Depth32) ? 32
-                : (depthFlags & gfxDepthFlags::Depth24) ? 24
-                : (depthFlags & gfxDepthFlags::Depth16) ? 16 : 0;
-
-            if (bpp) {
-                LogFile::Format("gfxApplySettings: Found acceptable bit-depth (%d bpp)\n", bpp);
-
-                // found a valid bit-depth, so set it
-                window_bpp = bpp;
-            }
-        }
-
-        if (!window_bpp)
-            LogFile::WriteLine("gfxApplySettings: Could not find acceptable bit-depth, defaults will be used.");
     }
 
     static LRESULT APIENTRY gfxWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -531,10 +512,10 @@ public:
     }
 
     static void gfxWindowMove(bool isOpen) {
-        HDC hDeviceCaps = GetDC(NULL);
-        int screenWidth = GetDeviceCaps(hDeviceCaps, HORZRES);
-        int screenHeight = GetDeviceCaps(hDeviceCaps, VERTRES);
-        ReleaseDC(0, hDeviceCaps);
+        HDC hDC = GetDC(NULL);
+        int screenWidth  = GetDeviceCaps(hDC, HORZRES);
+        int screenHeight = GetDeviceCaps(hDC, VERTRES);
+        ReleaseDC(0, hDC);
 
         *window_X = (screenWidth - window_iWidth) / 2;
         *window_Y = (screenHeight - window_iHeight) / 2;
@@ -565,112 +546,91 @@ public:
     }
 
     static void SetRes(int width, int height, int cdepth, int zdepth, bool parseArgs) {
-        bool forceCDepth, forceZDepth;
-        if (parseArgs)
-        {
-            if (datArgParser::Get("ref")) {
-                *useSoftware = 1;
-                *useReference = 1;
-            } else if (datArgParser::Get("blade") || datArgParser::Get("bladed")) {
-                *useSoftware = 1;
-                *useBlade = 1;
-            } else if (datArgParser::Get("swage")) {
-                *useSoftware = 1;
-                *useAgeSoftware = 1;
-            } else if (datArgParser::Get("sw")) {
-                *useSoftware = 1;
-            }
+        if (datArgParser::Get("ref")) {
+            *useSoftware    = 1;
+            *useReference   = 1;
+        } else if (datArgParser::Get("blade") || datArgParser::Get("bladed")) {
+            *useSoftware    = 1;
+            *useBlade       = 1;
+        } else if (datArgParser::Get("swage")) {
+            *useSoftware    = 1;
+            *useAgeSoftware = 1;
+        } else if (datArgParser::Get("sw")) {
+            *useSoftware    = 1;
+        }
 
-            if (datArgParser::Get("sysmem")) {
-                *useSysMem = 1;
-            }
-            if (datArgParser::Get("triple")) {
-                *tripleBuffer = 1;
-            }
+        if (datArgParser::Get("sysmem")) {
+            *useSysMem = 1;
+        }
+        if (datArgParser::Get("triple")) {
+            *tripleBuffer = 1;
+        }
 
-            if (datArgParser::Get("nomultitexture") || datArgParser::Get("nomt")) {
-                *useMultiTexture = 0;
-            }
-            if (datArgParser::Get("novblank")) {
-                *novblank = 1;
-            }
-            if (datArgParser::Get("nohwtnl")) {
-                *enableHWTnL = 0;
-            }
+        if (datArgParser::Get("nomultitexture") || datArgParser::Get("nomt")) {
+            *useMultiTexture = 0;
+        }
+        if (datArgParser::Get("novblank") || datArgParser::Get("novsync")) {
+            *novblank = 1;
+        }
+        if (datArgParser::Get("nohwtnl")) {
+            *enableHWTnL = 0;
+        }
 
-            if (datArgParser::Get("tex32")) {
-                *gfxTexture_Allow32 = 1;
-            }
+        if (datArgParser::Get("primary")) {
+            *useInterface = 0;
+        } else {
+            datArgParser::Get("display", 0, &useInterface);
+        }
+        if (datArgParser::Get("single")) {
+            *pageFlip = 0;
+        }
 
-            if (datArgParser::Get("primary")) {
-                *useInterface = 0;
+        if (datArgParser::Get("window") || datArgParser::Get("windowed")) {
+            *inWindow = 1;
+        } else if (datArgParser::Get("fs") || datArgParser::Get("fullscreen")) {
+            *inWindow = 0;
+        }
+
+        int bitDepth = 0;
+        if (datArgParser::Get("bpp", 0, &bitDepth) || datArgParser::Get("bitdepth", 0, &bitDepth)) {
+            cdepth = bitDepth;
+            zdepth = bitDepth;
+        } else {
+            datArgParser::Get("cdepth", 0, &cdepth);
+            datArgParser::Get("zdepth", 0, &zdepth);
+        }
+
+        // We don't want to set the width/height if we are in a menu, it just fucks it up
+        if (*splashScreen != 0) {
+            if (datArgParser::Get("max")) {
+                HDC hDC = GetDC(NULL);
+                width  = GetDeviceCaps(hDC, HORZRES);
+                height = GetDeviceCaps(hDC, VERTRES);
+                ReleaseDC(0, hDC);
             } else {
-                datArgParser::Get("display", 0, &useInterface);
-            }
-            if (datArgParser::Get("single")) {
-                *pageFlip = 0;
+                datArgParser::Get("width",  0, &width);
+                datArgParser::Get("height", 0, &height);
             }
 
-            if (datArgParser::Get("window")) {
-                *inWindow = 1;
-            } else if (datArgParser::Get("max")) {
-                *isMaximized = 1;
-                *inWindow = 1;
-            } else if (datArgParser::Get("fs") || datArgParser::Get("fullscreen")) {
-                *inWindow = 0;
-            }
-
-            datArgParser::Get("width", 0, &width);
-            datArgParser::Get("height", 0, &height);
-
-            // this will take priority over bpp if set
-            forceCDepth = datArgParser::Get("cdepth", 0, &cdepth);
-            forceZDepth = datArgParser::Get("zdepth", 0, &zdepth);
-
-            // force bit-depth override
-            datArgParser::Get("bpp", 0, &window_bpp);
-            
-            if (isMaximized)
-            {
-                width = GetSystemMetrics(SM_CXFULLSCREEN);
-                height = GetSystemMetrics(SM_CYFULLSCREEN);
-
-                *window_Y = 0;
-                *window_X = 0;
-            }
+            // datArgParser::Get("width",  0, &width);
+            // datArgParser::Get("height", 0, &height);
         }
 
         *useSysMem = useSoftware;
 
-        *window_iWidth = width;
+        *window_iWidth  = width;
         *window_iHeight = height;
-        
-        *window_fWidth = (float)width;
-        *window_fHeight = (float)height;
 
-        // override?
-        if (window_bpp)
-        {
-            // don't make changes if user explictly
-            // called for cdepth/zdepth
-            if (!forceCDepth)
-                cdepth = window_bpp;
-            if (!forceZDepth)
-                zdepth = window_bpp;
-        }
+        *window_fWidth  = float(width);
+        *window_fHeight = float(height);
 
         *window_ColorDepth = cdepth;
-        *window_ZDepth = zdepth;
+        *window_ZDepth     = zdepth;
 
+        *gfxTexture_Allow32 = (cdepth == 32);
+
+        LogFile::Format("[gfxPipeline::SetRes]: 32-bit textures are%s allowed.\n", (*gfxTexture_Allow32) ? "" : "n't" );
         LogFile::Format("[gfxPipeline::SetRes]: %dx%dx%dx%d\n", width, height, cdepth, zdepth);
-
-        // was -tex32 override already specified?
-        // if not, check for 32-bit texture support
-        if (!tex32) {
-            *gfxTexture_Allow32 = (cdepth == 32);
-        }
-
-        LogFile::Format("[gfxPipeline::SetRes]: 32-bit textures are%s allowed.\n", (*gfxTexture_Allow32) ? "" : " NOT" );
 
         if (lpDD)
         {
@@ -699,7 +659,7 @@ public:
             }
         }
 
-        *ioMouse_InvWidth = (1.0f / window_fWidth);
+        *ioMouse_InvWidth  = (1.0f / window_fWidth);
         *ioMouse_InvHeight = (1.0f / window_fHeight);
     }
 
@@ -712,13 +672,13 @@ public:
 
         if (!ATOM_Class)
         {
-            WNDCLASSA wc = { 
+            WNDCLASSA wc = {
                 CS_HREDRAW | CS_VREDRAW,    /* style */
                 gfxWindowProc,              /* lpfnWndProc */
                 0,                          /* cbClsExtra */
                 0,                          /* cbWndExtra */
                 0,                          /* hInstance */
-                LoadIconA(GetModuleHandleA(NULL), IconID ? IconID : IDI_APPLICATION), 
+                LoadIconA(GetModuleHandleA(NULL), IconID ? IconID : IDI_APPLICATION),
                                             /* hIcon */
                 LoadCursorA(0, IDC_ARROW),  /* hCursor */
                 CreateSolidBrush(NULL),     /* hbrBackground */
@@ -737,10 +697,9 @@ public:
             {
                 dwStyle = WS_CHILD;
             }
-            else
+            else if (*hasBorder = !(datArgParser::Get("noborder") || datArgParser::Get("borderless")))
             {
-                if (*hasBorder = !datArgParser::Get("noborder"))
-                    dwStyle |= (WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
+                dwStyle |= (WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
             }
         }
         else
@@ -783,9 +742,10 @@ public:
             0x4F136E,
         });
 
-        InstallPatch("Enables extra arguments for gfxPipeline::SetArgs on startup.", { 1 }, {
-            0x401473,
-        });
+        // No longer needed with the custom SetRes function
+        // InstallPatch("Enables extra arguments for gfxPipeline::SetArgs on startup.", { 1 }, {
+        //     0x401473,
+        // });
 
         InstallCallback("gfxPipeline::SetRes", "Custom implementation allowing for more control of the window.",
             &SetRes, {
@@ -810,31 +770,6 @@ public:
                 cbHook<CALL>(0x4AC4F9),
             }
         );
-
-        /*
-        So this might be a placebo effect, but damnit I want to believe it's working! :P
-        */
-
-        if (!datArgParser::Get("nomipfix"))
-        {
-            // mipfilter
-            InstallPatch("Mipmap filtering fix #1", { D3DTFP_POINT }, {
-                0x4B2046,
-                0x4B20EE,
-            });
-
-            // minfilter
-            InstallPatch("Mipmap filtering fix #2", { D3DTFN_ANISOTROPIC }, {
-                0x4B2032,
-                0x4B20DB,
-            });
-
-            // magfilter
-            InstallPatch("Mipmap filtering fix #3", { D3DTFG_ANISOTROPIC }, {
-                0x4B201E,
-                0x4B20C7,
-            });
-        }
     }
 };
 
@@ -855,6 +790,24 @@ public:
         InstallCallback("memSafeHeap::Init", "Adds '-heapsize' parameter that takes a size in megabytes. Defaults to 128MB.",
             &Init, {
                 cbHook<CALL>(0x4015DD),
+            }
+        );
+    }
+};
+
+class gfxImageHandler {
+public:
+    void Scale(int width, int height) {
+        width  = *window_iWidth;
+        height = *window_iHeight;
+
+        $gfxImage_Scale(this, width, height);
+    }
+
+    static void Install() {
+        InstallCallback("gfxImage::Scale", "Fixes loading screen image scaling",
+            &Scale, {
+                cbHook<CALL>(0x401C75),
             }
         );
     }
@@ -907,7 +860,7 @@ public:
         // TODO: Redo SetPrimaryBufferFormat to set sampleSize? (see 0x5A5860 -void __thiscall DirSnd::SetPrimaryBufferFormat(mmDirSnd *this, int sampleRate, bool allowStero))
         return mmDirSnd::Init(48000, enableStero, a4, volume, deviceName, enable3D);
     }
-    
+
     static void Install() {
         InstallCallback("mmDirSnd::Init", "Fixes no sound issue on startup.",
             &Init, {
@@ -1403,7 +1356,7 @@ public:
             {
                 lpD3D->EnumDevices($DeviceCallback, gfxInterface);
                 lpD3D->Release();
-                
+
                 *lpD3D = nullptr;
             }
 
@@ -1604,7 +1557,7 @@ private:
 
         InstallHandler<gfxPipelineHandler>("gfxPipeline");
         InstallHandler<memSafeHeapHandler>("memSafeHeap");
-        
+
         /*
             Initialize the rest of the handlers
             Order doesn't really matter, just whatever looks neat
@@ -1620,7 +1573,7 @@ private:
         InstallHandler<cityLevelHandler>("cityLevel");
 
         InstallHandler<BridgeFerryHandler>("gizBridge/gizFerry");
-        
+
         InstallHandler<mmDashViewHandler>("mmDashView");
         InstallHandler<mmDirSndHandler>("mmDirSnd");
         InstallHandler<mmGameHandler>("mmGame");
@@ -1630,6 +1583,8 @@ private:
 
         InstallHandler<sdlPage16Handler>("sdlPage16");
         InstallHandler<vglHandler>("VGL drawing");
+
+        InstallHandler<gfxImageHandler>("gfxImage");
     }
 
     static void InstallPatches() {
