@@ -957,6 +957,8 @@ public:
     // this MUST clean up the stack, hence the stdcall
     static void __stdcall SetAttributePointer(LPVOID lpBlock) {
         attributePtr = lpBlock;
+
+        short *attr = (short*)sdlPage16Handler::attributePtr;
     }
 
     void Draw(int p1, unsigned int p2) {
@@ -1024,58 +1026,69 @@ private:
     static unsigned int CalculateShadedColor(gfxDrawMode drawMode, unsigned int color) {
         if (sdlPage16Handler::blockPtr != NULL)
         {
-            static ColorARGB sdlTunnelColors[] = {
-                // debug colors
-                { 0, 0, 255, 255 },
-                { 0, 255, 0, 255 },
-                { 255, 0, 0, 255 },
+            // fullbright
+            static const ColorARGB sdlTunnelColor = { 255, 255, 255, 255 };
 
-                // fullbright
-                { 255, 255, 255, 255 },
-            };
-
-            // we can finally check for attributes...
+            // we can finally check for attributes!
             short *attr = (short*)sdlPage16Handler::attributePtr;
 
             int type = ((*attr >> 3) & 0xF);
-            int subtype = *attr & 0x7;
+            int subtype = (*attr & 0x7);
 
-            // best way to check for tunnels
-            // doesn't seem to have any repercussions (yet)
+            /*
+                Due to limitations in Angel's SDL format,
+                this is the best way we can find "tunnels".
+                
+                It's not guaranteed to be 100% accurate,
+                but it works pretty well for what we've got.
+            */
             if (type == 9) {
-                if (subtype == 0){
-                    int flags = attr[2];
-                    int unk = attr[5];
+                // flag location varies on subtype
+                // there's a subtype 2 but it's never (?) used
+                int flags = (subtype == 0) ? attr[2]
+                    : (subtype == 3) ? attr[1] : 0;
 
-                    if (!(flags & 0x4)) {
-                        if (!(flags & 0x4000)) {
-                            // not culled
-                            insideTunnel = true;
-                        } else {
-                            // culled
-                            insideTunnel = false;
+                // do we have a roof?
+                // note: junctions can't have curved roofs,
+                // but this is a quicker way of doing things
+                if ((flags & 0x8) || (flags & 0x100)) {
+                    /* junction */
+                    if (subtype == 0) {
+                        int wallVisInfos = attr[1];
+                        int unk = attr[5];
+
+                        for (int i = 0; i < wallVisInfos; i++) {
+                            int info = attr[6 + i];
+
+                            if (info > 0) {
+                                // found a wall!
+                                // we're probably in a tunnel :)
+                                insideTunnel = true;
+                                break;
+                            }
                         }
                     }
-                }
-                if (subtype == 3) {
-                    int flags = attr[1];
-
-                    if ((flags > 10) && !(flags & 0x4)) {
-                        if (!(flags & 0x4000)) {
-                            // not culled
-                            insideTunnel = true;
-                        }
-                    } else {
-                        // unlikely to be a tunnel
+                    /* road */
+                    else if (subtype == 3) {
+                        // does tunnel have walls?
+                        insideTunnel = (flags & 0x3) ? true : false;
+                    }
+                    /* unknown */
+                    else {
+                        // probably not a tunnel
                         insideTunnel = false;
                     }
+                } else {
+                    // tunnels usually have roofs...
+                    // so we're probably not in a tunnel
+                    insideTunnel = false;
                 }
             }
 
             // use fullbright inside tunnels instead of the calculated colors below
             // will still preserve shading as well
             if (insideTunnel)
-                return $sdlPage16_GetShadedColor(color, sdlTunnelColors[3].color);
+                return $sdlPage16_GetShadedColor(color, sdlTunnelColor.color);
         }
 
         auto timeWeather = *timeWeathers + timeOfDay;
@@ -1137,6 +1150,7 @@ public:
         };
 
         std::initializer_list<vgl_pair> vglCBs = {
+            /* ------------ sdlPage16::Draw ------------- */
             { 0x448424, 0x4485D3 }, { 0x448697, 0x448B82 }, { 0x448903, 0x448D8C }, { 0x448BFD, 0x448FB7 },
             { 0x448DE4, 0x449219 }, { 0x44902A, 0x449480 }, { 0x4492A4, 0x44963E }, { 0x4494C3, 0x44983C },
             { 0x4496A5, 0x4499D4 }, { 0x44986B, 0x449BAA }, { 0x449A13, 0x449D42 }, { 0x449BD9, 0x449F5A },
@@ -1152,7 +1166,7 @@ public:
             { 0x44EBA5, 0x44F0B9 }, { 0x44EFD0, 0x44F316 }, { 0x44F0DC, 0x44F64C }, { 0x44F588, 0x44FB9D },
             { 0x44F7E2, 0x44FD30 }, { 0x44FC1E, 0x44FE4E }, { 0x44FDD4, 0x44FFB3 }, { 0x44FF10, 0x450162 },
             { 0x450085, 0x450390 }, { 0x450269, 0x45078C },
-            // ---------------------
+            /* ------------------------------------------- */
             { 0x443B9D, 0x443DCC }, // dgRoadDecalInstance
             { 0x57AC4A, 0x57AD41 }, // ped LODs
         };
