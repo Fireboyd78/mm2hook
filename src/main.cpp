@@ -360,6 +360,29 @@ public:
     void PostUpdate() {
         // update the SDL lighting
         $sdlCommon_UpdateLighting();
+
+        // update our shaded lighting
+        // TODO: fix lighting quality not being taken into account (harder than it sounds)
+        auto timeWeather = *timeWeathers + timeOfDay;
+
+        vglKeyColor = addPitch(&timeWeather->KeyColor, timeWeather->KeyPitch);
+        vglFill1Color = addPitch(&timeWeather->Fill1Color, timeWeather->Fill1Pitch);
+        vglFill2Color = addPitch(&timeWeather->Fill2Color, timeWeather->Fill2Pitch);
+
+        // convert the ambient to a vector3 for better accuracy
+        vglAmbient = intToColor(timeWeather->Ambient);
+
+        // compute le values
+        vglShadedColor = {
+            normalize(vglKeyColor.X + vglFill1Color.X + vglFill2Color.X + vglAmbient.X),
+            normalize(vglKeyColor.Y + vglFill1Color.Y + vglFill2Color.Y + vglAmbient.Y),
+            normalize(vglKeyColor.Z + vglFill1Color.Z + vglFill2Color.Z + vglAmbient.Z),
+        };
+
+        vglResultColor.r = byte(vglShadedColor.X * 255.999f);
+        vglResultColor.g = byte(vglShadedColor.Y * 255.999f);
+        vglResultColor.b = byte(vglShadedColor.Z * 255.999f);
+        vglResultColor.a = 255;
     }
 
     // TODO: Factor in 'Visibility' level somehow?
@@ -1019,11 +1042,9 @@ public:
 LPVOID sdlPage16Handler::blockPtr;
 LPVOID sdlPage16Handler::attributePtr;
 
-bool bVGLShadingDebug = false;
-
 class vglHandler {
 private:
-    static unsigned int CalculateShadedColor(gfxDrawMode drawMode, unsigned int color) {
+    static unsigned int GetAdjustedColor(gfxDrawMode drawMode, unsigned int color) {
         if (sdlPage16Handler::blockPtr != NULL)
         {
             // fullbright
@@ -1091,27 +1112,6 @@ private:
                 return $sdlPage16_GetShadedColor(color, sdlTunnelColor.color);
         }
 
-        auto timeWeather = *timeWeathers + timeOfDay;
-
-        vglKeyColor = addPitch(&timeWeather->KeyColor, timeWeather->KeyPitch);
-        vglFill1Color = addPitch(&timeWeather->Fill1Color, timeWeather->Fill1Pitch);
-        vglFill2Color = addPitch(&timeWeather->Fill2Color, timeWeather->Fill2Pitch);
-
-        // convert the ambient to a vector3 for better accuracy
-        vglAmbient = intToColor(timeWeather->Ambient);
-
-        // compute le values
-        vglShadedColor = {
-            normalize(vglKeyColor.X + vglFill1Color.X + vglFill2Color.X + vglAmbient.X),
-            normalize(vglKeyColor.Y + vglFill1Color.Y + vglFill2Color.Y + vglAmbient.Y),
-            normalize(vglKeyColor.Z + vglFill1Color.Z + vglFill2Color.Z + vglAmbient.Z),
-        };
-
-        vglResultColor.r = byte(vglShadedColor.X * 255.999f);
-        vglResultColor.g = byte(vglShadedColor.Y * 255.999f);
-        vglResultColor.b = byte(vglShadedColor.Z * 255.999f);
-        vglResultColor.a = 255;
-
         return $sdlPage16_GetShadedColor(color, vglResultColor.color);
     }
 public:
@@ -1119,8 +1119,7 @@ public:
         // Save current vgl color
         vglColor = *vglCurrentColor;
 
-        // calculate a nice shaded color ;)
-        vglCalculatedColor = CalculateShadedColor(drawMode, vglColor);
+        vglCalculatedColor = GetAdjustedColor(drawMode, vglColor);
         *vglCurrentColor = vglCalculatedColor;
 
         $vglBegin(drawMode, p1);
