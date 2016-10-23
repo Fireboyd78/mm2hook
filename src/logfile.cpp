@@ -63,14 +63,7 @@ void LogFileStream::Write(LPCSTR str)
     int strLen = strlen(str);
 
     if (strLen > 0)
-    {
         fputs(str, m_file);
-
-#ifndef LOGFILE_NO_DEBUG
-        // also output a debug message
-        OutputDebugStringA(str);
-#endif
-    }
 }
 
 void LogFileStream::WriteLine(LPCSTR str)
