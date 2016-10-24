@@ -63,6 +63,8 @@ AGEHook<0x550EF0>::Func<void> $aiPoliceForce_Reset;
 
 AGEHook<0x4A3370>::Func<void> $asLinearCS_Update;
 
+AGEHook<0x445820>::Func<void> $cityLevel_DrawRooms;
+
 AGEHook<0x4415E0>::Func<void> $dgBangerInstance_Draw;
 
 AGEHook<0x4ABE00>::Func<bool> $gfxAutoDetect;
@@ -357,8 +359,20 @@ public:
     }
 };
 
+// aaron wanted this so badly
+int city_numRooms = 0;
+int city_currentRoom = 0;
+
 class cityLevelHandler {
 public:
+    void DrawRooms(const LPVOID viewport, unsigned int p2, LPVOID roomRecs, int numRooms)
+    {
+        city_numRooms = numRooms;
+        city_currentRoom = 0;
+
+        $cityLevel_DrawRooms(this, viewport, p2, roomRecs, numRooms);
+    }
+
     // jumped to at the end of cityLevel::Update
     void PostUpdate() {
         // update the SDL lighting
@@ -453,6 +467,12 @@ public:
         InstallVTableHook("cityLevel::SetObjectDetail", &SetObjectDetail, {
             0x5B16E0
         });
+
+        InstallCallback("cityLevel::DrawRooms", "Custom implementation to allow for getting the number of rooms.",
+            &DrawRooms, {
+                cbHook<CALL>(0x445798), // cityLevel::Draw
+            }
+        );
 
         InstallCallback("cityLevel::Update", "Adds PostUpdate handler.",
             &PostUpdate, {
@@ -995,8 +1015,6 @@ public:
     // this MUST clean up the stack, hence the stdcall
     static void __stdcall SetAttributePointer(LPVOID lpBlock) {
         attributePtr = lpBlock;
-
-        short *attr = (short*)sdlPage16Handler::attributePtr;
     }
 
     void Draw(int p1, unsigned int p2) {
@@ -1009,6 +1027,20 @@ public:
 
         // so hacky
         insideTunnel = false;
+
+        // move to the next room
+        ++city_currentRoom;
+    }
+
+    static void InvalidCmd(LPCSTR, int attr, int subtype)
+    {
+        char buf[256] = { NULL };
+        int idx = 0;
+
+        for (int i = 0; i < 16; i++)
+            idx += sprintf(&buf[idx], "%02X ", *((byte*)attributePtr + i));
+
+        Quitf("Invalid cmd %d (%d) : [%d / %d] : %x\ndump: %s", attr, subtype, city_currentRoom, city_numRooms, attributePtr, buf);
     }
 
     static void Install() {
@@ -1043,6 +1075,12 @@ public:
         InstallCallback("sdlPage16::Draw", "SetAttributePointer implementation.",
             &SetAttributePointer, {
                 cbHook<CALL>(0x448372), // 448371 + 1, after our 'push edi' instruction (SEE ABOVE)
+            }
+        );
+
+        InstallCallback("sdlPage16::Draw", "Hooks a call to Quitf to print out more detailed information.",
+            &InvalidCmd, {
+                cbHook<CALL>(0x4507B3),
             }
         );
 
