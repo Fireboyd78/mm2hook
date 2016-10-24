@@ -149,6 +149,9 @@ AGEHook<0x6844D8>::Type<int> gfxMaxScreenHeight;
 
 AGEHook<0x684D36>::Type<bool> gfxTexture_Allow32;
 
+AGEHook<0x6B165C>::Type<int> gfxTexQuality;
+AGEHook<0x6857D0>::Type<int> gfxTexReduceSize;
+
 AGEHook<0x682FA0>::Type<HWND> hWndParent;
 AGEHook<0x6830B8>::Type<HWND> hWndMain;
 
@@ -760,15 +763,21 @@ public:
         SetFocus(hWND);
     }
 
+    static void gfxSetTexReduceSize(int) {
+        static const int gfxReduceSizes[4] = {
+            64,     // Low
+            128,    // Medium
+            256,    // High
+            0,      // Very High (unlimited)
+        };
+
+        *gfxTexReduceSize = gfxReduceSizes[*gfxTexQuality];
+    }
+
     static void Install() {
         InstallPatch("Enables pointer in windowed mode.", { 0x90, 0x90 }, {
             0x4F136E,
         });
-
-        // No longer needed with the custom SetRes function
-        // InstallPatch("Enables extra arguments for gfxPipeline::SetArgs on startup.", { 1 }, {
-        //     0x401473,
-        // });
 
         InstallCallback("gfxPipeline::SetRes", "Custom implementation allowing for more control of the window.",
             &SetRes, {
@@ -785,6 +794,12 @@ public:
         InstallCallback("gfxApplySettings", "Custom implementation allowing for more control of the graphical settings.",
             &gfxApplySettings, {
                 cbHook<JMP>(0x4AC870),
+            }
+        );
+
+        InstallCallback("gfxSetTexReduceSize", "Allows for unlimited texture sizes when texture quality is Very High.",
+            &gfxSetTexReduceSize, {
+                cbHook<JMP>(0x4B3020),
             }
         );
 
