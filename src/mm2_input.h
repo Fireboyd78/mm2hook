@@ -51,4 +51,9 @@ namespace MM2
             $Command(command);
         };
     };
+
+    static AGEHook<0x4BA910>::Func<void> $ioInput_Update;
+
+    static AGEHook<0x6A38EC>::Type<float> ioMouse_InvWidth;
+    static AGEHook<0x6A38D4>::Type<float> ioMouse_InvHeight;
 }

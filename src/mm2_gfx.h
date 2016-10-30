@@ -87,4 +87,101 @@ namespace MM2
             $Reset(this);
         };
     };
+
+    class gfxTexture {
+    public:
+        /*0x00*/uint VglBindIndex;
+
+        /*0x04*/const char *Name;
+
+        /*0x06*/ushort Width;
+        /*0x08*/ushort Height;
+
+        /*0x0C*/uint TexEnv;
+        /*0x10*/uint Color;
+
+        /*0x14*/IDirectDrawSurface7 *DirectDrawSurface;
+        /*0x18*/IDirectDrawPalette *DirectDrawPalette;
+
+        /*0x1C*/void *CacheEntry;
+        /*0x20*/void *CachePool;
+
+        /*0x24*/uint RefCount;
+
+        /*0x28*/gfxTexture *PrevLOD;
+        /*0x2C*/gfxTexture *NextLOD;
+
+        /*0x30*/byte MaxLODCount;
+        /*0x31*/byte LODCount;
+        
+        static AGEHook<0x684D34>::Type<bool> sm_EnableSetLOD;
+        static AGEHook<0x684D36>::Type<bool> sm_Allow32;
+    };
+
+    static AGEHook<0x4ABE00>::Func<bool> $gfxAutoDetect;
+    static AGEHook<0x4A8CE0>::Func<void> $gfxPipeline_SetRes;
+
+    static AGEHook<0x4A88F0>::Func<WNDPROC> $gfxPipeline_gfxWindowProc;
+
+    static AGEHook<0x4AC3D0>::Func<LPD3DENUMDEVICESCALLBACK7> $DeviceCallback;
+    static AGEHook<0x4AC6F0>::Func<LPDDENUMMODESCALLBACK2> $ResCallback;
+
+    static AGEHook<0x682FA0>::Type<HWND> hWndParent;
+    static AGEHook<0x6830B8>::Type<HWND> hWndMain;
+
+    static AGEHook<0x68311C>::Type<LPCSTR> lpWindowTitle;
+
+    static AGEHook<0x6830F0>::Type<ATOM> ATOM_Class;
+    static AGEHook<0x683108>::Type<LPCSTR> IconID;
+
+    static AGEHook<0x5CA3EC>::Type<bool> pageFlip;
+    static AGEHook<0x5CA3ED>::Type<bool> hasBorder;
+    static AGEHook<0x5CA3EE>::Type<bool> useMultiTexture;
+    static AGEHook<0x5CA664>::Type<bool> enableHWTnL;
+
+    static AGEHook<0x68451D>::Type<bool> novblank;
+
+    static AGEHook<0x6830D0>::Type<bool> inWindow;
+    static AGEHook<0x6830D1>::Type<bool> isMaximized;
+    static AGEHook<0x6830D2>::Type<bool> tripleBuffer;
+    static AGEHook<0x6830D3>::Type<bool> useReference;
+    static AGEHook<0x6830D4>::Type<bool> useSoftware;
+    static AGEHook<0x6830D5>::Type<bool> useAgeSoftware;
+    static AGEHook<0x6830D6>::Type<bool> useBlade;
+    static AGEHook<0x6830D7>::Type<bool> useSysMem;
+
+    static AGEHook<0x6830D8>::Type<int> useInterface;
+
+    static AGEHook<0x684518>::Type<LPDIRECTDRAWCREATEEX> lpDirectDrawCreateEx;
+
+    static AGEHook<0x6830A8>::Type<IDirectDraw7 *> lpDD;
+    static AGEHook<0x6830AC>::Type<IDirect3D7 *> lpD3D;
+    static AGEHook<0x6830C8>::Type<IDirect3DDevice7 *> lpD3DDev;
+    static AGEHook<0x6830CC>::Type<IDirectDrawSurface7 *> lpdsRend;
+
+    static AGEHook<0x683130>::Type<gfxInterface> gfxInterfaces;
+    static AGEHook<0x6844C0>::Type<unsigned int> gfxInterfaceCount;
+
+    static AGEHook<0x6844C8>::Type<int> gfxInterfaceChoice;
+
+    static AGEHook<0x6844B0>::Type<int> gfxMinScreenWidth;
+    static AGEHook<0x6844CC>::Type<int> gfxMinScreenHeight;
+
+    static AGEHook<0x6844FC>::Type<int> gfxMaxScreenWidth;
+    static AGEHook<0x6844D8>::Type<int> gfxMaxScreenHeight;
+
+    static AGEHook<0x6B165C>::Type<int> gfxTexQuality;
+    static AGEHook<0x6857D0>::Type<int> gfxTexReduceSize;
+
+    static AGEHook<0x6830F4>::Type<float> window_fWidth;
+    static AGEHook<0x683120>::Type<float> window_fHeight;
+
+    static AGEHook<0x683128>::Type<int> window_iWidth;
+    static AGEHook<0x683100>::Type<int> window_iHeight;
+
+    static AGEHook<0x6830E4>::Type<int> window_ZDepth;
+    static AGEHook<0x6830F8>::Type<int> window_ColorDepth;
+
+    static AGEHook<0x6830EC>::Type<int> window_X;
+    static AGEHook<0x683110>::Type<int> window_Y;
 }

@@ -14,4 +14,6 @@ namespace MM2
             $SetSirenCSVName(name);
         };
     };
+
+    static AGEHook<0x6AFFE4>::Type<int> vehPoliceCarAudio_iNumCopsPursuingPlayer;
 }

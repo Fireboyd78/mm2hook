@@ -26,13 +26,19 @@
 #include "logfile.h"
 
 #ifdef _LUA_EMBED
-    // Lua 5.3.2 embedded
-    #include <lua/lua.hpp>
+// Lua 5.3.2 embedded
+# include <lua/lua.hpp>
 #ifndef NO_LUAINTF
-    #include <LuaIntf/LuaIntf.h>
-    using namespace LuaIntf;
+# include <LuaIntf/LuaIntf.h>
+using namespace LuaIntf;
 #endif // !NO_LUAINTF
 #endif // !_LUA_EMBED
 
 //  C4091: '__declspec(novtable)': ignored on left of 'x' when no variable is declared
 #pragma warning (disable : 4091)
+
+// Unsigned type definitions
+typedef std::uint8_t byte;
+typedef std::uint16_t ushort;
+typedef std::uint32_t uint;
+typedef std::uint64_t uint64;

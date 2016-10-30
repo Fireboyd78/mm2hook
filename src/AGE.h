@@ -89,6 +89,15 @@ public:
 
 template <int address>
 class AGEHook {
+private:
+    template <typename TRet, typename... TArgs>
+    using MethodCall = TRet(*)(TArgs...);
+
+    template <typename TRet, class TThis, typename... TArgs>
+    using MemberCall = TRet(__thiscall *)(const TThis, TArgs...);
+
+    template <typename TRet, typename... TArgs>
+    using StdMethodCall = TRet(__stdcall *)(TArgs...);
 public:
     static_assert((address != 0), "Address cannot be zero.");
 
@@ -146,7 +155,7 @@ public:
         /*
             TType[0] - Pointer is TType array
         */
-        inline TType& operator[ ](std::size_t index) const {
+        inline TType& operator[](std::size_t index) const {
             return this->get()[index];
         }
 
@@ -158,15 +167,6 @@ public:
             return (*this->get())(args...);
         }
     };
-
-    template <typename TRet, typename... TArgs>
-    using MethodCall = TRet (*)(TArgs...);
-
-    template <typename TRet, class TThis, typename... TArgs>
-    using MemberCall = TRet (__thiscall *)(const TThis, TArgs...);
-
-    template <typename TRet, typename... TArgs>
-    using StdMethodCall = TRet (__stdcall *)(TArgs...);
 
     template <typename TRet>
     class Func {
@@ -191,6 +191,15 @@ public:
             constexpr TRet operator()(TArgs ...args) const {
                 return static_cast<StdMethodCall<TRet, TArgs...>>(lpFunc)(args...);
             };
+        };
+    };
+
+    template <typename TRet>
+    class MemberFunc : protected Func<TRet> {
+    public:
+        template<typename ...TArgs, class TThis>
+        constexpr TRet operator()(const TThis &&This, TArgs ...args) const {
+            return static_cast<MemberCall<TRet, TThis, TArgs...>>(lpFunc)(This, args...);
         };
     };
 
@@ -223,6 +232,22 @@ public:
 
         constexpr operator StdMethodCall() const {
             return static_cast<StdMethodCall>(lpFunc);
+        };
+    };
+
+    /*
+        __thiscall function declaration
+    */
+    template <typename TRet, class TThis, typename... TArgs>
+    class Func<MemberCall<TRet, TThis, TArgs...>> : protected Func<TRet> {
+        using MemberCall = MemberCall<TRet, TThis, TArgs...>;
+    public:
+        constexpr TRet operator()(const TThis &&This, TArgs ...args) const {
+            return static_cast<MemberCall>(lpFunc)(args...);
+        };
+
+        constexpr operator MemberCall() const {
+            return static_cast<MemberCall>(lpFunc);
         };
     };
 };
