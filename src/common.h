@@ -38,7 +38,7 @@ using namespace LuaIntf;
 #pragma warning (disable : 4091)
 
 // Unsigned type definitions
-typedef std::uint8_t byte;
-typedef std::uint16_t ushort;
-typedef std::uint32_t uint;
-typedef std::uint64_t uint64;
+typedef unsigned char byte;
+typedef unsigned short ushort;
+typedef unsigned int uint;
+typedef unsigned long long uint64;
