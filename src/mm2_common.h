@@ -41,8 +41,6 @@ namespace MM2 {
     static AGEHook<0x5E0CC4>::Type<void(*)(void)> $__VtResumeSampling;
     static AGEHook<0x5E0CD8>::Type<void(*)(void)> $__VtPauseSampling;
 
-    static AGEHook<0x661738>::Type<asNode> ROOT;
-
     static AGEHook<0x6B1708>::Type<BOOL> $gameClosing;
 
     // think this is actually some sort of game state

@@ -84,6 +84,8 @@ AGEHook<0x5C5708>::Type<float> sdl_VLowThresh;  // default: 300.0
 AGEHook<0x5C570C>::Type<float> sdl_LowThresh;   // default: 100.0
 AGEHook<0x5C5710>::Type<float> sdl_MedThresh;   // default: 50.0
 
+AGEHook<0x661738>::Type<asNode> ROOT;
+
 AGEHook<0x6B167C>::Type<char[40]> cityName;
 AGEHook<0x6B16A4>::Type<char[40]> cityName2;
 
