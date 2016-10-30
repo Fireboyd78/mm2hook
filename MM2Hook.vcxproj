@@ -290,8 +290,29 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
+  <!-- MSBuild makes this waaaay too difficult, can't this be done some other way? -->
+  <Target Name="MoveLuaASMFiles" AfterTargets="Link">
+    <ItemGroup>
+      <LuaSources Include="src\lua\*.c" />
+      <LuaASMFiles Include="@(LuaSources->'$(ASMOutputPath)%(Filename).asm')" />
+    </ItemGroup>
+    <Move SourceFiles="@(LuaASMFiles)" DestinationFolder="$(ASMOutputPath)lua\" Condition="Exists('%(Identity)')">
+      <Output ItemName="LuaMoved" TaskParameter="MovedFiles" />
+    </Move>
+    <Message Text="Moved Lua ASM file to '%(LuaMoved.Identity)'" Importance="high" Condition="'%(LuaMoved.Identity)' != ''" />
+  </Target>
+  <Target Name="MoveLuaIntfASMFiles" AfterTargets="Link">
+    <ItemGroup>
+      <LuaIntfSources Include="src\LuaIntf\src\*.cpp" />
+      <LuaIntfASMFiles Include="@(LuaSources->'$(ASMOutputPath)%(Filename).asm')" />
+    </ItemGroup>
+    <Move SourceFiles="@(LuaIntfASMFiles)" DestinationFolder="$(ASMOutputPath)LuaIntf\" Condition="Exists('%(Identity)')">
+      <Output ItemName="LuaIntfMoved" TaskParameter="MovedFiles" />
+    </Move>
+    <Message Text="Moved LuaIntf ASM file to '%(LuaIntfMoved.Identity)'" Importance="high" Condition="'%(LuaIntfMoved.Identity)' != ''" />
+  </Target>
   <!-- Get MM2 directory if config file present -->
-  <Target Name="GetMM2Dir" BeforeTargets="MakeDInputDLL">
+  <Target Name="GetMM2Dir" AfterTargets="Build">
     <PropertyGroup>
       <CfgFilename>mm2.cfg</CfgFilename>
     </PropertyGroup>
@@ -325,26 +346,5 @@
     </ItemGroup>
     <Copy SourceFiles="@(DITargetFiles)" DestinationFiles="@(DITargetFiles->'$(MM2Directory)%(Filename)%(Extension)')" />
     <Message Text="Sucessfully copied files to Midtown Madness 2 directory ($(MM2Directory))" Importance="high" />
-  </Target>
-  <!-- MSBuild makes this waaaay too difficult, can't this be done some other way? -->
-  <Target Name="MoveLuaASMFiles" AfterTargets="MakeDInputDLL">
-    <ItemGroup>
-      <LuaSources Include="src\lua\*.c" />
-      <LuaASMFiles Include="@(LuaSources->'$(ASMOutputPath)%(Filename).asm')" />
-    </ItemGroup>
-    <Move SourceFiles="@(LuaASMFiles)" DestinationFolder="$(ASMOutputPath)lua\" Condition="Exists('%(Identity)')">
-      <Output ItemName="LuaMoved" TaskParameter="MovedFiles" />
-    </Move>
-    <Message Text="Moved Lua ASM file to '%(LuaMoved.Identity)'" Importance="high" Condition="'%(LuaMoved.Identity)' != ''" />
-  </Target>
-  <Target Name="MoveLuaIntfASMFiles" AfterTargets="MakeDInputDLL">
-    <ItemGroup>
-      <LuaIntfSources Include="src\LuaIntf\src\*.cpp" />
-      <LuaIntfASMFiles Include="@(LuaSources->'$(ASMOutputPath)%(Filename).asm')" />
-    </ItemGroup>
-    <Move SourceFiles="@(LuaIntfASMFiles)" DestinationFolder="$(ASMOutputPath)LuaIntf\" Condition="Exists('%(Identity)')">
-      <Output ItemName="LuaIntfMoved" TaskParameter="MovedFiles" />
-    </Move>
-    <Message Text="Moved LuaIntf ASM file to '%(LuaIntfMoved.Identity)'" Importance="high" Condition="'%(LuaIntfMoved.Identity)' != ''" />
   </Target>
 </Project>
