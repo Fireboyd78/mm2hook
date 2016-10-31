@@ -36,6 +36,8 @@ DECLARE_HOOK(datCallback::$Call);
 /*
     datOutput
 */
+DECLARE_HOOK(datOutput::sm_Stream);
+
 DECLARE_HOOK(datOutput::$CloseLog);
 DECLARE_HOOK(datOutput::$OpenLog);
 DECLARE_HOOK(datOutput::$SetOutputMask);

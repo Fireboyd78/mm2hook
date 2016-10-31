@@ -51,35 +51,13 @@ static Matrix34 sm_DashOffset;
 // Function hooks
 // ==========================
 
-AGEHook<0x402180>::Func<void> $CreateGameMutex;
-
-AGEHook<0x4C9510>::Func<void> $DefaultPrintString;
-AGEHook<0x4C95F0>::Func<void> $DefaultPrinter;
-
-AGEHook<0x544150>::Func<void> $aiPath_UpdatePedestrians;
-AGEHook<0x54B9C0>::Func<void> $aiPedestrian_Update;
-
-AGEHook<0x550EF0>::Func<void> $aiPoliceForce_Reset;
-
 AGEHook<0x4A3370>::Func<void> $asLinearCS_Update;
-
-AGEHook<0x445820>::Func<void> $cityLevel_DrawRooms;
 
 AGEHook<0x4415E0>::Func<void> $dgBangerInstance_Draw;
 
-AGEHook<0x4ABE00>::Func<bool> $gfxAutoDetect;
-AGEHook<0x4A8CE0>::Func<void> $gfxPipeline_SetRes;
-
-AGEHook<0x4BA910>::Func<void> $ioInput_Update;
-
 AGEHook<0x577210>::Func<void> $memSafeHeap_Init;
 
-AGEHook<0x5346B0>::Func<int>::StdCall $MyLoadStringA;
-
 AGEHook<0x448090>::Func<void> $sdlCommon_UpdateLighting;
-
-AGEHook<0x448330>::Func<void> $sdlPage16_Draw;
-AGEHook<0x450880>::Func<unsigned int> $sdlPage16_GetShadedColor;
 
 AGEHook<0x4AEDC0>::Func<void> $gfxImage_Scale;
 
@@ -90,21 +68,11 @@ AGEHook<0x4AEDC0>::Func<void> $gfxImage_Scale;
 AGEHook<0x4A5500>::Func<void> $vglBegin;
 AGEHook<0x4A5A90>::Func<void> $vglEnd;
 
-AGEHook<0x4A88F0>::Func<WNDPROC> $gfxPipeline_gfxWindowProc;
-
-AGEHook<0x4AC3D0>::Func<LPD3DENUMDEVICESCALLBACK7> $DeviceCallback;
-AGEHook<0x4AC6F0>::Func<LPDDENUMMODESCALLBACK2> $ResCallback;
-
-AGEHook<0x4A1290>::Func<void> $asCullManagerInit;
-AGEHook<0x443E50>::Func<void> $cityLevelSetObjectDetail;
+AGEHook<0x4A1290>::Func<void> $asCullManager_Init;
 
 // ==========================
 // Pointer hooks
 // ==========================
-
-AGEHook<0x6AFFE4>::Type<int> vehPoliceCarAudio_iNumCopsPursuingPlayer;
-
-AGEHook<0x6A3D40>::Type<Stream *> datOutputStream;
 
 AGEHook<0x5C571C>::Type<float> obj_NoDrawThresh; // default: 300.0
 
@@ -116,98 +84,14 @@ AGEHook<0x5C5708>::Type<float> sdl_VLowThresh;  // default: 300.0
 AGEHook<0x5C570C>::Type<float> sdl_LowThresh;   // default: 100.0
 AGEHook<0x5C5710>::Type<float> sdl_MedThresh;   // default: 50.0
 
-AGEHook<0x6299A8>::Type<cityTimeWeatherLighting[16]> timeWeathers;
-
-AGEHook<0x62B068>::Type<int> timeOfDay;
+AGEHook<0x661738>::Type<asNode> ROOT;
 
 AGEHook<0x6B167C>::Type<char[40]> cityName;
 AGEHook<0x6B16A4>::Type<char[40]> cityName2;
 
+AGEHook<0x62B068>::Type<int> timeOfDay;
+
 AGEHook<0x661974>::Type<unsigned int> vglCurrentColor;
-
-AGEHook<0x661738>::Type<asNode> ROOT;
-
-AGEHook<0x5CECF0>::Type<void (*)(LPCSTR)> $PrintString;
-AGEHook<0x5CED24>::Type<void (*)(int, LPCSTR, va_list)> $Printer;
-AGEHook<0x6A3D38>::Type<void (*)(void)> $FatalErrorHandler;
-
-AGEHook<0x684518>::Type<LPDIRECTDRAWCREATEEX> $lpDirectDrawCreateEx;
-
-AGEHook<0x6830A8>::Type<IDirectDraw7 *> lpDD;
-AGEHook<0x6830AC>::Type<IDirect3D7 *> lpD3D;
-AGEHook<0x6830C8>::Type<IDirect3DDevice7 *> lpD3DDev;
-AGEHook<0x6830CC>::Type<IDirectDrawSurface7 *> lpdsRend;
-
-AGEHook<0x683130>::Type<gfxInterface> gfxInterfaces;
-AGEHook<0x6844C0>::Type<unsigned int> gfxInterfaceCount;
-
-AGEHook<0x6844C8>::Type<int> gfxInterfaceChoice;
-
-AGEHook<0x6844B0>::Type<int> gfxMinScreenWidth;
-AGEHook<0x6844CC>::Type<int> gfxMinScreenHeight;
-
-AGEHook<0x6844FC>::Type<int> gfxMaxScreenWidth;
-AGEHook<0x6844D8>::Type<int> gfxMaxScreenHeight;
-
-AGEHook<0x684D36>::Type<bool> gfxTexture_Allow32;
-
-AGEHook<0x6B165C>::Type<int> gfxTexQuality;
-AGEHook<0x6857D0>::Type<int> gfxTexReduceSize;
-
-AGEHook<0x682FA0>::Type<HWND> hWndParent;
-AGEHook<0x6830B8>::Type<HWND> hWndMain;
-
-AGEHook<0x68311C>::Type<LPCSTR> lpWindowTitle;
-
-AGEHook<0x6830F0>::Type<ATOM> ATOM_Class;
-AGEHook<0x683108>::Type<LPCSTR> IconID;
-
-AGEHook<0x5CA3EC>::Type<bool> pageFlip;
-AGEHook<0x5CA3ED>::Type<bool> hasBorder;
-AGEHook<0x5CA3EE>::Type<bool> useMultiTexture;
-AGEHook<0x5CA664>::Type<bool> enableHWTnL;
-
-AGEHook<0x68451D>::Type<bool> novblank;
-
-AGEHook<0x6830D0>::Type<bool> inWindow;
-AGEHook<0x6830D1>::Type<bool> isMaximized;
-AGEHook<0x6830D2>::Type<bool> tripleBuffer;
-AGEHook<0x6830D3>::Type<bool> useReference;
-AGEHook<0x6830D4>::Type<bool> useSoftware;
-AGEHook<0x6830D5>::Type<bool> useAgeSoftware;
-AGEHook<0x6830D6>::Type<bool> useBlade;
-AGEHook<0x6830D7>::Type<bool> useSysMem;
-
-AGEHook<0x6830D8>::Type<int> useInterface;
-
-AGEHook<0x6830F4>::Type<float> window_fWidth;
-AGEHook<0x683120>::Type<float> window_fHeight;
-
-AGEHook<0x683128>::Type<int> window_iWidth;
-AGEHook<0x683100>::Type<int> window_iHeight;
-
-AGEHook<0x6830E4>::Type<int> window_ZDepth;
-AGEHook<0x6830F8>::Type<int> window_ColorDepth;
-
-AGEHook<0x6830EC>::Type<int> window_X;
-AGEHook<0x683110>::Type<int> window_Y;
-
-AGEHook<0x6A38EC>::Type<float> ioMouse_InvWidth;
-AGEHook<0x6A38D4>::Type<float> ioMouse_InvHeight;
-
-AGEHook<0x5E0CC4>::Type<void (*)(void)> $__VtResumeSampling;
-AGEHook<0x5E0CD8>::Type<void (*)(void)> $__VtPauseSampling;
-
-AGEHook<0x6B1708>::Type<BOOL> $gameClosing;
-
-// think this is actually some sort of game state
-// not sure how exactly it's supposed to work
-AGEHook<0x6B17C8>::Type<int> splashScreen; // -1 = ???, 0 = main menu, 1 = race
-
-AGEHook<0x6A3AA8>::Type<int> joyDebug;
-AGEHook<0x6A3C0C>::Type<int> assetDebug;
-AGEHook<0x683104>::Type<int> gfxDebug;
-AGEHook<0x6B4C24>::Type<int> audDebug;
 
 /*
     ===========================================================================
@@ -347,7 +231,7 @@ public:
 
         LogFile::Format("[asCullManager::Init]: Increased Max Cullables to %d, %d\n", maxCullables, maxCullables2D);
 
-        $asCullManagerInit(this, maxCullables, maxCullables2D);
+        $asCullManager_Init(this, maxCullables, maxCullables2D);
     }
 
     static void Install() {
@@ -673,9 +557,9 @@ public:
         *window_ColorDepth = cdepth;
         *window_ZDepth     = zdepth;
 
-        *gfxTexture_Allow32 = (cdepth == 32);
+        *gfxTexture::sm_Allow32 = (cdepth == 32);
 
-        LogFile::Format("[gfxPipeline::SetRes]: 32-bit textures are%s allowed.\n", (*gfxTexture_Allow32) ? "" : "n't" );
+        LogFile::Format("[gfxPipeline::SetRes]: 32-bit textures are%s allowed.\n", (*gfxTexture::sm_Allow32) ? "" : "n't" );
         LogFile::Format("[gfxPipeline::SetRes]: %dx%dx%dx%d\n", width, height, cdepth, zdepth);
 
         if (lpDD)
@@ -1019,7 +903,7 @@ public:
 
     void Draw(int p1, unsigned int p2) {
         blockPtr = this;
-        $sdlPage16_Draw(this, p1, p2);
+        reinterpret_cast<sdlPage16*>(this)->Draw(p1, p2);
 
         // not in a block anymore
         blockPtr = NULL;
@@ -1162,10 +1046,10 @@ private:
             // use fullbright inside tunnels instead of the calculated colors below
             // will still preserve shading as well
             if (insideTunnel)
-                return $sdlPage16_GetShadedColor(color, sdlTunnelColor.color);
+                return sdlPage16::GetShadedColor(color, sdlTunnelColor.color);
         }
 
-        return $sdlPage16_GetShadedColor(color, vglResultColor.color);
+        return sdlPage16::GetShadedColor(color, vglResultColor.color);
     }
 public:
     static void vglBegin(gfxDrawMode drawMode, int p1) {
@@ -1400,7 +1284,7 @@ public:
 
         Displayf("AutoDetect: GUID=%x, Description=%s, Name=%s", lpGUID, lpDriverDescription, lpDriverName);
 
-        if ($lpDirectDrawCreateEx(lpGUID, (LPVOID*)&lpDD, IID_IDirectDraw7, nullptr) == DD_OK)
+        if (lpDirectDrawCreateEx(lpGUID, (LPVOID*)&lpDD, IID_IDirectDraw7, nullptr) == DD_OK)
         {
             gfxInterface *gfxInterface = &gfxInterfaces[gfxInterfaceCount];
 
@@ -1723,9 +1607,9 @@ public:
 
         LogFile::Write("Redirecting MM2 output...");
 
-        *datOutputStream = Stream::Create("mm2.log", &logFileMethods);
+        *datOutput::sm_Stream = Stream::Create("mm2.log", &logFileMethods);
 
-        LogFile::WriteLine((*datOutputStream) ? "Done!" : "FAIL!");
+        LogFile::WriteLine((*datOutput::sm_Stream) ? "Done!" : "FAIL!");
 
         if (datArgParser::Get("age_debug") || datArgParser::Get("ageDebug"))
         {

@@ -154,6 +154,8 @@ namespace MM2
         static AGEHook<0x4C9590>::Func<bool> $OpenLog;
         static AGEHook<0x4C95A0>::Func<void> $SetOutputMask;
     public:
+        static AGEHook<0x6A3D40>::Type<Stream *> sm_Stream;
+
         AGE_API static bool OpenLog(LPCSTR filename) {
             return $OpenLog(filename);
         };
