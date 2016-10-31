@@ -984,8 +984,6 @@ private:
     static unsigned int GetAdjustedColor(gfxDrawMode drawMode, unsigned int color) {
         if (sdlPage16Handler::blockPtr != NULL)
         {
-            sizeof(gfxTexture);
-
             // fullbright
             static const ColorARGB sdlTunnelColor = { 255, 255, 255, 255 };
 
