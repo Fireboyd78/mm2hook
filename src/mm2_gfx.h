@@ -94,8 +94,8 @@ namespace MM2
 
         /*0x04*/const char *Name;
 
-        /*0x06*/ushort Width;
-        /*0x08*/ushort Height;
+        /*0x08*/ushort Width;
+        /*0x0A*/ushort Height;
 
         /*0x0C*/uint TexEnv;
         /*0x10*/uint Color;
