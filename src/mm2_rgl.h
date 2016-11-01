@@ -6,6 +6,11 @@ namespace MM2
 {
     namespace $
     {
+        /* psdl.obj */
+        HOOK_API AGEHook<0x45CFD0>::Func<void> vglTexCoord2f;
+        HOOK_API AGEHook<0x45CFF0>::Func<void> vglVertex3f$1;
+        HOOK_API AGEHook<0x45D080>::Func<void> vglVertex3f$2;
+
         /* vgl.obj */
 
         HOOK_API AGEHook<0x4A5370>::Func<void> vgl_VERTEX_VCT1;
@@ -105,6 +110,16 @@ namespace MM2
     // or else the compiler shits the bed
     namespace
     {
+        AGE_API void vglTexCoord2f(float u, float v) {
+            $::vglTexCoord2f(u, v);
+        }
+        AGE_API void vglVertex3f(float x, float y, float z) {
+            $::vglVertex3f$1(x, y, z);
+        }
+        AGE_API void vglVertex3f(Vector3 position) {
+            $::vglVertex3f$2(position);
+        }
+
         AGE_API void vgl_VERTEX_VCT1(float x, float y, float z) {
             $::vgl_VERTEX_VCT1(x, y, z);
         }
