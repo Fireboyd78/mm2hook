@@ -923,8 +923,10 @@ public:
         Vector3 vecBuffer1[256];
         float   sBuffer[256];
 
-        ushort current_shaded_color = 0;
-        ushort current_texture = 0;
+        int current_shaded_color = 0;
+        int current_texture = 0;
+
+        bool is_texture_null = false;
 
         while (true)
         {
@@ -944,7 +946,7 @@ public:
 
             switch (type)
             {
-                case 0b0000:
+                case 0:
                 {
                     // if (current_texture)
                     if (false)
@@ -1104,13 +1106,13 @@ public:
                     attributes += 4 * vertex_count;
                 } break;
 
-                case 0b0001:
+                case 1:
                 {
-                    if (current_texture)
+                    if (!is_texture_null)
                     {
                         vglBindTexture(page->Textures[current_texture + 1]);
 
-                        if ((vertex_count != 2) || (attributes[0] != attributes[1]) || (attributes[0] >= 2u))
+                        if ((vertex_count != 2) || (attributes[0] != attributes[1]) || (attributes[0] >= 2))
                         {
                             {
                                 float deltaS = floor(page->CodedVertices[attributes[0]].X * 0.25f);
@@ -1144,74 +1146,71 @@ public:
                         }
                     }
 
-                    attributes += 2 * vertex_count;
+                    attributes += (vertex_count * 2);
                 } break;
 
-                case 0b0010:
+                case 2:
                 {
-                    attributes += 2 * vertex_count;
+                    attributes += (vertex_count * 2);
                 } break;
 
-                case 0b0011:
+                case 3:
                 {
                     attributes += 4;
                 } break;
 
-                case 0b0100:
+                case 4:
                 {
                     attributes += vertex_count;
                 } break;
 
-                case 0b0101:
+                case 5:
                 {
-                    attributes += vertex_count + 2;
+                    attributes += (vertex_count + 2);
                 } break;
 
-                case 0b0110:
+                case 6:
                 {
-                    attributes += vertex_count + 2;
+                    attributes += (vertex_count + 2);
                 } break;
 
-                case 0b0111:
+                case 7:
                 {
+                    current_shaded_color = attributes[0];
                     attributes += 4;
                 } break;
 
-                case 0b1000:
+                case 8:
                 {
-                    attributes += 5 * vertex_count + 2;
+                    attributes += (vertex_count * 5) + 2;
                 } break;
 
-                case 0b1001:
+                case 9:
                 {
                     attributes += 3;
 
                     if (vertex_count == 10)
-                    {
                         attributes += 7;
-                    }
                 } break;
 
-                case 0b1010:
+                case 10:
                 {
                     current_texture = texture_id;
 
                     if ((current_texture >> 8) & 0b111)
-                    {
                         ++attributes;
-                    }
                 } break;
 
-                case 0b1011:
+                case 11:
                 {
                     attributes += 6;
                 } break;
 
-                case 0b1100:
+                case 12:
                 {
                     attributes += 1;
 
-                    attributes += vertex_count + 1;
+                    attributes += (vertex_count + 1);
                 } break;
 
                 default:
