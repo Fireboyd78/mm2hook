@@ -106,14 +106,14 @@ public:
     protected:
         TType *lpValue;
     public:
-        constexpr Type() : lpValue((TType*)address) {};
+        constexpr Type() : lpValue(reinterpret_cast<TType *>(address)) {};
 
         inline TType* get() const {
             return this->lpValue;
         }
 
         inline void set(TType value) {
-            *this->get() = value;
+            *lpValue = value;
         }
 
         /*
@@ -165,6 +165,10 @@ public:
         template <typename... TArgs>
         inline auto operator()(TArgs... args) {
             return (*this->get())(args...);
+        }
+
+        inline TType& operator=(TType value) {
+            return (*lpValue = value);
         }
     };
 

@@ -50,14 +50,14 @@ namespace MM2 {
 
     HOOK_API AGEHook<0x5346B0>::Func<int>::StdCall $MyLoadStringA;
     
-    HOOK_API AGEHook<0x5CECF0>::Type<void(*)(LPCSTR)> $PrintString;
-    HOOK_API AGEHook<0x5CED24>::Type<void(*)(int, LPCSTR, va_list)> $Printer;
-    HOOK_API AGEHook<0x6A3D38>::Type<void(*)(void)> $FatalErrorHandler;
+    HOOK_API AGEHook<0x5CECF0>::Type<void(*)(LPCSTR)> StringPrinter;
+    HOOK_API AGEHook<0x5CED24>::Type<void(*)(int, LPCSTR, va_list)> Printer;
+    HOOK_API AGEHook<0x6A3D38>::Type<void(*)(void)> FatalErrorHandler;
 
-    HOOK_API AGEHook<0x5E0CC4>::Type<void(*)(void)> $__VtResumeSampling;
-    HOOK_API AGEHook<0x5E0CD8>::Type<void(*)(void)> $__VtPauseSampling;
+    HOOK_API AGEHook<0x5E0CC4>::Type<void(*)(void)> __VtResumeSampling;
+    HOOK_API AGEHook<0x5E0CD8>::Type<void(*)(void)> __VtPauseSampling;
 
-    HOOK_API AGEHook<0x6B1708>::Type<BOOL> $gameClosing;
+    HOOK_API AGEHook<0x6B1708>::Type<BOOL> gameClosing;
 
     // think this is actually some sort of game state
     // not sure how exactly it's supposed to work
