@@ -30,6 +30,8 @@ int g_heapSize = 128;
 
 /* PSDL shading fix */
 
+bool bSDLDrawDebug = true;
+
 const double cosNum = 1.570796;
 
 unsigned int vglColor;
@@ -122,6 +124,12 @@ bool HandleKeyPress(DWORD vKey)
                     isConsoleOpen = true;
                 }
             }
+        } return true;
+
+        case VK_F10:
+        {
+            // toggle SDL draw debugging
+            bSDLDrawDebug = !bSDLDrawDebug;
         } return true;
     }
 
@@ -898,10 +906,16 @@ public:
 
     void Draw(int p1, unsigned int p2) {
         page = reinterpret_cast<sdlPage16 *>(this);
-        //page->Draw(p1, p2);
-
-        Draw_Impl(p1, p2);
-
+        
+        if (bSDLDrawDebug)
+        {
+            Draw_Impl(p1, p2);
+        }
+        else
+        {
+            page->Draw(p1, p2);
+        }
+        
         // not in a block anymore
         page = NULL;
         attributePtr = NULL; // lets vglHandler know we're not checking for SDL stuff
@@ -930,13 +944,16 @@ public:
 
         while (true)
         {
+            // temporary?
+            attributePtr = attributes;
+
             ushort attribute = attributes[0];
             ++attributes;
 
             ushort type = (attribute & 0b1111000) >> 3;
             ushort vertex_count = (attribute & 0b111);
 
-            ushort texture_id = (attributes[0]) + (vertex_count << 8);
+            ushort texture_id = (attributes[0] + (vertex_count << 8));
 
             if (vertex_count == 0)
             {
