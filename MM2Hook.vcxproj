@@ -25,14 +25,11 @@
     <CharacterSet>NotSet</CharacterSet>
     <OutDir>bin\$(Configuration)\</OutDir>
     <IntDir>$(OutDir)\obj\</IntDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <WholeProgramOptimization>false</WholeProgramOptimization>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
@@ -45,90 +42,57 @@
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);src;src\lua;src\LuaIntf;src\LuaIntf\impl</IncludePath>
     <SourcePath>$(VC_SourcePath);src;src\lua;src\LuaIntf\src</SourcePath>
     <ASMOutputPath>$(OutDir)asm\</ASMOutputPath>
+    <DebugMacro>NDEBUG</DebugMacro>
+    <DebugMacro Condition="'$(Configuration)' == 'Debug'">_DEBUG</DebugMacro>
+    <Win32Macros>WIN32;WIN32_LEAN_AND_MEAN;_WINDOWS;$(DebugMacro);_USRDLL</Win32Macros>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+  <!--
+    Default compilation settings
+  -->
+  <ItemDefinitionGroup>
     <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>Custom</Optimization>
-      <PreprocessorDefinitions>WIN32;WIN32_LEAN_AND_MEAN;_DEBUG;_WINDOWS;_USRDLL;_LUA_EMBED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <CompileAs>Default</CompileAs>
+      <PreprocessorDefinitions>$(Win32Macros);_LUA_EMBED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
-      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
-      <StringPooling>true</StringPooling>
-      <MinimalRebuild>false</MinimalRebuild>
-      <ExceptionHandling>Async</ExceptionHandling>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <CreateHotpatchableImage>false</CreateHotpatchableImage>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <ControlFlowGuard>false</ControlFlowGuard>
-      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <ExceptionHandling>Async</ExceptionHandling>
       <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
-      <CreateHotpatchableImage>false</CreateHotpatchableImage>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <AssemblerListingLocation>$(ASMOutputPath)</AssemblerListingLocation>
-      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
-      <OmitFramePointers>true</OmitFramePointers>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <WholeProgramOptimization>true</WholeProgramOptimization>
-      <CompileAs>Default</CompileAs>
-      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-    </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
-      <GenerateMapFile>true</GenerateMapFile>
-      <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
-      <MapExports>true</MapExports>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OptimizeReferences>false</OptimizeReferences>
-      <EnableCOMDATFolding>false</EnableCOMDATFolding>
-      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <FullProgramDatabaseFile>true</FullProgramDatabaseFile>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <Optimization>Custom</Optimization>
-      <FunctionLevelLinking>false</FunctionLevelLinking>
-      <IntrinsicFunctions>false</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;WIN32_LEAN_AND_MEAN;NDEBUG;_WINDOWS;_USRDLL;_LUA_EMBED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- Optimization settings -->
+      <Optimization>MinSpace</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <StringPooling>true</StringPooling>
-      <ExceptionHandling>Async</ExceptionHandling>
-      <BufferSecurityCheck>false</BufferSecurityCheck>
-      <ControlFlowGuard>false</ControlFlowGuard>
-      <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
-      <FloatingPointModel>Fast</FloatingPointModel>
-      <FloatingPointExceptions>false</FloatingPointExceptions>
-      <CreateHotpatchableImage>false</CreateHotpatchableImage>
-      <PrecompiledHeaderFile />
-      <PrecompiledHeaderOutputFile />
-      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
-      <AssemblerListingLocation>$(OutDir)asm\</AssemblerListingLocation>
-      <RemoveUnreferencedCodeData>false</RemoveUnreferencedCodeData>
-      <OmitFramePointers>true</OmitFramePointers>
-      <CompileAs>Default</CompileAs>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <OptimizeReferences>false</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <GenerateMapFile>true</GenerateMapFile>
-      <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
-      <MapExports>true</MapExports>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <MapExports>true</MapExports>
+      <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
+      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <FullProgramDatabaseFile>true</FullProgramDatabaseFile>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <!--
@@ -219,27 +183,13 @@
     Include LuaIntf source, but do NOT compile it
   -->
   <ItemGroup>
-    <ClInclude Include="src\LuaIntf\src\CppBindClass.cpp">
-      <FileType>CppHeader</FileType>
-    </ClInclude>
-    <ClInclude Include="src\LuaIntf\src\CppBindModule.cpp">
-      <FileType>CppHeader</FileType>
-    </ClInclude>
-    <ClInclude Include="src\LuaIntf\src\CppFunction.cpp">
-      <FileType>CppHeader</FileType>
-    </ClInclude>
-    <ClInclude Include="src\LuaIntf\src\CppObject.cpp">
-      <FileType>CppHeader</FileType>
-    </ClInclude>
-    <ClInclude Include="src\LuaIntf\src\LuaCompat.cpp">
-      <FileType>CppHeader</FileType>
-    </ClInclude>
-    <ClInclude Include="src\LuaIntf\src\LuaRef.cpp">
-      <FileType>CppHeader</FileType>
-    </ClInclude>
-    <ClInclude Include="src\LuaIntf\src\LuaState.cpp">
-      <FileType>CppHeader</FileType>
-    </ClInclude>
+    <ClInclude Include="src\LuaIntf\src\CppBindClass.cpp" />
+    <ClInclude Include="src\LuaIntf\src\CppBindModule.cpp" />
+    <ClInclude Include="src\LuaIntf\src\CppFunction.cpp" />
+    <ClInclude Include="src\LuaIntf\src\CppObject.cpp" />
+    <ClInclude Include="src\LuaIntf\src\LuaCompat.cpp" />
+    <ClInclude Include="src\LuaIntf\src\LuaRef.cpp" />
+    <ClInclude Include="src\LuaIntf\src\LuaState.cpp" />
   </ItemGroup>
   <!--
     MM2Hook files
@@ -270,9 +220,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\logfile.cpp" />
-    <ClCompile Include="src\main.cpp">
-      <CompileAsManaged>false</CompileAsManaged>
-    </ClCompile>
+    <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\mm2.cpp" />
     <ClCompile Include="src\mm2_ai.cpp" />
     <ClCompile Include="src\mm2_audio.cpp" />
@@ -292,26 +240,31 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
-  <!-- MSBuild makes this waaaay too difficult, can't this be done some other way? -->
+  <!--
+    Make sure included c/cpp files don't get compiled.
+    This is to make sure a problem that occurred before never happens again.
+  -->
+  <Target Name="FixupIncludes" BeforeTargets="ResolveReferences">
+    <ItemGroup>
+      <ClInclude>
+        <FileType Condition="'%(ClInclude.Extension)' == '.c' or '%(ClInclude.Extension)' == '.cpp'">CppHeader</FileType>
+      </ClInclude>
+    </ItemGroup>
+  </Target>
+  <!-- Tidy up the ASM files a bit -->
   <Target Name="MoveLuaASMFiles" AfterTargets="Link">
+    <PropertyGroup>
+      <LuaASMFolder>$(ASMOutputPath)lua\</LuaASMFolder>
+    </PropertyGroup>
     <ItemGroup>
       <LuaSources Include="src\lua\*.c" />
       <LuaASMFiles Include="@(LuaSources->'$(ASMOutputPath)%(Filename).asm')" />
     </ItemGroup>
-    <Move SourceFiles="@(LuaASMFiles)" DestinationFolder="$(ASMOutputPath)lua\" Condition="Exists('%(Identity)')">
+    <Message Text="Moving Lua ASM files..." Importance="High" Condition="'@(LuaASMFiles)' != ''"/>
+    <Move SourceFiles="@(LuaASMFiles)" DestinationFolder="$(LuaASMFolder)" Condition="Exists('%(Identity)')">
       <Output ItemName="LuaMoved" TaskParameter="MovedFiles" />
     </Move>
-    <Message Text="Moved Lua ASM file to '%(LuaMoved.Identity)'" Importance="high" Condition="'%(LuaMoved.Identity)' != ''" />
-  </Target>
-  <Target Name="MoveLuaIntfASMFiles" AfterTargets="Link">
-    <ItemGroup>
-      <LuaIntfSources Include="src\LuaIntf\src\*.cpp" />
-      <LuaIntfASMFiles Include="@(LuaSources->'$(ASMOutputPath)%(Filename).asm')" />
-    </ItemGroup>
-    <Move SourceFiles="@(LuaIntfASMFiles)" DestinationFolder="$(ASMOutputPath)LuaIntf\" Condition="Exists('%(Identity)')">
-      <Output ItemName="LuaIntfMoved" TaskParameter="MovedFiles" />
-    </Move>
-    <Message Text="Moved LuaIntf ASM file to '%(LuaIntfMoved.Identity)'" Importance="high" Condition="'%(LuaIntfMoved.Identity)' != ''" />
+    <Message Text="  - Files successfully moved to '$(LuaASMFolder)'" Importance="High" Condition="'@(LuaMoved)' != ''" />
   </Target>
   <!-- Get MM2 directory if config file present -->
   <Target Name="GetMM2Dir" AfterTargets="Build">
@@ -321,7 +274,7 @@
     <ReadLinesFromFile File="$(CfgFilename)" Condition="Exists('$(CfgFilename)')">
       <Output PropertyName="MM2Directory" TaskParameter="Lines" />
     </ReadLinesFromFile>
-    <Message Text="Found directory configuration file." Importance="high" Condition="'$(MM2Directory)' != ''" />
+    <Message Text="Found directory configuration file." Importance="High" Condition="'$(MM2Directory)' != ''" />
   </Target>
   <!-- DirectInput target settings -->
   <Target Name="MakeDInputDLL" AfterTargets="Build">
@@ -339,7 +292,7 @@
     <Copy SourceFiles="@(TargetFiles)" DestinationFiles="@(TargetFiles->'$(DITargetDir)$(DITargetName)%(Extension)')">
       <Output ItemName="Changed" TaskParameter="CopiedFiles" />
     </Copy>
-    <Message Text="  - %(Changed.Identity)" Importance="high" />
+    <Message Text="  - %(Changed.Identity)" Importance="High" />
   </Target>
   <!-- Move compiled files to MM2 directory (if applicable) -->
   <Target Name="CopyDInputFiles" AfterTargets="MakeDInputDLL" Condition="'$(MM2Directory)' != ''">
@@ -347,6 +300,6 @@
       <DITargetFiles Include="$(DITargetDir)*.*" />
     </ItemGroup>
     <Copy SourceFiles="@(DITargetFiles)" DestinationFiles="@(DITargetFiles->'$(MM2Directory)%(Filename)%(Extension)')" />
-    <Message Text="Sucessfully copied files to Midtown Madness 2 directory ($(MM2Directory))" Importance="high" />
+    <Message Text="Sucessfully copied files to Midtown Madness 2 directory ($(MM2Directory))" Importance="High" />
   </Target>
 </Project>

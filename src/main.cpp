@@ -211,7 +211,7 @@ public:
     void Reset(void) {
         // reset number of cops pursuing player
         // fixes incorrect music bug
-        *vehPoliceCarAudio_iNumCopsPursuingPlayer = 0;
+        vehPoliceCarAudio_iNumCopsPursuingPlayer = 0;
 
         $aiPoliceForce_Reset(this);
     }
@@ -324,10 +324,10 @@ public:
         float objLowThresh    = lodLevels[lod][2]; // M: <MedThresh> - <LowThresh>
         float objMedThresh    = lodLevels[lod][3]; // H: 0.0 - <MedThresh>
 
-        *obj_NoDrawThresh = objNoDrawThresh;
-        *obj_VLowThresh   = objVLowThresh;
-        *obj_LowThresh    = objLowThresh;
-        *obj_MedThresh    = objMedThresh;
+        obj_NoDrawThresh = objNoDrawThresh;
+        obj_VLowThresh   = objVLowThresh;
+        obj_LowThresh    = objLowThresh;
+        obj_MedThresh    = objMedThresh;
 
         // By default, the game doesn't set these values based on the detail level
         // They are hardcoded to what is considered 'High' by default,
@@ -338,9 +338,9 @@ public:
         float sdlLowThresh  = (lod > 1) ? (objLowThresh + 25.0f) : 100.0f;
         float sdlMedThresh  = (lod > 1) ? (objMedThresh + 10.0f) : 50.0f;
 
-        *sdl_VLowThresh = sdlVLowThresh;
-        *sdl_LowThresh  = sdlLowThresh;
-        *sdl_MedThresh  = sdlMedThresh;
+        sdl_VLowThresh = sdlVLowThresh;
+        sdl_LowThresh  = sdlLowThresh;
+        sdl_MedThresh  = sdlMedThresh;
 
         LogFile::Format("[cityLevel::SetObjectDetail]: '%s'\n"
                         " - OBJ { %.4f, %.4f, %.4f, %.4f }\n"
@@ -418,10 +418,10 @@ public:
 
         auto deviceType = gfxInterface->DeviceType;
 
-        *enableHWTnL = (deviceType == gfxDeviceType::HardwareWithTnL);
-        *useBlade    = (*useSoftware = (deviceType == gfxDeviceType::Software));
+        enableHWTnL = (deviceType == gfxDeviceType::HardwareWithTnL);
+        useBlade    = (useSoftware = (deviceType == gfxDeviceType::Software));
 
-        *useInterface = gfxInterfaceChoice;
+        useInterface = gfxInterfaceChoice;
     }
 
     static LRESULT APIENTRY gfxWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -450,8 +450,8 @@ public:
         int screenHeight = GetDeviceCaps(hDC, VERTRES);
         ReleaseDC(0, hDC);
 
-        *window_X = (screenWidth - window_iWidth) / 2;
-        *window_Y = (screenHeight - window_iHeight) / 2;
+        window_X = (screenWidth - window_iWidth) / 2;
+        window_Y = (screenHeight - window_iHeight) / 2;
 
         // window may or may not be initialized yet
         if (isOpen) {
@@ -480,48 +480,48 @@ public:
 
     static void SetRes(int width, int height, int cdepth, int zdepth, bool parseArgs) {
         if (datArgParser::Get("ref")) {
-            *useSoftware    = 1;
-            *useReference   = 1;
+            useSoftware    = 1;
+            useReference   = 1;
         } else if (datArgParser::Get("blade") || datArgParser::Get("bladed")) {
-            *useSoftware    = 1;
-            *useBlade       = 1;
+            useSoftware    = 1;
+            useBlade       = 1;
         } else if (datArgParser::Get("swage")) {
-            *useSoftware    = 1;
-            *useAgeSoftware = 1;
+            useSoftware    = 1;
+            useAgeSoftware = 1;
         } else if (datArgParser::Get("sw")) {
-            *useSoftware    = 1;
+            useSoftware    = 1;
         }
 
         if (datArgParser::Get("sysmem")) {
-            *useSysMem = 1;
+            useSysMem = 1;
         }
         if (datArgParser::Get("triple")) {
-            *tripleBuffer = 1;
+            tripleBuffer = 1;
         }
 
         if (datArgParser::Get("nomultitexture") || datArgParser::Get("nomt")) {
-            *useMultiTexture = 0;
+            useMultiTexture = 0;
         }
         if (datArgParser::Get("novblank") || datArgParser::Get("novsync")) {
-            *novblank = 1;
+            novblank = 1;
         }
         if (datArgParser::Get("nohwtnl")) {
-            *enableHWTnL = 0;
+            enableHWTnL = 0;
         }
 
         if (datArgParser::Get("primary")) {
-            *useInterface = 0;
+            useInterface = 0;
         } else {
             datArgParser::Get("display", 0, &useInterface);
         }
         if (datArgParser::Get("single")) {
-            *pageFlip = 0;
+            pageFlip = 0;
         }
 
         if (datArgParser::Get("window") || datArgParser::Get("windowed")) {
-            *inWindow = 1;
+            inWindow = 1;
         } else if (datArgParser::Get("fs") || datArgParser::Get("fullscreen")) {
-            *inWindow = 0;
+            inWindow = 0;
         }
 
         int bitDepth = 0;
@@ -534,7 +534,7 @@ public:
         }
 
         // We don't want to set the width/height if we are in a menu, it just fucks it up
-        if (*splashScreen != 0) {
+        if (splashScreen != 0) {
             if (datArgParser::Get("max")) {
                 HDC hDC = GetDC(NULL);
                 width  = GetDeviceCaps(hDC, HORZRES);
@@ -549,20 +549,20 @@ public:
             // datArgParser::Get("height", 0, &height);
         }
 
-        *useSysMem = useSoftware;
+        useSysMem = useSoftware;
 
-        *window_iWidth  = width;
-        *window_iHeight = height;
+        window_iWidth  = width;
+        window_iHeight = height;
 
-        *window_fWidth  = float(width);
-        *window_fHeight = float(height);
+        window_fWidth  = float(width);
+        window_fHeight = float(height);
 
-        *window_ColorDepth = cdepth;
-        *window_ZDepth     = zdepth;
+        window_ColorDepth = cdepth;
+        window_ZDepth     = zdepth;
 
-        *gfxTexture::sm_Allow32 = (cdepth == 32);
+        gfxTexture::sm_Allow32 = (cdepth == 32);
 
-        LogFile::Format("[gfxPipeline::SetRes]: 32-bit textures are%s allowed.\n", (*gfxTexture::sm_Allow32) ? "" : "n't" );
+        LogFile::Format("[gfxPipeline::SetRes]: 32-bit textures are%s allowed.\n", (gfxTexture::sm_Allow32) ? "" : "n't" );
         LogFile::Format("[gfxPipeline::SetRes]: %dx%dx%dx%d\n", width, height, cdepth, zdepth);
 
         if (lpDD)
@@ -592,8 +592,8 @@ public:
             }
         }
 
-        *ioMouse_InvWidth  = (1.0f / window_fWidth);
-        *ioMouse_InvHeight = (1.0f / window_fHeight);
+        ioMouse_InvWidth  = (1.0f / window_fWidth);
+        ioMouse_InvHeight = (1.0f / window_fHeight);
     }
 
     static void gfxWindowCreate(LPCSTR lpWindowName) {
@@ -619,7 +619,7 @@ public:
                 "gfxWindow",                /* lpszClassName */
             };
 
-            *ATOM_Class = RegisterClassA(&wc);
+            ATOM_Class = RegisterClassA(&wc);
         }
 
         DWORD dwStyle = WS_POPUP;
@@ -630,7 +630,7 @@ public:
             {
                 dwStyle = WS_CHILD;
             }
-            else if (*hasBorder = !(datArgParser::Get("noborder") || datArgParser::Get("borderless")))
+            else if (hasBorder = !(datArgParser::Get("noborder") || datArgParser::Get("borderless")))
             {
                 dwStyle |= (WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX);
             }
@@ -657,7 +657,7 @@ public:
             0,
             0);
 
-        *hWndMain = hWND;
+        hWndMain = hWND;
 
         if (inWindow)
             gfxWindowUpdate(false);
@@ -678,7 +678,7 @@ public:
             0,      // Very High (unlimited)
         };
 
-        *gfxTexReduceSize = gfxReduceSizes[*gfxTexQuality];
+        gfxTexReduceSize = gfxReduceSizes[*gfxTexQuality];
     }
 
     static void Install() {
@@ -795,7 +795,7 @@ public:
 class mmDirSndHandler {
 public:
     static mmDirSnd* Init(int sampleRate, bool enableStero, int a4, float volume, LPCSTR deviceName, bool enable3D) {
-        if (*deviceName == '\0') {
+        if (deviceName == '\0') {
             deviceName = "Primary Sound Driver";
 
             LogFile::WriteLine("[mmDirSnd::Init]: Using primary sound driver");
@@ -1382,14 +1382,14 @@ public:
         vglColor = *vglCurrentColor;
 
         vglCalculatedColor = GetAdjustedColor(drawMode, vglColor);
-        *vglCurrentColor = vglCalculatedColor;
+        vglCurrentColor = vglCalculatedColor;
 
         vglBegin(drawMode, p1);
     }
 
     static void vglEndShaded(void) {
         // restore color
-        *vglCurrentColor = vglColor;
+        vglCurrentColor = vglColor;
 
         vglEnd();
     }
@@ -1548,7 +1548,7 @@ public:
             va_start(va, format);
 
             // treat as Messagef
-            $Printer(1, format, va);
+            Printer(1, format, va);
 
             va_end(va);
         }
@@ -1633,7 +1633,7 @@ public:
                 lpD3D->EnumDevices($DeviceCallback, gfxInterface);
                 lpD3D->Release();
 
-                *lpD3D = nullptr;
+                lpD3D = nullptr;
             }
 
             gfxInterface->DeviceType        = gfxDeviceType::HardwareWithTnL;
@@ -1654,8 +1654,8 @@ public:
 
             gfxInterface->AvailableMemory = availableMemory;
 
-            *gfxMaxScreenWidth = 0;
-            *gfxMaxScreenHeight = 0;
+            gfxMaxScreenWidth = 0;
+            gfxMaxScreenHeight = 0;
 
             QueryPerformanceCounter(&tStart);
             lpDD->EnumDisplayModes(0, 0, gfxInterface, $ResCallback);
@@ -1668,7 +1668,7 @@ public:
 
             Displayf("  Enumerated display modes in %.4f ms", tElapsed.QuadPart * 0.001);
 
-            *lpDD = nullptr;
+            lpDD = nullptr;
 
             ++*gfxInterfaceCount;
         }
@@ -1793,9 +1793,9 @@ public:
     }
 
     static void Install() {
-        *$Printer = &Print;
-        *$PrintString = &PrintString;
-        *$FatalErrorHandler = &FatalError;
+        Printer = &Print;
+        StringPrinter = &PrintString;
+        FatalErrorHandler = &FatalError;
     }
 };
 
@@ -1933,9 +1933,9 @@ public:
 
         LogFile::Write("Redirecting MM2 output...");
 
-        *datOutput::sm_Stream = Stream::Create("mm2.log", &logFileMethods);
+        datOutput::sm_Stream = Stream::Create("mm2.log", &logFileMethods);
 
-        LogFile::WriteLine((*datOutput::sm_Stream) ? "Done!" : "FAIL!");
+        LogFile::WriteLine((datOutput::sm_Stream) ? "Done!" : "FAIL!");
 
         if (datArgParser::Get("age_debug") || datArgParser::Get("ageDebug"))
         {
@@ -1947,13 +1947,13 @@ public:
             // these will output to the console and mm2.log if specified
 
             if (datArgParser::Get("gfxDebug"))
-                *gfxDebug = 1;
+                gfxDebug = 1;
             if (datArgParser::Get("audDebug"))
-                *audDebug = 1;
+                audDebug = 1;
             if (datArgParser::Get("joyDebug"))
-                *joyDebug = 1;
+                joyDebug = 1;
             if (datArgParser::Get("assetDebug"))
-                *assetDebug = 1;
+                assetDebug = 1;
         }
     }
 
@@ -1968,7 +1968,7 @@ public:
     }
 
     static void Start() {
-        if (!$gameClosing)
+        if (!gameClosing)
         {
             // GameLoop was restarted
             Reset(false);
@@ -1978,7 +1978,7 @@ public:
     }
 
     static void Stop() {
-        if ($gameClosing)
+        if (gameClosing)
         {
             LogFile::WriteLine("Hook shutdown request received.");
 
@@ -1999,8 +1999,8 @@ public:
     static void Install() {
         LogFile::WriteLine("Installing framework...");
 
-        *$__VtResumeSampling = &Start;
-        *$__VtPauseSampling = &Stop;
+        __VtResumeSampling = &Start;
+        __VtPauseSampling = &Stop;
 
         /*
             We'll hook into ArchInit (an empty function),
