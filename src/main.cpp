@@ -994,7 +994,7 @@ public:
                                 vglEnd();
                             }
 
-                            *vglCurrentColor = ((baseColor >> 1) & 0x7F7F7F) | 0xFF000000;
+                            vglCurrentColor = ((baseColor >> 1) & 0x7F7F7F) | 0xFF000000;
 
                             {
                                 vglBegin(DRAWMODE_TRIANGLESTRIP, vertex_count * 2);
@@ -1014,7 +1014,7 @@ public:
                                 vglEnd();
                             }
 
-                            *vglCurrentColor = baseColor;
+                            vglCurrentColor = baseColor;
                         }
 
                         if (attributes[2] != attributes[3])
@@ -1041,7 +1041,7 @@ public:
                                 vglEnd();
                             }
 
-                            *vglCurrentColor = ((baseColor >> 1) & 0x7F7F7F) | 0xFF000000;
+                            vglCurrentColor = ((baseColor >> 1) & 0x7F7F7F) | 0xFF000000;
 
                             {
                                 vglBegin(DRAWMODE_TRIANGLESTRIP, vertex_count * 2);
@@ -1060,7 +1060,7 @@ public:
                                 vglEnd();
                             }
 
-                            *vglCurrentColor = baseColor;
+                            vglCurrentColor = baseColor;
                         }
 
                         page->ArcMap(sBuffer, attributes + 1, 4, vertex_count, 1);
