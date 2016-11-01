@@ -260,6 +260,7 @@
     <ClInclude Include="src\mm2_gfx.h" />
     <ClInclude Include="src\mm2_input.h" />
     <ClInclude Include="src\mm2_lua.h" />
+    <ClInclude Include="src\mm2_rgl.h" />
     <ClInclude Include="src\mm2_utils.h" />
     <ClInclude Include="src\mm2_stream.h" />
     <ClInclude Include="src\mm2_vector.h" />
@@ -282,6 +283,7 @@
     <ClCompile Include="src\mm2_gfx.cpp" />
     <ClCompile Include="src\mm2_input.cpp" />
     <ClCompile Include="src\mm2_lua.cpp" />
+    <ClCompile Include="src\mm2_rgl.cpp" />
     <ClCompile Include="src\mm2_stream.cpp" />
     <ClCompile Include="src\mm2_utils.cpp" />
     <ClCompile Include="src\mm2_vehicle.cpp" />

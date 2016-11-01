@@ -65,9 +65,6 @@ AGEHook<0x4AEDC0>::Func<void> $gfxImage_Scale;
     TODO: Move VGL stuff to a separate file?
 */
 
-AGEHook<0x4A5500>::Func<void> $vglBegin;
-AGEHook<0x4A5A90>::Func<void> $vglEnd;
-
 AGEHook<0x4A1290>::Func<void> $asCullManager_Init;
 
 // ==========================
@@ -90,8 +87,6 @@ AGEHook<0x6B167C>::Type<char[40]> cityName;
 AGEHook<0x6B16A4>::Type<char[40]> cityName2;
 
 AGEHook<0x62B068>::Type<int> timeOfDay;
-
-AGEHook<0x661974>::Type<unsigned int> vglCurrentColor;
 
 /*
     ===========================================================================
@@ -1052,27 +1047,28 @@ private:
         return sdlPage16::GetShadedColor(color, vglResultColor.color);
     }
 public:
-    static void vglBegin(gfxDrawMode drawMode, int p1) {
+    static void vglBeginShaded(gfxDrawMode drawMode, int p1) {
         // Save current vgl color
         vglColor = *vglCurrentColor;
 
         vglCalculatedColor = GetAdjustedColor(drawMode, vglColor);
         *vglCurrentColor = vglCalculatedColor;
 
-        $vglBegin(drawMode, p1);
+        vglBegin(drawMode, p1);
     }
 
-    static void vglEnd(void) {
+    static void vglEndShaded(void) {
         // restore color
         *vglCurrentColor = vglColor;
-        $vglEnd();
+
+        vglEnd();
     }
 
     static void Install() {
         LogFile::WriteLine(" - Installing shading fix...");
 
-        auto_ptr vglBeginCB = &vglBegin;
-        auto_ptr vglEndCB = &vglEnd;
+        auto_ptr vglBeginCB = &vglBeginShaded;
+        auto_ptr vglEndCB = &vglEndShaded;
 
         LogFile::Format(" - vglBeginCB: %08X\n", vglBeginCB);
         LogFile::Format(" - vglEndCB: %08X\n", vglEndCB);
