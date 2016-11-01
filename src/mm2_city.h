@@ -35,17 +35,6 @@ namespace MM2
     };
 
     class sdlPage16 {
-        char unk_00;
-        char PerimeterCount;
-        char unk_02;
-        char unk_03;
-        Vector3 *CodedVertices;
-        float *Floats;
-        int unk_0C;
-        unsigned short *PerimeterVertices;
-        unsigned short *Attributes;
-        gfxTexture **Textures;
-        uint unk_1C;
     protected:
         static AGEHook<0x45A4E0>::MemberFunc<void> $$ctor;
 
@@ -67,6 +56,18 @@ namespace MM2
 
         static AGEHook<0x45BF90>::Func<sdlPage16 *> $LoadBinary;
     public:
+        char unk_00;
+        char PerimeterCount;
+        char unk_02;
+        char unk_03;
+        Vector3 *CodedVertices;
+        float *Floats;
+        int unk_0C;
+        unsigned short *PerimeterVertices;
+        unsigned short *Attributes;
+        gfxTexture **Textures;
+        uint unk_1C;
+
         AGE_API sdlPage16(int p1, int p2) {
             $$ctor(this, p1, p2);
         }
