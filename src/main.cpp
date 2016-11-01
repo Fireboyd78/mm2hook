@@ -88,6 +88,8 @@ AGEHook<0x6B16A4>::Type<char[40]> cityName2;
 
 AGEHook<0x62B068>::Type<int> timeOfDay;
 
+AGEHook<0x627518>::Type<int> carLights;
+
 /*
     ===========================================================================
 */
@@ -123,6 +125,11 @@ bool HandleKeyPress(DWORD vKey)
                 }
             }
         } return true;
+
+        case VK_F7:
+        {
+            *carLights = !*carLights;
+        }
     }
 
     return false;
