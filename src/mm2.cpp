@@ -1,3 +1,7 @@
+// Gives "extern" hooks their definitions :)
+// (See "mm2_common.h" for more details)
+#define __MM2_DECLARE_HOOKS
+
 #include "mm2.h"
 using namespace MM2;
 

@@ -21,8 +21,8 @@ namespace MM2
         };
     };
 
-    static AGEHook<0x544150>::Func<void> $aiPath_UpdatePedestrians;
-    static AGEHook<0x54B9C0>::Func<void> $aiPedestrian_Update;
+    HOOK_API AGEHook<0x544150>::Func<void> $aiPath_UpdatePedestrians;
+    HOOK_API AGEHook<0x54B9C0>::Func<void> $aiPedestrian_Update;
 
-    static AGEHook<0x550EF0>::Func<void> $aiPoliceForce_Reset;
+    HOOK_API AGEHook<0x550EF0>::Func<void> $aiPoliceForce_Reset;
 }

@@ -15,5 +15,5 @@ namespace MM2
         };
     };
 
-    static AGEHook<0x6AFFE4>::Type<int> vehPoliceCarAudio_iNumCopsPursuingPlayer;
+    HOOK_API AGEHook<0x6AFFE4>::Type<int> vehPoliceCarAudio_iNumCopsPursuingPlayer;
 }
