@@ -888,7 +888,7 @@ bool insideTunnel = false;
 
 class sdlPage16Handler {
 public:
-    static LPVOID blockPtr; // current block pointer
+    static sdlPage16 *page; // current sdl page
     static LPVOID attributePtr; // current attribute pointer
 
     // this MUST clean up the stack, hence the stdcall
@@ -897,11 +897,13 @@ public:
     }
 
     void Draw(int p1, unsigned int p2) {
-        blockPtr = this;
-        reinterpret_cast<sdlPage16*>(this)->Draw(p1, p2);
+        page = reinterpret_cast<sdlPage16 *>(this);
+        //page->Draw(p1, p2);
+
+        Draw_Impl(p1, p2);
 
         // not in a block anymore
-        blockPtr = NULL;
+        page = NULL;
         attributePtr = NULL; // lets vglHandler know we're not checking for SDL stuff
 
         // so hacky
@@ -909,6 +911,318 @@ public:
 
         // move to the next room
         ++city_currentRoom;
+    }
+
+    void Draw_Impl(int lod, unsigned int baseColor) {
+        if (page->Attributes == nullptr)
+            return;
+
+        ushort* attributes = page->Attributes;
+
+        Vector3 vecBuffer0[256];
+        Vector3 vecBuffer1[256];
+        float   sBuffer[256];
+
+        ushort current_shaded_color = 0;
+        ushort current_texture = 0;
+
+        while (true)
+        {
+            ushort attribute = attributes[0];
+            ++attributes;
+
+            ushort type = (attribute & 0b1111000) >> 3;
+            ushort vertex_count = (attribute & 0b111);
+
+            ushort texture_id = (attributes[0]) + (vertex_count << 8);
+
+            if (vertex_count == 0)
+            {
+                vertex_count = attributes[0];
+                ++attributes;
+            }
+
+            switch (type)
+            {
+                case 0b0000:
+                {
+                    // if (current_texture)
+                    if (false)
+                    {
+                        vglBindTexture(page->Textures[current_texture + 1]);
+
+                        page->ArcMap(sBuffer, attributes, 4, vertex_count, 1);
+
+                        if (attributes[0] != attributes[1])
+                        {
+                            {
+                                vglBegin(DRAWMODE_TRIANGLESTRIP, vertex_count * 2);
+
+                                for (int i = 0; i < vertex_count; ++i)
+                                {
+                                    ushort  attrib0 = attributes[(i * 4) + 0];
+                                    ushort  attrib1 = attributes[(i * 4) + 1];
+                                    Vector3 vertex0 = page->CodedVertices[attrib0];
+                                    Vector3 vertex1 = page->CodedVertices[attrib1];
+
+                                    vglTexCoord2f(sBuffer[i], 1.0f);
+                                    vglVertex3f(vertex0.X, vertex0.Y + 0.15f, vertex0.Z);
+
+                                    vglTexCoord2f(sBuffer[i], 0.0f);
+                                    vglVertex3f(vertex1.X, vertex1.Y, vertex1.Z);
+                                }
+
+                                vglEnd();
+                            }
+
+                            *vglCurrentColor = ((baseColor >> 1) & 0x7F7F7F) | 0xFF000000;
+
+                            {
+                                vglBegin(DRAWMODE_TRIANGLESTRIP, vertex_count * 2);
+
+                                for (int i = 0; i < vertex_count; ++i)
+                                {
+                                    ushort  attrib1 = attributes[(i * 4) + 1];
+                                    Vector3 vertex1 = page->CodedVertices[attrib1];
+
+                                    vglTexCoord2f(sBuffer[i], 0.0f);
+
+                                    vglVertex3f(vertex1.X, vertex1.Y, vertex1.Z);
+
+                                    vglVertex3f(vertex1.X, vertex1.Y, vertex1.Z);
+                                }
+
+                                vglEnd();
+                            }
+
+                            *vglCurrentColor = baseColor;
+                        }
+
+                        if (attributes[2] != attributes[3])
+                        {
+                            page->ArcMap(sBuffer, attributes + 2, 4, vertex_count, 1);
+
+                            {
+                                vglBegin(DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
+
+                                for (int i = 0; i < vertex_count; ++i)
+                                {
+                                    ushort attrib2 = attributes[(i * 4) + 2];
+                                    ushort attrib3 = attributes[(i * 4) + 3];
+                                    Vector3 vertex2 = page->CodedVertices[attrib2];
+                                    Vector3 vertex3 = page->CodedVertices[attrib3];
+
+                                    vglTexCoord2f(sBuffer[i], 0.0f);
+                                    vglVertex3f(vertex2.X, vertex2.Y, vertex2.Z);
+
+                                    vglTexCoord2f(sBuffer[i], 1.0f);
+                                    vglVertex3f(vertex3.X, vertex3.Y, vertex3.Z);
+                                }
+
+                                vglEnd();
+                            }
+
+                            *vglCurrentColor = ((baseColor >> 1) & 0x7F7F7F) | 0xFF000000;
+
+                            {
+                                vglBegin(DRAWMODE_TRIANGLESTRIP, vertex_count * 2);
+
+                                for (int i = 0; i < vertex_count; ++i)
+                                {
+                                    ushort attrib1  = attributes[(i * 4) + 2];
+                                    Vector3 vertex1 = page->CodedVertices[attrib1];
+
+                                    vglTexCoord2f(sBuffer[i], 0.0f);
+                                    vglVertex3f(vertex1.X, vertex1.Y, vertex1.Z);
+
+                                    vglVertex3f(vertex1.X, vertex1.Y + 0.15f, vertex1.Z);
+                                }
+
+                                vglEnd();
+                            }
+
+                            *vglCurrentColor = baseColor;
+                        }
+
+                        page->ArcMap(sBuffer, attributes + 1, 4, vertex_count, 1);
+
+                        vglBindTexture(page->Textures[current_texture]);
+
+                        {
+                            vglBegin(DRAWMODE_TRIANGLESTRIP, vertex_count * 2);
+
+                            for (int i = 0; i < vertex_count; ++i)
+                            {
+                                ushort attrib1  = attributes[(i * 4) + 1];
+                                ushort attrib2  = attributes[(i * 4) + 2];
+                                Vector3 vertex1 = page->CodedVertices[attrib1];
+                                Vector3 vertex2 = page->CodedVertices[attrib1];
+
+                                vglTexCoord2f(sBuffer[i], 1.0f);
+                                vglVertex3f(vertex1);
+
+                                vglTexCoord2f(sBuffer[i], 0.0f);
+                                Vector3 vertex_ =
+                                {
+                                    (vertex2.X - vertex1.X) * 0.5f + vertex1.X,
+                                    (vertex2.Y - vertex1.Y) * 0.5f + vertex1.Y,
+                                    (vertex2.Z - vertex1.Z) * 0.5f + vertex1.Z
+                                };
+                                vglVertex3f(vertex_.X, vertex_.Y, vertex_.Z);
+                            }
+
+                            vglEnd();
+                        }
+
+                        {
+                            vglBegin(DRAWMODE_TRIANGLESTRIP, vertex_count * 2);
+
+                            for (int i = 0; i < vertex_count; ++i)
+                            {
+                                ushort attrib1  = attributes[(i * 4) + 1];
+                                ushort attrib2  = attributes[(i * 4) + 2];
+                                Vector3 vertex1 = page->CodedVertices[attrib1];
+                                Vector3 vertex2 = page->CodedVertices[attrib1];
+
+                                vglTexCoord2f(sBuffer[i], 0.0f);
+                                Vector3 vertex_ =
+                                {
+                                    (vertex2.X - vertex1.X) * 0.5f + vertex1.X,
+                                    (vertex2.Y - vertex1.Y) * 0.5f + vertex1.Y,
+                                    (vertex2.Z - vertex1.Z) * 0.5f + vertex1.Z
+                                };
+                                vglVertex3f(vertex_.X, vertex_.Y, vertex_.Z);
+
+                                vglTexCoord2f(sBuffer[i], 1.0f);
+                                vglVertex3f(vertex2);
+                            }
+
+                            vglEnd();
+                        }
+                    }
+
+                    attributes += 4 * vertex_count;
+                } break;
+
+                case 0b0001:
+                {
+                    if (current_texture)
+                    {
+                        vglBindTexture(page->Textures[current_texture + 1]);
+
+                        if ((vertex_count != 2) || (attributes[0] != attributes[1]) || (attributes[0] >= 2u))
+                        {
+                            {
+                                float deltaS = floor(page->CodedVertices[attributes[0]].X * 0.25f);
+                                float deltaT = floor(page->CodedVertices[attributes[0]].Z * 0.25f);
+
+                                vglBegin(DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
+
+                                for (int i = 0; i < vertex_count; ++i)
+                                {
+                                    ushort attrib0  = attributes[(i * 2) + 0];
+                                    ushort attrib1  = attributes[(i * 2) + 1];
+                                    Vector3 vertex0 = page->CodedVertices[attrib0];
+                                    Vector3 vertex1 = page->CodedVertices[attrib1];
+
+                                    vglTexCoord2f(
+                                        (vertex0.X * 0.25f) - deltaS,
+                                        (vertex0.Z * 0.25f) - deltaT);
+
+                                    vglVertex3f(vertex0.X, vertex0.Y, vertex0.Z);
+
+
+                                    vglTexCoord2f(
+                                        (vertex1.X * 0.25f) - deltaS,
+                                        (vertex1.Z * 0.25f) - deltaT);
+
+                                    vglVertex3f(vertex1.X, vertex1.Y, vertex1.Z);
+                                }
+
+                                vglEnd();
+                            }
+                        }
+                    }
+
+                    attributes += 2 * vertex_count;
+                } break;
+
+                case 0b0010:
+                {
+                    attributes += 2 * vertex_count;
+                } break;
+
+                case 0b0011:
+                {
+                    attributes += 4;
+                } break;
+
+                case 0b0100:
+                {
+                    attributes += vertex_count;
+                } break;
+
+                case 0b0101:
+                {
+                    attributes += vertex_count + 2;
+                } break;
+
+                case 0b0110:
+                {
+                    attributes += vertex_count + 2;
+                } break;
+
+                case 0b0111:
+                {
+                    attributes += 4;
+                } break;
+
+                case 0b1000:
+                {
+                    attributes += 5 * vertex_count + 2;
+                } break;
+
+                case 0b1001:
+                {
+                    attributes += 3;
+
+                    if (vertex_count == 10)
+                    {
+                        attributes += 7;
+                    }
+                } break;
+
+                case 0b1010:
+                {
+                    current_texture = texture_id;
+
+                    if ((current_texture >> 8) & 0b111)
+                    {
+                        ++attributes;
+                    }
+                } break;
+
+                case 0b1011:
+                {
+                    attributes += 6;
+                } break;
+
+                case 0b1100:
+                {
+                    attributes += 1;
+
+                    attributes += vertex_count + 1;
+                } break;
+
+                default:
+                {
+                    Displayf("Invalid cmd %d (%d)", attribute, (attribute >> 3) & 0xF);
+                } break;
+            }
+
+            if (attribute & 0b10000000)
+                break;
+        }
     }
 
     static void InvalidCmd(LPCSTR, int attr, int subtype)
@@ -971,13 +1285,13 @@ public:
     }
 };
 
-LPVOID sdlPage16Handler::blockPtr;
+sdlPage16 * sdlPage16Handler::page;
 LPVOID sdlPage16Handler::attributePtr;
 
 class vglHandler {
 private:
     static unsigned int GetAdjustedColor(gfxDrawMode drawMode, unsigned int color) {
-        if (sdlPage16Handler::blockPtr != NULL)
+        if (sdlPage16Handler::page != NULL)
         {
             // fullbright
             static const ColorARGB sdlTunnelColor = { 255, 255, 255, 255 };
