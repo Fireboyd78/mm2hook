@@ -88,6 +88,10 @@ AGEHook<0x6B16A4>::Type<char[40]> cityName2;
 
 AGEHook<0x62B068>::Type<int> timeOfDay;
 
+AGEHook<0x627518>::Type<int> carLights;
+
+AGEHook<0x6B2E41>::Type<int> gameState;   //0 = menu, 1 = level loaded
+
 /*
     ===========================================================================
 */
@@ -103,26 +107,35 @@ bool HandleKeyPress(DWORD vKey)
         // '`'
         case VK_OEM_8:
         {
-            // tell the game to open a chat box,
-            // and then use a local variable to check if it's open
+            // check if the level is loaded
+            if (*gameState == 1) {
 
-            mmGameManager *mgr = mmGameManager::Instance();
-            auto gamePtr = mgr->getGame();
+                // tell the game to open a chat box,
+                // and then use a local variable to check if it's open
 
-            if (gamePtr != NULL)
-            {
-                auto popup = gamePtr->getPopup();
+                mmGameManager *mgr = mmGameManager::Instance();
+                auto gamePtr = mgr->getGame();
 
-                if (popup != NULL) {
-                    // don't try opening it again if it's already open
-                    if (popup->IsEnabled() && isConsoleOpen)
-                        return true;
+                if (gamePtr != NULL)
+                {
+                    auto popup = gamePtr->getPopup();
 
-                    popup->ProcessChat();
-                    isConsoleOpen = true;
+                    if (popup != NULL) {
+                        // don't try opening it again if it's already open
+                        if (popup->IsEnabled() && isConsoleOpen)
+                            return true;
+
+                        popup->ProcessChat();
+                        isConsoleOpen = true;
+                    }
                 }
             }
         } return true;
+
+        case VK_F7:
+        {
+            *carLights = !*carLights;
+        }
     }
 
     return false;
