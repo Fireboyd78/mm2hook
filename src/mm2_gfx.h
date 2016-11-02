@@ -6,6 +6,14 @@ namespace MM2
     // Forward declarations
     extern struct gfxInterface;
 
+    namespace $
+    {
+        namespace gfxLight
+        {
+            HOOK_API AGEHook<0x4B1C00>::MemberFunc<void> Reset;
+        }
+    }
+
     // what kind of primitive to draw
     // same values as D3DPRIMITIVETYPE
     enum gfxDrawMode {
@@ -61,8 +69,6 @@ namespace MM2
 
     /* Basically a 1:1 copy of D3DLIGHT */
     struct gfxLight {
-    protected:
-        static AGEHook<0x4B1C00>::MemberFunc<void> $Reset;
     public:
         D3DLIGHTTYPE Type;
 
@@ -84,7 +90,7 @@ namespace MM2
         float Phi;
 
         void Reset(void) {
-            $Reset(this);
+            $::gfxLight::Reset(this);
         };
     };
 

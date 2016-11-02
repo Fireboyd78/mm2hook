@@ -24,6 +24,53 @@ namespace MM2
     extern class DirSnd;
     extern class mmDirSnd;
 
+    namespace $
+    {
+        namespace DirSnd
+        {
+            HOOK_API AGEHook<0x5A5080>::Func<MM2::DirSnd *> Init;
+
+            HOOK_API AGEHook<0x5A4ED0>::MemberFunc<void> $$ctor;
+            HOOK_API AGEHook<0x5A4F30>::MemberFunc<void> $$dtor;
+
+            HOOK_API AGEHook<0x5A4FD0>::MemberFunc<void> DeInit;
+
+            HOOK_API AGEHook<0x5A5160>::MemberFunc<int> Init3DListener;
+
+            HOOK_API AGEHook<0x5A51C0>::MemberFunc<int> IsDSDeviceInList;
+            HOOK_API AGEHook<0x5A5390>::MemberFunc<void> SetDeviceRating;
+            HOOK_API AGEHook<0x5A5510>::MemberFunc<int> EnumDSDevices;
+
+            HOOK_API AGEHook<0x5A5530>::MemberFunc<int> InitPrimarySoundBuffer;
+            HOOK_API AGEHook<0x5A5770>::MemberFunc<int> CreatePrimaryInterfaceAndBuffer;
+
+            HOOK_API AGEHook<0x5A5860>::MemberFunc<void> ClearDSDeviceList;
+
+            HOOK_API AGEHook<0x5A5950>::MemberFunc<void> SetPrimaryBufferFormat;
+
+            HOOK_API AGEHook<0x5A5A30>::MemberFunc<void> ScanAvailableDSFormats;
+            HOOK_API AGEHook<0x5A5BB0>::MemberFunc<char *> TranslateDSError;
+
+            HOOK_API AGEHook<0x5A5BD0>::MemberFunc<void> SetBitDepth;
+            HOOK_API AGEHook<0x5A5C00>::MemberFunc<char **> GetDeviceNames;
+            HOOK_API AGEHook<0x5A5630>::MemberFunc<UINT> GetNum3DHallBufs;
+        }
+        namespace mmDirSnd
+        {
+            HOOK_API AGEHook<0x51CC50>::Func<MM2::mmDirSnd *> Init;
+
+            HOOK_API AGEHook<0x51CBE0>::MemberFunc<void> $$ctor;
+            HOOK_API AGEHook<0x51CC00>::MemberFunc<void> $$dtor;
+
+            HOOK_API AGEHook<0x51CC10>::MemberFunc<void> DeInit;
+
+            HOOK_API AGEHook<0x51CD90>::MemberFunc<int> InitPrimarySoundBuffer;
+
+            HOOK_API AGEHook<0x51CE60>::MemberFunc<UINT> EAXEnabled;
+            HOOK_API AGEHook<0x51CE70>::MemberFunc<UINT> DSound3DEnabled;
+        }
+    }
+
     class DirSnd {
     protected:
         /*0x4*/
@@ -58,107 +105,76 @@ namespace MM2
 
         PDSDEVICEDESC *ppSoundDevices;
 
-        /*
-            Function hooks
-        */
-
-        static AGEHook<0x5A5080>::Func<DirSnd *> $Init;
-
-        static AGEHook<0x5A4ED0>::MemberFunc<void> $$ctor;
-        static AGEHook<0x5A4F30>::MemberFunc<void> $$dtor;
-
-        static AGEHook<0x5A4FD0>::MemberFunc<void> $DeInit;
-
-        static AGEHook<0x5A5160>::MemberFunc<int> $Init3DListener;
-
-        static AGEHook<0x5A51C0>::MemberFunc<int> $IsDSDeviceInList;
-        static AGEHook<0x5A5390>::MemberFunc<void> $SetDeviceRating;
-        static AGEHook<0x5A5510>::MemberFunc<int> $EnumDSDevices;
-
-        static AGEHook<0x5A5530>::MemberFunc<int> $InitPrimarySoundBuffer;
-        static AGEHook<0x5A5770>::MemberFunc<int> $CreatePrimaryInterfaceAndBuffer;
-
-        static AGEHook<0x5A5860>::MemberFunc<void> $ClearDSDeviceList;
-
-        static AGEHook<0x5A5950>::MemberFunc<void> $SetPrimaryBufferFormat;
-
-        static AGEHook<0x5A5A30>::MemberFunc<void> $ScanAvailableDSFormats;
-        static AGEHook<0x5A5BB0>::MemberFunc<char *> $TranslateDSError;
-
-        static AGEHook<0x5A5BD0>::MemberFunc<void> $SetBitDepth;
-        static AGEHook<0x5A5C00>::MemberFunc<char **> $GetDeviceNames;
-        static AGEHook<0x5A5630>::MemberFunc<UINT> $GetNum3DHallBufs;
-
         AGE_API int CreatePrimaryInterfaceAndBuffer(DSBUFFERDESC *p1) {
-            return $CreatePrimaryInterfaceAndBuffer(this, p1);
+            return $::DirSnd::CreatePrimaryInterfaceAndBuffer(this, p1);
         };
     public:
         AGE_API DirSnd() {
             PUSH_VTABLE();
-            $$ctor(this);
+            $::DirSnd::$$ctor(this);
             POP_VTABLE();
         };
 
         AGE_API ~DirSnd() {
             PUSH_VTABLE();
-            $$dtor(this);
+            $::DirSnd::$$dtor(this);
             POP_VTABLE();
         };
 
         AGE_API static DirSnd * Init(DWORD sampleRate, bool enableStero, bool enable3D, const char *deviceName) {
-            return $Init(sampleRate, enableStero, enable3D, deviceName);
+            return $::DirSnd::Init(sampleRate, enableStero, enable3D, deviceName);
         };
 
         AGE_API int Init3DListener(float p1, float p2, float p3, float p4, float p5) {
-            return $Init3DListener(this, p1, p2, p3, p4, p5);
+            return $::DirSnd::Init3DListener(this, p1, p2, p3, p4, p5);
         };
 
         AGE_API int IsDSDeviceInList(GUID *guid) {
-            return $IsDSDeviceInList(this, guid);
+            return $::DirSnd::IsDSDeviceInList(this, guid);
         };
 
         AGE_API void DeInit(void) {
-            $DeInit(this);
+            $::DirSnd::DeInit(this);
         };
 
         AGE_API void SetDeviceRating(DSDEVICEDESC *p1) {
-            $SetDeviceRating(this, p1);
+            $::DirSnd::SetDeviceRating(this, p1);
         };
 
         AGE_API int EnumDSDevices(void) {
-            return $EnumDSDevices(this);
+            return $::DirSnd::EnumDSDevices(this);
         };
 
         AGE_API void ClearDSDeviceList(void) {
-            $ClearDSDeviceList(this);
+            $::DirSnd::ClearDSDeviceList(this);
         };
 
         AGE_API void SetPrimaryBufferFormat(DWORD p1, BYTE p2) {
-            $SetPrimaryBufferFormat(this, p1, p2);
+            $::DirSnd::SetPrimaryBufferFormat(this, p1, p2);
         };
 
         AGE_API void ScanAvailableDSFormats(void) {
-            $ScanAvailableDSFormats(this);
+            $::DirSnd::ScanAvailableDSFormats(this);
         };
 
         AGE_API char * TranslateDSError(long p1) {
-            return $TranslateDSError(this, p1);
+            return $::DirSnd::TranslateDSError(this, p1);
         };
 
         AGE_API void SetBitDepth(int p1) {
-            $SetBitDepth(this, p1);
+            $::DirSnd::SetBitDepth(this, p1);
         };
 
         AGE_API char ** GetDeviceNames(void) {
-            return $GetDeviceNames(this);
+            return $::DirSnd::GetDeviceNames(this);
         };
 
         AGE_API UINT GetNum3DHallBufs(void) {
-            return $GetNum3DHallBufs(this);
+            return $::DirSnd::GetNum3DHallBufs(this);
         };
 
         AGE_API virtual int InitPrimarySoundBuffer(DWORD p1, BYTE p2, char *p3) {
-            return $InitPrimarySoundBuffer(this, p1, p2, p3);
+            return $::DirSnd::InitPrimarySoundBuffer(this, p1, p2, p3);
         };
     };
 
@@ -167,53 +183,37 @@ namespace MM2
         /*0x3C*/
         UINT eaxEnabled;
         UINT dsound3DEnabled;
-
-        /*
-            Function hooks
-        */
-
-        static AGEHook<0x51CC50>::Func<mmDirSnd *> $Init;
-
-        static AGEHook<0x51CBE0>::MemberFunc<void> $$ctor;
-        static AGEHook<0x51CC00>::MemberFunc<void> $$dtor;
-
-        static AGEHook<0x51CC10>::MemberFunc<void> $DeInit;
-
-        static AGEHook<0x51CD90>::MemberFunc<int> $InitPrimarySoundBuffer;
-
-        static AGEHook<0x51CE60>::MemberFunc<UINT> $EAXEnabled;
-        static AGEHook<0x51CE70>::MemberFunc<UINT> $DSound3DEnabled;
     public:
         AGE_API mmDirSnd() {
             PUSH_VTABLE();
-            $$ctor(this);
+            $::mmDirSnd::$$ctor(this);
             POP_VTABLE();
         };
 
         AGE_API ~mmDirSnd() {
             PUSH_VTABLE();
-            $$dtor(this);
+            $::mmDirSnd::$$dtor(this);
             POP_VTABLE();
         };
 
         AGE_API static mmDirSnd * Init(int sampleRate, bool enableStero, int a4, float volume, LPCSTR deviceName, bool enable3D) {
-            return $Init(sampleRate, enableStero, a4, volume, deviceName, enable3D);
+            return $::mmDirSnd::Init(sampleRate, enableStero, a4, volume, deviceName, enable3D);
         };
 
         AGE_API void DeInit(short p1, short p2) {
-            $DeInit(this, p1, p2);
+            $::mmDirSnd::DeInit(this, p1, p2);
         };
 
         AGE_API UINT EAXEnabled(void) {
-            return $EAXEnabled(this);
+            return $::mmDirSnd::EAXEnabled(this);
         };
 
         AGE_API UINT DSound3DEnabled(void) {
-            return $DSound3DEnabled(this);
+            return $::mmDirSnd::DSound3DEnabled(this);
         };
 
         AGE_API virtual int InitPrimarySoundBuffer(DWORD p1, BYTE p2, char *p3) {
-            return $InitPrimarySoundBuffer(this, p1, p2, p3);
+            return $::mmDirSnd::InitPrimarySoundBuffer(this, p1, p2, p3);
         };
     };
 }

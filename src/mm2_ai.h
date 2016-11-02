@@ -6,18 +6,24 @@ namespace MM2
     // Forward declarations
     extern class aiMap;
 
-    class aiMap {
-    protected:
-        static AGEHook<0x538840>::MemberFunc<void> $Dump;
+    namespace $
+    {
+        namespace aiMap
+        {
+            HOOK_API AGEHook<0x538840>::MemberFunc<void> Dump;
+        }
 
-        static AGEHook<0x6B2E10>::Type<aiMap> $AIMAP;
+        HOOK_API AGEHook<0x6B2E10>::Type<MM2::aiMap> AIMAP;
+    }
+
+    class aiMap {
     public:
         AGE_API void Dump(void) {
-            $Dump(this);
+            $::aiMap::Dump(this);
         };
 
         static aiMap* Instance(void) {
-            return &$AIMAP;
+            return &$::AIMAP;
         };
     };
 

@@ -9,7 +9,7 @@
     Multiple declarations will cause compiler errors!
 */
 #ifdef __MM2_DECLARE_HOOKS
-#define HOOK_API
+#define HOOK_API 
 #else
 #define HOOK_API extern
 #endif

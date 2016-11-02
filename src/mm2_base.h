@@ -11,30 +11,72 @@ namespace MM2
     // External declarations
     extern class datParser;
 
+    namespace $
+    {
+        namespace Base
+        {
+            HOOK_API AGEHook<0x4C8200>::MemberFunc<void> $$dtor;
+        }
+        namespace asCullable
+        {
+            HOOK_API AGEHook<0x460EA0>::MemberFunc<void> $$dtor;
+            HOOK_API AGEHook<0x4A3440>::MemberFunc<void> Cull;
+        }
+        namespace asNode
+        {
+            HOOK_API AGEHook<0x4A0CE0>::MemberFunc<void> $$ctor;
+            HOOK_API AGEHook<0x4A0D00>::MemberFunc<void> $$dtor;
+
+            HOOK_API AGEHook<0x403330>::MemberFunc<void> FileIO;
+            HOOK_API AGEHook<0x403340>::MemberFunc<void> AfterLoad;
+            HOOK_API AGEHook<0x403350>::MemberFunc<void> BeforeSave;
+
+            HOOK_API AGEHook<0x403360>::MemberFunc<char *> GetClassNameA;
+
+            HOOK_API AGEHook<0x4A0D70>::MemberFunc<void> SetName;
+
+            HOOK_API AGEHook<0x4A0DA0>::MemberFunc<const char *> GetDirName;
+
+            HOOK_API AGEHook<0x4A0DB0>::MemberFunc<void> Update;
+            HOOK_API AGEHook<0x4A0DD0>::MemberFunc<void> UpdatePaused;
+            HOOK_API AGEHook<0x4A0E10>::MemberFunc<void> Reset;
+            HOOK_API AGEHook<0x4A0E30>::MemberFunc<void> ResChange;
+
+            HOOK_API AGEHook<0x4A0E60>::MemberFunc<int> AddChild;
+            HOOK_API AGEHook<0x4A0EE0>::MemberFunc<int> InsertChild;
+            HOOK_API AGEHook<0x4A0F50>::MemberFunc<int> RemoveChild_$1;
+            HOOK_API AGEHook<0x4A0FD0>::MemberFunc<int> RemoveChild_$2;
+            HOOK_API AGEHook<0x4A1010>::MemberFunc<void> RemoveAllChildren;
+            HOOK_API AGEHook<0x4A1030>::MemberFunc<MM2::asNode *> GetChild;
+            HOOK_API AGEHook<0x4A1060>::MemberFunc<MM2::asNode *> GetNext;
+            HOOK_API AGEHook<0x4A1070>::MemberFunc<MM2::asNode *> GetLastChild;
+            HOOK_API AGEHook<0x4A10A0>::MemberFunc<int> NumChildren;
+            HOOK_API AGEHook<0x4A10C0>::MemberFunc<void> SwitchTo;
+
+            HOOK_API AGEHook<0x4A1120>::MemberFunc<bool> Load;
+            HOOK_API AGEHook<0x4A11D0>::MemberFunc<bool> Save;
+        }
+    }
+
     class Base {
-    protected:
-        static AGEHook<0x4C8200>::MemberFunc<void> $$dtor;
     public:
         AGE_API virtual ~Base() {
             PUSH_VTABLE();
-            $$dtor(this);
+            $::Base::$$dtor(this);
             POP_VTABLE();
         };
     };
 
     class asCullable : public Base {
-    protected:
-        static AGEHook<0x460EA0>::MemberFunc<void> $$dtor;
-        static AGEHook<0x4A3440>::MemberFunc<void> $Cull;
     public:
         AGE_API virtual ~asCullable() {
             PUSH_VTABLE();
-            $$dtor(this);
+            $::asCullable::$$dtor(this);
             POP_VTABLE();
         };
 
         AGE_API virtual void Cull(void) {
-            $Cull(this);
+            $::asCullable::Cull(this);
         };
     };
 
@@ -46,93 +88,61 @@ namespace MM2
         unsigned int flags; // not sure how these work yet
 
         LPCSTR name;
-    protected:
-        static AGEHook<0x403330>::MemberFunc<void> $FileIO;
-        static AGEHook<0x403340>::MemberFunc<void> $AfterLoad;
-        static AGEHook<0x403350>::MemberFunc<void> $BeforeSave;
-
-        static AGEHook<0x403360>::MemberFunc<char *> $GetClassNameA;
-
-        static AGEHook<0x4A0CE0>::MemberFunc<void> $$ctor;
-        static AGEHook<0x4A0D00>::MemberFunc<void> $$dtor;
-
-        static AGEHook<0x4A0D70>::MemberFunc<void> $SetName;
-
-        static AGEHook<0x4A0DA0>::MemberFunc<const char *> $GetDirName;
-
-        static AGEHook<0x4A0DB0>::MemberFunc<void> $Update;
-        static AGEHook<0x4A0DD0>::MemberFunc<void> $UpdatePaused;
-        static AGEHook<0x4A0E10>::MemberFunc<void> $Reset;
-        static AGEHook<0x4A0E30>::MemberFunc<void> $ResChange;
-
-        static AGEHook<0x4A0E60>::MemberFunc<int> $AddChild;
-        static AGEHook<0x4A0EE0>::MemberFunc<int> $InsertChild;
-        static AGEHook<0x4A0F50>::MemberFunc<int> $RemoveChild_$1;
-        static AGEHook<0x4A0FD0>::MemberFunc<int> $RemoveChild_$2;
-        static AGEHook<0x4A1010>::MemberFunc<void> $RemoveAllChildren;
-        static AGEHook<0x4A1030>::MemberFunc<asNode *> $GetChild;
-        static AGEHook<0x4A1060>::MemberFunc<asNode *> $GetNext;
-        static AGEHook<0x4A1070>::MemberFunc<asNode *> $GetLastChild;
-        static AGEHook<0x4A10A0>::MemberFunc<int> $NumChildren;
-        static AGEHook<0x4A10C0>::MemberFunc<void> $SwitchTo;
-
-        static AGEHook<0x4A1120>::MemberFunc<bool> $Load;
-        static AGEHook<0x4A11D0>::MemberFunc<bool> $Save;
     public:
         AGE_API asNode() {
             PUSH_VTABLE();
-            $$ctor(this);
+            $::asNode::$$ctor(this);
             POP_VTABLE();
         };
 
         AGE_API virtual ~asNode() {
             PUSH_VTABLE();
-            $$dtor(this);
+            $::asNode::$$dtor(this);
             POP_VTABLE();
         };
 
         AGE_API void SetName(LPCSTR name) {
-            $SetName(this, name);
+            $::asNode::SetName(this, name);
         };
 
         AGE_API int AddChild(asNode *child) {
-            return $AddChild(this, child);
+            return $::asNode::AddChild(this, child);
         };
 
         AGE_API int InsertChild(int index, asNode *child) {
-            return $InsertChild(this, index, child);
+            return $::asNode::InsertChild(this, index, child);
         };
 
         AGE_API int RemoveChild(int index) {
-            return $RemoveChild_$1(this, index);
+            return $::asNode::RemoveChild_$1(this, index);
         };
 
         AGE_API int RemoveChild(asNode *child) {
-            return $RemoveChild_$2(this, child);
+            return $::asNode::RemoveChild_$2(this, child);
         };
 
         AGE_API void RemoveAllChildren(void) {
-            $RemoveAllChildren(this);
+            $::asNode::RemoveAllChildren(this);
         };
 
         AGE_API asNode * GetChild(int index) {
-            return $GetChild(this, index);
+            return $::asNode::GetChild(this, index);
         };
 
         AGE_API asNode* GetNext(void) {
-            return $GetNext(this);
+            return $::asNode::GetNext(this);
         };
 
         AGE_API asNode* GetLastChild(void) {
-            return $GetLastChild(this);
+            return $::asNode::GetLastChild(this);
         };
 
         AGE_API int NumChildren(void) {
-            return $NumChildren(this);
+            return $::asNode::NumChildren(this);
         };
 
         AGE_API void SwitchTo(int index) {
-            $SwitchTo(this, index);
+            $::asNode::SwitchTo(this, index);
         };
 
         /*
@@ -141,47 +151,47 @@ namespace MM2
         */
 
         AGE_API virtual void Update(void) {
-            $Update(this);
+            $::asNode::Update(this);
         };
 
         AGE_API virtual void Reset(void) {
-            $Reset(this);
+            $::asNode::Reset(this);
         };
 
         AGE_API virtual void ResChange(int width, int height) {
-            $ResChange(this, width, height);
+            $::asNode::ResChange(this, width, height);
         };
 
         AGE_API virtual void UpdatePaused(void) {
-            $UpdatePaused(this);
+            $::asNode::UpdatePaused(this);
         };
 
         AGE_API virtual void FileIO(datParser &parser) {
-            $FileIO(this, &parser);
+            $::asNode::FileIO(this, &parser);
         };
 
         AGE_API virtual void AfterLoad(void) {
-            $AfterLoad(this);
+            $::asNode::AfterLoad(this);
         };
 
         AGE_API virtual void BeforeSave(void) {
-            $BeforeSave(this);
+            $::asNode::BeforeSave(this);
         };
 
         AGE_API virtual bool Save(void) {
-            return $Save(this);
+            return $::asNode::Save(this);
         };
 
         AGE_API virtual bool Load(void) {
-            return $Load(this);
+            return $::asNode::Load(this);
         };
 
         AGE_API virtual char * GetClassName(void) {
-            return $GetClassNameA(this);
+            return $::asNode::GetClassNameA(this);
         };
 
         AGE_API virtual const char * GetDirName(void) {
-            return $GetDirName(this);
+            return $::asNode::GetDirName(this);
         };
     };
 }
