@@ -1490,13 +1490,13 @@ public:
                 case 6:
                         if (current_texture)
                         {
-                            vglBindTexture(page->Textures[current_texture]);
+                            vglBindTexture(page->GetTexture(current_texture));
 
                             {
                                 vglBegin(DRAWMODE_TRIANGLEFAN, vertex_count + 2);
 
-                                float deltaS = floor(page->CodedVertices[attributes[0]].X * 0.125f);
-                                float deltaT = floor(page->CodedVertices[attributes[0]].Z * 0.125f);
+                                float deltaS = floor(page->GetCodedVertex(attributes[0]).X * 0.125f);
+                                float deltaT = floor(page->GetCodedVertex(attributes[0]).Z * 0.125f);
 
                                 for (int i = 0; i < vertex_count + 2; ++i)
                                 {
@@ -1566,10 +1566,10 @@ public:
 
                     if (!sdlCommon::BACKFACE(vertex4, vertex5))
                     {
-                        float float0 = page->Floats[attributes[0]];
-                        float float1 = page->Floats[attributes[1]];
+                        float float0 = page->GetFloat(attributes[0]);
+                        float float1 = page->GetFloat(attributes[1]);
 
-                        if (gfxTexture* texture = page->Textures[current_texture])
+                        if (gfxTexture* texture = page->GetTexture(current_texture))
                         {
                             unsigned int color = texture->Color;
 
