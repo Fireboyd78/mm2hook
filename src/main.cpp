@@ -1320,6 +1320,121 @@ public:
 
                 case 3:
                 {
+                    ushort attrib0 = attributes[0];
+                    ushort attrib1 = attributes[1];
+                    ushort attrib2 = attributes[2];
+                    ushort attrib3 = attributes[3];
+
+                    Vector3 vertex2 = page->GetCodedVertex(attrib2);
+                    Vector3 vertex3 = page->GetCodedVertex(attrib3);
+
+                    if (!sdlCommon::BACKFACE(vertex2, vertex3))
+                    {
+                        float float0 = page->GetFloat(attrib0);
+                        float float1 = page->GetFloat(attrib1);
+
+                        if (gfxTexture* texture = page->Textures[current_texture])
+                        {
+                            unsigned int color = texture->Color;
+
+                            vglCurrentColor = sdlPage16::GetShadedColor(
+                                sdlCommon::sm_LightTable[current_shaded_color],
+                                color ? color : 0xFFFFFFFF,
+                                baseColor
+                            );
+
+                            vglBindTexture(texture);
+                        }
+                        else
+                        {
+                            vglCurrentColor = sdlPage16::GetShadedColor(
+                                sdlCommon::sm_LightTable[current_shaded_color],
+                                baseColor
+                            );
+
+                            vglBindTexture(0);
+                        }
+
+                        float currentS = floor(vertex3.Dist(vertex2) * float1 + 0.5f);
+
+                        float funk2 = (vertex2.Y - float0) * float1;
+                        float funk3 = (vertex3.Y - float0) * float1;
+
+                        if (funk2 == 0.0f)
+                        {
+                            if (funk3 != 0.0f)
+                            {
+                                vglBegin(DRAWMODE_TRIANGLEFAN, 3);
+                                
+                                vglTexCoord2f(0.0f, 0.0f);
+                                vglVertex3f(vertex2);
+
+                                vglTexCoord2f(currentS, funk3);
+                                vglVertex3f(vertex3);
+
+                                vglTexCoord2f(currentS, 0.0f);
+                                vglVertex3f({
+                                    vertex3.X,
+                                    float0,
+                                    vertex3.Z
+                                });
+
+                                vglEnd();
+                            }
+                        }
+                        else if (funk3 != 0.0f)
+                        {
+                            vglBegin(DRAWMODE_TRIANGLEFAN, 4);
+
+                            vglTexCoord2f(0.0f, funk2);
+                            vglVertex3f(vertex2);
+
+                            vglTexCoord2f(currentS, funk3);
+                            vglVertex3f(vertex3);
+
+                            vglTexCoord2f(currentS, 0.0f);
+                            vglVertex3f({
+                                vertex3.X,
+                                float0,
+                                vertex3.Z
+                            });
+
+                            vglTexCoord2f(0.0f, 0.0f);
+                            vglVertex3f({
+                                vertex2.X,
+                                float0,
+                                vertex2.Z
+                            });
+
+                            vglEnd();
+                        }
+                        else
+                        {
+                            vglBegin(DRAWMODE_TRIANGLEFAN, 3);
+
+                            vglTexCoord2f(0.0f, funk2);
+                            vglVertex3f(vertex2);
+
+                            vglTexCoord2f(currentS, 0.0f);
+                            vglVertex3f({
+                                vertex3.X,
+                                float0,
+                                vertex3.Z
+                            });
+
+                            vglTexCoord2f(0.0f, 0.0f);
+                            vglVertex3f({
+                                vertex2.X,
+                                float0,
+                                vertex2.Z
+                            });
+
+                            vglEnd();
+                        }
+
+                        vglCurrentColor = baseColor;
+                    }
+
                     attributes += 4;
                 } break;
 
