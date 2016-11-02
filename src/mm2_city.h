@@ -13,6 +13,11 @@ namespace MM2
 
     namespace $
     {
+        namespace sdlCommon
+        {
+            HOOK_API AGEHook<0x45CBC0>::Func<bool> BACKFACE;
+            HOOK_API AGEHook<0x448090>::Func<void> UpdateLighting;
+        }
         namespace sdlPage16
         {
             HOOK_API AGEHook<0x45A4E0>::MemberFunc<void> $$ctor;
@@ -58,6 +63,20 @@ namespace MM2
         /*0x44*/int AmbientLevel1;
 
         /*0x48*/int Ambient; // looks like the alpha is ignored
+    };
+
+    class sdlCommon {
+    public:
+        static AGEHook<0x62B090>::Type<Vector3> sm_CamPos;
+        static AGEHook<0x62B0A0>::Type<uint> sm_LightTable;
+
+        AGE_API static void UpdateLighting(void) {
+            $::sdlCommon::UpdateLighting();
+        }
+
+        AGE_API static bool BACKFACE(const Vector3 &vec1, const Vector3 &vec2) {
+            return $::sdlCommon::BACKFACE(&vec1, &vec2);
+        }
     };
 
     class sdlPage16 {

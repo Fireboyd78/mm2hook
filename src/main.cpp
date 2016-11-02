@@ -59,8 +59,6 @@ AGEHook<0x4415E0>::MemberFunc<void> $dgBangerInstance_Draw;
 
 AGEHook<0x577210>::MemberFunc<void> $memSafeHeap_Init;
 
-AGEHook<0x448090>::Func<void> $sdlCommon_UpdateLighting;
-
 AGEHook<0x4AEDC0>::MemberFunc<void> $gfxImage_Scale;
 
 /*
@@ -271,7 +269,7 @@ public:
     // jumped to at the end of cityLevel::Update
     void PostUpdate() {
         // update the SDL lighting
-        $sdlCommon_UpdateLighting();
+        sdlCommon::UpdateLighting();
 
         // update our shaded lighting
         // TODO: fix lighting quality not being taken into account (harder than it sounds)

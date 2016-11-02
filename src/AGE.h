@@ -155,7 +155,7 @@ public:
         /*
             TType[0] - Pointer is TType array
         */
-        inline TType& operator[](std::size_t index) const {
+        inline TType& operator[](int index) const {
             return this->get()[index];
         }
 
