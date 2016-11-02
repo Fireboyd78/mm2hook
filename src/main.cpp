@@ -103,15 +103,10 @@ bool HandleKeyPress(DWORD vKey)
         // '`'
         case VK_OEM_8:
         {
-            // check if the level is loaded
-            // otherwise don't do anything
-            if (gameState != 1)
-                return false;
-
             // tell the game to open a chat box,
             // and then use a local variable to check if it's open
             mmGameManager *mgr = mmGameManager::Instance();
-            auto gamePtr = mgr->getGame();
+            auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
 
             if (gamePtr != NULL)
             {
