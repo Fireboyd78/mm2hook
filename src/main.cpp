@@ -1630,7 +1630,33 @@ public:
 
                 case 12:
                 {
-                    attributes += 1;
+                    float posY = page->GetFloat(attributes[0]);
+                    ++attributes;
+
+                    if ((*sdlCommon::sm_CamPos).Y >= posY)
+                    {
+                        float deltaS = page->GetCodedVertex(attributes[0]).X * 0.125f;
+                        float deltaT = page->GetCodedVertex(attributes[0]).Z * 0.125f;
+
+                        vglBindTexture(page->GetTexture(current_texture));
+
+                        vglBegin(DRAWMODE_TRIANGLEFAN, vertex_count + 1);
+
+                        for (int i = 0; i < vertex_count + 1; ++i)
+                        {
+                            ushort attrib0  = attributes[i];
+                            Vector3 vertex0 = page->GetCodedVertex(attrib0);
+
+                            vglTexCoord2f(
+                                (vertex0.X * 0.125f) - deltaS,
+                                (vertex0.Z * 0.125f) - deltaT
+                            );
+                            vglVertex3f(vertex0.X, posY, vertex0.Z);
+                        }
+
+                        vglEnd();
+                    }
+
                     attributes += vertex_count + 1;
                 } break;
 
