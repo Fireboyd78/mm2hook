@@ -1706,6 +1706,13 @@ public:
 
             LogFile::Format("   - { vglBegin: %08X, vglEnd: %08X }\n", begin, end);
         }
+
+        InstallPatch("vglBegin - Fix max buffer size", {
+            0x3D, 0x00, 0x04, 0x00, 0x00,   // cmp eax, 0x00000400 (1024)
+            0x7C, 0x10                      // jl Midtown2.exe + A553F
+        }, {
+            0x4A5528
+        });
     }
 };
 
