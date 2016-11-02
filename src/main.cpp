@@ -1327,6 +1327,40 @@ public:
                 {
                     if (current_texture)
                     {
+                        if ((*sdlCommon::sm_CamPos).Y > page->GetCodedVertex(attributes[0]).Y)
+                        {
+                            vglBindTexture(page->GetTexture(current_texture + 2));
+
+                            ushort attrib0 = attributes[0];
+                            ushort attrib1 = attributes[1];
+                            ushort attrib2 = attributes[2];
+                            ushort attrib3 = attributes[3];
+                            Vector3 vertex0 = page->GetCodedVertex(attrib0);
+                            Vector3 vertex1 = page->GetCodedVertex(attrib1);
+                            Vector3 vertex2 = page->GetCodedVertex(attrib2);
+                            Vector3 vertex3 = page->GetCodedVertex(attrib3);
+
+                            float texS = (attrib0 == attrib1)
+                                ? vertex2.Dist(vertex3)
+                                : vertex0.Dist(vertex1);
+
+                            vglBegin(DRAWMODE_TRIANGLESTRIP, 4);
+                            
+                            vglTexCoord2f(0.0f, 1.0f);
+                            vglVertex3f(vertex1);
+
+                            vglTexCoord2f(1.0f, 0.0f);
+                            vglVertex3f(vertex0);
+
+                            vglTexCoord2f(0.0f, texS);
+                            vglVertex3f(vertex3);
+
+                            vglTexCoord2f(1.0f, texS);
+                            vglVertex3f(vertex2);
+
+                            vglEnd();
+                        }
+
                         attributes += 4;
                     } else
                     {
