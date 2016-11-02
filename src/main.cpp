@@ -801,10 +801,10 @@ public:
 class mmDirSndHandler {
 public:
     static mmDirSnd* Init(int sampleRate, bool enableStero, int a4, float volume, LPCSTR deviceName, bool enable3D) {
-        if (deviceName == '\0') {
+        if (deviceName[0] == '\0') {
             deviceName = "Primary Sound Driver";
 
-            LogFile::WriteLine("[mmDirSnd::Init]: Using primary sound driver");
+            LogFile::WriteLine("[mmDirSnd::Init]: Using Primary Sound Driver");
         }
 
         // TODO: Set sampling rate (see 0x519640 - int __thiscall AudManager::SetBitDepthAndSampleRate(int this, int bitDepth, int samplingRate))
