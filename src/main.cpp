@@ -1086,7 +1086,7 @@ public:
                         vglBindTexture(page->Textures[current_texture]);
 
                         {
-                            (DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
+                            vglBegin(DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
 
                             for (std::uint16_t i = 0; i < vertex_count; ++i)
                             {
