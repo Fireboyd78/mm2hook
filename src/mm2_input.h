@@ -6,6 +6,17 @@ namespace MM2
     // Forward declarations
     extern class ioEventQueue;
 
+    namespace $
+    {
+        namespace ioEventQueue
+        {
+            HOOK_API AGEHook<0x4BA930>::Func<bool> Pop;
+            HOOK_API AGEHook<0x4BA980>::Func<bool> Peek;
+            HOOK_API AGEHook<0x4BA9D0>::Func<void> Queue;
+            HOOK_API AGEHook<0x4BAA50>::Func<void> Command;
+        }
+    }
+
     struct ioEvent {
         enum ioEventType
         {
@@ -29,26 +40,21 @@ namespace MM2
     };
 
     class ioEventQueue {
-    protected:
-        static AGEHook<0x4BA930>::Func<bool> $Pop;
-        static AGEHook<0x4BA980>::Func<bool> $Peek;
-        static AGEHook<0x4BA9D0>::Func<void> $Queue;
-        static AGEHook<0x4BAA50>::Func<void> $Command;
     public:
         AGE_API static bool Pop(ioEvent *outEvent) {
-            return $Pop(outEvent);
+            return $::ioEventQueue::Pop(outEvent);
         };
 
         AGE_API static bool Peek(ioEvent *outEvent, int *idx) {
-            return $Peek(outEvent, idx);
+            return $::ioEventQueue::Peek(outEvent, idx);
         };
 
         AGE_API static void Queue(ioEvent::ioEventType type, int x, int y, int value) {
-            $Queue(type, x, y, value);
+            $::ioEventQueue::Queue(type, x, y, value);
         };
 
         AGE_API static void Command(void *command) {
-            $Command(command);
+            $::ioEventQueue::Command(command);
         };
     };
 

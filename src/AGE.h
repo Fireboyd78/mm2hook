@@ -184,11 +184,6 @@ public:
             return static_cast<MethodCall<TRet, TArgs...>>(lpFunc)(args...);
         };
 
-        template<typename ...TArgs, class TThis>
-        constexpr TRet operator()(const TThis &&This, TArgs ...args) const {
-            return static_cast<MemberCall<TRet, TThis, TArgs...>>(lpFunc)(This, args...);
-        };
-
         class StdCall : protected Func<TRet> {
         public:
             template<typename ...TArgs>

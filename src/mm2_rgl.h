@@ -7,6 +7,7 @@ namespace MM2
     namespace $
     {
         /* psdl.obj */
+
         HOOK_API AGEHook<0x45CFD0>::Func<void> vglTexCoord2f;
         HOOK_API AGEHook<0x45CFF0>::Func<void> vglVertex3f$1;
         HOOK_API AGEHook<0x45D080>::Func<void> vglVertex3f$2;

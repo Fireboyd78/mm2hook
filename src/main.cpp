@@ -53,21 +53,21 @@ static Matrix34 sm_DashOffset;
 // Function hooks
 // ==========================
 
-AGEHook<0x4A3370>::Func<void> $asLinearCS_Update;
+AGEHook<0x4A3370>::MemberFunc<void> $asLinearCS_Update;
 
-AGEHook<0x4415E0>::Func<void> $dgBangerInstance_Draw;
+AGEHook<0x4415E0>::MemberFunc<void> $dgBangerInstance_Draw;
 
-AGEHook<0x577210>::Func<void> $memSafeHeap_Init;
+AGEHook<0x577210>::MemberFunc<void> $memSafeHeap_Init;
 
 AGEHook<0x448090>::Func<void> $sdlCommon_UpdateLighting;
 
-AGEHook<0x4AEDC0>::Func<void> $gfxImage_Scale;
+AGEHook<0x4AEDC0>::MemberFunc<void> $gfxImage_Scale;
 
 /*
     TODO: Move VGL stuff to a separate file?
 */
 
-AGEHook<0x4A1290>::Func<void> $asCullManager_Init;
+AGEHook<0x4A1290>::MemberFunc<void> $asCullManager_Init;
 
 // ==========================
 // Pointer hooks
@@ -90,6 +90,8 @@ AGEHook<0x6B16A4>::Type<char[40]> cityName2;
 
 AGEHook<0x62B068>::Type<int> timeOfDay;
 
+AGEHook<0x627518>::Type<int> vehCar_bHeadlights;
+
 /*
     ===========================================================================
 */
@@ -107,9 +109,8 @@ bool HandleKeyPress(DWORD vKey)
         {
             // tell the game to open a chat box,
             // and then use a local variable to check if it's open
-
             mmGameManager *mgr = mmGameManager::Instance();
-            auto gamePtr = mgr->getGame();
+            auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
 
             if (gamePtr != NULL)
             {
@@ -124,6 +125,13 @@ bool HandleKeyPress(DWORD vKey)
                     isConsoleOpen = true;
                 }
             }
+        } return true;
+
+        case VK_F7:
+        {
+            // TODO: make this a separate plugin
+            // toggle vehicle headlights
+            vehCar_bHeadlights = !vehCar_bHeadlights;
         } return true;
 
         case VK_F10:
@@ -534,7 +542,7 @@ public:
         }
 
         // We don't want to set the width/height if we are in a menu, it just fucks it up
-        if (splashScreen != 0) {
+        if (gameState != 0) {
             if (datArgParser::Get("max")) {
                 HDC hDC = GetDC(NULL);
                 width  = GetDeviceCaps(hDC, HORZRES);

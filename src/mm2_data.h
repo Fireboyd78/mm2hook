@@ -16,41 +16,91 @@ namespace MM2
     extern class Base;
     extern class Stream;
 
+    namespace $
+    {
+        namespace datArgParser
+        {
+            HOOK_API AGEHook<0x4C6190>::Func<bool> Get_Any;
+            HOOK_API AGEHook<0x4C61C0>::Func<bool> Get_Int;
+            HOOK_API AGEHook<0x4C6210>::Func<bool> Get_Float;
+            HOOK_API AGEHook<0x4C6260>::Func<bool> Get_String;
+
+            HOOK_API AGEHook<0x4C62A0>::Func<int> GetArgCount;
+        }
+        namespace datAssetManager
+        {
+            HOOK_API AGEHook<0x4C55E0>::Func<void> FullPath$1;
+            HOOK_API AGEHook<0x4C56F0>::Func<void> FullPath$2;
+            HOOK_API AGEHook<0x4C59B0>::Func<bool> Exists$1;
+            HOOK_API AGEHook<0x4C59E0>::Func<bool> Exists$2;
+        }
+        namespace datCallback
+        {
+            HOOK_API AGEHook<0x4C7A40>::MemberFunc<void> $$ctor$void;
+
+            HOOK_API AGEHook<0x4C7A50>::MemberFunc<void> $$ctor$ThisCB$1;
+            HOOK_API AGEHook<0x4C7A80>::MemberFunc<void> $$ctor$ThisCB$2;
+            HOOK_API AGEHook<0x4C7AA0>::MemberFunc<void> $$ctor$ThisCB$3;
+
+            HOOK_API AGEHook<0x4C7AC0>::MemberFunc<void> $$ctor$CB$1;
+            HOOK_API AGEHook<0x4C7AF0>::MemberFunc<void> $$ctor$CB$2;
+            HOOK_API AGEHook<0x4C7B20>::MemberFunc<void> $$ctor$CB$3;
+
+            HOOK_API AGEHook<0x4C7B50>::MemberFunc<void> Call;
+        }
+        namespace datOutput
+        {
+            HOOK_API AGEHook<0x4C9530>::Func<void> CloseLog;
+            HOOK_API AGEHook<0x4C9590>::Func<bool> OpenLog;
+            HOOK_API AGEHook<0x4C95A0>::Func<void> SetOutputMask;
+        }
+        namespace datParser
+        {
+            HOOK_API AGEHook<0x4A78E0>::MemberFunc<void> $$ctor;
+            HOOK_API AGEHook<0x4A7920>::MemberFunc<void> $$dtor;
+
+            HOOK_API AGEHook<0x4A7980>::MemberFunc<MM2::datParser *> AddParser;
+            HOOK_API AGEHook<0x4A79D0>::MemberFunc<MM2::datParserRecord &> AddRecord;
+
+            HOOK_API AGEHook<0x4A7A90>::MemberFunc<bool> Load$1;
+            HOOK_API AGEHook<0x4A7AF0>::MemberFunc<bool> Load$2;
+            HOOK_API AGEHook<0x4A7B40>::MemberFunc<bool> Load$3;
+
+            HOOK_API AGEHook<0x4A7B90>::MemberFunc<bool> Save$1;
+            HOOK_API AGEHook<0x4A7C00>::MemberFunc<bool> Save$2;
+            HOOK_API AGEHook<0x4A7C50>::MemberFunc<bool> Save$3;
+        }
+        namespace datTimeManager
+        {
+            HOOK_API AGEHook<0x4C6300>::Func<void> Reset;
+            HOOK_API AGEHook<0x4C6340>::Func<void> Update;
+        }
+    }
+
     class datArgParser {
-    protected:
-        static AGEHook<0x4C6190>::Func<bool> $Get_Any;
-        static AGEHook<0x4C61C0>::Func<bool> $Get_Int;
-        static AGEHook<0x4C6210>::Func<bool> $Get_Float;
-        static AGEHook<0x4C6260>::Func<bool> $Get_String;
-        static AGEHook<0x4C62A0>::Func<unsigned> $Get_WordCount;
     public:
         AGE_API static bool Get(LPCSTR arg) {
-            return $Get_Any(arg);
+            return $::datArgParser::Get_Any(arg);
         };
 
         AGE_API static bool Get(LPCSTR arg, UINT index, int *out) {
-            return $Get_Int(arg, index, out);
+            return $::datArgParser::Get_Int(arg, index, out);
         };
 
         AGE_API static bool Get(LPCSTR arg, UINT index, float *out) {
-            return $Get_Float(arg, index, out);
+            return $::datArgParser::Get_Float(arg, index, out);
         };
 
         AGE_API static bool Get(LPCSTR arg, UINT index, LPCSTR *out) {
-            return $Get_String(arg, index, out);
+            return $::datArgParser::Get_String(arg, index, out);
         };
 
-        AGE_API static unsigned GetWordCount(LPCSTR arg) {
-            return $Get_WordCount(arg);
+        AGE_API static int GetArgCount(LPCSTR arg) {
+            return $::datArgParser::GetArgCount(arg);
         };
     };
 
     class datAssetManager {
-    protected:
-        static AGEHook<0x4C55E0>::Func<void> $FullPath_$1;
-        static AGEHook<0x4C56F0>::Func<void> $FullPath_$2;
-        static AGEHook<0x4C59B0>::Func<bool> $Exists_$1;
-        static AGEHook<0x4C59E0>::Func<bool> $Exists_$2;
     public:
         /* TODO?
         static Stream * Open(char const *,char const *,bool,bool);
@@ -60,20 +110,20 @@ namespace MM2
         */
 
         AGE_API static void FullPath(char *buffer, int length, LPCSTR directory, LPCSTR filename) {
-            $FullPath_$1(buffer, length, directory, filename);
+            $::datAssetManager::FullPath$1(buffer, length, directory, filename);
         };
 
         AGE_API static void FullPath(char *buffer, int length, LPCSTR directory, LPCSTR filename, LPCSTR extension) {
-            $FullPath_$2(buffer, length, directory, filename, extension);
+            $::datAssetManager::FullPath$2(buffer, length, directory, filename, extension);
         };
 
         // these don't work for files outside of archives
         AGE_API static bool Exists(LPCSTR directory, LPCSTR filename) {
-            return $Exists_$1(directory, filename);
+            return $::datAssetManager::Exists$1(directory, filename);
         };
 
         AGE_API static bool Exists(LPCSTR directory, LPCSTR filename, LPCSTR extension) {
-            return $Exists_$2(directory, filename, extension);
+            return $::datAssetManager::Exists$2(directory, filename, extension);
         };
     };
 
@@ -106,62 +156,46 @@ namespace MM2
             if 'base' is not null, this will be the "this" object in addition to the rules above
         */
         void *context;
-    protected:
-        static AGEHook<0x4C7A40>::Func<void> $$ctor$void;
-
-        static AGEHook<0x4C7A50>::Func<void> $$ctor$ThisCB_$1;
-        static AGEHook<0x4C7A80>::Func<void> $$ctor$ThisCB_$2;
-        static AGEHook<0x4C7AA0>::Func<void> $$ctor$ThisCB_$3;
-
-        static AGEHook<0x4C7AC0>::Func<void> $$ctor$CB_$1;
-        static AGEHook<0x4C7AF0>::Func<void> $$ctor$CB_$2;
-        static AGEHook<0x4C7B20>::Func<void> $$ctor$CB_$3;
-
-        static AGEHook<0x4C7B50>::Func<void> $Call;
     public:
         AGE_API datCallback(void) {
-            $$ctor$void(this);
+            $::datCallback::$$ctor$void(this);
         };
 
         AGE_API datCallback(LPDATCALLBACK_THIS callback, Base *base) {
-            $$ctor$ThisCB_$1(this, callback, base);
+            $::datCallback::$$ctor$ThisCB$1(this, callback, base);
         };
         AGE_API datCallback(LPDATCALLBACK_THIS_1 callback, Base *base, void *context) {
-            $$ctor$ThisCB_$2(this, callback, base, context);
+            $::datCallback::$$ctor$ThisCB$2(this, callback, base, context);
         };
         AGE_API datCallback(LPDATCALLBACK_THIS_2 callback, Base *base, void *context) {
-            $$ctor$ThisCB_$3(this, callback, base, context);
+            $::datCallback::$$ctor$ThisCB$3(this, callback, base, context);
         };
 
         AGE_API datCallback(LPDATCALLBACK callback, Base *base) {
-            $$ctor$CB_$1(this, callback, base);
+            $::datCallback::$$ctor$CB$1(this, callback, base);
         };
         AGE_API datCallback(LPDATCALLBACK_1 callback, Base *base, void *context) {
-            $$ctor$CB_$2(this, callback, base, context);
+            $::datCallback::$$ctor$CB$2(this, callback, base, context);
         };
         AGE_API datCallback(LPDATCALLBACK_2 callback, Base *base, void *context) {
-            $$ctor$CB_$3(this, callback, base, context);
+            $::datCallback::$$ctor$CB$3(this, callback, base, context);
         };
 
         AGE_API void Call(void *arg) {
-            $Call(this, arg);
+            $::datCallback::Call(this, arg);
         };
     };
 
     class datOutput {
-    protected:
-        static AGEHook<0x4C9530>::Func<void> $CloseLog;
-        static AGEHook<0x4C9590>::Func<bool> $OpenLog;
-        static AGEHook<0x4C95A0>::Func<void> $SetOutputMask;
     public:
         static AGEHook<0x6A3D40>::Type<Stream *> sm_Stream;
 
         AGE_API static bool OpenLog(LPCSTR filename) {
-            return $OpenLog(filename);
+            return $::datOutput::OpenLog(filename);
         };
 
         AGE_API static void CloseLog(void) {
-            $CloseLog();
+            $::datOutput::CloseLog();
         };
 
         /* TODO: Add these?
@@ -170,7 +204,7 @@ namespace MM2
         */
 
         AGE_API static void SetOutputMask(UINT mask) {
-            $SetOutputMask(mask);
+            $::datOutput::SetOutputMask(mask);
         };
     };
 
@@ -204,20 +238,6 @@ namespace MM2
     };
 
     class datParser {
-    protected:
-        static AGEHook<0x4A78E0>::Func<void> $$ctor;
-        static AGEHook<0x4A7920>::Func<void> $$dtor;
-
-        static AGEHook<0x4A7980>::Func<datParser *> $AddParser;
-        static AGEHook<0x4A79D0>::Func<datParserRecord &> $AddRecord;
-
-        static AGEHook<0x4A7A90>::Func<bool> $Load_$1;
-        static AGEHook<0x4A7AF0>::Func<bool> $Load_$2;
-        static AGEHook<0x4A7B40>::Func<bool> $Load_$3;
-
-        static AGEHook<0x4A7B90>::Func<bool> $Save_$1;
-        static AGEHook<0x4A7C00>::Func<bool> $Save_$2;
-        static AGEHook<0x4A7C50>::Func<bool> $Save_$3;
     private:
         char name[64];
 
@@ -245,7 +265,7 @@ namespace MM2
         */
         AGE_API datParserRecord & AddRecord(int type, LPCSTR name, void *dataPtr, int count) {
             // last parameter is the 'callback' which is never actually used
-            return $AddRecord(this, type, name, dataPtr, count, NULL);
+            return $::datParser::AddRecord(this, type, name, dataPtr, count, NULL);
         };
 
         inline datParserRecord & AddRecord(int type, LPCSTR name, void *dataPtr) {
@@ -253,16 +273,16 @@ namespace MM2
         };
     public:
         AGE_API datParser(const char *filename) {
-            $$ctor(this, filename);
+            $::datParser::$$ctor(this, filename);
         };
 
         AGE_API ~datParser() {
-            $$dtor(this);
+            $::datParser::$$dtor(this);
         };
 
         AGE_API datParser * AddParser(LPCSTR name) {
             // 'callback' unused (see AddRecord above)
-            return $AddParser(this, name, NULL);
+            return $::datParser::AddParser(this, name, NULL);
         };
 
         void AddToken(LPCSTR name, char *tokenPtr, int tokenLength) {
@@ -301,15 +321,15 @@ namespace MM2
         inline void AddValue(LPCSTR name, Vector4 *value)   { AddValue(name, value, 1); };
 
         AGE_API bool Load(Stream *stream, LPCSTR filename) {
-            return $Load_$1(this, stream, filename);
+            return $::datParser::Load$1(this, stream, filename);
         };
 
         AGE_API bool Load(LPCSTR directory, LPCSTR filename) {
-            return $Load_$2(this, directory, filename);
+            return $::datParser::Load$2(this, directory, filename);
         };
 
         AGE_API bool Load(LPCSTR directory, LPCSTR filename, LPCSTR extension) {
-            return $Load_$3(this, directory, filename, extension);
+            return $::datParser::Load$3(this, directory, filename, extension);
         };
 
         /*
@@ -317,29 +337,26 @@ namespace MM2
         */
 
         AGE_API bool Save(Stream *stream, LPCSTR filename) {
-            return $Save_$1(this, stream, filename, false);
+            return $::datParser::Save$1(this, stream, filename, false);
         };
 
         AGE_API bool Save(LPCSTR directory, LPCSTR filename) {
-            return $Save_$2(this, directory, filename, false);
+            return $::datParser::Save$2(this, directory, filename, false);
         };
 
         AGE_API bool Save(LPCSTR directory, LPCSTR filename, LPCSTR extension) {
-            return $Save_$3(this, directory, filename, extension, false);
+            return $::datParser::Save$3(this, directory, filename, extension, false);
         };
     };
 
     class datTimeManager {
-    protected:
-        static AGEHook<0x4C6300>::Func<void> $Reset;
-        static AGEHook<0x4C6340>::Func<void> $Update;
     public:
         AGE_API static void Reset(void) {
-            $Reset();
+            $::datTimeManager::Reset();
         };
 
         AGE_API static void Update(void) {
-            $Update();
+            $::datTimeManager::Update();
         };
     };
 }

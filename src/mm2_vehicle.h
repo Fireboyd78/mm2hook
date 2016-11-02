@@ -6,12 +6,18 @@ namespace MM2
     // Forward declarations
     extern class vehCarAudioContainer;
 
+    namespace $
+    {
+        namespace vehCarAudioContainer
+        {
+            HOOK_API AGEHook<0x4D0C80>::Func<void> SetSirenCSVName;
+        }
+    }
+
     class vehCarAudioContainer {
-    protected:
-        static AGEHook<0x4D0C80>::Func<void> $SetSirenCSVName;
     public:
         AGE_API static void SetSirenCSVName(LPCSTR name) {
-            $SetSirenCSVName(name);
+            $::vehCarAudioContainer::SetSirenCSVName(name);
         };
     };
 

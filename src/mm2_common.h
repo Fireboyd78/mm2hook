@@ -9,7 +9,7 @@
     Multiple declarations will cause compiler errors!
 */
 #ifdef __MM2_DECLARE_HOOKS
-#define HOOK_API
+#define HOOK_API 
 #else
 #define HOOK_API extern
 #endif
@@ -61,7 +61,7 @@ namespace MM2 {
 
     // think this is actually some sort of game state
     // not sure how exactly it's supposed to work
-    HOOK_API AGEHook<0x6B17C8>::Type<int> splashScreen; // -1 = ???, 0 = main menu, 1 = race
+    HOOK_API AGEHook<0x6B17C8>::Type<int> gameState; // -1 = ???, 0 = main menu, 1 = race
 
     HOOK_API AGEHook<0x6A3AA8>::Type<int> joyDebug;
     HOOK_API AGEHook<0x6A3C0C>::Type<int> assetDebug;
