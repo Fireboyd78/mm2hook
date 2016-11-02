@@ -103,9 +103,13 @@ bool HandleKeyPress(DWORD vKey)
         // '`'
         case VK_OEM_8:
         {
+            // check if the level is loaded
+            // otherwise don't do anything
+            if (gameState != 1)
+                return false;
+
             // tell the game to open a chat box,
             // and then use a local variable to check if it's open
-
             mmGameManager *mgr = mmGameManager::Instance();
             auto gamePtr = mgr->getGame();
 
@@ -526,7 +530,7 @@ public:
         }
 
         // We don't want to set the width/height if we are in a menu, it just fucks it up
-        if (splashScreen != 0) {
+        if (gameState != 0) {
             if (datArgParser::Get("max")) {
                 HDC hDC = GetDC(NULL);
                 width  = GetDeviceCaps(hDC, HORZRES);
