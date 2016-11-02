@@ -62,31 +62,32 @@ namespace MM2
             Function hooks
         */
 
-        static AGEHook<0x5A4ED0>::Func<void> $$ctor;
-        static AGEHook<0x5A4F30>::Func<void> $$dtor;
-
-        static AGEHook<0x5A4FD0>::Func<void> $DeInit;
-
         static AGEHook<0x5A5080>::Func<DirSnd *> $Init;
-        static AGEHook<0x5A5160>::Func<int> $Init3DListener;
 
-        static AGEHook<0x5A51C0>::Func<int> $IsDSDeviceInList;
-        static AGEHook<0x5A5390>::Func<void> $SetDeviceRating;
-        static AGEHook<0x5A5510>::Func<int> $EnumDSDevices;
+        static AGEHook<0x5A4ED0>::MemberFunc<void> $$ctor;
+        static AGEHook<0x5A4F30>::MemberFunc<void> $$dtor;
 
-        static AGEHook<0x5A5530>::Func<int> $InitPrimarySoundBuffer;
-        static AGEHook<0x5A5770>::Func<int> $CreatePrimaryInterfaceAndBuffer;
+        static AGEHook<0x5A4FD0>::MemberFunc<void> $DeInit;
 
-        static AGEHook<0x5A5860>::Func<void> $ClearDSDeviceList;
+        static AGEHook<0x5A5160>::MemberFunc<int> $Init3DListener;
 
-        static AGEHook<0x5A5950>::Func<void> $SetPrimaryBufferFormat;
+        static AGEHook<0x5A51C0>::MemberFunc<int> $IsDSDeviceInList;
+        static AGEHook<0x5A5390>::MemberFunc<void> $SetDeviceRating;
+        static AGEHook<0x5A5510>::MemberFunc<int> $EnumDSDevices;
 
-        static AGEHook<0x5A5A30>::Func<void> $ScanAvailableDSFormats;
-        static AGEHook<0x5A5BB0>::Func<char *> $TranslateDSError;
+        static AGEHook<0x5A5530>::MemberFunc<int> $InitPrimarySoundBuffer;
+        static AGEHook<0x5A5770>::MemberFunc<int> $CreatePrimaryInterfaceAndBuffer;
 
-        static AGEHook<0x5A5BD0>::Func<void> $SetBitDepth;
-        static AGEHook<0x5A5C00>::Func<char **> $GetDeviceNames;
-        static AGEHook<0x5A5630>::Func<UINT> $GetNum3DHallBufs;
+        static AGEHook<0x5A5860>::MemberFunc<void> $ClearDSDeviceList;
+
+        static AGEHook<0x5A5950>::MemberFunc<void> $SetPrimaryBufferFormat;
+
+        static AGEHook<0x5A5A30>::MemberFunc<void> $ScanAvailableDSFormats;
+        static AGEHook<0x5A5BB0>::MemberFunc<char *> $TranslateDSError;
+
+        static AGEHook<0x5A5BD0>::MemberFunc<void> $SetBitDepth;
+        static AGEHook<0x5A5C00>::MemberFunc<char **> $GetDeviceNames;
+        static AGEHook<0x5A5630>::MemberFunc<UINT> $GetNum3DHallBufs;
 
         AGE_API int CreatePrimaryInterfaceAndBuffer(DSBUFFERDESC *p1) {
             return $CreatePrimaryInterfaceAndBuffer(this, p1);
@@ -171,16 +172,17 @@ namespace MM2
             Function hooks
         */
 
-        static AGEHook<0x51CBE0>::Func<void> $$ctor;
-        static AGEHook<0x51CC00>::Func<void> $$dtor;
-
-        static AGEHook<0x51CC10>::Func<void> $DeInit;
         static AGEHook<0x51CC50>::Func<mmDirSnd *> $Init;
 
-        static AGEHook<0x51CD90>::Func<int> $InitPrimarySoundBuffer;
+        static AGEHook<0x51CBE0>::MemberFunc<void> $$ctor;
+        static AGEHook<0x51CC00>::MemberFunc<void> $$dtor;
 
-        static AGEHook<0x51CE60>::Func<UINT> $EAXEnabled;
-        static AGEHook<0x51CE70>::Func<UINT> $DSound3DEnabled;
+        static AGEHook<0x51CC10>::MemberFunc<void> $DeInit;
+
+        static AGEHook<0x51CD90>::MemberFunc<int> $InitPrimarySoundBuffer;
+
+        static AGEHook<0x51CE60>::MemberFunc<UINT> $EAXEnabled;
+        static AGEHook<0x51CE70>::MemberFunc<UINT> $DSound3DEnabled;
     public:
         AGE_API mmDirSnd() {
             PUSH_VTABLE();

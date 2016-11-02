@@ -126,8 +126,8 @@ namespace MM2
         }
     };
 
-    HOOK_API AGEHook<0x445820>::Func<void> $cityLevel_DrawRooms;
-    HOOK_API AGEHook<0x443E50>::Func<void> $cityLevel_SetObjectDetail;
+    HOOK_API AGEHook<0x445820>::MemberFunc<void> $cityLevel_DrawRooms;
+    HOOK_API AGEHook<0x443E50>::MemberFunc<void> $cityLevel_SetObjectDetail;
 
     HOOK_API AGEHook<0x6299A8>::Type<cityTimeWeatherLighting[16]> timeWeathers;
 }

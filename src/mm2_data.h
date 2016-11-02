@@ -107,17 +107,17 @@ namespace MM2
         */
         void *context;
     protected:
-        static AGEHook<0x4C7A40>::Func<void> $$ctor$void;
+        static AGEHook<0x4C7A40>::MemberFunc<void> $$ctor$void;
 
-        static AGEHook<0x4C7A50>::Func<void> $$ctor$ThisCB_$1;
-        static AGEHook<0x4C7A80>::Func<void> $$ctor$ThisCB_$2;
-        static AGEHook<0x4C7AA0>::Func<void> $$ctor$ThisCB_$3;
+        static AGEHook<0x4C7A50>::MemberFunc<void> $$ctor$ThisCB_$1;
+        static AGEHook<0x4C7A80>::MemberFunc<void> $$ctor$ThisCB_$2;
+        static AGEHook<0x4C7AA0>::MemberFunc<void> $$ctor$ThisCB_$3;
 
-        static AGEHook<0x4C7AC0>::Func<void> $$ctor$CB_$1;
-        static AGEHook<0x4C7AF0>::Func<void> $$ctor$CB_$2;
-        static AGEHook<0x4C7B20>::Func<void> $$ctor$CB_$3;
+        static AGEHook<0x4C7AC0>::MemberFunc<void> $$ctor$CB_$1;
+        static AGEHook<0x4C7AF0>::MemberFunc<void> $$ctor$CB_$2;
+        static AGEHook<0x4C7B20>::MemberFunc<void> $$ctor$CB_$3;
 
-        static AGEHook<0x4C7B50>::Func<void> $Call;
+        static AGEHook<0x4C7B50>::MemberFunc<void> $Call;
     public:
         AGE_API datCallback(void) {
             $$ctor$void(this);
@@ -205,19 +205,19 @@ namespace MM2
 
     class datParser {
     protected:
-        static AGEHook<0x4A78E0>::Func<void> $$ctor;
-        static AGEHook<0x4A7920>::Func<void> $$dtor;
+        static AGEHook<0x4A78E0>::MemberFunc<void> $$ctor;
+        static AGEHook<0x4A7920>::MemberFunc<void> $$dtor;
 
-        static AGEHook<0x4A7980>::Func<datParser *> $AddParser;
-        static AGEHook<0x4A79D0>::Func<datParserRecord &> $AddRecord;
+        static AGEHook<0x4A7980>::MemberFunc<datParser *> $AddParser;
+        static AGEHook<0x4A79D0>::MemberFunc<datParserRecord &> $AddRecord;
 
-        static AGEHook<0x4A7A90>::Func<bool> $Load_$1;
-        static AGEHook<0x4A7AF0>::Func<bool> $Load_$2;
-        static AGEHook<0x4A7B40>::Func<bool> $Load_$3;
+        static AGEHook<0x4A7A90>::MemberFunc<bool> $Load_$1;
+        static AGEHook<0x4A7AF0>::MemberFunc<bool> $Load_$2;
+        static AGEHook<0x4A7B40>::MemberFunc<bool> $Load_$3;
 
-        static AGEHook<0x4A7B90>::Func<bool> $Save_$1;
-        static AGEHook<0x4A7C00>::Func<bool> $Save_$2;
-        static AGEHook<0x4A7C50>::Func<bool> $Save_$3;
+        static AGEHook<0x4A7B90>::MemberFunc<bool> $Save_$1;
+        static AGEHook<0x4A7C00>::MemberFunc<bool> $Save_$2;
+        static AGEHook<0x4A7C50>::MemberFunc<bool> $Save_$3;
     private:
         char name[64];
 

@@ -13,7 +13,7 @@ namespace MM2
 
     class Base {
     protected:
-        static AGEHook<0x4C8200>::Func<void> $$dtor;
+        static AGEHook<0x4C8200>::MemberFunc<void> $$dtor;
     public:
         AGE_API virtual ~Base() {
             PUSH_VTABLE();
@@ -24,8 +24,8 @@ namespace MM2
 
     class asCullable : public Base {
     protected:
-        static AGEHook<0x460EA0>::Func<void> $$dtor;
-        static AGEHook<0x4A3440>::Func<void> $Cull;
+        static AGEHook<0x460EA0>::MemberFunc<void> $$dtor;
+        static AGEHook<0x4A3440>::MemberFunc<void> $Cull;
     public:
         AGE_API virtual ~asCullable() {
             PUSH_VTABLE();
@@ -47,37 +47,37 @@ namespace MM2
 
         LPCSTR name;
     protected:
-        static AGEHook<0x403330>::Func<void> $FileIO;
-        static AGEHook<0x403340>::Func<void> $AfterLoad;
-        static AGEHook<0x403350>::Func<void> $BeforeSave;
+        static AGEHook<0x403330>::MemberFunc<void> $FileIO;
+        static AGEHook<0x403340>::MemberFunc<void> $AfterLoad;
+        static AGEHook<0x403350>::MemberFunc<void> $BeforeSave;
 
-        static AGEHook<0x403360>::Func<char *> $GetClassNameA;
+        static AGEHook<0x403360>::MemberFunc<char *> $GetClassNameA;
 
-        static AGEHook<0x4A0CE0>::Func<void> $$ctor;
-        static AGEHook<0x4A0D00>::Func<void> $$dtor;
+        static AGEHook<0x4A0CE0>::MemberFunc<void> $$ctor;
+        static AGEHook<0x4A0D00>::MemberFunc<void> $$dtor;
 
-        static AGEHook<0x4A0D70>::Func<void> $SetName;
+        static AGEHook<0x4A0D70>::MemberFunc<void> $SetName;
 
-        static AGEHook<0x4A0DA0>::Func<const char *> $GetDirName;
+        static AGEHook<0x4A0DA0>::MemberFunc<const char *> $GetDirName;
 
-        static AGEHook<0x4A0DB0>::Func<void> $Update;
-        static AGEHook<0x4A0DD0>::Func<void> $UpdatePaused;
-        static AGEHook<0x4A0E10>::Func<void> $Reset;
-        static AGEHook<0x4A0E30>::Func<void> $ResChange;
+        static AGEHook<0x4A0DB0>::MemberFunc<void> $Update;
+        static AGEHook<0x4A0DD0>::MemberFunc<void> $UpdatePaused;
+        static AGEHook<0x4A0E10>::MemberFunc<void> $Reset;
+        static AGEHook<0x4A0E30>::MemberFunc<void> $ResChange;
 
-        static AGEHook<0x4A0E60>::Func<int> $AddChild;
-        static AGEHook<0x4A0EE0>::Func<int> $InsertChild;
-        static AGEHook<0x4A0F50>::Func<int> $RemoveChild_$1;
-        static AGEHook<0x4A0FD0>::Func<int> $RemoveChild_$2;
-        static AGEHook<0x4A1010>::Func<void> $RemoveAllChildren;
-        static AGEHook<0x4A1030>::Func<asNode *> $GetChild;
-        static AGEHook<0x4A1060>::Func<asNode *> $GetNext;
-        static AGEHook<0x4A1070>::Func<asNode *> $GetLastChild;
-        static AGEHook<0x4A10A0>::Func<int> $NumChildren;
-        static AGEHook<0x4A10C0>::Func<void> $SwitchTo;
+        static AGEHook<0x4A0E60>::MemberFunc<int> $AddChild;
+        static AGEHook<0x4A0EE0>::MemberFunc<int> $InsertChild;
+        static AGEHook<0x4A0F50>::MemberFunc<int> $RemoveChild_$1;
+        static AGEHook<0x4A0FD0>::MemberFunc<int> $RemoveChild_$2;
+        static AGEHook<0x4A1010>::MemberFunc<void> $RemoveAllChildren;
+        static AGEHook<0x4A1030>::MemberFunc<asNode *> $GetChild;
+        static AGEHook<0x4A1060>::MemberFunc<asNode *> $GetNext;
+        static AGEHook<0x4A1070>::MemberFunc<asNode *> $GetLastChild;
+        static AGEHook<0x4A10A0>::MemberFunc<int> $NumChildren;
+        static AGEHook<0x4A10C0>::MemberFunc<void> $SwitchTo;
 
-        static AGEHook<0x4A1120>::Func<bool> $Load;
-        static AGEHook<0x4A11D0>::Func<bool> $Save;
+        static AGEHook<0x4A1120>::MemberFunc<bool> $Load;
+        static AGEHook<0x4A11D0>::MemberFunc<bool> $Save;
     public:
         AGE_API asNode() {
             PUSH_VTABLE();

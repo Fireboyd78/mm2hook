@@ -62,7 +62,7 @@ namespace MM2
     /* Basically a 1:1 copy of D3DLIGHT */
     struct gfxLight {
     protected:
-        static AGEHook<0x4B1C00>::Func<void> $Reset;
+        static AGEHook<0x4B1C00>::MemberFunc<void> $Reset;
     public:
         D3DLIGHTTYPE Type;
 

@@ -42,15 +42,15 @@ namespace MM2
         static AGEHook<0x4C9A40>::Func<Stream*> $Open$2;
         static AGEHook<0x4C9A70>::Func<Stream*> $Create$2;
 
-        static AGEHook<0x4C9AA0>::Func<int> $Read;
-        static AGEHook<0x4C9BF0>::Func<int> $Write;
-        static AGEHook<0x4C9D00>::Func<int> $GetCh;
-        static AGEHook<0x4C9D30>::Func<int> $PutCh;
-        static AGEHook<0x4C9D60>::Func<int> $Seek;
-        static AGEHook<0x4C9DB0>::Func<int> $Tell;
-        static AGEHook<0x4C9DC0>::Func<int> $Close;
-        static AGEHook<0x4C9E00>::Func<int> $Size;
-        static AGEHook<0x4C9E60>::Func<int> $Flush;
+        static AGEHook<0x4C9AA0>::MemberFunc<int> $Read;
+        static AGEHook<0x4C9BF0>::MemberFunc<int> $Write;
+        static AGEHook<0x4C9D00>::MemberFunc<int> $GetCh;
+        static AGEHook<0x4C9D30>::MemberFunc<int> $PutCh;
+        static AGEHook<0x4C9D60>::MemberFunc<int> $Seek;
+        static AGEHook<0x4C9DB0>::MemberFunc<int> $Tell;
+        static AGEHook<0x4C9DC0>::MemberFunc<int> $Close;
+        static AGEHook<0x4C9E00>::MemberFunc<int> $Size;
+        static AGEHook<0x4C9E60>::MemberFunc<int> $Flush;
     public:
         AGE_API static void DumpOpenFiles(void) {
             $DumpOpenFiles();

@@ -51,21 +51,21 @@ static Matrix34 sm_DashOffset;
 // Function hooks
 // ==========================
 
-AGEHook<0x4A3370>::Func<void> $asLinearCS_Update;
+AGEHook<0x4A3370>::MemberFunc<void> $asLinearCS_Update;
 
-AGEHook<0x4415E0>::Func<void> $dgBangerInstance_Draw;
+AGEHook<0x4415E0>::MemberFunc<void> $dgBangerInstance_Draw;
 
-AGEHook<0x577210>::Func<void> $memSafeHeap_Init;
+AGEHook<0x577210>::MemberFunc<void> $memSafeHeap_Init;
 
 AGEHook<0x448090>::Func<void> $sdlCommon_UpdateLighting;
 
-AGEHook<0x4AEDC0>::Func<void> $gfxImage_Scale;
+AGEHook<0x4AEDC0>::MemberFunc<void> $gfxImage_Scale;
 
 /*
     TODO: Move VGL stuff to a separate file?
 */
 
-AGEHook<0x4A1290>::Func<void> $asCullManager_Init;
+AGEHook<0x4A1290>::MemberFunc<void> $asCullManager_Init;
 
 // ==========================
 // Pointer hooks

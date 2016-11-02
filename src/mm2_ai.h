@@ -8,7 +8,7 @@ namespace MM2
 
     class aiMap {
     protected:
-        static AGEHook<0x538840>::Func<void> $Dump;
+        static AGEHook<0x538840>::MemberFunc<void> $Dump;
 
         static AGEHook<0x6B2E10>::Type<aiMap> $AIMAP;
     public:
@@ -21,8 +21,8 @@ namespace MM2
         };
     };
 
-    HOOK_API AGEHook<0x544150>::Func<void> $aiPath_UpdatePedestrians;
-    HOOK_API AGEHook<0x54B9C0>::Func<void> $aiPedestrian_Update;
+    HOOK_API AGEHook<0x544150>::MemberFunc<void> $aiPath_UpdatePedestrians;
+    HOOK_API AGEHook<0x54B9C0>::MemberFunc<void> $aiPedestrian_Update;
 
-    HOOK_API AGEHook<0x550EF0>::Func<void> $aiPoliceForce_Reset;
+    HOOK_API AGEHook<0x550EF0>::MemberFunc<void> $aiPoliceForce_Reset;
 }
