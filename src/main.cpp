@@ -1532,6 +1532,18 @@ public:
                 {
                     if (current_texture)
                     {
+                        ushort attrib0 = attributes[0];
+                        ushort attrib1 = attributes[1];
+
+                        byte funk1 = (attrib0 & 0x3F);
+
+                        bool closeStart = ((attrib0 & 0x80) != 0);
+                        bool closeEnd = ((attrib0 & 0x40) != 0);
+
+                        // visualize the attribute
+                        DumpAttribute(type, subtype, attributes, (vertex_count * 12) + 2);
+
+                        // skip this shit -.-
                         attributes += 6 * vertex_count + 2;
                     } else
                     {
@@ -1541,6 +1553,8 @@ public:
 
                 case 9:
                 {
+                    DumpAttribute(type, subtype, attributes, (vertex_count == 10) ? 20 : 6);
+
                     attributes += 3;
 
                     if (vertex_count == 10)
@@ -1673,6 +1687,17 @@ public:
                 return;
             }
         }
+    }
+
+    static void DumpAttribute(int type, int subtype, LPVOID attr, int size)
+    {
+        char buf[256] = { NULL };
+        int idx = 0;
+
+        for (int i = 0; i < size; i++)
+            idx += sprintf(&buf[idx], "%02X ", *((byte*)attr + i));
+
+        LogFile::Format("attribute %d (%d) : [ %s ]\n", type, subtype, buf);
     }
 
     static void InvalidCmd(LPCSTR, int attr, int subtype)
