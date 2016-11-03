@@ -968,22 +968,30 @@ public:
             {
                 case 0:
                 {
+                    struct RoadVertex
+                    {
+                        ushort PavementL;
+                        ushort RoadL;
+                        ushort RoadR;
+                        ushort PavementR;
+                    };
+
+                    RoadVertex* roadVertices = (RoadVertex*) attributes;
+
                     if (current_texture)
                     {
                         vglBindTexture(page->GetTexture(current_texture + 1));
-                        page->ArcMap(sBuffer, attributes, 4, vertex_count, 1);
+                        page->ArcMap(sBuffer, &roadVertices->PavementL, 4, vertex_count, 1);
 
-                        if (attributes[0] != attributes[1])
+                        if (roadVertices->PavementL != roadVertices->RoadL) // If there is a left pavement
                         {
-                            {
+                            { // Draw Left Pavement
                                 vglBegin(DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
 
                                 for (int i = 0; i < vertex_count; ++i)
                                 {
-                                    ushort  attrib0 = attributes[(i * 4) + 0];
-                                    ushort  attrib1 = attributes[(i * 4) + 1];
-                                    Vector3 vertex0 = page->GetCodedVertex(attrib0);
-                                    Vector3 vertex1 = page->GetCodedVertex(attrib1);
+                                    Vector3 vertex0 = page->GetCodedVertex(roadVertices[i].PavementL);
+                                    Vector3 vertex1 = page->GetCodedVertex(roadVertices[i].RoadL);
 
                                     vglTexCoord2f(sBuffer[i], 1.0f);
                                     vglVertex3f(vertex0);
@@ -1001,13 +1009,12 @@ public:
 
                             vglCurrentColor = (baseColor >> 1) & 0x7F7F7F | 0xFF000000;
 
-                            {
+                            { // Draw Left Pavement Edge
                                 vglBegin(DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
 
                                 for (int i = 0; i < vertex_count; ++i)
                                 {
-                                    ushort  attrib1 = attributes[(i * 4) + 1];
-                                    Vector3 vertex1 = page->GetCodedVertex(attrib1);
+                                    Vector3 vertex1 = page->GetCodedVertex(roadVertices[i].RoadL);
 
                                     vglTexCoord2f(sBuffer[i], 0.0f);
 
@@ -1026,19 +1033,17 @@ public:
                             vglCurrentColor = baseColor;
                         }
 
-                        if (attributes[2] != attributes[3])
+                        if (roadVertices->RoadR != roadVertices->PavementR) // If there is a right pavement
                         {
-                            page->ArcMap(sBuffer, attributes + 2, 4, vertex_count, 1);
+                            page->ArcMap(sBuffer, &roadVertices->RoadR, 4, vertex_count, 1);
 
-                            {
+                            { // Draw Right Pavement
                                 vglBegin(DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
 
                                 for (int i = 0; i < vertex_count; ++i)
                                 {
-                                    ushort  attrib2 = attributes[(i * 4) + 2];
-                                    ushort  attrib3 = attributes[(i * 4) + 3];
-                                    Vector3 vertex2 = page->GetCodedVertex(attrib2);
-                                    Vector3 vertex3 = page->GetCodedVertex(attrib3);
+                                    Vector3 vertex2 = page->GetCodedVertex(roadVertices[i].RoadR);
+                                    Vector3 vertex3 = page->GetCodedVertex(roadVertices[i].PavementR);
 
                                     vglTexCoord2f(sBuffer[i], 0.0f);
                                     vglVertex3f({
@@ -1056,13 +1061,12 @@ public:
 
                             vglCurrentColor = (baseColor >> 1) & 0x7F7F7F | 0xFF000000;
 
-                            {
+                            { // Draw Right Pavement Edge
                                 vglBegin(DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
 
                                 for (int i = 0; i < vertex_count; ++i)
                                 {
-                                    ushort  attrib2 = attributes[(i * 4) + 2];
-                                    Vector3 vertex2 = page->GetCodedVertex(attrib2);
+                                    Vector3 vertex2 = page->GetCodedVertex(roadVertices[i].RoadR);
 
                                     vglTexCoord2f(sBuffer[i], 0.0f);
 
@@ -1081,18 +1085,16 @@ public:
                             vglCurrentColor = baseColor;
                         }
 
-                        page->ArcMap(sBuffer, attributes + 1, 4, vertex_count, 1);
-                        vglBindTexture(page->Textures[current_texture]);
+                        page->ArcMap(sBuffer, &roadVertices->RoadL, 4, vertex_count, 1);
+                        vglBindTexture(page->GetTexture(current_texture));
 
-                        {
+                        { // Draw Left Road
                             vglBegin(DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
 
                             for (int i = 0; i < vertex_count; ++i)
                             {
-                                ushort  attrib1 = attributes[(i * 4) + 1];
-                                ushort  attrib2 = attributes[(i * 4) + 2];
-                                Vector3 vertex1 = page->GetCodedVertex(attrib1);
-                                Vector3 vertex2 = page->GetCodedVertex(attrib2);
+                                Vector3 vertex1 = page->GetCodedVertex(roadVertices[i].RoadL);
+                                Vector3 vertex2 = page->GetCodedVertex(roadVertices[i].RoadR);
 
                                 vglTexCoord2f(sBuffer[i], 1.0f);
                                 vglVertex3f(vertex1);
@@ -1108,15 +1110,13 @@ public:
                             vglEnd();
                         }
 
-                        {
+                        { // Draw Right Road
                             vglBegin(DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
 
                             for (int i = 0; i < vertex_count; ++i)
                             {
-                                ushort  attrib1 = attributes[(i * 4) + 1];
-                                ushort  attrib2 = attributes[(i * 4) + 2];
-                                Vector3 vertex1 = page->GetCodedVertex(attrib1);
-                                Vector3 vertex2 = page->GetCodedVertex(attrib2);
+                                Vector3 vertex1 = page->GetCodedVertex(roadVertices[i].RoadL);
+                                Vector3 vertex2 = page->GetCodedVertex(roadVertices[i].RoadR);
 
                                 vglTexCoord2f(sBuffer[i], 0.0f);
                                 vglVertex3f({
@@ -1133,7 +1133,7 @@ public:
                         }
                     }
 
-                    attributes += 4 * vertex_count;
+                    attributes = (ushort*)(roadVertices + vertex_count);
                 } break;
 
                 case 1:
