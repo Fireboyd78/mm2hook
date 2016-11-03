@@ -954,34 +954,36 @@ public:
             ++attributes;
 
             ushort type         = (attribute & 0b1111000) >> 3;
-            ushort vertex_count = (attribute & 0b0000111);
+            ushort subtype      = (attribute & 0b0000111);
 
-            ushort texture_id = attributes[0] + (vertex_count << 8);
+            ushort vertex_count = subtype;
 
-            if (vertex_count == 0)
+            ushort texture_id = attributes[0] + (subtype << 8);
+
+            if (subtype == 0)
             {
                 vertex_count = attributes[0];
                 ++attributes;
             }
 
+            struct RoadVertex
+            {
+                ushort PavementL;
+                ushort RoadL;
+                ushort RoadR;
+                ushort PavementR;
+            };
+
             switch (type)
             {
                 case 0:
                 {
-                    struct RoadVertex
-                    {
-                        ushort PavementL;
-                        ushort RoadL;
-                        ushort RoadR;
-                        ushort PavementR;
-                    };
-
                     RoadVertex* roadVertices = (RoadVertex*) attributes;
 
                     if (current_texture)
                     {
                         vglBindTexture(page->GetTexture(current_texture + 1));
-                        page->ArcMap(sBuffer, &roadVertices->PavementL, 4, vertex_count, 1);
+                        page->ArcMap(sBuffer, attributes, 4, vertex_count, 1);
 
                         if (roadVertices->PavementL != roadVertices->RoadL) // If there is a left pavement
                         {
