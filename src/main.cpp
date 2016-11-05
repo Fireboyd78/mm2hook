@@ -872,8 +872,7 @@ public:
         char buffer[80];
         sprintf(buffer, "%spolicesiren", *cityName);
 
-        bool exists = datAssetManager::Exists("aud\\cardata\\player", buffer, "csv");
-        LPCSTR szSirenName = exists ? buffer : "sfpolicesiren";
+        LPCSTR szSirenName = (datAssetManager::Exists("aud\\cardata\\player", buffer, "csv")) ? buffer : "sfpolicesiren";
 
         LogFile::Format("SirenCSVName: %s\n", szSirenName);
 
