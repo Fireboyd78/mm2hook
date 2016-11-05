@@ -1490,6 +1490,49 @@ inline void InstallHandler(LPCSTR name) {
     InstallHandler(name, &THandler::Install);
 };
 
+class StackHandler {
+public:
+    static void GetAddressName(char *buffer, LPCSTR, int address) {
+        /*
+            TODO: Retrieve symbols from MM2Hook?
+        */
+
+        sprintf(buffer, "%08x (Unknown)", address);
+    }
+
+    static void GetAddressName(char *buffer, LPCSTR, int address, char *fnSymbol, int offset) {
+        char fnName[1024] = { NULL };
+
+        // no error checking (for now?)
+        UnDecorateSymbolName(fnSymbol, fnName, sizeof(fnName),
+            UNDNAME_COMPLETE
+            | UNDNAME_NO_FUNCTION_RETURNS
+            | UNDNAME_NO_ALLOCATION_MODEL
+            | UNDNAME_NO_ALLOCATION_LANGUAGE
+            | UNDNAME_NO_ACCESS_SPECIFIERS
+            | UNDNAME_NO_THROW_SIGNATURES
+            | UNDNAME_NO_MEMBER_TYPE
+            | UNDNAME_NO_RETURN_UDT_MODEL
+        );
+
+        sprintf(buffer, "%08x (\"%s\"+%x)", address, fnName, offset);
+    }
+
+    static void Install() {
+        InstallCallback("datStack::LookupAddress", "Allows for more detailed address information.",
+            static_cast<void (*)(char*, LPCSTR, int, char*, int)>(&GetAddressName), {
+                cbHook<CALL>(0x4C74DD), // sprintf
+            }
+        );
+
+        InstallCallback("datStack::LookupAddress", "Allows for more detailed information of unknown symbols.",
+            static_cast<void(*)(char*, LPCSTR, int)>(&GetAddressName), {
+                cbHook<CALL>(0x4C74B9), // sprintf
+            }
+        );
+    }
+};
+
 class HookSystemFramework
 {
 private:
@@ -1506,6 +1549,7 @@ private:
         InstallHandler<CallbackHandler>("Generic callbacks");
         InstallHandler<PrintHandler>("Print system");
         InstallHandler<TimeHandler>("Time manager");
+        InstallHandler<StackHandler>("Stack information");
 
         InstallHandler<gfxPipelineHandler>("gfxPipeline");
         InstallHandler<memSafeHeapHandler>("memSafeHeap");
