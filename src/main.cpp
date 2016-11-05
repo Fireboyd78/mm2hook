@@ -1595,53 +1595,6 @@ private:
         InstallPatch("Fix crash for missing images", { 0xEB /* jnz -> jmp */ }, {
             0x4B329B, // gfxGetBitmap
         });
-
-        /* Causes game crashes, needs fixing
-        InstallPatch("dgPhysManager [Raise MAX_MOVERS]", { 64 }, {
-            0x4683CE + 2, 0x468582 + 2,
-            0x46869C + 2, 0x46872E + 2,
-            0x468E16 + 1,
-        });
-
-        // from 0x12B0 to 0x24B0, since we're doubling the array size
-        InstallPatch("dgPhysManager [Increase structure size]", { 0x24 }, {
-            // mmGame::Init
-            0x4129C7 + 2, // operator new
-            0x412C52 + 3, 0x412C67 + 3,
-
-            // dgPhysManager::dgPhysManager(void)
-            0x46820C + 3, 0x468216 + 3,
-
-            // dgPhysManager::DeclareMover(lvlInstance *, int, int)
-            0x4683C8 + 3, 0x4683FD + 3, 0x468410 + 3, 0x468427 + 3,
-            0x46843B + 3, 0x4684FC + 3, 0x468506 + 3,
-
-            // dgPhysManager::NewMover(lvlInstance *, lvlInstance *)
-            0x46857C + 3, 0x4685B0 + 3, 0x4685C8 + 3, 0x46865E + 3,
-
-            // dgPhysManager::NewMover(lvlInstance *)
-            0x468696 + 3, 0x4686DE + 3, 0x4686E5 + 3,
-
-            // dgPhysManager::NewMover(lvlInstance *, lvlInstance *, lvlInstance *)
-            0x468728 + 3, 0x46879D + 3, 0x4687EE + 3, 0x46882E + 3,
-            0x468837 + 3,
-
-            // dgPhysManager::IgnoreMover(lvlInstance *)
-            0x468864 + 3,
-
-            // dgPhysManager::Update(void)
-            0x4688D5 + 3, 0x468934 + 3, 0x468948 + 3, 0x46896B + 3,
-            0x468976 + 3, 0x468998 + 3, 0x4689DA + 3, 0x4689EF + 3,
-            0x468A1B + 3, 0x468A4D + 3, 0x468A6F + 3, 0x468AAF + 3,
-            0x468AD8 + 3, 0x468B1A + 3, 0x468B52 + 3, 0x468BE6 + 3,
-            0x468C49 + 3, 0x468C8D + 3, 0x468CA6 + 3, 0x468CB6 + 3,
-            0x468CDD + 3, 0x468D31 + 3, 0x468D51 + 3, 0x468D65 + 3,
-            0x468DB1 + 3,
-
-            // dgPhysManager::ResetTable(void)
-            0x468E31 + 3,
-        });
-        */
     }
 public:
     static void Initialize(int argc, char **argv) {
