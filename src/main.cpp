@@ -798,8 +798,12 @@ public:
             LogFile::WriteLine("[mmDirSnd::Init]: Using primary sound driver");
         }
 
-        // TODO: Set sampling rate (see 0x519640 - int __thiscall AudManager::SetBitDepthAndSampleRate(int this, int bitDepth, int samplingRate))
-        // TODO: Redo SetPrimaryBufferFormat to set sampleSize? (see 0x5A5860 -void __thiscall DirSnd::SetPrimaryBufferFormat(mmDirSnd *this, int sampleRate, bool allowStero))
+        /*
+            TODO:
+            
+            - Set sampling rate (see: AudManager::SetBitDepthAndSampleRate(int bitDepth, ulong samplingRate))
+            - Redo SetPrimaryBufferFormat to set sampleSize? (see: DirSnd::SetPrimaryBufferFormat(ulong sampleRate, bool allowStero))
+        */
         return mmDirSnd::Init(48000, enableStero, a4, volume, deviceName, enable3D);
     }
 
