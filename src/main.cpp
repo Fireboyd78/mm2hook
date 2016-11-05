@@ -385,8 +385,7 @@ public:
 class BridgeFerryHandler {
 public:
     void Cull(int lod) {
-        // wtf
-        //setPtr(this, 0x1B, (char)++lod);
+        // TODO: Make this do something?
     }
 
     void Draw(int lod) {
