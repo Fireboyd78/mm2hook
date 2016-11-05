@@ -2,10 +2,6 @@
 
 using namespace MM2;
 
-CMidtownMadness2 *pMM2;
-
-bool isConsoleOpen = false;
-
 // ==========================
 // Game-related properties
 // ==========================

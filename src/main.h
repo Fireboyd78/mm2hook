@@ -18,4 +18,7 @@ STDAPI DirectInputCreate_Impl(HINSTANCE hinst, DWORD dwVersion, LPVOID *ppDI, LP
     return lpDICreate(hinst, dwVersion, ppDI, punkOuter);
 }
 
+CMidtownMadness2 *pMM2;
 LuaState L;
+
+bool isConsoleOpen = false;
