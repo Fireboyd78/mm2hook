@@ -2,16 +2,6 @@
 
 using namespace MM2;
 
-LPFNDIRECTINPUTCREATE lpDICreate;
-
-// Export as 'DirectInputCreateA/W' so we can hook into MM2
-// (Apparently DirectInputCreateW gets called sometimes...)
-#pragma comment(linker, "/EXPORT:DirectInputCreateA=_DirectInputCreate_Impl")
-#pragma comment(linker, "/EXPORT:DirectInputCreateW=_DirectInputCreate_Impl")
-HRESULT NAKED DirectInputCreate_Impl(HINSTANCE hinst, DWORD dwVersion, LPVOID *ppDI, LPUNKNOWN punkOuter) {
-    JMP_PTR(lpDICreate);
-}
-
 CMidtownMadness2 *pMM2;
 
 bool isConsoleOpen = false;
