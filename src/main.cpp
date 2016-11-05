@@ -850,8 +850,7 @@ public:
         char buffer[80];
         sprintf(buffer, "%sambience", *cityName);
 
-        bool exists = datAssetManager::Exists("aud\\dmusic\\csv_files", buffer, "csv");
-        LPCSTR szAmbientSFX = exists ? buffer : "sfambience";
+        LPCSTR szAmbientSFX = (datAssetManager::Exists("aud\\dmusic\\csv_files", buffer, "csv")) ? buffer : "sfambience";
 
         LogFile::Format("AmbientSFX: %s\n", szAmbientSFX);
 
