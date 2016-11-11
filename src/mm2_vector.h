@@ -47,6 +47,11 @@ Vector3& operator op##= (const float   rhs) { return *this op##= Vector3 { rhs, 
                 return 1.0f / sqrt(mag);
             }
         }
+
+        void Normalize()
+        {
+            *this *= this->InvMag();
+        }
     };
 
     struct Vector4 {

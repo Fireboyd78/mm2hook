@@ -1427,9 +1427,11 @@ public:
                                 ? vertex2.Dist(vertex3)
                                 : vertex0.Dist(vertex1);
 
+                            texS = vertex0.Dist(vertex2) / texS;
+
                             vglBegin(DRAWMODE_TRIANGLESTRIP, 4);
                             
-                            vglTexCoord2f(0.0f, 1.0f);
+                            vglTexCoord2f(0.0f, 0.0f);
                             vglVertex3f(vertex1);
 
                             vglTexCoord2f(1.0f, 0.0f);
@@ -1504,11 +1506,12 @@ public:
                         MedianRoadVertex* roadVertices = (MedianRoadVertex*)(attributes + 2);
 
                         ushort roadFlags = attrib0 & 0b111111;
-                        ushort flag0 = (attrib0 >> 6) & 1;
-                        ushort flag1 = (attrib0 >> 7) & 1;
+                        ushort flag0  = (attrib0 >> 6) & 1;
+                        ushort flag1  = (attrib0 >> 7) & 1;
+
                         ushort midTex = (attrib0 >> 8);
 
-                        float someFloat = attrib1 * 0.004f;
+                        float middleHeight = attrib1 * 0.004f;
 
                         vglBindTexture(page->GetTexture(current_texture + 1));
                         page->ArcMap(sBuffer, (ushort*) roadVertices, 6, vertex_count, 1);
@@ -1662,7 +1665,7 @@ public:
                                     vglTexCoord2f(sBuffer[i], 0.0f);
                                     vglVertex3f(roadVertexL);
 
-                                    vglTexCoord2f(sBuffer[i], someFloat);
+                                    vglTexCoord2f(sBuffer[i], middleHeight);
                                     vglVertex3f(roadVertexR);
                                 }
 
@@ -1686,9 +1689,9 @@ public:
                                     vglTexCoord2f(sBuffer[i], 0.0f);
                                     vglVertex3f(roadVertexL);
 
-                                    vglTexCoord2f(sBuffer[i], someFloat);
+                                    vglTexCoord2f(sBuffer[i], middleHeight);
                                     vglVertex3f(roadVertexL + Vector3 {
-                                        0.0f, someFloat, 0.0f
+                                        0.0f, middleHeight, 0.0f
                                     });
                                 }
 
@@ -1702,9 +1705,9 @@ public:
                                 {
                                     Vector3 roadVertexR = page->GetCodedVertex(roadVertices[i].MiddleR);
 
-                                    vglTexCoord2f(sBuffer[i], someFloat);
+                                    vglTexCoord2f(sBuffer[i], middleHeight);
                                     vglVertex3f(roadVertexR + Vector3 {
-                                        0.0f, someFloat, 0.0f
+                                        0.0f, middleHeight, 0.0f
                                     });
 
                                     vglTexCoord2f(sBuffer[i], 0.0f);
@@ -1729,14 +1732,14 @@ public:
                                     Vector3 roadVertexDelta = roadVertexL - roadVertexR;
 
                                     roadVertexDelta *= roadVertexDelta.InvMag();
-                                    roadVertexDelta *= -someFloat;
-                                    roadVertexDelta.y += someFloat;
+                                    roadVertexDelta *= -middleHeight;
+                                    roadVertexDelta.y += middleHeight;
 
                                     roadVertexDelta += roadVertexL;
 
                                     vglTexCoord2f(sBuffer[i], 0.0f);
                                     vglVertex3f(roadVertexL + Vector3 {
-                                        0.0f, someFloat, 0.0f
+                                        0.0f, middleHeight, 0.0f
                                     });
 
                                     vglTexCoord2f(sBuffer[i], 1.0f);
@@ -1757,8 +1760,8 @@ public:
                                     Vector3 roadVertexDelta = roadVertexR - roadVertexL;
 
                                     roadVertexDelta *= roadVertexDelta.InvMag();
-                                    roadVertexDelta *= -someFloat;
-                                    roadVertexDelta.y += someFloat;
+                                    roadVertexDelta *= -middleHeight;
+                                    roadVertexDelta.y += middleHeight;
 
                                     roadVertexDelta += roadVertexR;
 
@@ -1767,7 +1770,7 @@ public:
 
                                     vglTexCoord2f(sBuffer[i], 0.0f);
                                     vglVertex3f(roadVertexR + Vector3 {
-                                        0.0f, someFloat, 0.0f
+                                        0.0f, middleHeight, 0.0f
                                     });
                                 }
 
@@ -1787,21 +1790,230 @@ public:
                                     Vector3 roadVertexDelta = roadVertexL - roadVertexR;
 
                                     roadVertexDelta *= roadVertexDelta.InvMag();
-                                    roadVertexDelta *= -someFloat;
+                                    roadVertexDelta *= -middleHeight;
 
                                     vglTexCoord2f(sBuffer[i], 0.0f);
                                     vglVertex3f(roadVertexL + roadVertexDelta + Vector3 {
-                                        0.0f, someFloat, 0.0f
+                                        0.0f, middleHeight, 0.0f
                                     });
 
                                     vglTexCoord2f(sBuffer[i], 1.0f);
                                     vglVertex3f(roadVertexR - roadVertexDelta + Vector3 {
-                                        0.0f, someFloat, 0.0f
+                                        0.0f, middleHeight, 0.0f
                                     });
                                 }
 
                                 vglEnd();
                             }
+
+                            vglBindTexture(page->GetTexture(midTex + 3));
+
+                            if (flag0)
+                            {
+                                vglBegin(DRAWMODE_TRIANGLESTRIP, 4);
+
+                                {
+                                    Vector3 roadVertexL = page->GetCodedVertex(roadVertices[0].MiddleL);
+                                    Vector3 roadVertexR = page->GetCodedVertex(roadVertices[0].MiddleR);
+
+                                    vglTexCoord2f(0.0f, 0.0f);
+                                    vglVertex3f(roadVertexL);
+
+                                    vglTexCoord2f(1.0f, 0.0f);
+                                    vglVertex3f(roadVertexR);
+
+                                    vglTexCoord2f(1.0f, 1.0f);
+                                    vglVertex3f(roadVertexL + Vector3 {
+                                        0.0f, middleHeight, 0.0f
+                                    });
+
+                                    vglTexCoord2f(0.0f, 1.0f);
+                                    vglVertex3f(roadVertexR + Vector3 {
+                                        0.0f, middleHeight, 0.0f
+                                    });
+                                }
+
+                                vglEnd();
+                            }
+
+                            if (flag1)
+                            {
+                                vglBegin(DRAWMODE_TRIANGLESTRIP, 4);
+
+                                {
+                                    Vector3 roadVertexL = page->GetCodedVertex(roadVertices[vertex_count - 1].MiddleL);
+                                    Vector3 roadVertexR = page->GetCodedVertex(roadVertices[vertex_count - 1].MiddleR);
+
+                                    vglTexCoord2f(0.0f, 0.0f);
+                                    vglVertex3f(roadVertexR);
+
+                                    vglTexCoord2f(1.0f, 0.0f);
+                                    vglVertex3f(roadVertexL);
+
+                                    vglTexCoord2f(1.0f, 1.0f);
+                                    vglVertex3f(roadVertexR + Vector3 {
+                                        0.0f, middleHeight, 0.0f
+                                    });
+
+                                    vglTexCoord2f(0.0f, 1.0f);
+                                    vglVertex3f(roadVertexL + Vector3 {
+                                        0.0f, middleHeight, 0.0f
+                                    });
+                                }
+
+                                vglEnd();
+                            }
+                        }
+                        else if (roadFlags == 3)
+                        {
+                            page->ArcMap(sBuffer, &roadVertices->MiddleL, 6, vertex_count, 1);
+                            vglBindTexture(page->GetTexture(midTex + 1));
+
+                            {
+                                vglBegin(DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
+
+                                for (int i = 0; i < vertex_count; ++i)
+                                {
+                                    Vector3 roadVertexL = page->GetCodedVertex(roadVertices[i].MiddleL);
+                                    Vector3 roadVertexR = page->GetCodedVertex(roadVertices[i].MiddleR);
+                                    
+                                    Vector3 roadVertexDelta = roadVertexL - roadVertexR;
+
+                                    roadVertexDelta.Normalize();
+
+                                    roadVertexDelta *= -0.4f;
+                                    roadVertexDelta.y += 1.0f;
+
+                                    vglTexCoord2f(sBuffer[i], 0.0f);
+                                    vglVertex3f(roadVertexL);
+
+                                    vglTexCoord2f(sBuffer[i], 1.0f);
+                                    vglVertex3f(roadVertexL + roadVertexDelta);
+                                }
+
+                                vglEnd();
+                            }
+
+                            {
+                                vglBegin(DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
+
+                                for (int i = 0; i < vertex_count; ++i)
+                                {
+                                    Vector3 roadVertexL = page->GetCodedVertex(roadVertices[i].MiddleL);
+                                    Vector3 roadVertexR = page->GetCodedVertex(roadVertices[i].MiddleR);
+
+                                    Vector3 roadVertexDelta = roadVertexR - roadVertexL;
+
+                                    roadVertexDelta.Normalize();
+
+                                    roadVertexDelta *= -0.4f;
+                                    roadVertexDelta.y += 1.0f;
+
+                                    vglTexCoord2f(sBuffer[i], 1.0f);
+                                    vglVertex3f(roadVertexR + roadVertexDelta);
+
+                                    vglTexCoord2f(sBuffer[i], 0.0f);
+                                    vglVertex3f(roadVertexR);
+                                }
+
+                                vglEnd();
+                            }
+
+                            vglBindTexture(page->GetTexture(midTex + 1));
+
+                            {
+                                vglBegin(DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
+
+                                for (int i = 0; i < vertex_count; ++i)
+                                {
+                                    Vector3 roadVertexL = page->GetCodedVertex(roadVertices[i].MiddleL);
+                                    Vector3 roadVertexR = page->GetCodedVertex(roadVertices[i].MiddleR);
+
+                                    Vector3 roadVertexDelta = roadVertexL - roadVertexR;
+
+                                    roadVertexDelta.Normalize();
+
+                                    roadVertexDelta *= -0.4f;
+                                    roadVertexDelta.y += 1.0f;
+
+                                    vglTexCoord2f(sBuffer[i], 0.0f);
+                                    vglVertex3f(roadVertexL + roadVertexDelta);
+
+                                    roadVertexDelta.x = -roadVertexDelta.x;
+                                    roadVertexDelta.z = -roadVertexDelta.z;
+
+                                    vglTexCoord2f(sBuffer[i], 1.0f);
+                                    vglVertex3f(roadVertexR + roadVertexDelta);
+                                }
+
+                                vglEnd();
+                            }
+
+                            if (flag0)
+                            {
+                                vglBegin(DRAWMODE_TRIANGLESTRIP, 4);
+
+                                Vector3 roadVertexL = page->GetCodedVertex(roadVertices[vertex_count - 1].MiddleL);
+                                Vector3 roadVertexR = page->GetCodedVertex(roadVertices[vertex_count - 1].MiddleR);
+
+                                Vector3 roadVertexDelta = roadVertexL - roadVertexR;
+
+                                roadVertexDelta.Normalize();
+
+                                roadVertexDelta *= -0.4f;
+                                roadVertexDelta.y += 1.0f;
+
+                                vglTexCoord2f(0.0f, 0.0f);
+                                vglVertex3f(roadVertexL);
+
+                                vglTexCoord2f(1.0f, 0.0f);
+                                vglVertex3f(roadVertexR);
+
+                                vglTexCoord2f(1.0f, 1.0f);
+                                vglVertex3f(roadVertexL + roadVertexDelta);
+
+                                vglTexCoord2f(0.0f, 1.0f);
+                                roadVertexDelta.x = -roadVertexDelta.x;
+                                roadVertexDelta.z = -roadVertexDelta.z;
+                                vglVertex3f(roadVertexR + roadVertexDelta);
+
+                                vglEnd();
+                            }
+
+                            if (flag1)
+                            {
+                                vglBegin(DRAWMODE_TRIANGLESTRIP, 4);
+
+                                Vector3 roadVertexL = page->GetCodedVertex(roadVertices[vertex_count - 1].MiddleL);
+                                Vector3 roadVertexR = page->GetCodedVertex(roadVertices[vertex_count - 1].MiddleR);
+
+                                Vector3 roadVertexDelta = roadVertexR - roadVertexL;
+
+                                roadVertexDelta.Normalize();
+
+                                roadVertexDelta *= -0.4f;
+                                roadVertexDelta.y += 1.0f;
+
+                                vglTexCoord2f(0.0f, 0.0f);
+                                vglVertex3f(roadVertexR);
+
+                                vglTexCoord2f(1.0f, 0.0f);
+                                vglVertex3f(roadVertexL);
+
+                                vglTexCoord2f(1.0f, 1.0f);
+                                vglVertex3f(roadVertexR + roadVertexDelta);
+
+                                vglTexCoord2f(0.0f, 1.0f);
+                                roadVertexDelta.x = -roadVertexDelta.x;
+                                roadVertexDelta.z = -roadVertexDelta.z;
+                                vglVertex3f(roadVertexL + roadVertexDelta);
+
+                                vglEnd();
+                            }
+                        }
+                        else
+                        {
+                            Errorf("Bad Median Type");
                         }
                     }
 
