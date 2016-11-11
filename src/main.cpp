@@ -1287,16 +1287,16 @@ public:
 
                             for (int i = 0; i < vertex_count; ++i)
                             {
-                                ushort  attrib0 = attributes[0];
-                                ushort  attrib1 = attributes[1];
-                                Vector3 vector0 = page->GetCodedVertex(attrib0);
-                                Vector3 vector1 = page->GetCodedVertex(attrib1);
+                                ushort  attrib0 = attributes[(i * 2) + 0];
+                                ushort  attrib1 = attributes[(i * 2) + 1];
+                                Vector3 vertex0 = page->GetCodedVertex(attrib0);
+                                Vector3 vertex1 = page->GetCodedVertex(attrib1);
 
                                 vglTexCoord2f(sBuffer[i], 0.0f);
-                                vglVertex3f(vector0);
+                                vglVertex3f(vertex0);
 
                                 vglTexCoord2f(sBuffer[i], 1.0f);
-                                vglVertex3f(vector1);
+                                vglVertex3f(vertex1);
                             }
 
                             vglEnd();
