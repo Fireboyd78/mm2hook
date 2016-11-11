@@ -2134,7 +2134,7 @@ public:
 
                 default:
                 {
-                    Displayf("Invalid cmd %d (%d)", attribute, (attribute >> 3) & 0xF);
+                    Displayf("Invalid cmd %d", type);
                 } break;
             }
 
