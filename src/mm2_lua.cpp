@@ -107,40 +107,40 @@ LUAMOD_API int luaopen_MM2(lua_State * L)
         .beginClass<Vector2>("Vector2")
             .addFactory([](float x = 0.0, float y = 0.0) {
                 auto vec = new Vector2;
-                vec->X = x;
-                vec->Y = y;
+                vec->x = x;
+                vec->y = y;
                 return vec;
             }, LUA_ARGS(_opt<float>, _opt<float>))
-            .addVariableRef("x", &Vector2::X)
-            .addVariableRef("y", &Vector2::Y)
+            .addVariableRef("x", &Vector2::x)
+            .addVariableRef("y", &Vector2::y)
         .endClass()
 
         .beginClass<Vector3>("Vector3")
             .addFactory([](float x = 0.0, float y = 0.0, float z = 0.0) {
                 auto vec = new Vector3;
-                vec->X = x;
-                vec->Y = y;
-                vec->Z = z;
+                vec->x = x;
+                vec->y = y;
+                vec->z = z;
                 return vec;
             }, LUA_ARGS(_opt<float>, _opt<float>, _opt<float>))
-            .addVariableRef("x", &Vector3::X)
-            .addVariableRef("y", &Vector3::Y)
-            .addVariableRef("z", &Vector3::Z)
+            .addVariableRef("x", &Vector3::x)
+            .addVariableRef("y", &Vector3::y)
+            .addVariableRef("z", &Vector3::z)
         .endClass()
 
         .beginClass<Vector4>("Vector4")
             .addFactory([](float x = 0.0, float y = 0.0, float z = 0.0, float w = 0.0) {
                 auto vec = new Vector4;
-                vec->X = x;
-                vec->Y = y;
-                vec->Z = z;
-                vec->W = w;
+                vec->x = x;
+                vec->y = y;
+                vec->z = z;
+                vec->w = w;
                 return vec;
             }, LUA_ARGS(_opt<float>, _opt<float>, _opt<float>, _opt<float>))
-            .addVariableRef("x", &Vector4::X)
-            .addVariableRef("y", &Vector4::Y)
-            .addVariableRef("z", &Vector4::Z)
-            .addVariableRef("w", &Vector4::W)
+            .addVariableRef("x", &Vector4::x)
+            .addVariableRef("y", &Vector4::y)
+            .addVariableRef("z", &Vector4::z)
+            .addVariableRef("w", &Vector4::w)
         .endClass();
 
     mod.pushToStack();

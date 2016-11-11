@@ -151,9 +151,9 @@ Vector3 addPitch(Vector3 *vec, float pitch) {
     bool pitchIsZero = (pitch >= 0.0f);
 
     return {
-        (float)((!pitchIsZero) ? vec->X * cos(pitch + cosNum) : 0.0f),
-        (float)((!pitchIsZero) ? vec->Y * cos(pitch + cosNum) : 0.0f),
-        (float)((!pitchIsZero) ? vec->Z * cos(pitch + cosNum) : 0.0f),
+        (float)((!pitchIsZero) ? vec->x * cos(pitch + cosNum) : 0.0f),
+        (float)((!pitchIsZero) ? vec->y * cos(pitch + cosNum) : 0.0f),
+        (float)((!pitchIsZero) ? vec->z * cos(pitch + cosNum) : 0.0f),
     };
 }
 
@@ -166,9 +166,9 @@ float normalize(float value) {
 
 Vector3 intToColor(int value) {
     return {
-        (float)((char)((value & 0xFF0000) >> 16) / 256.0),
-        (float)((char)((value & 0xFF00) >> 8) / 256.0),
-        (float)((char)((value & 0xFF)) / 256.0),
+        (float)((char)((value & 0xFF0000) >> 16) / 255.f),
+        (float)((char)((value & 0x00FF00) >> 8)  / 255.f),
+        (float)((char)((value & 0x0000FF))       / 255.f),
     };
 }
 
@@ -283,15 +283,14 @@ public:
         vglAmbient = intToColor(timeWeather->Ambient);
 
         // compute le values
-        vglShadedColor = {
-            normalize(vglKeyColor.X + vglFill1Color.X + vglFill2Color.X + vglAmbient.X),
-            normalize(vglKeyColor.Y + vglFill1Color.Y + vglFill2Color.Y + vglAmbient.Y),
-            normalize(vglKeyColor.Z + vglFill1Color.Z + vglFill2Color.Z + vglAmbient.Z),
-        };
+        vglShadedColor =
+            (vglKeyColor + vglFill1Color + vglFill2Color + vglAmbient);
 
-        vglResultColor.r = byte(vglShadedColor.X * 255.999f);
-        vglResultColor.g = byte(vglShadedColor.Y * 255.999f);
-        vglResultColor.b = byte(vglShadedColor.Z * 255.999f);
+        vglShadedColor *= { 255.f, 255.f, 255.f };
+
+        vglResultColor.r = byte(vglShadedColor.x);
+        vglResultColor.g = byte(vglShadedColor.y);
+        vglResultColor.b = byte(vglShadedColor.z);
         vglResultColor.a = 255;
     }
 
@@ -934,6 +933,7 @@ public:
     }
 
     void Draw_Impl(int lod, unsigned int baseColor) {
+        
         if (page->Attributes == nullptr)
             return;
 
@@ -974,6 +974,16 @@ public:
                 ushort PavementR;
             };
 
+            struct MedianRoadVertex
+            {
+                ushort PavementL;
+                ushort RoadL;
+                ushort MiddleL;
+                ushort MiddleR;
+                ushort RoadR;
+                ushort PavementR;
+            };
+
             switch (type)
             {
                 case 0:
@@ -992,17 +1002,15 @@ public:
 
                                 for (int i = 0; i < vertex_count; ++i)
                                 {
-                                    Vector3 vertex0 = page->GetCodedVertex(roadVertices[i].PavementL);
-                                    Vector3 vertex1 = page->GetCodedVertex(roadVertices[i].RoadL);
+                                    Vector3 pavementVertex = page->GetCodedVertex(roadVertices[i].PavementL);
+                                    Vector3 roadVertex     = page->GetCodedVertex(roadVertices[i].RoadL);
 
                                     vglTexCoord2f(sBuffer[i], 1.0f);
-                                    vglVertex3f(vertex0);
+                                    vglVertex3f(pavementVertex);
 
                                     vglTexCoord2f(sBuffer[i], 0.0f);
-                                    vglVertex3f({
-                                        vertex1.X,
-                                        vertex1.Y + 0.15f,
-                                        vertex1.Z
+                                    vglVertex3f(roadVertex + Vector3 {
+                                        0.f, 0.15f, 0.f
                                     });
                                 }
 
@@ -1016,17 +1024,15 @@ public:
 
                                 for (int i = 0; i < vertex_count; ++i)
                                 {
-                                    Vector3 vertex1 = page->GetCodedVertex(roadVertices[i].RoadL);
+                                    Vector3 roadVertex = page->GetCodedVertex(roadVertices[i].RoadL);
 
                                     vglTexCoord2f(sBuffer[i], 0.0f);
 
-                                    vglVertex3f({
-                                        vertex1.X,
-                                        vertex1.Y + 0.15f,
-                                        vertex1.Z
+                                    vglVertex3f(roadVertex + Vector3 {
+                                        0.f, 0.15f, 0.f
                                     });
 
-                                    vglVertex3f(vertex1);
+                                    vglVertex3f(roadVertex);
                                 }
 
                                 vglEnd();
@@ -1044,18 +1050,16 @@ public:
 
                                 for (int i = 0; i < vertex_count; ++i)
                                 {
-                                    Vector3 vertex2 = page->GetCodedVertex(roadVertices[i].RoadR);
-                                    Vector3 vertex3 = page->GetCodedVertex(roadVertices[i].PavementR);
+                                    Vector3 roadVertex     = page->GetCodedVertex(roadVertices[i].RoadR);
+                                    Vector3 pavementVertex = page->GetCodedVertex(roadVertices[i].PavementR);
 
                                     vglTexCoord2f(sBuffer[i], 0.0f);
-                                    vglVertex3f({
-                                        vertex2.X,
-                                        vertex2.Y + 0.15f,
-                                        vertex2.Z
+                                    vglVertex3f(roadVertex + Vector3 {
+                                        0.f, 0.15f, 0.f
                                     });
 
                                     vglTexCoord2f(sBuffer[i], 1.0f);
-                                    vglVertex3f(vertex3);
+                                    vglVertex3f(pavementVertex);
                                 }
 
                                 vglEnd();
@@ -1068,16 +1072,14 @@ public:
 
                                 for (int i = 0; i < vertex_count; ++i)
                                 {
-                                    Vector3 vertex2 = page->GetCodedVertex(roadVertices[i].RoadR);
+                                    Vector3 roadVertex = page->GetCodedVertex(roadVertices[i].RoadR);
 
                                     vglTexCoord2f(sBuffer[i], 0.0f);
 
-                                    vglVertex3f(vertex2);
+                                    vglVertex3f(roadVertex);
 
-                                    vglVertex3f({
-                                        vertex2.X,
-                                        vertex2.Y + 0.15f,
-                                        vertex2.Z
+                                    vglVertex3f(roadVertex + Vector3 {
+                                        0.f, 0.15f, 0.f
                                     });
                                 }
 
@@ -1095,18 +1097,14 @@ public:
 
                             for (int i = 0; i < vertex_count; ++i)
                             {
-                                Vector3 vertex1 = page->GetCodedVertex(roadVertices[i].RoadL);
-                                Vector3 vertex2 = page->GetCodedVertex(roadVertices[i].RoadR);
+                                Vector3 roadVertexL = page->GetCodedVertex(roadVertices[i].RoadL);
+                                Vector3 roadVertexR = page->GetCodedVertex(roadVertices[i].RoadR);
 
                                 vglTexCoord2f(sBuffer[i], 1.0f);
-                                vglVertex3f(vertex1);
+                                vglVertex3f(roadVertexL);
 
                                 vglTexCoord2f(sBuffer[i], 0.0f);
-                                vglVertex3f({
-                                    ((vertex2.X - vertex1.X) * 0.5f) + vertex1.X,
-                                    ((vertex2.Y - vertex1.Y) * 0.5f) + vertex1.Y,
-                                    ((vertex2.Z - vertex1.Z) * 0.5f) + vertex1.Z
-                                });
+                                vglVertex3f(roadVertexL.Lerp(roadVertexR, 0.5f));
                             }
 
                             vglEnd();
@@ -1117,18 +1115,14 @@ public:
 
                             for (int i = 0; i < vertex_count; ++i)
                             {
-                                Vector3 vertex1 = page->GetCodedVertex(roadVertices[i].RoadL);
-                                Vector3 vertex2 = page->GetCodedVertex(roadVertices[i].RoadR);
+                                Vector3 roadVertexL = page->GetCodedVertex(roadVertices[i].RoadL);
+                                Vector3 roadVertexR = page->GetCodedVertex(roadVertices[i].RoadR);
 
                                 vglTexCoord2f(sBuffer[i], 0.0f);
-                                vglVertex3f({
-                                    ((vertex2.X - vertex1.X) * 0.5f) + vertex1.X,
-                                    ((vertex2.Y - vertex1.Y) * 0.5f) + vertex1.Y,
-                                    ((vertex2.Z - vertex1.Z) * 0.5f) + vertex1.Z
-                                });
+                                vglVertex3f(roadVertexL.Lerp(roadVertexR, 0.5f));
 
                                 vglTexCoord2f(sBuffer[i], 1.0f);
-                                vglVertex3f(vertex2);
+                                vglVertex3f(roadVertexR);
                             }
 
                             vglEnd();
@@ -1149,8 +1143,8 @@ public:
                             vglCurrentColor = (baseColor >> 1) & 0x7F7F7F | 0xFF000000;
 
                             {
-                                float deltaS = floor(page->CodedVertices[attributes[0]].X * 0.25f);
-                                float deltaT = floor(page->CodedVertices[attributes[0]].Z * 0.25f);
+                                float deltaS = floor(page->CodedVertices[attributes[0]].x * 0.25f);
+                                float deltaT = floor(page->CodedVertices[attributes[0]].z * 0.25f);
 
                                 vglBegin(DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
 
@@ -1160,16 +1154,14 @@ public:
                                     Vector3 vertex0 = page->GetCodedVertex(attrib0);
 
                                     vglTexCoord2f(
-                                        (vertex0.X * 0.25f) - deltaS,
-                                        (vertex0.Z * 0.25f) - deltaT
+                                        (vertex0.x * 0.25f) - deltaS,
+                                        (vertex0.z * 0.25f) - deltaT
                                     );
 
                                     vglVertex3f(vertex0);
 
-                                    vglVertex3f({
-                                        vertex0.X,
-                                        vertex0.Y + 0.15f,
-                                        vertex0.Z
+                                    vglVertex3f(vertex0 + Vector3 {
+                                        0.f, 0.15f, 0.f
                                     });
                                 }
 
@@ -1179,8 +1171,8 @@ public:
                             vglCurrentColor = baseColor;
 
                             {
-                                float deltaS = floor(page->CodedVertices[attributes[0]].X * 0.25f);
-                                float deltaT = floor(page->CodedVertices[attributes[0]].Z * 0.25f);
+                                float deltaS = floor(page->CodedVertices[attributes[0]].x * 0.25f);
+                                float deltaT = floor(page->CodedVertices[attributes[0]].z * 0.25f);
 
                                 vglBegin(DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
 
@@ -1192,19 +1184,17 @@ public:
                                     Vector3 vertex1 = page->GetCodedVertex(attrib1);
 
                                     vglTexCoord2f(
-                                        (vertex0.X * 0.25f) - deltaS,
-                                        (vertex0.Z * 0.25f) - deltaT
+                                        (vertex0.x * 0.25f) - deltaS,
+                                        (vertex0.z * 0.25f) - deltaT
                                     );
 
-                                    vglVertex3f({
-                                        vertex0.X,
-                                        vertex0.Y + 0.15f,
-                                        vertex0.Z
+                                    vglVertex3f(vertex0 + Vector3 {
+                                        0.f, 0.15f, 0.f
                                     });
 
                                     vglTexCoord2f(
-                                        (vertex1.X * 0.25f) - deltaS,
-                                        (vertex1.Z * 0.25f) - deltaT
+                                        (vertex1.x * 0.25f) - deltaS,
+                                        (vertex1.z * 0.25f) - deltaT
                                     );
                                     vglVertex3f(vertex1);
                                 }
@@ -1220,8 +1210,8 @@ public:
                             Vector3 vertex2 = page->GetCodedVertex(attrib2);
                             Vector3 vertex3 = page->GetCodedVertex(attrib3);
 
-                            float deltaS = floor(vertex2.X * 0.25f);
-                            float deltaT = floor(vertex2.Z * 0.25f);
+                            float deltaS = floor(vertex2.x * 0.25f);
+                            float deltaT = floor(vertex2.z * 0.25f);
 
                             if (attributes[0])
                             {
@@ -1229,25 +1219,23 @@ public:
 
                                 //
                                 vglTexCoord2f(
-                                    (vertex2.X * 0.25f) - deltaS,
-                                    (vertex2.Z * 0.25f) - deltaT
+                                    (vertex2.x * 0.25f) - deltaS,
+                                    (vertex2.z * 0.25f) - deltaT
                                 );
                                 vglVertex3f(vertex2);
                                 //
                                 vglTexCoord2f(
-                                    (vertex3.X * 0.25f) - deltaS,
-                                    (vertex3.Z * 0.25f) - deltaT
+                                    (vertex3.x * 0.25f) - deltaS,
+                                    (vertex3.z * 0.25f) - deltaT
                                 );
                                 vglVertex3f(vertex3);
                                 //
                                 vglTexCoord2f(
-                                    (vertex2.X * 0.25f) - deltaS,
-                                    (vertex2.Z * 0.25f) - deltaT
+                                    (vertex2.x * 0.25f) - deltaS,
+                                    (vertex2.z * 0.25f) - deltaT
                                 );
-                                vglVertex3f({
-                                    vertex2.X,
-                                    vertex2.Y + 0.15f,
-                                    vertex2.Z
+                                vglVertex3f(vertex2 + Vector3 {
+                                    0.f, 0.15f, 0.f
                                 });
 
                                 vglEnd();
@@ -1256,25 +1244,23 @@ public:
                                 vglBegin(DRAWMODE_TRIANGLELIST, 3);
 
                                 vglTexCoord2f(
-                                    (vertex2.X * 0.25f) - deltaS,
-                                    (vertex2.Z * 0.25f) - deltaT
+                                    (vertex2.x * 0.25f) - deltaS,
+                                    (vertex2.z * 0.25f) - deltaT
                                 );
 
-                                vglVertex3f({
-                                    vertex2.X,
-                                    vertex2.Y + 0.15f,
-                                    vertex2.Z
+                                vglVertex3f(vertex2 + Vector3 {
+                                    0.f, 0.15f, 0.f
                                 });
 
                                 vglTexCoord2f(
-                                    (vertex3.X * 0.25f) - deltaS,
-                                    (vertex3.Z * 0.25f) - deltaT
+                                    (vertex3.x * 0.25f) - deltaS,
+                                    (vertex3.z * 0.25f) - deltaT
                                 );
                                 vglVertex3f(vertex3);
                                 //
                                 vglTexCoord2f(
-                                    (vertex2.X * 0.25f) - deltaS,
-                                    (vertex2.Z * 0.25f) - deltaT
+                                    (vertex2.x * 0.25f) - deltaS,
+                                    (vertex2.z * 0.25f) - deltaT
                                 );
                                 vglVertex3f(vertex2);
                                 //
@@ -1359,8 +1345,8 @@ public:
 
                         float currentS = floor(vertex3.Dist(vertex2) * float1 + 0.5f);
 
-                        float funk2 = (vertex2.Y - float0) * float1;
-                        float funk3 = (vertex3.Y - float0) * float1;
+                        float funk2 = (vertex2.y - float0) * float1;
+                        float funk3 = (vertex3.y - float0) * float1;
 
                         if (funk2 == 0.0f)
                         {
@@ -1375,11 +1361,7 @@ public:
                                 vglVertex3f(vertex3);
 
                                 vglTexCoord2f(currentS, 0.0f);
-                                vglVertex3f({
-                                    vertex3.X,
-                                    float0,
-                                    vertex3.Z
-                                });
+                                vglVertex3f(vertex3.x, float0, vertex3.z);
 
                                 vglEnd();
                             }
@@ -1395,18 +1377,10 @@ public:
                             vglVertex3f(vertex3);
 
                             vglTexCoord2f(currentS, 0.0f);
-                            vglVertex3f({
-                                vertex3.X,
-                                float0,
-                                vertex3.Z
-                            });
+                            vglVertex3f(vertex3.x, float0, vertex3.z);
 
                             vglTexCoord2f(0.0f, 0.0f);
-                            vglVertex3f({
-                                vertex2.X,
-                                float0,
-                                vertex2.Z
-                            });
+                            vglVertex3f(vertex2.x, float0, vertex2.z);
 
                             vglEnd();
                         }
@@ -1418,18 +1392,10 @@ public:
                             vglVertex3f(vertex2);
 
                             vglTexCoord2f(currentS, 0.0f);
-                            vglVertex3f({
-                                vertex3.X,
-                                float0,
-                                vertex3.Z
-                            });
+                            vglVertex3f(vertex3.x, float0, vertex3.z);
 
                             vglTexCoord2f(0.0f, 0.0f);
-                            vglVertex3f({
-                                vertex2.X,
-                                float0,
-                                vertex2.Z
-                            });
+                            vglVertex3f(vertex2.x, float0, vertex2.z);
 
                             vglEnd();
                         }
@@ -1444,7 +1410,7 @@ public:
                 {
                     if (current_texture)
                     {
-                        if ((*sdlCommon::sm_CamPos).Y > page->GetCodedVertex(attributes[0]).Y)
+                        if ((*sdlCommon::sm_CamPos).y > page->GetCodedVertex(attributes[0]).y)
                         {
                             vglBindTexture(page->GetTexture(current_texture + 2));
 
@@ -1487,7 +1453,7 @@ public:
 
                 case 5:
                 {
-                    if ((*sdlCommon::sm_CamPos).Y >= page->GetCodedVertex(attributes[0]).Y)
+                    if ((*sdlCommon::sm_CamPos).y >= page->GetCodedVertex(attributes[0]).y)
                     {
                 case 6:
                         if (current_texture)
@@ -1497,8 +1463,8 @@ public:
                             {
                                 vglBegin(DRAWMODE_TRIANGLEFAN, vertex_count + 2);
 
-                                float deltaS = floor(page->GetCodedVertex(attributes[0]).X * 0.125f);
-                                float deltaT = floor(page->GetCodedVertex(attributes[0]).Z * 0.125f);
+                                float deltaS = floor(page->GetCodedVertex(attributes[0]).x * 0.125f);
+                                float deltaT = floor(page->GetCodedVertex(attributes[0]).z * 0.125f);
 
                                 for (int i = 0; i < vertex_count + 2; ++i)
                                 {
@@ -1506,8 +1472,8 @@ public:
                                     Vector3 vertex0 = page->GetCodedVertex(attrib0);
 
                                     vglTexCoord2f(
-                                        (vertex0.X * 0.125f) - deltaS,
-                                        (vertex0.Z * 0.125f) - deltaS
+                                        (vertex0.x * 0.125f) - deltaS,
+                                        (vertex0.z * 0.125f) - deltaS
                                     );
 
                                     vglVertex3f(vertex0);
@@ -1535,25 +1501,316 @@ public:
                         ushort attrib0 = attributes[0];
                         ushort attrib1 = attributes[1];
 
-                        byte funk1 = (attrib0 & 0x3F);
+                        MedianRoadVertex* roadVertices = (MedianRoadVertex*)(attributes + 2);
 
-                        bool closeStart = ((attrib0 & 0x80) != 0);
-                        bool closeEnd = ((attrib0 & 0x40) != 0);
+                        ushort roadFlags = attrib0 & 0b111111;
+                        ushort flag0 = (attrib0 >> 6) & 1;
+                        ushort flag1 = (attrib0 >> 7) & 1;
+                        ushort midTex = (attrib0 >> 8);
 
-                        // visualize the attribute
-                        DumpAttribute(type, subtype, attributes, (vertex_count * 12) + 2);
+                        float someFloat = attrib1 * 0.004f;
 
-                        // skip this shit -.-
-                        attributes += 6 * vertex_count + 2;
-                    } else
-                    {
-                        attributes += 5 * vertex_count + 2;
+                        vglBindTexture(page->GetTexture(current_texture + 1));
+                        page->ArcMap(sBuffer, (ushort*) roadVertices, 6, vertex_count, 1);
+
+                        if (roadVertices->PavementL != roadVertices->RoadL) // If there is a left pavement
+                        {
+                            { // Draw Left Pavement
+                                vglBegin(DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
+
+                                for (int i = 0; i < vertex_count; ++i)
+                                {
+                                    Vector3 pavementVertex = page->GetCodedVertex(roadVertices[i].PavementL);
+                                    Vector3 roadVertex = page->GetCodedVertex(roadVertices[i].RoadL);
+
+                                    vglTexCoord2f(sBuffer[i], 1.0f);
+                                    vglVertex3f(pavementVertex);
+
+                                    vglTexCoord2f(sBuffer[i], 0.0f);
+                                    vglVertex3f(roadVertex + Vector3 {
+                                        0.f, 0.15f, 0.f
+                                    });
+                                }
+
+                                vglEnd();
+                            }
+
+                            vglCurrentColor = (baseColor >> 1) & 0x7F7F7F | 0xFF000000;
+
+                            { // Draw Left Pavement Edge
+                                vglBegin(DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
+
+                                for (int i = 0; i < vertex_count; ++i)
+                                {
+                                    Vector3 roadVertex = page->GetCodedVertex(roadVertices[i].RoadL);
+
+                                    vglTexCoord2f(sBuffer[i], 0.0f);
+
+                                    vglVertex3f(roadVertex + Vector3 {
+                                        0.f, 0.15f, 0.f
+                                    });
+
+                                    vglVertex3f(roadVertex);
+                                }
+
+                                vglEnd();
+                            }
+
+                            vglCurrentColor = baseColor;
+                        }
+
+                        if (roadVertices->RoadR != roadVertices->PavementR) // If there is a right pavement
+                        {
+                            page->ArcMap(sBuffer, &roadVertices->RoadR, 4, vertex_count, 1);
+
+                            { // Draw Right Pavement
+                                vglBegin(DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
+
+                                for (int i = 0; i < vertex_count; ++i)
+                                {
+                                    Vector3 roadVertex = page->GetCodedVertex(roadVertices[i].RoadR);
+                                    Vector3 pavementVertex = page->GetCodedVertex(roadVertices[i].PavementR);
+
+                                    vglTexCoord2f(sBuffer[i], 0.0f);
+                                    vglVertex3f(roadVertex + Vector3 {
+                                        0.f, 0.15f, 0.f
+                                    });
+
+                                    vglTexCoord2f(sBuffer[i], 1.0f);
+                                    vglVertex3f(pavementVertex);
+                                }
+
+                                vglEnd();
+                            }
+
+                            vglCurrentColor = (baseColor >> 1) & 0x7F7F7F | 0xFF000000;
+
+                            { // Draw Right Pavement Edge
+                                vglBegin(DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
+
+                                for (int i = 0; i < vertex_count; ++i)
+                                {
+                                    Vector3 roadVertex = page->GetCodedVertex(roadVertices[i].RoadR);
+
+                                    vglTexCoord2f(sBuffer[i], 0.0f);
+
+                                    vglVertex3f(roadVertex);
+
+                                    vglVertex3f(roadVertex + Vector3 {
+                                        0.f, 0.15f, 0.f
+                                    });
+                                }
+
+                                vglEnd();
+                            }
+
+                            vglCurrentColor = baseColor;
+                        }
+
+                        page->ArcMap(sBuffer, &roadVertices->RoadL, 6, vertex_count, 1);
+                        vglBindTexture(page->GetTexture(current_texture));
+
+                        { // Draw Left Road
+                            vglBegin(DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
+
+                            for (int i = 0; i < vertex_count; ++i)
+                            {
+                                Vector3 roadVertexL = page->GetCodedVertex(roadVertices[i].RoadL);
+                                Vector3 roadVertexR = page->GetCodedVertex(roadVertices[i].MiddleL);
+
+                                vglTexCoord2f(sBuffer[i], 1.0f);
+                                vglVertex3f(roadVertexL);
+
+                                vglTexCoord2f(sBuffer[i], 0.0f);
+                                vglVertex3f(roadVertexR);
+                            }
+
+                            vglEnd();
+                        }
+
+                        { // Draw Right Road
+                            vglBegin(DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
+
+                            for (int i = 0; i < vertex_count; ++i)
+                            {
+                                Vector3 roadVertexL = page->GetCodedVertex(roadVertices[i].MiddleR);
+                                Vector3 roadVertexR = page->GetCodedVertex(roadVertices[i].RoadR);
+
+                                vglTexCoord2f(sBuffer[i], 0.0f);
+                                vglVertex3f(roadVertexL);
+
+                                vglTexCoord2f(sBuffer[i], 1.0f);
+                                vglVertex3f(roadVertexR);
+                            }
+
+                            vglEnd();
+                        }
+
+                        if (roadFlags == 1)
+                        {
+                            page->ArcMap(sBuffer, &roadVertices->MiddleL, 6, vertex_count, 1);
+                            vglBindTexture(page->GetTexture(midTex + 1));
+
+                            {
+                                vglBegin(DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
+
+                                for (int i = 0; i < vertex_count; ++i)
+                                {
+                                    Vector3 roadVertexL = page->GetCodedVertex(roadVertices[i].MiddleL);
+                                    Vector3 roadVertexR = page->GetCodedVertex(roadVertices[i].MiddleR);
+
+                                    vglTexCoord2f(sBuffer[i], 0.0f);
+                                    vglVertex3f(roadVertexL);
+
+                                    vglTexCoord2f(sBuffer[i], someFloat);
+                                    vglVertex3f(roadVertexR);
+                                }
+
+                                vglEnd();
+                            }
+                        }
+                        else if (roadFlags == 2)
+                        {
+                            page->ArcMap(sBuffer, &roadVertices->MiddleL, 6, vertex_count, 1);
+                            vglBindTexture(page->GetTexture(midTex));
+
+                            vglCurrentColor = (baseColor >> 1) & 0x7F7F7F | 0xFF000000;
+
+                            {
+                                vglBegin(DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
+
+                                for (int i = 0; i < vertex_count; ++i)
+                                {
+                                    Vector3 roadVertexL = page->GetCodedVertex(roadVertices[i].MiddleL);
+
+                                    vglTexCoord2f(sBuffer[i], 0.0f);
+                                    vglVertex3f(roadVertexL);
+
+                                    vglTexCoord2f(sBuffer[i], someFloat);
+                                    vglVertex3f(roadVertexL + Vector3 {
+                                        0.0f, someFloat, 0.0f
+                                    });
+                                }
+
+                                vglEnd();
+                            }
+
+                            {
+                                vglBegin(DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
+
+                                for (int i = 0; i < vertex_count; ++i)
+                                {
+                                    Vector3 roadVertexR = page->GetCodedVertex(roadVertices[i].MiddleR);
+
+                                    vglTexCoord2f(sBuffer[i], someFloat);
+                                    vglVertex3f(roadVertexR + Vector3 {
+                                        0.0f, someFloat, 0.0f
+                                    });
+
+                                    vglTexCoord2f(sBuffer[i], 0.0f);
+                                    vglVertex3f(roadVertexR);
+                                }
+
+                                vglEnd();
+                            }
+
+                            vglCurrentColor = baseColor;
+
+                            vglBindTexture(page->GetTexture(midTex + 1));
+
+                            {
+                                vglBegin(DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
+
+                                for (int i = 0; i < vertex_count; ++i)
+                                {
+                                    Vector3 roadVertexL = page->GetCodedVertex(roadVertices[i].MiddleL);
+                                    Vector3 roadVertexR = page->GetCodedVertex(roadVertices[i].MiddleR);
+
+                                    Vector3 roadVertexDelta = roadVertexL - roadVertexR;
+
+                                    roadVertexDelta *= roadVertexDelta.InvMag();
+                                    roadVertexDelta *= -someFloat;
+                                    roadVertexDelta.y += someFloat;
+
+                                    roadVertexDelta += roadVertexL;
+
+                                    vglTexCoord2f(sBuffer[i], 0.0f);
+                                    vglVertex3f(roadVertexL + Vector3 {
+                                        0.0f, someFloat, 0.0f
+                                    });
+
+                                    vglTexCoord2f(sBuffer[i], 1.0f);
+                                    vglVertex3f(roadVertexDelta);
+                                }
+
+                                vglEnd();
+                            }
+
+                            {
+                                vglBegin(DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
+
+                                for (int i = 0; i < vertex_count; ++i)
+                                {
+                                    Vector3 roadVertexL = page->GetCodedVertex(roadVertices[i].MiddleL);
+                                    Vector3 roadVertexR = page->GetCodedVertex(roadVertices[i].MiddleR);
+
+                                    Vector3 roadVertexDelta = roadVertexR - roadVertexL;
+
+                                    roadVertexDelta *= roadVertexDelta.InvMag();
+                                    roadVertexDelta *= -someFloat;
+                                    roadVertexDelta.y += someFloat;
+
+                                    roadVertexDelta += roadVertexR;
+
+                                    vglTexCoord2f(sBuffer[i], 1.0f);
+                                    vglVertex3f(roadVertexDelta);
+
+                                    vglTexCoord2f(sBuffer[i], 0.0f);
+                                    vglVertex3f(roadVertexR + Vector3 {
+                                        0.0f, someFloat, 0.0f
+                                    });
+                                }
+
+                                vglEnd();
+                            }
+
+                            vglBindTexture(page->GetTexture(midTex + 2));
+
+                            {
+                                vglBegin(DRAWMODE_TRIANGLESTRIP, 2 * vertex_count);
+
+                                for (int i = 0; i < vertex_count; ++i)
+                                {
+                                    Vector3 roadVertexL = page->GetCodedVertex(roadVertices[i].MiddleL);
+                                    Vector3 roadVertexR = page->GetCodedVertex(roadVertices[i].MiddleR);
+
+                                    Vector3 roadVertexDelta = roadVertexL - roadVertexR;
+
+                                    roadVertexDelta *= roadVertexDelta.InvMag();
+                                    roadVertexDelta *= -someFloat;
+
+                                    vglTexCoord2f(sBuffer[i], 0.0f);
+                                    vglVertex3f(roadVertexL + roadVertexDelta + Vector3 {
+                                        0.0f, someFloat, 0.0f
+                                    });
+
+                                    vglTexCoord2f(sBuffer[i], 1.0f);
+                                    vglVertex3f(roadVertexR - roadVertexDelta + Vector3 {
+                                        0.0f, someFloat, 0.0f
+                                    });
+                                }
+
+                                vglEnd();
+                            }
+                        }
                     }
+
+                    attributes += 6 * vertex_count + 2;
                 } break;
 
                 case 9:
                 {
-                    DumpAttribute(type, subtype, attributes, (vertex_count == 10) ? 20 : 6);
+                    //DumpAttribute(type, subtype, attributes, (vertex_count == 10) ? 20 : 6);
 
                     attributes += 3;
 
@@ -1575,8 +1832,8 @@ public:
 
                 case 11:
                 {
-                    std::uint16_t attrib4 = attributes[4];
-                    std::uint16_t attrib5 = attributes[5];
+                    ushort  attrib4 = attributes[4];
+                    ushort  attrib5 = attributes[5];
                     Vector3 vertex4 = page->GetCodedVertex(attrib4);
                     Vector3 vertex5 = page->GetCodedVertex(attrib5);
 
@@ -1612,29 +1869,16 @@ public:
                         vglBegin(DRAWMODE_TRIANGLEFAN, 4);
 
                         vglTexCoord2f(0.0f, 0.0f);
-                        vglVertex3f({
-                            vertex4.X,
-                            float0,
-                            vertex4.Z
-                        });
+                        vglVertex3f(vertex4.x, float0, vertex4.z);
+
                         vglTexCoord2f(texS, 0.0f);
-                        vglVertex3f({
-                            vertex5.X,
-                            float0,
-                            vertex5.Z
-                        });
+                        vglVertex3f(vertex5.x, float0, vertex5.z);
+
                         vglTexCoord2f(texS, texT);
-                        vglVertex3f({
-                            vertex5.X,
-                            float1,
-                            vertex5.Z
-                        });
+                        vglVertex3f(vertex5.x, float1, vertex5.z);
+
                         vglTexCoord2f(0.0f, texT);
-                        vglVertex3f({
-                            vertex4.X,
-                            float1,
-                            vertex4.Z
-                        });
+                        vglVertex3f(vertex4.x, float1, vertex4.z);
 
                         vglEnd();
 
@@ -1649,10 +1893,10 @@ public:
                     float posY = page->GetFloat(attributes[0]);
                     ++attributes;
 
-                    if ((*sdlCommon::sm_CamPos).Y >= posY)
+                    if ((*sdlCommon::sm_CamPos).y >= posY)
                     {
-                        float deltaS = page->GetCodedVertex(attributes[0]).X * 0.125f;
-                        float deltaT = page->GetCodedVertex(attributes[0]).Z * 0.125f;
+                        float deltaS = page->GetCodedVertex(attributes[0]).x * 0.125f;
+                        float deltaT = page->GetCodedVertex(attributes[0]).z * 0.125f;
 
                         vglBindTexture(page->GetTexture(current_texture));
 
@@ -1664,10 +1908,10 @@ public:
                             Vector3 vertex0 = page->GetCodedVertex(attrib0);
 
                             vglTexCoord2f(
-                                (vertex0.X * 0.125f) - deltaS,
-                                (vertex0.Z * 0.125f) - deltaT
+                                (vertex0.x * 0.125f) - deltaS,
+                                (vertex0.z * 0.125f) - deltaT
                             );
-                            vglVertex3f(vertex0.X, posY, vertex0.Z);
+                            vglVertex3f(vertex0.x, posY, vertex0.z);
                         }
 
                         vglEnd();
