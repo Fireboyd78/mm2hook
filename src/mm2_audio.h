@@ -42,18 +42,18 @@ namespace MM2
             HOOK_API AGEHook<0x5A5510>::MemberFunc<int> EnumDSDevices;
 
             HOOK_API AGEHook<0x5A5530>::MemberFunc<int> InitPrimarySoundBuffer;
-            HOOK_API AGEHook<0x5A5770>::MemberFunc<int> CreatePrimaryInterfaceAndBuffer;
+            HOOK_API AGEHook<0x5A5630>::MemberFunc<int> CreatePrimaryInterfaceAndBuffer;
 
-            HOOK_API AGEHook<0x5A5860>::MemberFunc<void> ClearDSDeviceList;
+            HOOK_API AGEHook<0x5A5770>::MemberFunc<void> ClearDSDeviceList;
 
-            HOOK_API AGEHook<0x5A5950>::MemberFunc<void> SetPrimaryBufferFormat;
+            HOOK_API AGEHook<0x5A5860>::MemberFunc<void> SetPrimaryBufferFormat;
 
-            HOOK_API AGEHook<0x5A5A30>::MemberFunc<void> ScanAvailableDSFormats;
-            HOOK_API AGEHook<0x5A5BB0>::MemberFunc<char *> TranslateDSError;
+            HOOK_API AGEHook<0x5A5950>::MemberFunc<void> ScanAvailableDSFormats;
+            HOOK_API AGEHook<0x5A5A30>::MemberFunc<char *> TranslateDSError;
 
-            HOOK_API AGEHook<0x5A5BD0>::MemberFunc<void> SetBitDepth;
-            HOOK_API AGEHook<0x5A5C00>::MemberFunc<char **> GetDeviceNames;
-            HOOK_API AGEHook<0x5A5630>::MemberFunc<UINT> GetNum3DHallBufs;
+            HOOK_API AGEHook<0x5A5BB0>::MemberFunc<void> SetBitDepth;
+            HOOK_API AGEHook<0x5A5BD0>::MemberFunc<char **> GetDeviceNames;
+            HOOK_API AGEHook<0x5A5C00>::MemberFunc<UINT> GetNum3DHallBufs;
         }
         namespace mmDirSnd
         {

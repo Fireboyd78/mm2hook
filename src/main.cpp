@@ -2,20 +2,6 @@
 
 using namespace MM2;
 
-LPFNDIRECTINPUTCREATE lpDICreate;
-
-// Export as 'DirectInputCreateA/W' so we can hook into MM2
-// (Apparently DirectInputCreateW gets called sometimes...)
-#pragma comment(linker, "/EXPORT:DirectInputCreateA=_DirectInputCreate_Impl")
-#pragma comment(linker, "/EXPORT:DirectInputCreateW=_DirectInputCreate_Impl")
-HRESULT NAKED DirectInputCreate_Impl(HINSTANCE hinst, DWORD dwVersion, LPVOID *ppDI, LPUNKNOWN punkOuter) {
-    JMP_PTR(lpDICreate);
-}
-
-CMidtownMadness2 *pMM2;
-
-bool isConsoleOpen = false;
-
 // ==========================
 // Game-related properties
 // ==========================
@@ -392,8 +378,7 @@ public:
 class BridgeFerryHandler {
 public:
     void Cull(int lod) {
-        // wtf
-        //setPtr(this, 0x1B, (char)++lod);
+        // TODO: Make this do something?
     }
 
     void Draw(int lod) {
@@ -806,8 +791,12 @@ public:
             LogFile::WriteLine("[mmDirSnd::Init]: Using Primary Sound Driver");
         }
 
-        // TODO: Set sampling rate (see 0x519640 - int __thiscall AudManager::SetBitDepthAndSampleRate(int this, int bitDepth, int samplingRate))
-        // TODO: Redo SetPrimaryBufferFormat to set sampleSize? (see 0x5A5860 -void __thiscall DirSnd::SetPrimaryBufferFormat(mmDirSnd *this, int sampleRate, bool allowStero))
+        /*
+            TODO:
+            
+            - Set sampling rate (see: AudManager::SetBitDepthAndSampleRate(int bitDepth, ulong samplingRate))
+            - Redo SetPrimaryBufferFormat to set sampleSize? (see: DirSnd::SetPrimaryBufferFormat(ulong sampleRate, bool allowStero))
+        */
         return mmDirSnd::Init(48000, enableStero, a4, volume, deviceName, enable3D);
     }
 
@@ -854,8 +843,7 @@ public:
         char buffer[80];
         sprintf(buffer, "%sambience", *cityName);
 
-        bool exists = datAssetManager::Exists("aud\\dmusic\\csv_files", buffer, "csv");
-        LPCSTR szAmbientSFX = exists ? buffer : "sfambience";
+        LPCSTR szAmbientSFX = (datAssetManager::Exists("aud\\dmusic\\csv_files", buffer, "csv")) ? buffer : "sfambience";
 
         LogFile::Format("AmbientSFX: %s\n", szAmbientSFX);
 
@@ -877,8 +865,7 @@ public:
         char buffer[80];
         sprintf(buffer, "%spolicesiren", *cityName);
 
-        bool exists = datAssetManager::Exists("aud\\cardata\\player", buffer, "csv");
-        LPCSTR szSirenName = exists ? buffer : "sfpolicesiren";
+        LPCSTR szSirenName = (datAssetManager::Exists("aud\\cardata\\player", buffer, "csv")) ? buffer : "sfpolicesiren";
 
         LogFile::Format("SirenCSVName: %s\n", szSirenName);
 
@@ -2736,6 +2723,49 @@ inline void InstallHandler(LPCSTR name) {
     InstallHandler(name, &THandler::Install);
 };
 
+class StackHandler {
+public:
+    static void GetAddressName(char *buffer, LPCSTR, int address) {
+        /*
+            TODO: Retrieve symbols from MM2Hook?
+        */
+
+        sprintf(buffer, "%08x (Unknown)", address);
+    }
+
+    static void GetAddressName(char *buffer, LPCSTR, int address, char *fnSymbol, int offset) {
+        char fnName[1024] = { NULL };
+
+        // no error checking (for now?)
+        UnDecorateSymbolName(fnSymbol, fnName, sizeof(fnName),
+            UNDNAME_COMPLETE
+            | UNDNAME_NO_FUNCTION_RETURNS
+            | UNDNAME_NO_ALLOCATION_MODEL
+            | UNDNAME_NO_ALLOCATION_LANGUAGE
+            | UNDNAME_NO_ACCESS_SPECIFIERS
+            | UNDNAME_NO_THROW_SIGNATURES
+            | UNDNAME_NO_MEMBER_TYPE
+            | UNDNAME_NO_RETURN_UDT_MODEL
+        );
+
+        sprintf(buffer, "%08x (\"%s\"+%x)", address, fnName, offset);
+    }
+
+    static void Install() {
+        InstallCallback("datStack::LookupAddress", "Allows for more detailed address information.",
+            static_cast<void (*)(char*, LPCSTR, int, char*, int)>(&GetAddressName), {
+                cbHook<CALL>(0x4C74DD), // sprintf
+            }
+        );
+
+        InstallCallback("datStack::LookupAddress", "Allows for more detailed information of unknown symbols.",
+            static_cast<void(*)(char*, LPCSTR, int)>(&GetAddressName), {
+                cbHook<CALL>(0x4C74B9), // sprintf
+            }
+        );
+    }
+};
+
 class HookSystemFramework
 {
 private:
@@ -2752,6 +2782,7 @@ private:
         InstallHandler<CallbackHandler>("Generic callbacks");
         InstallHandler<PrintHandler>("Print system");
         InstallHandler<TimeHandler>("Time manager");
+        InstallHandler<StackHandler>("Stack information");
 
         InstallHandler<gfxPipelineHandler>("gfxPipeline");
         InstallHandler<memSafeHeapHandler>("memSafeHeap");
@@ -2797,53 +2828,6 @@ private:
         InstallPatch("Fix crash for missing images", { 0xEB /* jnz -> jmp */ }, {
             0x4B329B, // gfxGetBitmap
         });
-
-        /* Causes game crashes, needs fixing
-        InstallPatch("dgPhysManager [Raise MAX_MOVERS]", { 64 }, {
-            0x4683CE + 2, 0x468582 + 2,
-            0x46869C + 2, 0x46872E + 2,
-            0x468E16 + 1,
-        });
-
-        // from 0x12B0 to 0x24B0, since we're doubling the array size
-        InstallPatch("dgPhysManager [Increase structure size]", { 0x24 }, {
-            // mmGame::Init
-            0x4129C7 + 2, // operator new
-            0x412C52 + 3, 0x412C67 + 3,
-
-            // dgPhysManager::dgPhysManager(void)
-            0x46820C + 3, 0x468216 + 3,
-
-            // dgPhysManager::DeclareMover(lvlInstance *, int, int)
-            0x4683C8 + 3, 0x4683FD + 3, 0x468410 + 3, 0x468427 + 3,
-            0x46843B + 3, 0x4684FC + 3, 0x468506 + 3,
-
-            // dgPhysManager::NewMover(lvlInstance *, lvlInstance *)
-            0x46857C + 3, 0x4685B0 + 3, 0x4685C8 + 3, 0x46865E + 3,
-
-            // dgPhysManager::NewMover(lvlInstance *)
-            0x468696 + 3, 0x4686DE + 3, 0x4686E5 + 3,
-
-            // dgPhysManager::NewMover(lvlInstance *, lvlInstance *, lvlInstance *)
-            0x468728 + 3, 0x46879D + 3, 0x4687EE + 3, 0x46882E + 3,
-            0x468837 + 3,
-
-            // dgPhysManager::IgnoreMover(lvlInstance *)
-            0x468864 + 3,
-
-            // dgPhysManager::Update(void)
-            0x4688D5 + 3, 0x468934 + 3, 0x468948 + 3, 0x46896B + 3,
-            0x468976 + 3, 0x468998 + 3, 0x4689DA + 3, 0x4689EF + 3,
-            0x468A1B + 3, 0x468A4D + 3, 0x468A6F + 3, 0x468AAF + 3,
-            0x468AD8 + 3, 0x468B1A + 3, 0x468B52 + 3, 0x468BE6 + 3,
-            0x468C49 + 3, 0x468C8D + 3, 0x468CA6 + 3, 0x468CB6 + 3,
-            0x468CDD + 3, 0x468D31 + 3, 0x468D51 + 3, 0x468D65 + 3,
-            0x468DB1 + 3,
-
-            // dgPhysManager::ResetTable(void)
-            0x468E31 + 3,
-        });
-        */
     }
 public:
     static void Initialize(int argc, char **argv) {
