@@ -39,6 +39,10 @@ struct ClassRegistration
 
         // number of arguments
         int x = sizeof...(TArgs);
+        // size of arguments
+        int y = variadic::sum<sizeof(TArgs)...>;
+
+        LogFile::Format("x = %d, y = %x", x, y);
         
         return *this;
     };
