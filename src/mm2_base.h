@@ -87,7 +87,7 @@ namespace MM2
 
         unsigned int flags; // not sure how these work yet
 
-        LPCSTR name;
+        char *name;
     public:
         AGE_API asNode() {
             PUSH_VTABLE();
@@ -99,6 +99,10 @@ namespace MM2
             PUSH_VTABLE();
             $::asNode::$$dtor(this);
             POP_VTABLE();
+        };
+
+        AGE_API char * GetName() const {
+            return (name) ? name : "";
         };
 
         AGE_API void SetName(LPCSTR name) {
