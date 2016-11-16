@@ -6,7 +6,6 @@
 #include <DbgHelp.h>
 
 #include "mm2.h"
-#include "mm2_lua.h"
 
 LPFNDIRECTINPUTCREATE lpDICreate;
 

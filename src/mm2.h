@@ -17,6 +17,8 @@
 #include "mm2_stream.h"
 #include "mm2_vehicle.h"
 
+#include "mm2_lua.h"
+
 enum MM2Version
 {
     MM2_RETAIL = 0,

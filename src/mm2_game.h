@@ -174,7 +174,7 @@ namespace MM2
         };
     };
 
-    class mmHUD {
+    class mmHUD : public asNode {
     private:
         byte _buffer[0xB9C]; // unconfirmed
     public:
@@ -189,6 +189,13 @@ namespace MM2
         AGE_API void PostChatMessage(LPCSTR message) {
             $::mmHUD::PostChatMessage(this, message);
         };
+
+        static void RegisterLua(luaClassBinder<mmHUD> *lc) {
+            asNode::RegisterLua(lc);
+
+            lc->addFunction("SetMessage", static_cast<void (mmHUD::*)(LPCSTR, float, int)>(&mmHUD::SetMessage));
+            lc->addFunction("PostChatMessage", &mmHUD::PostChatMessage);
+        }
     };
 
     class mmPlayer {

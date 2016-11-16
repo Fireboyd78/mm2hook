@@ -1,10 +1,10 @@
+#include "mm2.h"
 #include "mm2_lua.h"
 
 using namespace LuaIntf;
 using namespace MM2;
 
 extern LuaState L;
-extern CMidtownMadness2 *pMM2;
 
 bool isMainLuaLoaded = false;
 
@@ -69,11 +69,6 @@ LUAMOD_API int luaopen_MM2(lua_State * L)
             .addStaticFunction("OpenLog", &datOutput::OpenLog)
             .addStaticFunction("CloseLog", &datOutput::CloseLog)
             .addStaticFunction("SetOutputMask", &datOutput::SetOutputMask)
-        .endClass()
-
-        .beginClass<mmHUD>("mmHUD")
-            .addFunction("SetMessage", static_cast<void (mmHUD::*)(LPCSTR, float, int)>(&mmHUD::SetMessage))
-            .addFunction("PostChatMessage", &mmHUD::PostChatMessage)
         .endClass()
 
         .beginClass<mmPopup>("mmPopup")
@@ -143,6 +138,11 @@ LUAMOD_API int luaopen_MM2(lua_State * L)
             .addVariableRef("w", &Vector4::W)
         .endClass();
 
+
+    // testing
+    asLuaNode<asNode>::RegisterLua(L, "asNode");
+    asLuaNode<mmHUD>::RegisterLua(L, "mmHUD");
+
     mod.pushToStack();
 
     LogFile::WriteLine("Done!");
@@ -186,15 +186,10 @@ void ReloadScript()
     LogFile::WriteLine("Reloading main script...");
     LoadMainScript();
 
-    LogFile::WriteLine("Lua script reloaded.");
-
-    /*
-    ** Disabled until I can fix this on the main menu **
     auto hud = Lua::getGlobal<MM2::mmHUD *>(L, "hud");
 
     if (hud != NULL)
         hud->SetMessage("Lua script reloaded.", 3.5, 0);
-    */
 }
 
 bool MM2Lua::IsLoaded()

@@ -1,5 +1,6 @@
 #pragma once
 #include "mm2_common.h"
+#include "mm2_lua.h"
 
 namespace MM2
 {
@@ -196,6 +197,21 @@ namespace MM2
 
         AGE_API virtual const char * GetDirName(void) {
             return $::asNode::GetDirName(this);
+        };
+
+        template <class TNode>
+        static void RegisterLua(luaClassBinder<TNode> *lc) {
+            lc->addFunction("AddChild", &AddChild);
+            lc->addFunction("InsertChild", &InsertChild);
+            lc->addFunction("RemoveChild", static_cast<int (TNode::*)(int)>(&RemoveChild));
+            lc->addFunction("RemoveAllChildren", &RemoveAllChildren);
+            lc->addFunction("GetChild", &GetChild);
+            lc->addFunction("GetNext", &GetNext);
+            lc->addFunction("GetLastChild", &GetLastChild);
+            lc->addFunction("NumChildren", &NumChildren);
+            lc->addFunction("SwitchTo", &SwitchTo);
+
+            lc->addProperty("name", &GetName, &SetName);
         };
     };
 }
