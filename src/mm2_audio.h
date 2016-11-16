@@ -121,7 +121,7 @@ namespace MM2
             POP_VTABLE();
         };
 
-        AGE_API static DirSnd * Init(DWORD sampleRate, bool enableStero, bool enable3D, const char *deviceName) {
+        AGE_API static DirSnd * Init(DWORD sampleRate, bool enableStero, bool enable3D, char *deviceName) {
             return $::DirSnd::Init(sampleRate, enableStero, enable3D, deviceName);
         };
 
@@ -196,8 +196,8 @@ namespace MM2
             POP_VTABLE();
         };
 
-        AGE_API static mmDirSnd * Init(int sampleRate, bool enableStero, int a4, float volume, LPCSTR deviceName, bool enable3D) {
-            return $::mmDirSnd::Init(sampleRate, enableStero, a4, volume, deviceName, enable3D);
+        AGE_API static mmDirSnd * Init(ulong sampleRate, bool enableStero, int p3, int volume, char *deviceName, short p6, short p7) {
+            return $::mmDirSnd::Init(sampleRate, enableStero, p3, volume, deviceName, p6, p7);
         };
 
         AGE_API void DeInit(short p1, short p2) {

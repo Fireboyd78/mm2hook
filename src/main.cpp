@@ -777,8 +777,8 @@ public:
 
 class mmDirSndHandler {
 public:
-    static mmDirSnd* Init(int sampleRate, bool enableStero, int a4, float volume, LPCSTR deviceName, bool enable3D) {
-        if (deviceName == '\0') {
+    static mmDirSnd* Init(ulong sampleRate, bool enableStero, int p3, int volume, char *deviceName, short p6, short p7) {
+        if (*deviceName == '\0') {
             deviceName = "Primary Sound Driver";
 
             LogFile::WriteLine("[mmDirSnd::Init]: Using primary sound driver");
@@ -790,7 +790,7 @@ public:
             - Set sampling rate (see: AudManager::SetBitDepthAndSampleRate(int bitDepth, ulong samplingRate))
             - Redo SetPrimaryBufferFormat to set sampleSize? (see: DirSnd::SetPrimaryBufferFormat(ulong sampleRate, bool allowStero))
         */
-        return mmDirSnd::Init(48000, enableStero, a4, volume, deviceName, enable3D);
+        return mmDirSnd::Init(48000, enableStero, p3, volume, deviceName, p6, p7);
     }
 
     static void Install() {
