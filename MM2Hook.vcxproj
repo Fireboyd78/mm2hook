@@ -81,6 +81,8 @@
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ShowIncludes>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -192,13 +194,24 @@
     <ClInclude Include="src\LuaIntf\src\LuaState.cpp" />
   </ItemGroup>
   <!--
-    MM2Hook files
+    Shared dependencies
   -->
   <ItemGroup>
     <ClInclude Include="src\AGE.h" />
     <ClInclude Include="src\common.h" />
     <ClInclude Include="src\logfile.h" />
-    <ClInclude Include="src\main.h" />
+    <ClInclude Include="src\patch.h" />
+    <ClInclude Include="src\util.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\logfile.cpp" />
+    <ClCompile Include="src\patch.cpp" />
+    <ClCompile Include="src\util.cpp" />
+  </ItemGroup>
+  <!--
+    MM2-related files
+  -->
+  <ItemGroup>
     <ClInclude Include="src\mm2.h" />
     <ClInclude Include="src\mm2_ai.h" />
     <ClInclude Include="src\mm2_audio.h" />
@@ -215,12 +228,8 @@
     <ClInclude Include="src\mm2_stream.h" />
     <ClInclude Include="src\mm2_vector.h" />
     <ClInclude Include="src\mm2_vehicle.h" />
-    <ClInclude Include="src\patch.h" />
-    <ClInclude Include="src\util.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\logfile.cpp" />
-    <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\mm2.cpp" />
     <ClCompile Include="src\mm2_ai.cpp" />
     <ClCompile Include="src\mm2_audio.cpp" />
@@ -235,17 +244,24 @@
     <ClCompile Include="src\mm2_stream.cpp" />
     <ClCompile Include="src\mm2_utils.cpp" />
     <ClCompile Include="src\mm2_vehicle.cpp" />
-    <ClCompile Include="src\patch.cpp" />
-    <ClCompile Include="src\util.cpp" />
+  </ItemGroup>
+  <!--
+    Main files
+  -->
+  <ItemGroup>
+    <ClInclude Include="src\main.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
-  <!--
-    Make sure included c/cpp files don't get compiled.
-    This is to make sure a problem that occurred before never happens again.
-  -->
   <Target Name="FixupIncludes" BeforeTargets="ResolveReferences">
     <ItemGroup>
+        <!--
+          Make sure included c/cpp files don't get compiled.
+          This is to make sure a problem that occurred before never happens again.
+        -->
       <ClInclude>
         <FileType Condition="'%(ClInclude.Extension)' == '.c' or '%(ClInclude.Extension)' == '.cpp'">CppHeader</FileType>
       </ClInclude>
@@ -260,7 +276,7 @@
       <LuaSources Include="src\lua\*.c" />
       <LuaASMFiles Include="@(LuaSources->'$(ASMOutputPath)%(Filename).asm')" />
     </ItemGroup>
-    <Message Text="Moving Lua ASM files..." Importance="High" Condition="'@(LuaASMFiles)' != ''"/>
+    <Message Text="Moving Lua ASM files..." Importance="High" Condition="'@(LuaASMFiles)' != ''" />
     <Move SourceFiles="@(LuaASMFiles)" DestinationFolder="$(LuaASMFolder)" Condition="Exists('%(Identity)')">
       <Output ItemName="LuaMoved" TaskParameter="MovedFiles" />
     </Move>
