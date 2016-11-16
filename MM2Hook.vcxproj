@@ -258,10 +258,10 @@
   <ImportGroup Label="ExtensionTargets" />
   <Target Name="FixupIncludes" BeforeTargets="ResolveReferences">
     <ItemGroup>
-        <!--
-          Make sure included c/cpp files don't get compiled.
-          This is to make sure a problem that occurred before never happens again.
-        -->
+      <!--
+        Make sure included c/cpp files don't get compiled.
+        This is to make sure a problem that occurred before never happens again.
+      -->
       <ClInclude>
         <FileType Condition="'%(ClInclude.Extension)' == '.c' or '%(ClInclude.Extension)' == '.cpp'">CppHeader</FileType>
       </ClInclude>
