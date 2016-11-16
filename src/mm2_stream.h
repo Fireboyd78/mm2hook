@@ -116,15 +116,15 @@ namespace MM2
 
     namespace
     {
-        AGE_API int fseek(Stream *stream, int position, seekWhence whence) {
+        AGE_EXT int fseek(Stream *stream, int position, seekWhence whence) {
             return $::fseek(stream, position, whence);
         }
 
-        AGE_API int fgets(char *buffer, int length, Stream *stream) {
+        AGE_EXT int fgets(char *buffer, int length, Stream *stream) {
             return $::fgets(buffer, length, stream);
         }
 
-        AGE_API void fprintf(Stream *stream, char const *format, ...) {
+        AGE_EXT void fprintf(Stream *stream, char const *format, ...) {
             /* It's much easier to just rewrite the function since it's so simple */
             char buf[512];
             va_list va;
@@ -135,10 +135,10 @@ namespace MM2
             stream->Write(buf, strlen(buf));
         }
 
-        AGE_API int fscanf(Stream *stream, char const *format, ...) {
+        AGE_EXT int fscanf(Stream *stream, char const *format, ...) {
             /*
-            I think I need a shower after writing this...
-            (Don't blame me, this is how Angel does it when calling sscanf!)
+                I think I need a shower after writing this...
+                (Don't blame me, this is how Angel does it when calling sscanf!)
             */
             va_list va;
             va_start(va, format);

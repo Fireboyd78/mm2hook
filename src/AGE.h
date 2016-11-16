@@ -5,7 +5,13 @@
 // A.G.E. (Angel Game Engine) common includes
 //
 
-#define AGE_API NOINLINE __declspec(dllexport)
+#ifdef AGE_API_EXPORT
+# define AGE_API NOINLINE __declspec(dllexport)
+# define AGE_EXT
+#else
+# define AGE_API __declspec(dllimport)
+# define AGE_EXT extern
+#endif
 
 //
 // DirectX includes

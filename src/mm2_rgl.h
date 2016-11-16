@@ -107,138 +107,136 @@ namespace MM2
 
     HOOK_API AGEHook<0x682F98>::Type<Matrix44 *>    mtxstack;
 
-    // these need to be in an unnamed namespace,
-    // or else the compiler shits the bed
     namespace
     {
-        AGE_API void vglTexCoord2f(float u, float v) {
+        AGE_EXT void vglTexCoord2f(float u, float v) {
             $::vglTexCoord2f(u, v);
         }
-        AGE_API void vglVertex3f(float x, float y, float z) {
+        AGE_EXT void vglVertex3f(float x, float y, float z) {
             $::vglVertex3f$1(x, y, z);
         }
-        AGE_API void vglVertex3f(Vector3 position) {
+        AGE_EXT void vglVertex3f(Vector3 position) {
             $::vglVertex3f$2(position);
         }
 
-        AGE_API void vgl_VERTEX_VCT1(float x, float y, float z) {
+        AGE_EXT void vgl_VERTEX_VCT1(float x, float y, float z) {
             $::vgl_VERTEX_VCT1(x, y, z);
         }
-        AGE_API void vgl_VERTEX_VNT1(float x, float y, float z) {
+        AGE_EXT void vgl_VERTEX_VNT1(float x, float y, float z) {
             $::vgl_VERTEX_VNT1(x, y, z);
         }
-        AGE_API void vglSetFormat(uint p1, uint p2, uint p3, uint p4) {
+        AGE_EXT void vglSetFormat(uint p1, uint p2, uint p3, uint p4) {
             $::vglSetFormat(p1, p2, p3, p4);
         }
-        AGE_API void vglBegin(gfxDrawMode drawMode, int p2) {
+        AGE_EXT void vglBegin(gfxDrawMode drawMode, int p2) {
             $::vglBegin(drawMode, p2);
         }
-        AGE_API void vglEnd(void) {
+        AGE_EXT void vglEnd(void) {
             $::vglEnd();
         }
-        AGE_API void vglBeginBatch(void) {
+        AGE_EXT void vglBeginBatch(void) {
             $::vglBeginBatch();
         }
-        AGE_API void vglEndBatch(void) {
+        AGE_EXT void vglEndBatch(void) {
             $::vglEndBatch();
         }
-        AGE_API void vglBindTexture(gfxTexture *texture) {
+        AGE_EXT void vglBindTexture(gfxTexture *texture) {
             $::vglBindTexture(texture);
         }
-        AGE_API void vglDrawLabel(const Vector3 &position, const char *text) {
-            $::vglDrawLabel((const Vector3 *&)position, text);
+        AGE_EXT void vglDrawLabel(const Vector3 &position, const char *text) {
+            $::vglDrawLabel(&position, text);
         }
         template <typename ...TArgs>
-        AGE_API void vglDrawLabelf(const Vector3 &position, const char *format, TArgs ...args) {
-            $::vglDrawLabelf((const Vector3 *&)position, format, args...);
+        AGE_EXT void vglDrawLabelf(const Vector3 &position, const char *format, TArgs ...args) {
+            $::vglDrawLabelf(&position, format, args...);
         }
-        AGE_API void vglSetCloudMap(const char *texture) {
+        AGE_EXT void vglSetCloudMap(const char *texture) {
             $::vglSetCloudMap(texture);
         }
-        AGE_API void vglSetOffset(float x, float y, float z) {
+        AGE_EXT void vglSetOffset(float x, float y, float z) {
             $::vglSetOffset(x, y, z);
         }
-        AGE_API bool rglEnableDisable(rglToken token, bool value) {
+        AGE_EXT bool rglEnableDisable(rglToken token, bool value) {
             return $::rglEnableDisable(token, value);
         }
-        AGE_API bool rglIsEnabled(rglToken token) {
+        AGE_EXT bool rglIsEnabled(rglToken token) {
             return $::rglIsEnabled(token);
         }
-        AGE_API void rglWorldMatrix(const Matrix34 &mtx) {
-            $::rglWorldMatrix((const Matrix34 *&)mtx);
+        AGE_EXT void rglWorldMatrix(const Matrix34 &mtx) {
+            $::rglWorldMatrix(&mtx);
         }
-        AGE_API void rglWorldIdentity(void) {
+        AGE_EXT void rglWorldIdentity(void) {
             $::rglWorldIdentity();
         }
-        AGE_API void rglCard(const Vector3 &position) {
-            $::rglCard((const Vector3 *&)position);
+        AGE_EXT void rglCard(const Vector3 &position) {
+            $::rglCard(&position);
         }
-        AGE_API void rglBindTexture2(const gfxTexture *texture) {
+        AGE_EXT void rglBindTexture2(const gfxTexture *texture) {
             $::rglBindTexture2(texture);
         }
-        AGE_API void tglDrawParticle(const Vector3 &p1, float p2, const Vector4 &p3) {
-            $::tglDrawParticle((const Vector3 *&)p1, p2, (const Vector4 *&)p3);
+        AGE_EXT void tglDrawParticle(const Vector3 &p1, float p2, const Vector4 &p3) {
+            $::tglDrawParticle(&p1, p2, &p3);
         }
-        AGE_API void tglDrawRotatedParticle(const Vector3 &p1, float p2, float p3, const Vector4 &p4) {
-            $::tglDrawRotatedParticle((const Vector3 *&)p1, p2, p3, (const Vector4 *&)p4);
+        AGE_EXT void tglDrawRotatedParticle(const Vector3 &p1, float p2, float p3, const Vector4 &p4) {
+            $::tglDrawRotatedParticle(&p1, p2, p3, &p4);
         }
-        AGE_API uint mkfrgba(float r, float g, float b, float a) {
+        AGE_EXT uint mkfrgba(float r, float g, float b, float a) {
             return $::mkfrgba(r, g, b, a);
         }
 
-        AGE_API void rglOpenPipe(int p1, int p2, bool p3) {
+        AGE_EXT void rglOpenPipe(int p1, int p2, bool p3) {
             $::rglOpenPipe(p1, p2, p3);
         }
-        AGE_API void rglClosePipe(void) {
+        AGE_EXT void rglClosePipe(void) {
             $::rglClosePipe();
         }
-        AGE_API void rglBeginFrame(uint p1) {
+        AGE_EXT void rglBeginFrame(uint p1) {
             $::rglBeginFrame(p1);
         }
-        AGE_API void rglEndFrame(void) {
+        AGE_EXT void rglEndFrame(void) {
             $::rglEndFrame();
         }
-        AGE_API void rglCameraMatrix(const Matrix34 &p1) {
-            $::rglCameraMatrix((const Matrix34 *&)p1);
+        AGE_EXT void rglCameraMatrix(const Matrix34 &p1) {
+            $::rglCameraMatrix(&p1);
         }
-        AGE_API int rglAlive(void) {
+        AGE_EXT int rglAlive(void) {
             return $::rglAlive();
         }
-        AGE_API void rglDrawBox(const Vector3 &p1, const Matrix34 &p2) {
-            $::rglDrawBox((const Vector3 *&)p1, (const Matrix34 *&)p2);
+        AGE_EXT void rglDrawBox(const Vector3 &p1, const Matrix34 &p2) {
+            $::rglDrawBox(&p1, &p2);
         }
-        AGE_API void rglDrawSolidBox(const Vector3 &p1, const Matrix34 &p2, const Vector3 &p3) {
-            $::rglDrawSolidBox((const Vector3 *&)p1, (const Matrix34 *&)p2, (const Vector3 *&)p3);
+        AGE_EXT void rglDrawSolidBox(const Vector3 &p1, const Matrix34 &p2, const Vector3 &p3) {
+            $::rglDrawSolidBox(&p1, &p2, &p3);
         }
-        AGE_API void rglDrawAxis(float p1, const Matrix34 &p2) {
-            $::rglDrawAxis(p1, (const Matrix34 *&)p2);
+        AGE_EXT void rglDrawAxis(float p1, const Matrix34 &p2) {
+            $::rglDrawAxis(p1, &p2);
         }
-        AGE_API void rglDrawSphere(float p1, int p2) {
+        AGE_EXT void rglDrawSphere(float p1, int p2) {
             $::rglDrawSphere$1(p1, p2);
         }
-        AGE_API void rglDrawSphere(float p1, const Matrix34 &p2, int p3) {
-            $::rglDrawSphere$2(p1, (const Matrix34 *&)p2, p3);
+        AGE_EXT void rglDrawSphere(float p1, const Matrix34 &p2, int p3) {
+            $::rglDrawSphere$2(p1, &p2, p3);
         }
-        AGE_API void rglDrawEllipsoid(const Vector3 &p1, const Matrix34 &p2, int p3) {
-            $::rglDrawEllipsoid((const Vector3 *&)p1, (const Matrix34 *&)p2, p3);
+        AGE_EXT void rglDrawEllipsoid(const Vector3 &p1, const Matrix34 &p2, int p3) {
+            $::rglDrawEllipsoid(&p1, &p2, p3);
         }
-        AGE_API void rglDrawParticle(const Vector3 &p1, float p2, const Vector4 &p3) {
-            $::rglDrawParticle((const Vector3 *&)p1, p2, (const Vector4 *&)p3);
+        AGE_EXT void rglDrawParticle(const Vector3 &p1, float p2, const Vector4 &p3) {
+            $::rglDrawParticle(&p1, p2, &p3);
         }
-        AGE_API void rglResetDrawTexture(void) {
+        AGE_EXT void rglResetDrawTexture(void) {
             $::rglResetDrawTexture();
         }
-        AGE_API void rglDrawTexture(gfxTexture *texture) {
+        AGE_EXT void rglDrawTexture(gfxTexture *texture) {
             $::rglDrawTexture(texture);
         }
-        AGE_API void rglPushMatrix(void) {
+        AGE_EXT void rglPushMatrix(void) {
             $::rglPushMatrix();
         }
-        AGE_API void rglPopMatrix(void) {
+        AGE_EXT void rglPopMatrix(void) {
             $::rglPopMatrix();
         }
-        AGE_API void rglMultMatrix(Matrix34 &p1) {
-            $::rglMultMatrix((Matrix34 *&)p1);
+        AGE_EXT void rglMultMatrix(Matrix34 &p1) {
+            $::rglMultMatrix(&p1);
         }
-    }   
+    }
 }

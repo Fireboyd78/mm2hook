@@ -8,10 +8,10 @@
 
     Multiple declarations will cause compiler errors!
 */
-#ifdef __MM2_DECLARE_HOOKS
-#define HOOK_API 
+#ifdef MM2_API_EXPORT
+# define HOOK_API 
 #else
-#define HOOK_API extern
+# define HOOK_API extern
 #endif
 
 #pragma once

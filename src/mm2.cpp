@@ -1,6 +1,5 @@
-// Gives "extern" hooks their definitions :)
-// (See "mm2_common.h" for more details)
-#define __MM2_DECLARE_HOOKS
+#define AGE_API_EXPORT
+#define MM2_API_EXPORT
 
 #include "mm2.h"
 using namespace MM2;
