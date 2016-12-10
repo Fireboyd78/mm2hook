@@ -23,7 +23,7 @@ void InstallPatch(LPCSTR description,
     {
         LogFile::Format("   => %08X\n", addr);
 
-        mem::write_buffer(LPVOID(addr), begin, size);
+        mem::copy(LPVOID(addr), begin, size);
     }
 }
 
@@ -38,17 +38,17 @@ void InstallCallback(auto_ptr lpAddr, cbInfo callback)
     {
         case hookType::CALL:
         {
-            mem::write_args<unsigned char, unsigned int>(addr, 0xE8, dwRVA);
+            mem::write<unsigned char, unsigned int>(addr, 0xE8, dwRVA);
         } break;
 
         case hookType::JMP:
         {
-            mem::write_args<unsigned char, unsigned int>(addr, 0xE9, dwRVA);
+            mem::write<unsigned char, unsigned int>(addr, 0xE9, dwRVA);
         } break;
 
         case hookType::PUSH:
         {
-            mem::write_args<unsigned char, unsigned int>(addr, 0x68, lpAddr);
+            mem::write<unsigned char, unsigned int>(addr, 0x68, lpAddr);
         } break;
     }
 }
@@ -78,6 +78,6 @@ void InstallVTableHook(LPCSTR name, auto_ptr lpAddr, std::initializer_list<unsig
     {
         LogFile::Format("   => %08X\n", addr, lpAddr);
 
-        mem::write_args<unsigned int>(LPVOID(addr), lpAddr);
+        mem::write<unsigned int>(LPVOID(addr), lpAddr);
     }
 }
