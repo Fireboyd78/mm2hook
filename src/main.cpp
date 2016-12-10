@@ -875,6 +875,58 @@ public:
     }
 };
 
+// oh look, more stuff aaron wanted .-.
+AGEHook<0x45D720>::Func<void> $lvlAiMap_SetRoad; // lvlAiMap::SetRoad(class lvlSDL const *, int, bool)
+AGEHook<0x45D860>::Func<uint> $lvlAiMap_GetNumRoads;
+
+int lvl_aiRoad = 0; // no error checking or resetting done
+
+// generic handler for propulation stuff
+class lvlHandler {
+public:
+    static void SetAIRoad(const void *lvlSDL, int road, bool p3) {
+        Warningf("Propulating road %d", road);
+        $lvlAiMap_SetRoad(lvlSDL, road, p3);
+    };
+
+    static void InvalidCommand(short *buffer, int type, int subtype) {
+        char buf[256] = { NULL };
+        int idx = 0;
+
+        // backtrack to the beginning of the attribute
+        short *attr = (short*)buffer - ((subtype) ? 1 : 2);
+
+        for (int i = 0; i < 16; i++)
+            idx += sprintf(&buf[idx], "%02X ", *((byte*)attr + i));
+
+        Quitf("Road %d / %d has invalid command %d (%d) : %x\ndump: %s", lvl_aiRoad, $lvlAiMap_GetNumRoads(), type, subtype, attr, buf);
+    };
+
+    static void Install() {
+        // patches the Quitf call in lvlSDL::Enumerate
+        InstallPatch({
+            0x83, 0xE0, 0x07,   // and eax, 7
+            0x52,               // push eax     ; subtype
+            0x53,               // push ebx     ; type
+            0x57,               // push edi     ; buffer
+        }, {
+            0x45BEEE,
+        });
+
+        InstallCallback("lvlAiMap::SetRoad", "Allows for more detailed information when propulating roads.",
+            &SetAIRoad, {
+                cbHook<CALL>(0x45D70F),
+            }
+        );
+
+        InstallCallback("lvlSDL::Enumerate", "Hooks a call to Quitf to print out more detailed information.",
+            &InvalidCommand, {
+                cbHook<CALL>(0x45BEF4),
+            }
+        );
+    }
+};
+
 // HACK HACK HACK!
 // Doesn't work well for subway stations :(
 bool insideTunnel = false;
@@ -1564,6 +1616,7 @@ private:
 
         InstallHandler<vehCarAudioContainerHandler>("vehCarAudioContainer");
 
+        InstallHandler<lvlHandler>("Propulator");
         InstallHandler<sdlPage16Handler>("sdlPage16");
         InstallHandler<vglHandler>("VGL drawing");
 
