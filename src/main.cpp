@@ -876,46 +876,84 @@ public:
 };
 
 // oh look, more stuff aaron wanted .-.
+AGEHook<0x45DA00>::Func<int> $lvlAiMap_GetRoom;
 AGEHook<0x45D720>::Func<void> $lvlAiMap_SetRoad; // lvlAiMap::SetRoad(class lvlSDL const *, int, bool)
 AGEHook<0x45D860>::Func<uint> $lvlAiMap_GetNumRoads;
+AGEHook<0x45DA50>::Func<int> $lvlAiMap_GetNumRooms;
 
-int lvl_aiRoad = 0; // no error checking or resetting done
+// no error checking or resetting done
+int lvl_aiRoad = 0;
+
+int lvl_aiRoom = 0;
+int lvl_aiRoomId = 0;
 
 // generic handler for propulation stuff
 class lvlHandler {
 public:
     static void SetAIRoad(const void *lvlSDL, int road, bool p3) {
+        lvl_aiRoad = road;
+
         Warningf("Propulating road %d", road);
         $lvlAiMap_SetRoad(lvlSDL, road, p3);
     };
 
-    static void InvalidCommand(short *buffer, int type, int subtype) {
-        char buf[256] = { NULL };
-        int idx = 0;
+    static int GetAIRoom(int room) {
+        lvl_aiRoom = $lvlAiMap_GetRoom(room);
+        lvl_aiRoomId = room;
+
+        return lvl_aiRoom;
+    };
+
+    static void InvalidCommand(int cmd, void *attrPtr, void *roadPtr) {
+        int type = ((cmd >> 3) & 0xF);
+        int subtype = (cmd & 0x7);
 
         // backtrack to the beginning of the attribute
-        short *attr = (short*)buffer - ((subtype) ? 1 : 2);
+        short *attr = (short*)attrPtr - ((subtype) ? 1 : 2);
 
-        for (int i = 0; i < 16; i++)
-            idx += sprintf(&buf[idx], "%02X ", *((byte*)attr + i));
+        char attr_buf[256] = { NULL };
+        char road_buf[256] = { NULL };
 
-        Quitf("Road %d / %d has invalid command %d (%d) : %x\ndump: %s", lvl_aiRoad, $lvlAiMap_GetNumRoads(), type, subtype, attr, buf);
+        for (int i = 0, ii = 0; i < 16; i++)
+            ii += sprintf(&attr_buf[ii], "%02X ", *((byte*)attr + i));
+
+        auto road = *(byte**)roadPtr;
+
+        for (int i = 0, ii = 0; i < 5; i++) {
+            for (int j = 0; j < 16; j++)
+                ii += sprintf(&road_buf[ii], "%02X ", *(road++));
+
+            ii += sprintf(&road_buf[ii], "\n");
+        }
+
+        Quitf("Road %d / %d in room %d (%d / %d) has invalid command %d (%d) : %x\nattr. dump: %s\nroom dump: \n%s",
+            lvl_aiRoad, $lvlAiMap_GetNumRoads(), lvl_aiRoom, lvl_aiRoomId, $lvlAiMap_GetNumRooms(), type, subtype, attr, attr_buf, road_buf);
     };
 
     static void Install() {
         // patches the Quitf call in lvlSDL::Enumerate
         InstallPatch({
-            0x83, 0xE0, 0x07,   // and eax, 7
-            0x52,               // push eax     ; subtype
-            0x53,               // push ebx     ; type
-            0x57,               // push edi     ; buffer
+            0x8B, 0x45 , 0x10,  // mov eax, [ebp+arg_8]
+            0x50,               // push eax     ; roadPtr
+            0x57,               // push edi     ; attrPtr
+            0x53,               // push ebx     ; cmd
+            
+            // 0x45BEEE
+            0x90,
+            0x90, 0x90, 0x90, 0x90, 0x90,
         }, {
-            0x45BEEE,
+            0x45BEE8,
         });
 
         InstallCallback("lvlAiMap::SetRoad", "Allows for more detailed information when propulating roads.",
             &SetAIRoad, {
                 cbHook<CALL>(0x45D70F),
+            }
+        );
+
+        InstallCallback("lvlAiMap::SetRoad", "Allows for more detailed information when propulating roads.",
+            &GetAIRoom, {
+                cbHook<CALL>(0x45D76E),
             }
         );
 
