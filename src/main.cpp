@@ -904,6 +904,31 @@ public:
         return lvl_aiRoom;
     };
 
+    void EnumerateSDL(int p1, void (*iter)(const void *, int, int, int, const ushort *, void *), void *context) {
+        int *page = (*getPtr<int**>(this, 0x54))[p1];
+
+        ushort *attributes = *getPtr<ushort*>(page, 0x14);
+        ushort attribute;
+
+        do
+        {
+            attribute = attributes[0];
+            ++attributes;
+
+            ushort type = ((attribute >> 3) & 0xF);
+            ushort subtype = (attribute & 0x7);
+
+            ushort vertex_count = subtype;
+
+            if (subtype == 0)
+            {
+                vertex_count = attributes[0];
+                ++attributes;
+            }
+
+        } while (!(attribute & 0x80));
+    }
+
     static void InvalidCommand(int cmd, void *attrPtr, void *roadPtr) {
         int type = ((cmd >> 3) & 0xF);
         int subtype = (cmd & 0x7);
@@ -911,23 +936,13 @@ public:
         // backtrack to the beginning of the attribute
         short *attr = (short*)attrPtr - ((subtype) ? 1 : 2);
 
-        char attr_buf[256] = { NULL };
-        char road_buf[256] = { NULL };
-
+        char buf[256] = { NULL };
+        
         for (int i = 0, ii = 0; i < 16; i++)
-            ii += sprintf(&attr_buf[ii], "%02X ", *((byte*)attr + i));
+            ii += sprintf(&buf[ii], "%02X ", *((byte*)attr + i));
 
-        auto road = *(byte**)roadPtr;
-
-        for (int i = 0, ii = 0; i < 5; i++) {
-            for (int j = 0; j < 16; j++)
-                ii += sprintf(&road_buf[ii], "%02X ", *(road++));
-
-            ii += sprintf(&road_buf[ii], "\n");
-        }
-
-        Quitf("Road %d / %d in room %d (%d / %d) has invalid command %d (%d) : %x\nattr. dump: %s\nroom dump: \n%s",
-            lvl_aiRoad, $lvlAiMap_GetNumRoads(), lvl_aiRoom, lvl_aiRoomId, $lvlAiMap_GetNumRooms(), type, subtype, attr, attr_buf, road_buf);
+        Quitf("Road %d / %d in room %d (%d / %d) has invalid command %d (%d) : %x\ndump: %s",
+            lvl_aiRoad, $lvlAiMap_GetNumRoads(), lvl_aiRoom, lvl_aiRoomId, $lvlAiMap_GetNumRooms(), type, subtype, attr, buf);
     };
 
     static void Install() {
@@ -943,6 +958,13 @@ public:
             0x90, 0x90, 0x90, 0x90, 0x90,
         }, {
             0x45BEE8,
+        });
+
+        // invalid command fix
+        InstallPatch({
+            0x90, 0x90, 0x90, 0x90, 0x90, 0x90,
+        }, {
+            0x45BE84,
         });
 
         InstallCallback("lvlAiMap::SetRoad", "Allows for more detailed information when propulating roads.",
@@ -962,6 +984,14 @@ public:
                 cbHook<CALL>(0x45BEF4),
             }
         );
+
+        /*
+        InstallCallback("lvlSDL::Enumerate", "New enumerate function.",
+            &EnumerateSDL, {
+                cbHook<JMP>(0x45BE50),
+            }
+        );
+        */
     }
 };
 
