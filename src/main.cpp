@@ -1523,6 +1523,17 @@ public:
                 cbHook<CALL>(0x5738EA),
             }
         );
+
+        // don't print certain errors unless specified
+        if (!datArgParser::Get("physDebug")) {
+            InstallCallback("dgPhysManager::Collide[X]", "Disables physics collision error debugging (use '-physDebug' to enable).",
+                &NullSub, {
+                    cbHook<CALL>(0x469A20), // ; 'CollideInstances: Attempting to collide instances without bounds'
+                    cbHook<CALL>(0x4692C5), // ; 'dgPhysManager::CollideProbe : instance has no bound'
+                    cbHook<CALL>(0x469B24), // ; 'dgPhysManager::CollideTerrain - entry in room 0'
+                }
+            );
+        }
     }
 };
 
