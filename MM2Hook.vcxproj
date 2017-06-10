@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -30,6 +30,12 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
@@ -200,11 +206,13 @@
     <ClInclude Include="src\AGE.h" />
     <ClInclude Include="src\common.h" />
     <ClInclude Include="src\logfile.h" />
+    <ClInclude Include="src\mm2_ui.h" />
     <ClInclude Include="src\patch.h" />
     <ClInclude Include="src\util.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\logfile.cpp" />
+    <ClCompile Include="src\mm2_ui.cpp" />
     <ClCompile Include="src\patch.cpp" />
     <ClCompile Include="src\util.cpp" />
   </ItemGroup>

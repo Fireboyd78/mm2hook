@@ -16,6 +16,7 @@
 #include "mm2_rgl.h"
 #include "mm2_stream.h"
 #include "mm2_vehicle.h"
+#include "mm2_ui.h";
 
 #include "mm2_lua.h"
 
