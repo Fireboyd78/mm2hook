@@ -7,6 +7,7 @@
 
 #include "mm2.h"
 
+
 LPFNDIRECTINPUTCREATE lpDICreate;
 
 // Export as 'DirectInputCreateA/W' so we can hook into MM2
@@ -21,3 +22,11 @@ CMidtownMadness2 *pMM2;
 LuaState L;
 
 bool isConsoleOpen = false;
+int pedAttachCount = 0;
+
+MM2::gfxTexture * redGlow = NULL;
+MM2::gfxTexture * blueGlow = NULL;
+float glowTimer = 0;
+int glowindex = 0;
+long lastMS = 0;
+bool cycleInterest = false;

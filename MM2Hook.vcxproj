@@ -206,12 +206,20 @@
     <ClInclude Include="src\AGE.h" />
     <ClInclude Include="src\common.h" />
     <ClInclude Include="src\logfile.h" />
+    <ClInclude Include="src\mm2_creature.h" />
+    <ClInclude Include="src\mm2_inst.h" />
+    <ClInclude Include="src\mm2_level.h" />
+    <ClInclude Include="src\mm2_phys.h" />
     <ClInclude Include="src\mm2_ui.h" />
     <ClInclude Include="src\patch.h" />
     <ClInclude Include="src\util.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\logfile.cpp" />
+    <ClCompile Include="src\mm2_creature.cpp" />
+    <ClCompile Include="src\mm2_inst.cpp" />
+    <ClCompile Include="src\mm2_level.cpp" />
+    <ClCompile Include="src\mm2_phys.cpp" />
     <ClCompile Include="src\mm2_ui.cpp" />
     <ClCompile Include="src\patch.cpp" />
     <ClCompile Include="src\util.cpp" />
