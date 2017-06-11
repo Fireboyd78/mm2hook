@@ -139,52 +139,80 @@ namespace MM2
     typedef void(*LPDATCALLBACK_1)(void *);
     typedef void(*LPDATCALLBACK_2)(void *, void *);
 
-    class datCallback {
-    private:
-        Base *base; // when not null, means this callback uses __thiscall
+	struct datCallback
+	{
+	public:
+		class Base;
 
-        /*
-            by default, flags stored in upper 24 bits (mask: 0x3000000)
+	protected:
+		enum Flags
+		{
+			ParamCount0 = 0x40000000,
+			ParamCount1 = 0x80000000,
+			ParamCount2 = 0xC0000000,
+			ParamCountFlags = ParamCount0 | ParamCount1 | ParamCount2
+		};
 
-            BUG: hooked function callbacks will FAIL if our function is above 0xFFFFFF
-            TODO: make a patch to fix crashes for hooked functions
-        */
-        unsigned int callback;
+		Base* _class;
+		unsigned int _callback;
+		void* _parameter;
 
-        /*
-            this one is a bit confusing, but it's always guaranteed to be the first argument
-            if 'base' is not null, this will be the "this" object in addition to the rules above
-        */
-        void *context;
-    public:
-        AGE_API datCallback(void) {
-            $::datCallback::$$ctor$void(this);
-        };
+		unsigned int _get_flags()
+		{
+			return _callback & ParamCountFlags;
+		}
 
-        AGE_API datCallback(LPDATCALLBACK_THIS callback, Base *base) {
-            $::datCallback::$$ctor$ThisCB$1(this, callback, base);
-        };
-        AGE_API datCallback(LPDATCALLBACK_THIS_1 callback, Base *base, void *context) {
-            $::datCallback::$$ctor$ThisCB$2(this, callback, base, context);
-        };
-        AGE_API datCallback(LPDATCALLBACK_THIS_2 callback, Base *base, void *context) {
-            $::datCallback::$$ctor$ThisCB$3(this, callback, base, context);
-        };
+		unsigned int _get_callback()
+		{
+			return _callback & ~ParamCountFlags;
+		}
 
-        AGE_API datCallback(LPDATCALLBACK callback, Base *base) {
-            $::datCallback::$$ctor$CB$1(this, callback, base);
-        };
-        AGE_API datCallback(LPDATCALLBACK_1 callback, Base *base, void *context) {
-            $::datCallback::$$ctor$CB$2(this, callback, base, context);
-        };
-        AGE_API datCallback(LPDATCALLBACK_2 callback, Base *base, void *context) {
-            $::datCallback::$$ctor$CB$3(this, callback, base, context);
-        };
+		unsigned int _combine_callback(void* callback, unsigned int flags)
+		{
+			return reinterpret_cast<unsigned int&>(callback) | flags;
+		}
 
-        AGE_API void Call(void *arg) {
-            $::datCallback::Call(this, arg);
-        };
-    };
+	public:
+		datCallback()
+			: _class(NULL)
+			, _callback(NULL)
+			, _parameter(NULL)
+		{ }
+
+		datCallback(void(*callback)())
+			: _class((Base*)callback)
+			, _callback(0x4C7BE3 | ParamCount0)
+			, _parameter(NULL)
+		{ }
+
+		void Call(void* parameter)
+		{
+			auto callback = _get_callback();
+			auto flags = _get_flags();
+
+			if (flags)
+			{
+				if (_class)
+				{
+					switch (flags)
+					{
+					case ParamCount0: return (_class->*reinterpret_cast<void(Base::*&)()>(callback))();
+					case ParamCount1: return (_class->*reinterpret_cast<void(Base::*&)(void*)>(callback))(_parameter);
+					case ParamCount2: return (_class->*reinterpret_cast<void(Base::*&)(void*, void*)>(callback))(_parameter, parameter);
+					}
+				}
+				else
+				{
+					switch (flags)
+					{
+					case ParamCount0: return reinterpret_cast<void(*&)()>(callback)();
+					case ParamCount1: return reinterpret_cast<void(*&)(void*)>(callback)(_parameter);
+					case ParamCount2: return reinterpret_cast<void(*&)(void*, void*)>(callback)(_parameter, parameter);
+					}
+				}
+			}
+		}
+	};
 
     class datOutput {
     public:
