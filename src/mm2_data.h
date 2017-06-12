@@ -139,80 +139,98 @@ namespace MM2
     typedef void(*LPDATCALLBACK_1)(void *);
     typedef void(*LPDATCALLBACK_2)(void *, void *);
 
-	struct datCallback
-	{
-	public:
-		class Base;
+    struct datCallback
+    {
+    public:
+        class Base;
 
-	protected:
-		enum Flags
-		{
-			ParamCount0 = 0x40000000,
-			ParamCount1 = 0x80000000,
-			ParamCount2 = 0xC0000000,
-			ParamCountFlags = ParamCount0 | ParamCount1 | ParamCount2
-		};
+    protected:
+        enum Flags
+        {
+            ParamCount0 = 0x40000000,
+            ParamCount1 = 0x80000000,
+            ParamCount2 = 0xC0000000,
+            ParamCountFlags = ParamCount0 | ParamCount1 | ParamCount2
+        };
 
-		Base* _class;
-		unsigned int _callback;
-		void* _parameter;
+        Base* _class;
+        unsigned int _callback;
+        void* _parameter;
 
-		unsigned int _get_flags()
-		{
-			return _callback & ParamCountFlags;
-		}
+        unsigned int _get_flags()
+        {
+            return _callback & ParamCountFlags;
+        }
 
-		unsigned int _get_callback()
-		{
-			return _callback & ~ParamCountFlags;
-		}
+        unsigned int _get_callback()
+        {
+            return _callback & ~ParamCountFlags;
+        }
 
-		unsigned int _combine_callback(void* callback, unsigned int flags)
-		{
-			return reinterpret_cast<unsigned int&>(callback) | flags;
-		}
+        unsigned int _combine_callback(void* callback, unsigned int flags)
+        {
+            return reinterpret_cast<unsigned int&>(callback) | flags;
+        }
 
-	public:
-		datCallback()
-			: _class(NULL)
-			, _callback(NULL)
-			, _parameter(NULL)
-		{ }
+    public:
+        datCallback()
+            : _class(NULL)
+            , _callback(NULL)
+            , _parameter(NULL)
+        { }
 
-		datCallback(void(*callback)())
-			: _class((Base*)callback)
-			, _callback(0x4C7BE3 | ParamCount0)
-			, _parameter(NULL)
-		{ }
+        datCallback(void(*callback)())
+            : _class((Base*)callback)
+            , _callback(0x4C7BE3 | ParamCount0)
+            , _parameter(NULL)
+        { }
+        
+        datCallback(void(__stdcall *callback)(void*), void* parameter)
+            : _class((Base*)callback)
+            , _callback(0x4C7BE3 | ParamCount1)
+            , _parameter(parameter)
+        { }
 
-		void Call(void* parameter)
-		{
-			auto callback = _get_callback();
-			auto flags = _get_flags();
+        datCallback(void(__stdcall *callback)())
+            : _class((Base*)callback)
+            , _callback(0x4C7BE3 | ParamCount0)
+            , _parameter(NULL)
+        { }
 
-			if (flags)
-			{
-				if (_class)
-				{
-					switch (flags)
-					{
-					case ParamCount0: return (_class->*reinterpret_cast<void(Base::*&)()>(callback))();
-					case ParamCount1: return (_class->*reinterpret_cast<void(Base::*&)(void*)>(callback))(_parameter);
-					case ParamCount2: return (_class->*reinterpret_cast<void(Base::*&)(void*, void*)>(callback))(_parameter, parameter);
-					}
-				}
-				else
-				{
-					switch (flags)
-					{
-					case ParamCount0: return reinterpret_cast<void(*&)()>(callback)();
-					case ParamCount1: return reinterpret_cast<void(*&)(void*)>(callback)(_parameter);
-					case ParamCount2: return reinterpret_cast<void(*&)(void*, void*)>(callback)(_parameter, parameter);
-					}
-				}
-			}
-		}
-	};
+        datCallback(void(__stdcall *callback)(void*, void*), void* parameter)
+            : _class((Base*)callback)
+            , _callback(0x4C7BE3 | ParamCount2)
+            , _parameter(parameter)
+        { }
+
+        void Call(void* parameter)
+        {
+            auto callback = _get_callback();
+            auto flags = _get_flags();
+
+            if (flags)
+            {
+                if (_class)
+                {
+                    switch (flags)
+                    {
+                    case ParamCount0: return (_class->*reinterpret_cast<void(Base::*&)()>(callback))();
+                    case ParamCount1: return (_class->*reinterpret_cast<void(Base::*&)(void*)>(callback))(_parameter);
+                    case ParamCount2: return (_class->*reinterpret_cast<void(Base::*&)(void*, void*)>(callback))(_parameter, parameter);
+                    }
+                }
+                else
+                {
+                    switch (flags)
+                    {
+                    case ParamCount0: return reinterpret_cast<void(*&)()>(callback)();
+                    case ParamCount1: return reinterpret_cast<void(*&)(void*)>(callback)(_parameter);
+                    case ParamCount2: return reinterpret_cast<void(*&)(void*, void*)>(callback)(_parameter, parameter);
+                    }
+                }
+            }
+        }
+    };
 
     class datOutput {
     public:

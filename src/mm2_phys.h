@@ -9,13 +9,13 @@ namespace MM2
 
     namespace $
     {
-		namespace dgPhysEntity {
+        namespace dgPhysEntity {
 
-		}
+        }
     }
-	
-	class dgPhysEntity {
-	public:
-	};
+    
+    class dgPhysEntity {
+    public:
+    };
 
 }

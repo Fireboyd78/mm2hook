@@ -7,8 +7,8 @@
 */
 typedef struct tag_dsdevdesc
 {
-    GUID    guDevice;		    // Device GUID
-    PSTR    pszDeviceDesc;	    // Description string
+    GUID    guDevice;            // Device GUID
+    PSTR    pszDeviceDesc;        // Description string
     struct tag_dsdevdesc *pNext;
 } DSDEVICEDESC, *PDSDEVICEDESC;
 
@@ -23,6 +23,9 @@ namespace MM2
     // Forward declarations
     extern class DirSnd;
     extern class mmDirSnd;
+    extern class Aud3DObject;
+    extern class AudCreatureContainer;
+    extern class aiPedAudio;
 
     namespace $
     {
@@ -69,8 +72,25 @@ namespace MM2
             HOOK_API AGEHook<0x51CE60>::MemberFunc<UINT> EAXEnabled;
             HOOK_API AGEHook<0x51CE70>::MemberFunc<UINT> DSound3DEnabled;
         }
+        namespace AudCreatureContainer {
+            HOOK_API AGEHook<0x00510CF0>::MemberFunc<void> PlayAvoidanceReaction;
+        }
     }
 
+    class Aud3DObject {
+
+    };
+
+    class AudCreatureContainer : public Aud3DObject {
+    public:
+        void PlayAvoidanceReaction(float intensity) {
+            $::AudCreatureContainer::PlayAvoidanceReaction(this, intensity);
+        }
+    };
+
+    class aiPedAudio : public AudCreatureContainer {
+
+    };
     class DirSnd {
     protected:
         /*0x4*/

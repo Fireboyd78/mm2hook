@@ -12,11 +12,11 @@ namespace MM2
     extern class mmGameMusicData;
     extern class mmHUD;
     extern class mmPlayer;
-	extern class dgPhysEntity;
-	
+    extern class dgPhysEntity;
+    
     // External declarations
     extern class asNode;
-	extern class mmPopup;
+    extern class mmPopup;
 
     namespace $
     {
@@ -41,11 +41,11 @@ namespace MM2
 
             HOOK_API AGEHook<0x414D30>::MemberFunc<void> BeDone;
         }
-		namespace mmMultiCR
-		{
-			HOOK_API AGEHook<0x00426D10>::MemberFunc<void> UpdateTimeWarning;
-			HOOK_API AGEHook<0x004272E0>::MemberFunc<void> CycleInterest;
-		}
+        namespace mmMultiCR
+        {
+            HOOK_API AGEHook<0x00426D10>::MemberFunc<void> UpdateTimeWarning;
+            HOOK_API AGEHook<0x004272E0>::MemberFunc<void> CycleInterest;
+        }
         namespace mmGameManager
         {
             HOOK_API AGEHook<0x5E0D08>::Type<MM2::mmGameManager *> Instance;
@@ -54,9 +54,9 @@ namespace MM2
         {
             HOOK_API AGEHook<0x434060>::MemberFunc<bool> LoadAmbientSFX;
         }
-		namespace mmHudMap {
+        namespace mmHudMap {
 
-		}
+        }
         namespace mmHUD
         {
             HOOK_API AGEHook<0x42E1F0>::MemberFunc<void> SetMessage$1;
@@ -64,9 +64,9 @@ namespace MM2
 
             HOOK_API AGEHook<0x42D280>::MemberFunc<void> PostChatMessage;
         }
-		namespace mmPlayer {
-			HOOK_API AGEHook<0x004039B0>::MemberFunc<void> ReInit;
-		}
+        namespace mmPlayer {
+            HOOK_API AGEHook<0x004039B0>::MemberFunc<void> ReInit;
+        }
 
     }
 
@@ -200,9 +200,9 @@ namespace MM2
         }
     };
 
-	class mmHudMap {
+    class mmHudMap {
 
-	};
+    };
 
     class mmPlayer {
     private:
@@ -216,12 +216,12 @@ namespace MM2
             return getPtr<mmHUD>(this, 0x288);
         };
 
-		inline mmHudMap* getHudmap(void) const {
-			return getPtr<mmHudMap>(this, 0x38A);
-		}
+        inline mmHudMap* getHudmap(void) const {
+            return getPtr<mmHudMap>(this, 0x38A);
+        }
 
-		void ReInit(char* basename) {
-			$::mmPlayer::ReInit(this, basename);
-		}
+        void ReInit(char* basename) {
+            $::mmPlayer::ReInit(this, basename);
+        }
     };
 }
