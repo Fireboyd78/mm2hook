@@ -20,60 +20,60 @@ namespace MM2
     {
         namespace datArgParser
         {
-            HOOK_API AGEHook<0x4C6190>::Func<bool> Get_Any;
-            HOOK_API AGEHook<0x4C61C0>::Func<bool> Get_Int;
-            HOOK_API AGEHook<0x4C6210>::Func<bool> Get_Float;
-            HOOK_API AGEHook<0x4C6260>::Func<bool> Get_String;
+            HOOK_EXPORT(0x4C6190, _Func<bool>, Get_Any);
+            HOOK_EXPORT(0x4C61C0, _Func<bool>, Get_Int);
+            HOOK_EXPORT(0x4C6210, _Func<bool>, Get_Float);
+            HOOK_EXPORT(0x4C6260, _Func<bool>, Get_String);
 
-            HOOK_API AGEHook<0x4C62A0>::Func<int> GetArgCount;
+            HOOK_EXPORT(0x4C62A0, _Func<int>, GetArgCount);
         }
         namespace datAssetManager
         {
-            HOOK_API AGEHook<0x4C55E0>::Func<void> FullPath$1;
-            HOOK_API AGEHook<0x4C56F0>::Func<void> FullPath$2;
-            HOOK_API AGEHook<0x4C59B0>::Func<bool> Exists$1;
-            HOOK_API AGEHook<0x4C59E0>::Func<bool> Exists$2;
+            HOOK_EXPORT(0x4C55E0, _Func<void>, FullPath$1);
+            HOOK_EXPORT(0x4C56F0, _Func<void>, FullPath$2);
+            HOOK_EXPORT(0x4C59B0, _Func<bool>, Exists$1);
+            HOOK_EXPORT(0x4C59E0, _Func<bool>, Exists$2);
         }
         namespace datCallback
         {
-            HOOK_API AGEHook<0x4C7A40>::MemberFunc<void> $$ctor$void;
+            HOOK_EXPORT(0x4C7A40, _MemberFunc<void>, $$ctor$void);
 
-            HOOK_API AGEHook<0x4C7A50>::MemberFunc<void> $$ctor$ThisCB$1;
-            HOOK_API AGEHook<0x4C7A80>::MemberFunc<void> $$ctor$ThisCB$2;
-            HOOK_API AGEHook<0x4C7AA0>::MemberFunc<void> $$ctor$ThisCB$3;
+            HOOK_EXPORT(0x4C7A50, _MemberFunc<void>, $$ctor$ThisCB$1);
+            HOOK_EXPORT(0x4C7A80, _MemberFunc<void>, $$ctor$ThisCB$2);
+            HOOK_EXPORT(0x4C7AA0, _MemberFunc<void>, $$ctor$ThisCB$3);
 
-            HOOK_API AGEHook<0x4C7AC0>::MemberFunc<void> $$ctor$CB$1;
-            HOOK_API AGEHook<0x4C7AF0>::MemberFunc<void> $$ctor$CB$2;
-            HOOK_API AGEHook<0x4C7B20>::MemberFunc<void> $$ctor$CB$3;
+            HOOK_EXPORT(0x4C7AC0, _MemberFunc<void>, $$ctor$CB$1);
+            HOOK_EXPORT(0x4C7AF0, _MemberFunc<void>, $$ctor$CB$2);
+            HOOK_EXPORT(0x4C7B20, _MemberFunc<void>, $$ctor$CB$3);
 
-            HOOK_API AGEHook<0x4C7B50>::MemberFunc<void> Call;
+            HOOK_EXPORT(0x4C7B50, _MemberFunc<void>, Call);
         }
         namespace datOutput
         {
-            HOOK_API AGEHook<0x4C9530>::Func<void> CloseLog;
-            HOOK_API AGEHook<0x4C9590>::Func<bool> OpenLog;
-            HOOK_API AGEHook<0x4C95A0>::Func<void> SetOutputMask;
+            HOOK_EXPORT(0x4C9530, _Func<void>, CloseLog);
+            HOOK_EXPORT(0x4C9590, _Func<bool>, OpenLog);
+            HOOK_EXPORT(0x4C95A0, _Func<void>, SetOutputMask);
         }
         namespace datParser
         {
-            HOOK_API AGEHook<0x4A78E0>::MemberFunc<void> $$ctor;
-            HOOK_API AGEHook<0x4A7920>::MemberFunc<void> $$dtor;
+            HOOK_EXPORT(0x4A78E0, _MemberFunc<void>, $$ctor);
+            HOOK_EXPORT(0x4A7920, _MemberFunc<void>, $$dtor);
 
-            HOOK_API AGEHook<0x4A7980>::MemberFunc<MM2::datParser *> AddParser;
-            HOOK_API AGEHook<0x4A79D0>::MemberFunc<MM2::datParserRecord &> AddRecord;
+            HOOK_EXPORT(0x4A7980, _MemberFunc<MM2::datParser *>, AddParser);
+            HOOK_EXPORT(0x4A79D0, _MemberFunc<MM2::datParserRecord &>, AddRecord);
 
-            HOOK_API AGEHook<0x4A7A90>::MemberFunc<bool> Load$1;
-            HOOK_API AGEHook<0x4A7AF0>::MemberFunc<bool> Load$2;
-            HOOK_API AGEHook<0x4A7B40>::MemberFunc<bool> Load$3;
+            HOOK_EXPORT(0x4A7A90, _MemberFunc<bool>, Load$1);
+            HOOK_EXPORT(0x4A7AF0, _MemberFunc<bool>, Load$2);
+            HOOK_EXPORT(0x4A7B40, _MemberFunc<bool>, Load$3);
 
-            HOOK_API AGEHook<0x4A7B90>::MemberFunc<bool> Save$1;
-            HOOK_API AGEHook<0x4A7C00>::MemberFunc<bool> Save$2;
-            HOOK_API AGEHook<0x4A7C50>::MemberFunc<bool> Save$3;
+            HOOK_EXPORT(0x4A7B90, _MemberFunc<bool>, Save$1);
+            HOOK_EXPORT(0x4A7C00, _MemberFunc<bool>, Save$2);
+            HOOK_EXPORT(0x4A7C50, _MemberFunc<bool>, Save$3);
         }
         namespace datTimeManager
         {
-            HOOK_API AGEHook<0x4C6300>::Func<void> Reset;
-            HOOK_API AGEHook<0x4C6340>::Func<void> Update;
+            HOOK_EXPORT(0x4C6300, _Func<void>, Reset);
+            HOOK_EXPORT(0x4C6340, _Func<void>, Update);
         }
     }
 
@@ -188,7 +188,7 @@ namespace MM2
 
     class datOutput {
     public:
-        static AGEHook<0x6A3D40>::Type<Stream *> sm_Stream;
+        static ageHook::Type<Stream *> sm_Stream;
 
         AGE_API static bool OpenLog(LPCSTR filename) {
             return $::datOutput::OpenLog(filename);

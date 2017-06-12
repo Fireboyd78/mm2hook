@@ -10,7 +10,7 @@ namespace MM2
     {
         namespace gfxLight
         {
-            HOOK_API AGEHook<0x4B1C00>::MemberFunc<void> Reset;
+            HOOK_EXPORT(0x4B1C00, _MemberFunc<void>, Reset);
         }
     }
 
@@ -120,74 +120,74 @@ namespace MM2
         /*0x30*/byte MaxLODCount;
         /*0x31*/byte LODCount;
         
-        static AGEHook<0x684D34>::Type<bool> sm_EnableSetLOD;
-        static AGEHook<0x684D36>::Type<bool> sm_Allow32;
+        static ageHook::Type<bool> sm_EnableSetLOD;
+        static ageHook::Type<bool> sm_Allow32;
     };
 
-    HOOK_API AGEHook<0x4ABE00>::Func<bool> $gfxAutoDetect;
-    HOOK_API AGEHook<0x4A8CE0>::Func<void> $gfxPipeline_SetRes;
+    HOOK_EXPORT(0x4ABE00, _Func<bool>, $gfxAutoDetect);
+    HOOK_EXPORT(0x4A8CE0, _Func<void>, $gfxPipeline_SetRes);
 
-    HOOK_API AGEHook<0x4A88F0>::Func<WNDPROC> $gfxPipeline_gfxWindowProc;
+    HOOK_EXPORT(0x4A88F0, _Func<WNDPROC>, $gfxPipeline_gfxWindowProc);
 
-    HOOK_API AGEHook<0x4AC3D0>::Func<LPD3DENUMDEVICESCALLBACK7> $DeviceCallback;
-    HOOK_API AGEHook<0x4AC6F0>::Func<LPDDENUMMODESCALLBACK2> $ResCallback;
+    HOOK_EXPORT(0x4AC3D0, _Func<LPD3DENUMDEVICESCALLBACK7>, $DeviceCallback);
+    HOOK_EXPORT(0x4AC6F0, _Func<LPDDENUMMODESCALLBACK2>, $ResCallback);
 
-    HOOK_API AGEHook<0x682FA0>::Type<HWND> hWndParent;
-    HOOK_API AGEHook<0x6830B8>::Type<HWND> hWndMain;
+    HOOK_EXPORT(0x682FA0, _Type<HWND>, hWndParent);
+    HOOK_EXPORT(0x6830B8, _Type<HWND>, hWndMain);
 
-    HOOK_API AGEHook<0x68311C>::Type<LPCSTR> lpWindowTitle;
+    HOOK_EXPORT(0x68311C, _Type<LPCSTR>, lpWindowTitle);
 
-    HOOK_API AGEHook<0x6830F0>::Type<ATOM> ATOM_Class;
-    HOOK_API AGEHook<0x683108>::Type<LPCSTR> IconID;
+    HOOK_EXPORT(0x6830F0, _Type<ATOM>, ATOM_Class);
+    HOOK_EXPORT(0x683108, _Type<LPCSTR>, IconID);
 
-    HOOK_API AGEHook<0x5CA3EC>::Type<bool> pageFlip;
-    HOOK_API AGEHook<0x5CA3ED>::Type<bool> hasBorder;
-    HOOK_API AGEHook<0x5CA3EE>::Type<bool> useMultiTexture;
-    HOOK_API AGEHook<0x5CA664>::Type<bool> enableHWTnL;
+    HOOK_EXPORT(0x5CA3EC, _Type<bool>, pageFlip);
+    HOOK_EXPORT(0x5CA3ED, _Type<bool>, hasBorder);
+    HOOK_EXPORT(0x5CA3EE, _Type<bool>, useMultiTexture);
+    HOOK_EXPORT(0x5CA664, _Type<bool>, enableHWTnL);
 
-    HOOK_API AGEHook<0x68451D>::Type<bool> novblank;
+    HOOK_EXPORT(0x68451D, _Type<bool>, novblank);
 
-    HOOK_API AGEHook<0x6830D0>::Type<bool> inWindow;
-    HOOK_API AGEHook<0x6830D1>::Type<bool> isMaximized;
-    HOOK_API AGEHook<0x6830D2>::Type<bool> tripleBuffer;
-    HOOK_API AGEHook<0x6830D3>::Type<bool> useReference;
-    HOOK_API AGEHook<0x6830D4>::Type<bool> useSoftware;
-    HOOK_API AGEHook<0x6830D5>::Type<bool> useAgeSoftware;
-    HOOK_API AGEHook<0x6830D6>::Type<bool> useBlade;
-    HOOK_API AGEHook<0x6830D7>::Type<bool> useSysMem;
+    HOOK_EXPORT(0x6830D0, _Type<bool>, inWindow);
+    HOOK_EXPORT(0x6830D1, _Type<bool>, isMaximized);
+    HOOK_EXPORT(0x6830D2, _Type<bool>, tripleBuffer);
+    HOOK_EXPORT(0x6830D3, _Type<bool>, useReference);
+    HOOK_EXPORT(0x6830D4, _Type<bool>, useSoftware);
+    HOOK_EXPORT(0x6830D5, _Type<bool>, useAgeSoftware);
+    HOOK_EXPORT(0x6830D6, _Type<bool>, useBlade);
+    HOOK_EXPORT(0x6830D7, _Type<bool>, useSysMem);
 
-    HOOK_API AGEHook<0x6830D8>::Type<int> useInterface;
+    HOOK_EXPORT(0x6830D8, _Type<int>, useInterface);
 
-    HOOK_API AGEHook<0x684518>::Type<LPDIRECTDRAWCREATEEX> lpDirectDrawCreateEx;
+    HOOK_EXPORT(0x684518, _Type<LPDIRECTDRAWCREATEEX>, lpDirectDrawCreateEx);
 
-    HOOK_API AGEHook<0x6830A8>::Type<IDirectDraw7 *> lpDD;
-    HOOK_API AGEHook<0x6830AC>::Type<IDirect3D7 *> lpD3D;
-    HOOK_API AGEHook<0x6830C8>::Type<IDirect3DDevice7 *> lpD3DDev;
-    HOOK_API AGEHook<0x6830CC>::Type<IDirectDrawSurface7 *> lpdsRend;
+    HOOK_EXPORT(0x6830A8, _Type<IDirectDraw7 *>, lpDD);
+    HOOK_EXPORT(0x6830AC, _Type<IDirect3D7 *>, lpD3D);
+    HOOK_EXPORT(0x6830C8, _Type<IDirect3DDevice7 *>, lpD3DDev);
+    HOOK_EXPORT(0x6830CC, _Type<IDirectDrawSurface7 *>, lpdsRend);
 
-    HOOK_API AGEHook<0x683130>::Type<gfxInterface> gfxInterfaces;
-    HOOK_API AGEHook<0x6844C0>::Type<unsigned int> gfxInterfaceCount;
+    HOOK_EXPORT(0x683130, _Type<gfxInterface>, gfxInterfaces);
+    HOOK_EXPORT(0x6844C0, _Type<unsigned int>, gfxInterfaceCount);
 
-    HOOK_API AGEHook<0x6844C8>::Type<int> gfxInterfaceChoice;
+    HOOK_EXPORT(0x6844C8, _Type<int>, gfxInterfaceChoice);
 
-    HOOK_API AGEHook<0x6844B0>::Type<int> gfxMinScreenWidth;
-    HOOK_API AGEHook<0x6844CC>::Type<int> gfxMinScreenHeight;
+    HOOK_EXPORT(0x6844B0, _Type<int>, gfxMinScreenWidth);
+    HOOK_EXPORT(0x6844CC, _Type<int>, gfxMinScreenHeight);
 
-    HOOK_API AGEHook<0x6844FC>::Type<int> gfxMaxScreenWidth;
-    HOOK_API AGEHook<0x6844D8>::Type<int> gfxMaxScreenHeight;
+    HOOK_EXPORT(0x6844FC, _Type<int>, gfxMaxScreenWidth);
+    HOOK_EXPORT(0x6844D8, _Type<int>, gfxMaxScreenHeight);
 
-    HOOK_API AGEHook<0x6B165C>::Type<int> gfxTexQuality;
-    HOOK_API AGEHook<0x6857D0>::Type<int> gfxTexReduceSize;
+    HOOK_EXPORT(0x6B165C, _Type<int>, gfxTexQuality);
+    HOOK_EXPORT(0x6857D0, _Type<int>, gfxTexReduceSize);
 
-    HOOK_API AGEHook<0x6830F4>::Type<float> window_fWidth;
-    HOOK_API AGEHook<0x683120>::Type<float> window_fHeight;
+    HOOK_EXPORT(0x6830F4, _Type<float>, window_fWidth);
+    HOOK_EXPORT(0x683120, _Type<float>, window_fHeight);
 
-    HOOK_API AGEHook<0x683128>::Type<int> window_iWidth;
-    HOOK_API AGEHook<0x683100>::Type<int> window_iHeight;
+    HOOK_EXPORT(0x683128, _Type<int>, window_iWidth);
+    HOOK_EXPORT(0x683100, _Type<int>, window_iHeight);
 
-    HOOK_API AGEHook<0x6830E4>::Type<int> window_ZDepth;
-    HOOK_API AGEHook<0x6830F8>::Type<int> window_ColorDepth;
+    HOOK_EXPORT(0x6830E4, _Type<int>, window_ZDepth);
+    HOOK_EXPORT(0x6830F8, _Type<int>, window_ColorDepth);
 
-    HOOK_API AGEHook<0x6830EC>::Type<int> window_X;
-    HOOK_API AGEHook<0x683110>::Type<int> window_Y;
+    HOOK_EXPORT(0x6830EC, _Type<int>, window_X);
+    HOOK_EXPORT(0x683110, _Type<int>, window_Y);
 }

@@ -10,7 +10,7 @@ namespace MM2
     {
         namespace vehCarAudioContainer
         {
-            HOOK_API AGEHook<0x4D0C80>::Func<void> SetSirenCSVName;
+            HOOK_EXPORT(0x4D0C80, _Func<void>, SetSirenCSVName);
         }
     }
 
@@ -21,5 +21,8 @@ namespace MM2
         };
     };
 
-    HOOK_API AGEHook<0x6AFFE4>::Type<int> vehPoliceCarAudio_iNumCopsPursuingPlayer;
+    class vehPoliceCarAudio {
+    public:
+        static ageHook::Type<int> iNumCopsPursuingPlayer;
+    };
 }

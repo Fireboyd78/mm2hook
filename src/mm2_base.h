@@ -16,46 +16,46 @@ namespace MM2
     {
         namespace Base
         {
-            HOOK_API AGEHook<0x4C8200>::MemberFunc<void> $$dtor;
+            HOOK_EXPORT(0x4C8200, _MemberFunc<void>, $$dtor);
         }
         namespace asCullable
         {
-            HOOK_API AGEHook<0x460EA0>::MemberFunc<void> $$dtor;
-            HOOK_API AGEHook<0x4A3440>::MemberFunc<void> Cull;
+            HOOK_EXPORT(0x460EA0, _MemberFunc<void>, $$dtor);
+            HOOK_EXPORT(0x4A3440, _MemberFunc<void>, Cull);
         }
         namespace asNode
         {
-            HOOK_API AGEHook<0x4A0CE0>::MemberFunc<void> $$ctor;
-            HOOK_API AGEHook<0x4A0D00>::MemberFunc<void> $$dtor;
+            HOOK_EXPORT(0x4A0CE0, _MemberFunc<void>, $$ctor);
+            HOOK_EXPORT(0x4A0D00, _MemberFunc<void>, $$dtor);
 
-            HOOK_API AGEHook<0x403330>::MemberFunc<void> FileIO;
-            HOOK_API AGEHook<0x403340>::MemberFunc<void> AfterLoad;
-            HOOK_API AGEHook<0x403350>::MemberFunc<void> BeforeSave;
+            HOOK_EXPORT(0x403330, _MemberFunc<void>, FileIO);
+            HOOK_EXPORT(0x403340, _MemberFunc<void>, AfterLoad);
+            HOOK_EXPORT(0x403350, _MemberFunc<void>, BeforeSave);
 
-            HOOK_API AGEHook<0x403360>::MemberFunc<char *> GetClassNameA;
+            HOOK_EXPORT(0x403360, _MemberFunc<char *>, GetClassNameA);
 
-            HOOK_API AGEHook<0x4A0D70>::MemberFunc<void> SetName;
+            HOOK_EXPORT(0x4A0D70, _MemberFunc<void>, SetName);
 
-            HOOK_API AGEHook<0x4A0DA0>::MemberFunc<const char *> GetDirName;
+            HOOK_EXPORT(0x4A0DA0, _MemberFunc<const char *>, GetDirName);
 
-            HOOK_API AGEHook<0x4A0DB0>::MemberFunc<void> Update;
-            HOOK_API AGEHook<0x4A0DD0>::MemberFunc<void> UpdatePaused;
-            HOOK_API AGEHook<0x4A0E10>::MemberFunc<void> Reset;
-            HOOK_API AGEHook<0x4A0E30>::MemberFunc<void> ResChange;
+            HOOK_EXPORT(0x4A0DB0, _MemberFunc<void>, Update);
+            HOOK_EXPORT(0x4A0DD0, _MemberFunc<void>, UpdatePaused);
+            HOOK_EXPORT(0x4A0E10, _MemberFunc<void>, Reset);
+            HOOK_EXPORT(0x4A0E30, _MemberFunc<void>, ResChange);
 
-            HOOK_API AGEHook<0x4A0E60>::MemberFunc<int> AddChild;
-            HOOK_API AGEHook<0x4A0EE0>::MemberFunc<int> InsertChild;
-            HOOK_API AGEHook<0x4A0F50>::MemberFunc<int> RemoveChild_$1;
-            HOOK_API AGEHook<0x4A0FD0>::MemberFunc<int> RemoveChild_$2;
-            HOOK_API AGEHook<0x4A1010>::MemberFunc<void> RemoveAllChildren;
-            HOOK_API AGEHook<0x4A1030>::MemberFunc<MM2::asNode *> GetChild;
-            HOOK_API AGEHook<0x4A1060>::MemberFunc<MM2::asNode *> GetNext;
-            HOOK_API AGEHook<0x4A1070>::MemberFunc<MM2::asNode *> GetLastChild;
-            HOOK_API AGEHook<0x4A10A0>::MemberFunc<int> NumChildren;
-            HOOK_API AGEHook<0x4A10C0>::MemberFunc<void> SwitchTo;
+            HOOK_EXPORT(0x4A0E60, _MemberFunc<int>, AddChild);
+            HOOK_EXPORT(0x4A0EE0, _MemberFunc<int>, InsertChild);
+            HOOK_EXPORT(0x4A0F50, _MemberFunc<int>, RemoveChild_$1);
+            HOOK_EXPORT(0x4A0FD0, _MemberFunc<int>, RemoveChild_$2);
+            HOOK_EXPORT(0x4A1010, _MemberFunc<void>, RemoveAllChildren);
+            HOOK_EXPORT(0x4A1030, _MemberFunc<MM2::asNode *>, GetChild);
+            HOOK_EXPORT(0x4A1060, _MemberFunc<MM2::asNode *>, GetNext);
+            HOOK_EXPORT(0x4A1070, _MemberFunc<MM2::asNode *>, GetLastChild);
+            HOOK_EXPORT(0x4A10A0, _MemberFunc<int>, NumChildren);
+            HOOK_EXPORT(0x4A10C0, _MemberFunc<void>, SwitchTo);
 
-            HOOK_API AGEHook<0x4A1120>::MemberFunc<bool> Load;
-            HOOK_API AGEHook<0x4A11D0>::MemberFunc<bool> Save;
+            HOOK_EXPORT(0x4A1120, _MemberFunc<bool>, Load);
+            HOOK_EXPORT(0x4A11D0, _MemberFunc<bool>, Save);
         }
     }
 

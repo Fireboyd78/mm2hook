@@ -13,32 +13,39 @@ namespace MM2
 
     namespace $
     {
+        HOOK_EXPORT(0x6299A8, _Type<cityTimeWeatherLighting[16]>, timeWeathers);
+
+        namespace cityLevel
+        {
+            HOOK_EXPORT(0x445820, _Func<void>::ThisCall, DrawRooms);
+            HOOK_EXPORT(0x443E50, _Func<void>::ThisCall, SetObjectDetail);
+        }
         namespace sdlCommon
         {
-            HOOK_API AGEHook<0x45CBC0>::Func<bool> BACKFACE;
-            HOOK_API AGEHook<0x448090>::Func<void> UpdateLighting;
+            HOOK_EXPORT(0x45CBC0, _Func<bool>, BACKFACE);
+            HOOK_EXPORT(0x448090, _Func<void>, UpdateLighting);
         }
         namespace sdlPage16
         {
-            HOOK_API AGEHook<0x45A4E0>::MemberFunc<void> $$ctor;
+            HOOK_EXPORT(0x45A4E0, _MemberFunc<void>, $$ctor);
 
-            HOOK_API AGEHook<0x448330>::MemberFunc<void> Draw;
+            HOOK_EXPORT(0x448330, _MemberFunc<void>, Draw);
 
-            HOOK_API AGEHook<0x45A560>::MemberFunc<void> ArcMap;
-            HOOK_API AGEHook<0x45A760>::MemberFunc<void> WallMap;
-            HOOK_API AGEHook<0x45A900>::MemberFunc<bool> PointInPerimeter;
+            HOOK_EXPORT(0x45A560, _MemberFunc<void>, ArcMap);
+            HOOK_EXPORT(0x45A760, _MemberFunc<void>, WallMap);
+            HOOK_EXPORT(0x45A900, _MemberFunc<bool>, PointInPerimeter);
 
-            HOOK_API AGEHook<0x45A9F0>::MemberFunc<void> GetCentroid;
-            HOOK_API AGEHook<0x45D110>::MemberFunc<int> GetPerimeterCount;
-            HOOK_API AGEHook<0x45D120>::MemberFunc<int> GetPerimeterVertexIndex;
-            HOOK_API AGEHook<0x45D140>::MemberFunc<const MM2::Vector3 &> GetCodedVertex;
-            HOOK_API AGEHook<0x45D160>::MemberFunc<float> GetFloat;
-            HOOK_API AGEHook<0x45D170>::MemberFunc<MM2::gfxTexture *> GetTexture;
+            HOOK_EXPORT(0x45A9F0, _MemberFunc<void>, GetCentroid);
+            HOOK_EXPORT(0x45D110, _MemberFunc<int>, GetPerimeterCount);
+            HOOK_EXPORT(0x45D120, _MemberFunc<int>, GetPerimeterVertexIndex);
+            HOOK_EXPORT(0x45D140, _MemberFunc<const MM2::Vector3 &>, GetCodedVertex);
+            HOOK_EXPORT(0x45D160, _MemberFunc<float>, GetFloat);
+            HOOK_EXPORT(0x45D170, _MemberFunc<MM2::gfxTexture *>, GetTexture);
 
-            HOOK_API AGEHook<0x450880>::Func<uint> GetShadedColor$1;
-            HOOK_API AGEHook<0x450910>::Func<uint> GetShadedColor$2;
+            HOOK_EXPORT(0x450880, _Func<uint>, GetShadedColor$1);
+            HOOK_EXPORT(0x450910, _Func<uint>, GetShadedColor$2);
 
-            HOOK_API AGEHook<0x45BF90>::Func<MM2::sdlPage16 *> LoadBinary;
+            HOOK_EXPORT(0x45BF90, _Func<MM2::sdlPage16 *>, LoadBinary);
         }
     }
 
@@ -67,8 +74,8 @@ namespace MM2
 
     class sdlCommon {
     public:
-        static AGEHook<0x62B090>::Type<Vector3> sm_CamPos;
-        static AGEHook<0x62B0A0>::Type<uint> sm_LightTable;
+        static ageHook::Type<Vector3> sm_CamPos;
+        static ageHook::Type<uint> sm_LightTable;
 
         AGE_API static void UpdateLighting(void) {
             $::sdlCommon::UpdateLighting();
@@ -150,9 +157,4 @@ namespace MM2
             return $::sdlPage16::GetShadedColor$2(p1, p2, p3);
         }
     };
-
-    HOOK_API AGEHook<0x445820>::MemberFunc<void> $cityLevel_DrawRooms;
-    HOOK_API AGEHook<0x443E50>::MemberFunc<void> $cityLevel_SetObjectDetail;
-
-    HOOK_API AGEHook<0x6299A8>::Type<cityTimeWeatherLighting[16]> timeWeathers;
 }

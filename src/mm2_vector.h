@@ -14,69 +14,69 @@ namespace MM2
     {
         namespace Vector2
         {
-            HOOK_API AGEHook<0x45CC60>::MemberFunc<float> Mag;
-            HOOK_API AGEHook<0x45CC80>::MemberFunc<float> Mag2;
+            HOOK_EXPORT(0x45CC60, _MemberFunc<float>, Mag);
+            HOOK_EXPORT(0x45CC80, _MemberFunc<float>, Mag2);
         }
         namespace Vector3
         {
-            HOOK_API AGEHook<0x45CDC0>::MemberFunc<float> InvMag;
-            HOOK_API AGEHook<0x466490>::MemberFunc<float> Mag;
-            HOOK_API AGEHook<0x46C990>::MemberFunc<float> Mag2;
+            HOOK_EXPORT(0x45CDC0, _MemberFunc<float>, InvMag);
+            HOOK_EXPORT(0x466490, _MemberFunc<float>, Mag);
+            HOOK_EXPORT(0x46C990, _MemberFunc<float>, Mag2);
 
-            HOOK_API AGEHook<0x45CCB0>::MemberFunc<void> Set$1;
-            HOOK_API AGEHook<0x480AA0>::MemberFunc<void> Set$2;
+            HOOK_EXPORT(0x45CCB0, _MemberFunc<void>, Set$1);
+            HOOK_EXPORT(0x480AA0, _MemberFunc<void>, Set$2);
 
-            HOOK_API AGEHook<0x45CE00>::MemberFunc<void> Add;
-            HOOK_API AGEHook<0x484420>::MemberFunc<void> AddScaled;
-            HOOK_API AGEHook<0x45CD30>::MemberFunc<void> Subtract;
-            HOOK_API AGEHook<0x474000>::MemberFunc<void> SubtractScaled;
-            HOOK_API AGEHook<0x42EB40>::MemberFunc<void> Scale$1;
-            HOOK_API AGEHook<0x45CE40>::MemberFunc<void> Scale$2;
-            HOOK_API AGEHook<0x595B70>::MemberFunc<void> InvScale;
-            HOOK_API AGEHook<0x4C0390>::MemberFunc<void> RotateX;
-            HOOK_API AGEHook<0x4C03D0>::MemberFunc<void> RotateY;
-            HOOK_API AGEHook<0x4C0400>::MemberFunc<void> RotateZ;
-            HOOK_API AGEHook<0x4C0020>::MemberFunc<void> RotateAboutAxis;
+            HOOK_EXPORT(0x45CE00, _MemberFunc<void>, Add);
+            HOOK_EXPORT(0x484420, _MemberFunc<void>, AddScaled);
+            HOOK_EXPORT(0x45CD30, _MemberFunc<void>, Subtract);
+            HOOK_EXPORT(0x474000, _MemberFunc<void>, SubtractScaled);
+            HOOK_EXPORT(0x42EB40, _MemberFunc<void>, Scale$1);
+            HOOK_EXPORT(0x45CE40, _MemberFunc<void>, Scale$2);
+            HOOK_EXPORT(0x595B70, _MemberFunc<void>, InvScale);
+            HOOK_EXPORT(0x4C0390, _MemberFunc<void>, RotateX);
+            HOOK_EXPORT(0x4C03D0, _MemberFunc<void>, RotateY);
+            HOOK_EXPORT(0x4C0400, _MemberFunc<void>, RotateZ);
+            HOOK_EXPORT(0x4C0020, _MemberFunc<void>, RotateAboutAxis);
 
-            HOOK_API AGEHook<0x4C0430>::MemberFunc<float> Angle;
-            HOOK_API AGEHook<0x4C0500>::MemberFunc<float> FastAngle;
-            HOOK_API AGEHook<0x4BFF20>::MemberFunc<bool> Approach;
-            HOOK_API AGEHook<0x45CE80>::MemberFunc<void> Cross$1;
-            HOOK_API AGEHook<0x4429C0>::MemberFunc<void> Cross$2;
-            HOOK_API AGEHook<0x45CEC0>::MemberFunc<float> Dist;
-            HOOK_API AGEHook<0x45CF00>::MemberFunc<float> FlatDist;
-            HOOK_API AGEHook<0x466470>::MemberFunc<float> Dot$1;
-            HOOK_API AGEHook<0x43BBB0>::MemberFunc<void> Dot$2;
-            HOOK_API AGEHook<0x479560>::MemberFunc<void> Dot3x3;
-            HOOK_API AGEHook<0x4795C0>::MemberFunc<void> Dot3x3Transpose;
-            HOOK_API AGEHook<0x494C00>::MemberFunc<void> Lerp;
-            HOOK_API AGEHook<0x480AC0>::MemberFunc<void> Negate;
+            HOOK_EXPORT(0x4C0430, _MemberFunc<float>, Angle);
+            HOOK_EXPORT(0x4C0500, _MemberFunc<float>, FastAngle);
+            HOOK_EXPORT(0x4BFF20, _MemberFunc<bool>, Approach);
+            HOOK_EXPORT(0x45CE80, _MemberFunc<void>, Cross$1);
+            HOOK_EXPORT(0x4429C0, _MemberFunc<void>, Cross$2);
+            HOOK_EXPORT(0x45CEC0, _MemberFunc<float>, Dist);
+            HOOK_EXPORT(0x45CF00, _MemberFunc<float>, FlatDist);
+            HOOK_EXPORT(0x466470, _MemberFunc<float>, Dot$1);
+            HOOK_EXPORT(0x43BBB0, _MemberFunc<void>, Dot$2);
+            HOOK_EXPORT(0x479560, _MemberFunc<void>, Dot3x3);
+            HOOK_EXPORT(0x4795C0, _MemberFunc<void>, Dot3x3Transpose);
+            HOOK_EXPORT(0x494C00, _MemberFunc<void>, Lerp);
+            HOOK_EXPORT(0x480AC0, _MemberFunc<void>, Negate);
 
-            HOOK_API AGEHook<0x522B80>::MemberFunc<bool> IsEqual;
+            HOOK_EXPORT(0x522B80, _MemberFunc<bool>, IsEqual);
 
-            HOOK_API AGEHook<0x45CCD0>::MemberFunc<void> $$op_e_add$1;
-            HOOK_API AGEHook<0x45CD00>::MemberFunc<void> $$op_e_sub$1;
-            HOOK_API AGEHook<0x43DD50>::MemberFunc<void> $$op_e_mul;
-            HOOK_API AGEHook<0x479520>::MemberFunc<void> $$op_e_add$2;
-            HOOK_API AGEHook<0x470180>::MemberFunc<void> $$op_e_sub$2;
+            HOOK_EXPORT(0x45CCD0, _MemberFunc<void>, $$op_e_add$1);
+            HOOK_EXPORT(0x45CD00, _MemberFunc<void>, $$op_e_sub$1);
+            HOOK_EXPORT(0x43DD50, _MemberFunc<void>, $$op_e_mul);
+            HOOK_EXPORT(0x479520, _MemberFunc<void>, $$op_e_add$2);
+            HOOK_EXPORT(0x470180, _MemberFunc<void>, $$op_e_sub$2);
 
-            HOOK_API AGEHook<0x491860>::MemberFunc<MM2::Vector3> $$op_sub;
-            HOOK_API AGEHook<0x4918A0>::MemberFunc<MM2::Vector3> $$op_div;
-            HOOK_API AGEHook<0x541770>::MemberFunc<MM2::Vector3> $$op_mod;
+            HOOK_EXPORT(0x491860, _MemberFunc<MM2::Vector3>, $$op_sub);
+            HOOK_EXPORT(0x4918A0, _MemberFunc<MM2::Vector3>, $$op_div);
+            HOOK_EXPORT(0x541770, _MemberFunc<MM2::Vector3>, $$op_mod);
         }
         namespace Vector4
         {
-            HOOK_API AGEHook<0x43DD80>::MemberFunc<void> Set;
-            HOOK_API AGEHook<0x494C90>::MemberFunc<void> Cross;
-            HOOK_API AGEHook<0x494C40>::MemberFunc<void> Subtract;
-            HOOK_API AGEHook<0x43DDA0>::MemberFunc<float> Dot$1;
-            HOOK_API AGEHook<0x494C70>::MemberFunc<float> Dot3;
-            HOOK_API AGEHook<0x4C1170>::MemberFunc<MM2::Vector4 &> Dot$2;
-            HOOK_API AGEHook<0x4C1200>::MemberFunc<MM2::Vector4 &> Dot3x3;
-            HOOK_API AGEHook<0x4C52D0>::MemberFunc<void> ComputePlane$1;
-            HOOK_API AGEHook<0x4C53B0>::MemberFunc<void> ComputePlane$2;
-            HOOK_API AGEHook<0x4C53F0>::MemberFunc<void> Min;
-            HOOK_API AGEHook<0x4C5460>::MemberFunc<void> Max;
+            HOOK_EXPORT(0x43DD80, _MemberFunc<void>, Set);
+            HOOK_EXPORT(0x494C90, _MemberFunc<void>, Cross);
+            HOOK_EXPORT(0x494C40, _MemberFunc<void>, Subtract);
+            HOOK_EXPORT(0x43DDA0, _MemberFunc<float>, Dot$1);
+            HOOK_EXPORT(0x494C70, _MemberFunc<float>, Dot3);
+            HOOK_EXPORT(0x4C1170, _MemberFunc<MM2::Vector4 &>, Dot$2);
+            HOOK_EXPORT(0x4C1200, _MemberFunc<MM2::Vector4 &>, Dot3x3);
+            HOOK_EXPORT(0x4C52D0, _MemberFunc<void>, ComputePlane$1);
+            HOOK_EXPORT(0x4C53B0, _MemberFunc<void>, ComputePlane$2);
+            HOOK_EXPORT(0x4C53F0, _MemberFunc<void>, Min);
+            HOOK_EXPORT(0x4C5460, _MemberFunc<void>, Max);
         }
     }
 

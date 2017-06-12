@@ -2,6 +2,7 @@
 #define MM2_API_EXPORT
 
 #include "mm2.h"
+
 using namespace MM2;
 
 #define DEFINE_PRINT_HOOK(x) \
@@ -9,15 +10,15 @@ NAKED void x(LPCSTR str, ...) { \
     __asm jmp dword ptr ds:$##x \
 }
 
-AGEHook<0x4C9720>::Func<void> $Printf;
-AGEHook<0x4C9750>::Func<void> $Messagef;
-AGEHook<0x4C9780>::Func<void> $Displayf;
-AGEHook<0x4C97B0>::Func<void> $Warningf;
-AGEHook<0x4C97E0>::Func<void> $Errorf;
-AGEHook<0x4C9810>::Func<void> $Quitf;
-AGEHook<0x4C9850>::Func<void> $Abortf;
+HOOK_EXPORT(0x4C9720, _Func<void>, $Printf);
+HOOK_EXPORT(0x4C9750, _Func<void>, $Messagef);
+HOOK_EXPORT(0x4C9780, _Func<void>, $Displayf);
+HOOK_EXPORT(0x4C97B0, _Func<void>, $Warningf);
+HOOK_EXPORT(0x4C97E0, _Func<void>, $Errorf);
+HOOK_EXPORT(0x4C9810, _Func<void>, $Quitf);
+HOOK_EXPORT(0x4C9850, _Func<void>, $Abortf);
 
-AGEHook<0x534790>::Func<char *> $AngelReadString;
+HOOK_EXPORT(0x534790, _Func<char *>, $AngelReadString);
 
 namespace MM2
 {

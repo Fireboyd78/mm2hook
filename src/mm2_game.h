@@ -16,53 +16,6 @@ namespace MM2
     // External declarations
     extern class asNode;
 
-    namespace $
-    {
-        namespace mmGame
-        {
-            HOOK_API AGEHook<0x412550>::MemberFunc<void> $$ctor;
-            HOOK_API AGEHook<0x413940>::MemberFunc<void> $$dtor;
-
-            HOOK_API AGEHook<0x413E90>::MemberFunc<void> Update;
-            HOOK_API AGEHook<0x4144A0>::MemberFunc<void> UpdatePaused;
-            HOOK_API AGEHook<0x413D40>::MemberFunc<void> Reset;
-
-            HOOK_API AGEHook<0x412710>::MemberFunc<int>  Init;
-
-            HOOK_API AGEHook<0x413650>::MemberFunc<void> InitGameStrings;
-            HOOK_API AGEHook<0x4133F0>::MemberFunc<void> InitOtherPlayers;
-
-            HOOK_API AGEHook<0x414290>::MemberFunc<void> HitWaterHandler;
-
-            HOOK_API AGEHook<0x414280>::MemberFunc<void> DropThruCityHandler;
-            HOOK_API AGEHook<0x414E50>::MemberFunc<void> SendChatMessage;
-
-            HOOK_API AGEHook<0x414D30>::MemberFunc<void> BeDone;
-        }
-        namespace mmGameManager
-        {
-            HOOK_API AGEHook<0x5E0D08>::Type<MM2::mmGameManager *> Instance;
-        }
-        namespace mmGameMusicData
-        {
-            HOOK_API AGEHook<0x434060>::MemberFunc<bool> LoadAmbientSFX;
-        }
-        namespace mmHUD
-        {
-            HOOK_API AGEHook<0x42E1F0>::MemberFunc<void> SetMessage$1;
-            HOOK_API AGEHook<0x42E240>::MemberFunc<void> SetMessage$2;
-
-            HOOK_API AGEHook<0x42D280>::MemberFunc<void> PostChatMessage;
-        }
-        namespace mmPopup
-        {
-            HOOK_API AGEHook<0x42A280>::MemberFunc<int>  IsEnabled;
-            HOOK_API AGEHook<0x42B4F0>::MemberFunc<void> Lock;
-            HOOK_API AGEHook<0x42B500>::MemberFunc<void> Unlock;
-            HOOK_API AGEHook<0x42A400>::MemberFunc<void> ProcessChat;
-        }
-    }
-
     class mmCar {
         // vehCarSim: 0xB8 (size: ~0x1560)
     private:
@@ -71,17 +24,8 @@ namespace MM2
 
     class mmGame : public asNode {        
     public:
-        AGE_API mmGame(void) {
-            PUSH_VTABLE();
-            $::mmGame::$$ctor(this);
-            POP_VTABLE();
-        };
-
-        AGE_API virtual ~mmGame(void) {
-            PUSH_VTABLE();
-            $::mmGame::$$dtor(this);
-            POP_VTABLE();
-        };
+        AGE_API mmGame(void);
+        AGE_API virtual ~mmGame(void);
 
         inline mmPlayer* getPlayer(void) const {
             return *getPtr<mmPlayer*>(this, 0x48);
@@ -91,45 +35,21 @@ namespace MM2
             return *getPtr<mmPopup*>(this, 0x94);
         };
 
-        AGE_API virtual int Init(void) {
-            return $::mmGame::Init(this);
-        };
-
-        AGE_API virtual void InitGameStrings(void) {
-            $::mmGame::InitGameStrings(this);
-        };
-
+        AGE_API virtual int Init(void);
+        AGE_API virtual void InitGameStrings(void);
         AGE_API virtual void InitMyPlayer(void) PURE;
-
-        AGE_API virtual void InitOtherPlayers(void) {
-            $::mmGame::InitOtherPlayers(this);
-        };
-
+        AGE_API virtual void InitOtherPlayers(void);
         AGE_API virtual void InitGameObjects(void) PURE;
         AGE_API virtual void InitHUD(void) PURE;
         AGE_API virtual void UpdateGameInput(int) PURE;
         AGE_API virtual void UpdateDebugKeyInput(int) PURE;
         AGE_API virtual void UpdateGame(void) PURE;
         AGE_API virtual void NextRace(void) PURE;
-
-        AGE_API virtual void HitWaterHandler(void) {
-            $::mmGame::HitWaterHandler(this);
-        };
-
-        AGE_API virtual void DropThruCityHandler(void) {
-            $::mmGame::DropThruCityHandler(this);
-        };
-
-        AGE_API virtual void SendChatMessage(char *message) {
-            $::mmGame::SendChatMessage(this, message);
-        };
-
+        AGE_API virtual void HitWaterHandler(void);
+        AGE_API virtual void DropThruCityHandler(void);
+        AGE_API virtual void SendChatMessage(char *message);
         AGE_API virtual void SwitchState(int) PURE;
-
-        AGE_API virtual void BeDone(int p1) {
-            $::mmGame::BeDone(this, p1);
-        };
-
+        AGE_API virtual void BeDone(int p1);
         AGE_API virtual void * GetWaypoints(void) PURE;
     };
 
@@ -147,13 +67,11 @@ namespace MM2
     private:
         byte _buffer[0x1B8];
     public:
-        static mmGameManager * Instance(void) {
-            return $::mmGameManager::Instance;
-        };
-
         inline mmGame* getGame(void) const {
             return *getPtr<mmGame*>(this, 0x188);
         };
+
+        static mmGameManager * Instance(void);
 
         /* TODO?
         mmGameManager::mmGameManager(void)
@@ -169,26 +87,16 @@ namespace MM2
 
     class mmGameMusicData {
     public:
-        AGE_API bool LoadAmbientSFX(LPCSTR name) {
-            return $::mmGameMusicData::LoadAmbientSFX(this, name);
-        };
+        AGE_API bool LoadAmbientSFX(LPCSTR name);
     };
 
     class mmHUD : public asNode {
     private:
         byte _buffer[0xB9C]; // unconfirmed
     public:
-        AGE_API void SetMessage(LPCSTR message, float duration, int p2) {
-            $::mmHUD::SetMessage$1(this, message, duration, p2);
-        };
-
-        AGE_API void SetMessage(LPCSTR message) {
-            $::mmHUD::SetMessage$2(this, message);
-        };
-
-        AGE_API void PostChatMessage(LPCSTR message) {
-            $::mmHUD::PostChatMessage(this, message);
-        };
+        AGE_API void SetMessage(LPCSTR message, float duration, int p2);
+        AGE_API void SetMessage(LPCSTR message);
+        AGE_API void PostChatMessage(LPCSTR message);
 
         static void RegisterLua(luaClassBinder<mmHUD> *lc) {
             asNode::RegisterLua(lc);
@@ -223,20 +131,9 @@ namespace MM2
             return *getPtr<mmGame*>(this, 0x18);
         };
 
-        AGE_API int IsEnabled(void) {
-            return $::mmPopup::IsEnabled(this);
-        };
-
-        AGE_API void Lock(void) {
-            $::mmPopup::Lock(this);
-        };
-
-        AGE_API void Unlock(void) {
-            $::mmPopup::Unlock(this);
-        };
-
-        AGE_API void ProcessChat(void) {
-            $::mmPopup::ProcessChat(this);
-        };
+        AGE_API int IsEnabled(void);
+        AGE_API void Lock(void);
+        AGE_API void Unlock(void);
+        AGE_API void ProcessChat(void);
     };
 }
