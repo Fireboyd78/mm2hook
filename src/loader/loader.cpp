@@ -57,6 +57,35 @@ public:
     };
 };
 
+#pragma section(".CRT$XCAALOADER", long, read)
+
+typedef void (*_PFN)();
+
+struct FoobarData {
+    int a;
+    float b;
+    char *c;
+};
+
+class InitializerTest {
+public:
+    static FoobarData *Foobar;
+
+    static void Initialize() {
+        Foobar = new FoobarData;
+
+        Foobar->a = 1;
+        Foobar->b = 2.0f;
+        Foobar->c = "3";
+    };
+};
+
+FoobarData *InitializerTest::Foobar;
+
+__declspec(allocate(".CRT$XCAALOADER")) _PFN __xc_loaders [] = {
+    &InitializerTest::Initialize,
+};
+
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
 {
     switch (ul_reason_for_call)
