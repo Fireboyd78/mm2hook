@@ -36,10 +36,6 @@ static Matrix34 sm_DashOffset;
 // ==========================
 // Function hooks
 // ==========================
-
-HOOK_SET(0x544150, _Func<void>::ThisCall, $aiPath_UpdatePedestrians);
-HOOK_SET(0x54B9C0, _Func<void>::ThisCall, $aiPedestrian_Update);
-HOOK_SET(0x550EF0, _Func<void>::ThisCall, $aiPoliceForce_Reset);
 HOOK_SET(0x4A3370, _Func<void>::ThisCall, $asLinearCS_Update);
 HOOK_SET(0x4415E0, _Func<void>::ThisCall, $dgBangerInstance_Draw);
 HOOK_SET(0x577210, _Func<void>::ThisCall, $memSafeHeap_Init);
@@ -159,7 +155,7 @@ class aiPathHandler {
 public:
     void UpdatePedestrians(void) {
         numPedUpdateAttempts = 0;
-        $aiPath_UpdatePedestrians(this);
+        $aiPath::UpdatePedestrians(this);
     }
 
     static void Install() {
@@ -176,7 +172,7 @@ public:
     void Update(void) {
         if (numPedUpdateAttempts < 256) {
             ++numPedUpdateAttempts;
-            $aiPedestrian_Update(this);
+            $aiPedestrian::Update(this);
         }
     }
 
@@ -196,7 +192,7 @@ public:
         // fixes incorrect music bug
         vehPoliceCarAudio::iNumCopsPursuingPlayer = 0;
 
-        $aiPoliceForce_Reset(this);
+        $aiPoliceForce::Reset(this);
     }
 
     static void Install() {
