@@ -4,8 +4,8 @@
 namespace MM2
 {
     // Forward declarations
-    extern class cityTimeWeatherLighting;
-    extern class sdlPage16;
+    class cityTimeWeatherLighting;
+    class sdlPage16;
 
     // External declarations
     extern class gfxTexture;

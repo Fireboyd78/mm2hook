@@ -8,30 +8,16 @@
 namespace MM2
 {
     // Forward declarations
-    extern class aiMap;
-    extern class aiPedestrianInstance;
-    extern class aiVehicleManager;
-
-    //Forward declarations
-    extern class aiPedestrian;
+    class aiMap;
+    class aiPedestrian;
+    class aiPedestrianInstance;
+    class aiVehicleManager;
 
     //External declarations
     extern class asNode;
 
     namespace $
     {
-        namespace aiVehiclePhysics {
-
-        }
-        namespace aiRouteRacer {
-
-        }
-        namespace aiMap
-        {
-            HOOK_EXPORT(0x538840, _MemberFunc<void>, Dump);
-            //HOOK_API
-            HOOK_EXPORT(0x00534AB0, _MemberFunc<aiPedestrian *>, Pedestrian);
-        }
         namespace aiVehicleSpline {
             HOOK_EXPORT(0x00568410, _MemberFunc<void>, UpdateObstacleMap);
             HOOK_EXPORT(0x00551CB0, _MemberFunc<void>, StopVoice);
@@ -64,7 +50,7 @@ namespace MM2
     class aiMap {
     public:
         AGE_API void Dump(void) {
-            $::aiMap::Dump(this);
+            ageHook::Thunk<0x538840>::Call<void>(this);
         };
 
         static aiMap* Instance(void) {
@@ -72,7 +58,7 @@ namespace MM2
         };
 
         aiPedestrian* Pedestrian(int num) {
-            return $::aiMap::Pedestrian(this, num);
+            return ageHook::Thunk<0x534AB0>::Call<aiPedestrian *>(this, num);
         }
     };
 

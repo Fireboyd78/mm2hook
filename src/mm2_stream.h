@@ -4,35 +4,7 @@
 namespace MM2
 {
     // Forward declarations
-    extern class Stream;
-
-    namespace $
-    {
-        namespace Stream
-        {
-            HOOK_EXPORT(0x4C9970, _Func<void>, DumpOpenFiles);
-
-            HOOK_EXPORT(0x4C99C0, _Func<MM2::Stream *>, Open$1);
-            HOOK_EXPORT(0x4C9A00, _Func<MM2::Stream *>, Create$1);
-
-            HOOK_EXPORT(0x4C9A40, _Func<MM2::Stream *>, Open$2);
-            HOOK_EXPORT(0x4C9A70, _Func<MM2::Stream *>, Create$2);
-
-            HOOK_EXPORT(0x4C9AA0, _MemberFunc<int>, Read);
-            HOOK_EXPORT(0x4C9BF0, _MemberFunc<int>, Write);
-            HOOK_EXPORT(0x4C9D00, _MemberFunc<int>, GetCh);
-            HOOK_EXPORT(0x4C9D30, _MemberFunc<int>, PutCh);
-            HOOK_EXPORT(0x4C9D60, _MemberFunc<int>, Seek);
-            HOOK_EXPORT(0x4C9DB0, _MemberFunc<int>, Tell);
-            HOOK_EXPORT(0x4C9DC0, _MemberFunc<int>, Close);
-            HOOK_EXPORT(0x4C9E00, _MemberFunc<int>, Size);
-            HOOK_EXPORT(0x4C9E60, _MemberFunc<int>, Flush);
-        }
-
-        HOOK_EXPORT(0x4C9F20, _Func<int>, fseek);
-        HOOK_EXPORT(0x4C9F80, _Func<int>, fgets);
-        HOOK_EXPORT(0x4C9FF0, _Func<int>, fscanf);
-    }
+    class Stream;
 
     typedef void (*EnumFilesCallback)(LPCSTR, bool, LPVOID);
 
@@ -58,70 +30,70 @@ namespace MM2
     class Stream {
     public:
         AGE_API static void DumpOpenFiles(void) {
-            $::Stream::DumpOpenFiles();
+            ageHook::Thunk<0x4C9970>::Call<void>();
         };
 
         AGE_API static Stream* Open(LPCSTR filename, bool isZipFile) {
-            return $::Stream::Open$1(filename, isZipFile);
+            return ageHook::Thunk<0x4C99C0>::Call<Stream *>(filename, isZipFile);
         };
 
         AGE_API static Stream* Open(LPCSTR filename, const coreFileMethods *fileMethods, bool isZipFile) {
-            return $::Stream::Open$2(filename, fileMethods, isZipFile);
+            return ageHook::Thunk<0x4C9A40>::Call<Stream *>(filename, fileMethods, isZipFile);
         };
 
         AGE_API static Stream* Create(LPCSTR filename) {
-            return $::Stream::Create$1(filename);
+            return ageHook::Thunk<0x4C9A00>::Call<Stream *>(filename);
         };
 
         AGE_API static Stream* Create(LPCSTR filename, const coreFileMethods *fileMethods) {
-            return $::Stream::Create$2(filename, fileMethods);
+            return ageHook::Thunk<0x4C9A70>::Call<Stream *>(filename, fileMethods);
         };
 
         AGE_API int Read(LPVOID dstBuf, int size) {
-            return $::Stream::Read(this, dstBuf, size);
+            return ageHook::Thunk<0x4C9AA0>::Call<int>(this, dstBuf, size);
         };
 
         AGE_API int Write(const LPVOID srcBuf, int size) {
-            return $::Stream::Write(this, srcBuf, size);
+            return ageHook::Thunk<0x4C9BF0>::Call<int>(this, srcBuf, size);
         };
 
         AGE_API int GetCh(void) {
-            return $::Stream::GetCh(this);
+            return ageHook::Thunk<0x4C9D00>::Call<int>(this);
         };
 
         AGE_API int PutCh(unsigned char ch) {
-            return $::Stream::PutCh(this, ch);
+            return ageHook::Thunk<0x4C9D30>::Call<int>(this, ch);
         };
 
         AGE_API int Seek(int offset) {
-            return $::Stream::Seek(this, offset);
+            return ageHook::Thunk<0x4C9D60>::Call<int>(this, offset);
         };
 
         AGE_API int Tell(void) {
-            return $::Stream::Tell(this);
+            return ageHook::Thunk<0x4C9DB0>::Call<int>(this);
         };
 
         AGE_API int Close(void) {
-            return $::Stream::Close(this);
+            return ageHook::Thunk<0x4C9DC0>::Call<int>(this);
         };
 
         AGE_API int Size(void) {
-            return $::Stream::Size(this);
+            return ageHook::Thunk<0x4C9E00>::Call<int>(this);
         };
 
         AGE_API int Flush(void) {
-            return $::Stream::Flush(this);
+            return ageHook::Thunk<0x4C9E60>::Call<int>(this);
         };
     };
 
     namespace
     {
         AGE_EXT int fseek(Stream *stream, int position, seekWhence whence) {
-            return $::fseek(stream, position, whence);
+            return ageHook::Thunk<0x4C9F20>::Call<int>(stream, position, whence);
         }
 
         AGE_EXT int fgets(char *buffer, int length, Stream *stream) {
-            return $::fgets(buffer, length, stream);
+            return ageHook::Thunk<0x4C9F80>::Call<int>(buffer, length, stream);
         }
 
         AGE_EXT void fprintf(Stream *stream, char const *format, ...) {
@@ -142,7 +114,7 @@ namespace MM2
             */
             va_list va;
             va_start(va, format);
-            int result = $::fscanf(stream, format, *va, *(va + 1), *(va + 2), *(va + 3), *(va + 4), *(va + 5), *(va + 6), *(va + 7));
+            int result = ageHook::Thunk<0x4C9FF0>::Call<int>(stream, format, *va, *(va + 1), *(va + 2), *(va + 3), *(va + 4), *(va + 5), *(va + 6), *(va + 7));
             va_end(va);
 
             return result;

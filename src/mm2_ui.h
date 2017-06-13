@@ -6,38 +6,18 @@
 namespace MM2
 {
     // Forward declarations
-    extern class UIMenu;
-    extern class UIBMButton;
-    extern class UIIcon;
-    extern class UIButton;
-    extern class UILabel;
-    extern class mmPopup;
+    class UIMenu;
+    class UIBMButton;
+    class UIIcon;
+    class UIButton;
+    class UILabel;
+    class mmPopup;
 
     //External declarations
     extern class mmGame;
 
     namespace $
     {
-        namespace mmPopup
-        {
-            HOOK_EXPORT(0x42A280, _MemberFunc<int>,  IsEnabled);
-            HOOK_EXPORT(0x42B4F0, _MemberFunc<void>, Lock);
-            HOOK_EXPORT(0x42B500, _MemberFunc<void>, Unlock);
-            HOOK_EXPORT(0x42A400, _MemberFunc<void>, ProcessChat);
-        }
-        namespace UIButton {
-            HOOK_EXPORT(0x004ED140, _MemberFunc<void>, SetType);
-            HOOK_EXPORT(0x004ED1D0, _MemberFunc<void>, Enable);
-            HOOK_EXPORT(0x004ED1F0, _MemberFunc<void>, Disable);
-            HOOK_EXPORT(0x004ED090, _MemberFunc<void>, SetReadOnly);
-         }
-        namespace UILabel {
-            HOOK_EXPORT(0x004ED3A0, _MemberFunc<void>, SetText);
-            HOOK_EXPORT(0x004ED400, _MemberFunc<void>, SetBlink);
-        }
-        namespace UIBMButton {
-
-        }
         namespace UIMenu {
             HOOK_EXPORT(0x004E0980, _MemberFunc<void>, AssignBackground);
             HOOK_EXPORT(0x004E1A90, _MemberFunc<MM2::UIButton *>, AddButton);
@@ -50,11 +30,11 @@ namespace MM2
     class UILabel {
     public:
         void SetText(char* text) {
-            $::UILabel::SetText(this, text);
+            ageHook::Thunk<0x4ED3A0>::Call<void>(this, text);
         }
 
         void SetBlink(bool blink) {
-            $::UILabel::SetBlink(this, blink);
+            ageHook::Thunk<0x4ED400>::Call<void>(this, blink);
         }
     };
 
@@ -68,16 +48,16 @@ namespace MM2
     class UIButton {
     public:
         virtual void SetReadOnly(bool readOnly) {
-            $::UIButton::SetReadOnly(this, readOnly);
+            ageHook::Thunk<0x4ED090>::Call<void>(this, readOnly);
         }
         virtual void Enable() {
-            $::UIButton::Enable(this);
+            ageHook::Thunk<0x4ED1D0>::Call<void>(this);
         }
         virtual void Disable() {
-            $::UIButton::Disable(this);
+            ageHook::Thunk<0x4ED1F0>::Call<void>(this);
         }
         void SetType(int type) {
-            $::UIButton::SetType(this, type);
+            ageHook::Thunk<0x4ED140>::Call<void>(this, type);
         }
     };
 
@@ -106,19 +86,19 @@ namespace MM2
         };
 
         AGE_API int IsEnabled(void) {
-            return $::mmPopup::IsEnabled(this);
+            return ageHook::Thunk<0x42A280>::Call<int>(this);
         };
 
         AGE_API void Lock(void) {
-            $::mmPopup::Lock(this);
+            ageHook::Thunk<0x42B4F0>::Call<void>(this);
         };
 
         AGE_API void Unlock(void) {
-            $::mmPopup::Unlock(this);
+            ageHook::Thunk<0x42B500>::Call<void>(this);
         };
 
         AGE_API void ProcessChat(void) {
-            $::mmPopup::ProcessChat(this);
+            ageHook::Thunk<0x42A400>::Call<void>(this);
         };
     };
 

@@ -4,11 +4,11 @@
 namespace MM2
 {
     // Forward declarations
-    extern class Matrix34;
-    extern class Matrix44;
-    extern class Vector2;
-    extern class Vector3;
-    extern class Vector4;
+    class Matrix34;
+    class Matrix44;
+    class Vector2;
+    class Vector3;
+    class Vector4;
 
     namespace $
     {

@@ -5,9 +5,9 @@
 namespace MM2
 {
     // Forward declarations
-    extern class Base;
-    extern class asCullable;
-    extern class asNode;
+    class Base;
+    class asCullable;
+    class asNode;
 
     // External declarations
     extern class datParser;

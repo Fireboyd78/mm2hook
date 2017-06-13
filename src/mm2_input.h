@@ -4,18 +4,11 @@
 namespace MM2
 {
     // Forward declarations
-    extern class ioEventQueue;
-    extern class ioMouse;
+    class ioEventQueue;
+    class ioMouse;
 
     namespace $
     {
-        namespace ioEventQueue
-        {
-            HOOK_EXPORT(0x4BA930, _Func<bool>, Pop);
-            HOOK_EXPORT(0x4BA980, _Func<bool>, Peek);
-            HOOK_EXPORT(0x4BA9D0, _Func<void>, Queue);
-            HOOK_EXPORT(0x4BAA50, _Func<void>, Command);
-        }
         namespace ioInput
         {
             HOOK_EXPORT(0x4BA910, _Func<void>, Update);
@@ -47,19 +40,19 @@ namespace MM2
     class ioEventQueue {
     public:
         AGE_API static bool Pop(ioEvent *outEvent) {
-            return $::ioEventQueue::Pop(outEvent);
+            return ageHook::Thunk<0x4BA930>::Call<bool>(outEvent);
         };
 
         AGE_API static bool Peek(ioEvent *outEvent, int *idx) {
-            return $::ioEventQueue::Peek(outEvent, idx);
+            return ageHook::Thunk<0x4BA980>::Call<bool>(outEvent, idx);
         };
 
         AGE_API static void Queue(ioEvent::ioEventType type, int x, int y, int value) {
-            $::ioEventQueue::Queue(type, x, y, value);
+            ageHook::Thunk<0x4BA9D0>::Call<void>(type, x, y, value);
         };
 
         AGE_API static void Command(void *command) {
-            $::ioEventQueue::Command(command);
+            ageHook::Thunk<0x4BAA50>::Call<void>(command);
         };
     };
 

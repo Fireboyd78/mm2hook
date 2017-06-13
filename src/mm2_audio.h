@@ -21,11 +21,11 @@ typedef struct tag_fd
 namespace MM2
 {
     // Forward declarations
-    extern class DirSnd;
-    extern class mmDirSnd;
-    extern class Aud3DObject;
-    extern class AudCreatureContainer;
-    extern class aiPedAudio;
+    class DirSnd;
+    class mmDirSnd;
+    class Aud3DObject;
+    class AudCreatureContainer;
+    class aiPedAudio;
 
     namespace $
     {
