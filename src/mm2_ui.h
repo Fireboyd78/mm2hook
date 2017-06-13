@@ -20,30 +20,30 @@ namespace MM2
     {
         namespace mmPopup
         {
-            HOOK_API AGEHook<0x42A280>::MemberFunc<int>  IsEnabled;
-            HOOK_API AGEHook<0x42B4F0>::MemberFunc<void> Lock;
-            HOOK_API AGEHook<0x42B500>::MemberFunc<void> Unlock;
-            HOOK_API AGEHook<0x42A400>::MemberFunc<void> ProcessChat;
+            HOOK_EXPORT(0x42A280, _MemberFunc<int>,  IsEnabled);
+            HOOK_EXPORT(0x42B4F0, _MemberFunc<void>, Lock);
+            HOOK_EXPORT(0x42B500, _MemberFunc<void>, Unlock);
+            HOOK_EXPORT(0x42A400, _MemberFunc<void>, ProcessChat);
         }
         namespace UIButton {
-            HOOK_API AGEHook<0x004ED140>::MemberFunc<void>SetType;
-            HOOK_API AGEHook<0x004ED1D0>::MemberFunc<void>Enable;
-            HOOK_API AGEHook<0x004ED1F0>::MemberFunc<void>Disable;
-            HOOK_API AGEHook<0x004ED090>::MemberFunc<void>SetReadOnly;
+            HOOK_EXPORT(0x004ED140, _MemberFunc<void>, SetType);
+            HOOK_EXPORT(0x004ED1D0, _MemberFunc<void>, Enable);
+            HOOK_EXPORT(0x004ED1F0, _MemberFunc<void>, Disable);
+            HOOK_EXPORT(0x004ED090, _MemberFunc<void>, SetReadOnly);
          }
         namespace UILabel {
-            HOOK_API AGEHook<0x004ED3A0>::MemberFunc<void>SetText;
-            HOOK_API AGEHook<0x004ED400>::MemberFunc<void>SetBlink;
+            HOOK_EXPORT(0x004ED3A0, _MemberFunc<void>, SetText);
+            HOOK_EXPORT(0x004ED400, _MemberFunc<void>, SetBlink);
         }
         namespace UIBMButton {
 
         }
         namespace UIMenu {
-            HOOK_API AGEHook<0x004E0980>::MemberFunc<void> AssignBackground;
-            HOOK_API AGEHook<0x004E1A90>::MemberFunc<MM2::UIButton *> AddButton;
-            HOOK_API AGEHook<0x004E2340>::MemberFunc<MM2::UIBMButton *> AddBMButton;
-            HOOK_API AGEHook<0x004E2340>::MemberFunc<MM2::UIIcon *> AddIcon;
-            HOOK_API AGEHook<0x004E1BB0>::MemberFunc<MM2::UILabel *> AddLabel;
+            HOOK_EXPORT(0x004E0980, _MemberFunc<void>, AssignBackground);
+            HOOK_EXPORT(0x004E1A90, _MemberFunc<MM2::UIButton *>, AddButton);
+            HOOK_EXPORT(0x004E2340, _MemberFunc<MM2::UIBMButton *>, AddBMButton);
+            HOOK_EXPORT(0x004E2340, _MemberFunc<MM2::UIIcon *>, AddIcon);
+            HOOK_EXPORT(0x004E1BB0, _MemberFunc<MM2::UILabel *>, AddLabel);
         }
     }
     

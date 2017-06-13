@@ -10,7 +10,7 @@ namespace MM2
     namespace $
     {
         namespace lvlLevel {
-            HOOK_API AGEHook<0x00465480>::MemberFunc<void> MoveToRoom;
+            HOOK_EXPORT(0x00465480, _MemberFunc<void>, MoveToRoom);
         }
     }
 

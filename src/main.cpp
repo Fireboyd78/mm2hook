@@ -36,43 +36,38 @@ static Matrix34 sm_DashOffset;
 // ==========================
 // Function hooks
 // ==========================
-
-AGEHook<0x4A3370>::MemberFunc<void> $asLinearCS_Update;
-
-AGEHook<0x4415E0>::MemberFunc<void> $dgBangerInstance_Draw;
-
-AGEHook<0x577210>::MemberFunc<void> $memSafeHeap_Init;
-
-AGEHook<0x4AEDC0>::MemberFunc<void> $gfxImage_Scale;
+HOOK_SET(0x4A3370, _Func<void>::ThisCall, $asLinearCS_Update);
+HOOK_SET(0x4415E0, _Func<void>::ThisCall, $dgBangerInstance_Draw);
+HOOK_SET(0x577210, _Func<void>::ThisCall, $memSafeHeap_Init);
+HOOK_SET(0x4AEDC0, _Func<void>::ThisCall, $gfxImage_Scale);
 
 /*
     TODO: Move VGL stuff to a separate file?
 */
 
-AGEHook<0x4A1290>::MemberFunc<void> $asCullManager_Init;
+HOOK_SET(0x4A1290, _Func<void>::ThisCall, $asCullManager_Init);
 
 // ==========================
 // Pointer hooks
 // ==========================
 
-AGEHook<0x5C571C>::Type<float> obj_NoDrawThresh; // default: 300.0
+HOOK_SET(0x5C571C, _Type<float>, obj_NoDrawThresh); // default: 300.0
+HOOK_SET(0x5C6658, _Type<float>, obj_VLowThresh);  // default: 200.0
+HOOK_SET(0x5C665C, _Type<float>, obj_LowThresh);   // default: 100.0
+HOOK_SET(0x5C6660, _Type<float>, obj_MedThresh);   // default: 40.0
 
-AGEHook<0x5C6658>::Type<float> obj_VLowThresh;  // default: 200.0
-AGEHook<0x5C665C>::Type<float> obj_LowThresh;   // default: 100.0
-AGEHook<0x5C6660>::Type<float> obj_MedThresh;   // default: 40.0
+HOOK_SET(0x5C5708, _Type<float>, sdl_VLowThresh);  // default: 300.0
+HOOK_SET(0x5C570C, _Type<float>, sdl_LowThresh);   // default: 100.0
+HOOK_SET(0x5C5710, _Type<float>, sdl_MedThresh);   // default: 50.0
 
-AGEHook<0x5C5708>::Type<float> sdl_VLowThresh;  // default: 300.0
-AGEHook<0x5C570C>::Type<float> sdl_LowThresh;   // default: 100.0
-AGEHook<0x5C5710>::Type<float> sdl_MedThresh;   // default: 50.0
+HOOK_SET(0x661738, _Type<asNode>, ROOT);
 
-AGEHook<0x661738>::Type<asNode> ROOT;
+HOOK_SET(0x6B167C, _Type<char[40]>, cityName);
+HOOK_SET(0x6B16A4, _Type<char[40]>, cityName2);
 
-AGEHook<0x6B167C>::Type<char[40]> cityName;
-AGEHook<0x6B16A4>::Type<char[40]> cityName2;
+HOOK_SET(0x62B068, _Type<int>, timeOfDay);
 
-AGEHook<0x62B068>::Type<int> timeOfDay;
-
-AGEHook<0x627518>::Type<int> vehCar_bHeadlights;
+HOOK_SET(0x627518, _Type<int>, vehCar_bHeadlights);
 
 /*
     ===========================================================================
@@ -195,7 +190,7 @@ public:
     void Reset(void) {
         // reset number of cops pursuing player
         // fixes incorrect music bug
-        vehPoliceCarAudio_iNumCopsPursuingPlayer = 0;
+        vehPoliceCarAudio::iNumCopsPursuingPlayer = 0;
 
         $aiPoliceForce_Reset(this);
     }
@@ -241,7 +236,7 @@ public:
         city_numRooms = numRooms;
         city_currentRoom = 0;
 
-        $cityLevel_DrawRooms(this, viewport, p2, roomRecs, numRooms);
+        $::cityLevel::DrawRooms(this, viewport, p2, roomRecs, numRooms);
     }
 
     // jumped to at the end of cityLevel::Update
@@ -251,7 +246,7 @@ public:
 
         // update our shaded lighting
         // TODO: fix lighting quality not being taken into account (harder than it sounds)
-        auto timeWeather = *timeWeathers + timeOfDay;
+        auto timeWeather = *$::timeWeathers + timeOfDay;
 
         vglKeyColor = addPitch(&timeWeather->KeyColor, timeWeather->KeyPitch);
         vglFill1Color = addPitch(&timeWeather->Fill1Color, timeWeather->Fill1Pitch);
@@ -575,8 +570,8 @@ public:
             }
         }
 
-        ioMouse_InvWidth  = (1.0f / window_fWidth);
-        ioMouse_InvHeight = (1.0f / window_fHeight);
+        ioMouse::InvWidth  = (1.0f / window_fWidth);
+        ioMouse::InvHeight = (1.0f / window_fHeight);
     }
 
     static void gfxWindowCreate(LPCSTR lpWindowName) {
@@ -887,10 +882,10 @@ public:
 };
 
 // oh look, more stuff aaron wanted .-.
-AGEHook<0x45DA00>::Func<int> $lvlAiMap_GetRoom;
-AGEHook<0x45D720>::Func<void> $lvlAiMap_SetRoad; // lvlAiMap::SetRoad(class lvlSDL const *, int, bool)
-AGEHook<0x45D860>::Func<uint> $lvlAiMap_GetNumRoads;
-AGEHook<0x45DA50>::Func<int> $lvlAiMap_GetNumRooms;
+HOOK_SET(0x45DA00, _Func<int>, $lvlAiMap_GetRoom);
+HOOK_SET(0x45D720, _Func<void>, $lvlAiMap_SetRoad); // lvlAiMap::SetRoad(class lvlSDL const *, int, bool)
+HOOK_SET(0x45D860, _Func<uint>, $lvlAiMap_GetNumRoads);
+HOOK_SET(0x45DA50, _Func<int>, $lvlAiMap_GetNumRooms);
 
 // no error checking or resetting done
 int lvl_aiRoad = 0;

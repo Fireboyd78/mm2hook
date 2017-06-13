@@ -10,12 +10,12 @@ namespace MM2
     namespace $
     {
         namespace vehCar {
-            HOOK_API AGEHook<0x0042C2C0>::MemberFunc<void> SetDrivable;
-            HOOK_API AGEHook<0x0042CA80>::MemberFunc<MM2::lvlInstance *>GetInst;
+            HOOK_EXPORT(0x0042C2C0, _MemberFunc<void>, SetDrivable);
+            HOOK_EXPORT(0x0042CA80, _MemberFunc<MM2::lvlInstance *>, GetInst);
         }
         namespace vehCarAudioContainer
         {
-            HOOK_API AGEHook<0x4D0C80>::Func<void> SetSirenCSVName;
+            HOOK_EXPORT(0x4D0C80, _Func<void>, SetSirenCSVName);
         }
     }
 
@@ -39,5 +39,8 @@ namespace MM2
         byte _buffer[0x25C];
     };
 
-    HOOK_API AGEHook<0x6AFFE4>::Type<int> vehPoliceCarAudio_iNumCopsPursuingPlayer;
+    class vehPoliceCarAudio {
+    public:
+        static ageHook::Type<int> iNumCopsPursuingPlayer;
+    };
 }

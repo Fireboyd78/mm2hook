@@ -28,23 +28,23 @@ namespace MM2
         }
         namespace aiMap
         {
-            HOOK_API AGEHook<0x538840>::MemberFunc<void> Dump;
+            HOOK_EXPORT(0x538840, _MemberFunc<void>, Dump);
             //HOOK_API
-            HOOK_API AGEHook<0x00534AB0>::MemberFunc<aiPedestrian *>Pedestrian;
+            HOOK_EXPORT(0x00534AB0, _MemberFunc<aiPedestrian *>, Pedestrian);
         }
         namespace aiVehicleSpline {
-            HOOK_API AGEHook<0x00568410>::MemberFunc<void> UpdateObstacleMap;
-            HOOK_API AGEHook<0x00551CB0>::MemberFunc<void> StopVoice;
-            HOOK_API AGEHook<0x00551CA0>::MemberFunc<void> PlayHorn;
+            HOOK_EXPORT(0x00568410, _MemberFunc<void>, UpdateObstacleMap);
+            HOOK_EXPORT(0x00551CB0, _MemberFunc<void>, StopVoice);
+            HOOK_EXPORT(0x00551CA0, _MemberFunc<void>, PlayHorn);
         }
         namespace aiPoliceOfficer {
-            HOOK_API AGEHook<0x0053DBF0>::MemberFunc<void> StartSiren;
-            HOOK_API AGEHook<0x0053DFD0>::MemberFunc<void> DetectPerpetrator;
+            HOOK_EXPORT(0x0053DBF0, _MemberFunc<void>, StartSiren);
+            HOOK_EXPORT(0x0053DFD0, _MemberFunc<void>, DetectPerpetrator);
         }
         namespace aiVehicleManager {
-            HOOK_API AGEHook<0x006B31AC>::Type<MM2::aiVehicleManager *> Instance;
+            HOOK_EXPORT(0x006B31AC, _Type<MM2::aiVehicleManager *>, Instance);
         }
-        HOOK_API AGEHook<0x6B2E10>::Type<MM2::aiMap> AIMAP;
+        HOOK_EXPORT(0x6B2E10, _Type<MM2::aiMap>, AIMAP);
     }
 
     class aiPedestrian {
@@ -76,8 +76,8 @@ namespace MM2
         }
     };
 
-    HOOK_API AGEHook<0x544150>::MemberFunc<void> $aiPath_UpdatePedestrians;
-    HOOK_API AGEHook<0x54B9C0>::MemberFunc<void> $aiPedestrian_Update;
+    HOOK_EXPORT(0x544150, _MemberFunc<void>, $aiPath_UpdatePedestrians);
+    HOOK_EXPORT(0x54B9C0, _MemberFunc<void>, $aiPedestrian_Update);
 
-    HOOK_API AGEHook<0x550EF0>::MemberFunc<void> $aiPoliceForce_Reset;
+    HOOK_EXPORT(0x550EF0, _MemberFunc<void>, $aiPoliceForce_Reset);
 }

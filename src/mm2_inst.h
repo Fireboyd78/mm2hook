@@ -12,18 +12,18 @@ namespace MM2
     namespace $
     {
         namespace lvlInstance {
-            HOOK_API AGEHook<0x00463D90>::MemberFunc<void> Init;
-            HOOK_API AGEHook<0x00463940>::MemberFunc<void> LoadBoundOnLastEntry;
-            HOOK_API AGEHook<0x004643A0>::MemberFunc<MM2::Vector3&> GetVelocity;
+            HOOK_EXPORT(0x00463D90, _MemberFunc<void>, Init);
+            HOOK_EXPORT(0x00463940, _MemberFunc<void>, LoadBoundOnLastEntry);
+            HOOK_EXPORT(0x004643A0, _MemberFunc<MM2::Vector3&>, GetVelocity);
         }
         namespace dgUnhitBangerInstance {
-            HOOK_API AGEHook<0x00441C30>::MemberFunc<void> Init;
-            HOOK_API AGEHook<0x00441D80>::Func<MM2::dgUnhitBangerInstance *> RequestBanger;
+            HOOK_EXPORT(0x00441C30, _MemberFunc<void>, Init);
+            HOOK_EXPORT(0x00441D80, _Func<MM2::dgUnhitBangerInstance *>, RequestBanger);
         }
         namespace aiPedestrianInstance
         {
-            HOOK_API AGEHook<0x0057B780>::MemberFunc<bool> IsCollidable;
-            HOOK_API AGEHook<0x0057B730>::MemberFunc<MM2::dgPhysEntity *> AttachEntity;
+            HOOK_EXPORT(0x0057B780, _MemberFunc<bool>, IsCollidable);
+            HOOK_EXPORT(0x0057B730, _MemberFunc<MM2::dgPhysEntity *>, AttachEntity);
         }
     }
     

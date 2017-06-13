@@ -5,15 +5,20 @@ namespace MM2
 {
     // Forward declarations
     extern class ioEventQueue;
+    extern class ioMouse;
 
     namespace $
     {
         namespace ioEventQueue
         {
-            HOOK_API AGEHook<0x4BA930>::Func<bool> Pop;
-            HOOK_API AGEHook<0x4BA980>::Func<bool> Peek;
-            HOOK_API AGEHook<0x4BA9D0>::Func<void> Queue;
-            HOOK_API AGEHook<0x4BAA50>::Func<void> Command;
+            HOOK_EXPORT(0x4BA930, _Func<bool>, Pop);
+            HOOK_EXPORT(0x4BA980, _Func<bool>, Peek);
+            HOOK_EXPORT(0x4BA9D0, _Func<void>, Queue);
+            HOOK_EXPORT(0x4BAA50, _Func<void>, Command);
+        }
+        namespace ioInput
+        {
+            HOOK_EXPORT(0x4BA910, _Func<void>, Update);
         }
     }
 
@@ -58,8 +63,9 @@ namespace MM2
         };
     };
 
-    HOOK_API AGEHook<0x4BA910>::Func<void> $ioInput_Update;
-
-    HOOK_API AGEHook<0x6A38EC>::Type<float> ioMouse_InvWidth;
-    HOOK_API AGEHook<0x6A38D4>::Type<float> ioMouse_InvHeight;
+    class ioMouse {
+    public:
+        static ageHook::Type<float> InvWidth;
+        static ageHook::Type<float> InvHeight;
+    };
 }

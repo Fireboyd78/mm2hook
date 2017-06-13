@@ -215,6 +215,21 @@
     <ClInclude Include="src\mm2_rgl.h">
       <Filter>Source Files\mm2</Filter>
     </ClInclude>
+    <ClInclude Include="src\mm2_creature.h">
+      <Filter>Source Files\mm2</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mm2_inst.h">
+      <Filter>Source Files\mm2</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mm2_level.h">
+      <Filter>Source Files\mm2</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mm2_phys.h">
+      <Filter>Source Files\mm2</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mm2_ui.h">
+      <Filter>Source Files\mm2</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
@@ -356,6 +371,21 @@
       <Filter>Source Files\mm2</Filter>
     </ClCompile>
     <ClCompile Include="src\mm2_rgl.cpp">
+      <Filter>Source Files\mm2</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mm2_creature.cpp">
+      <Filter>Source Files\mm2</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mm2_inst.cpp">
+      <Filter>Source Files\mm2</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mm2_phys.cpp">
+      <Filter>Source Files\mm2</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mm2_level.cpp">
+      <Filter>Source Files\mm2</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mm2_ui.cpp">
       <Filter>Source Files\mm2</Filter>
     </ClCompile>
   </ItemGroup>

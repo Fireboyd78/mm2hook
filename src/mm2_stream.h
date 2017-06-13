@@ -10,28 +10,28 @@ namespace MM2
     {
         namespace Stream
         {
-            HOOK_API AGEHook<0x4C9970>::Func<void> DumpOpenFiles;
+            HOOK_EXPORT(0x4C9970, _Func<void>, DumpOpenFiles);
 
-            HOOK_API AGEHook<0x4C99C0>::Func<MM2::Stream *> Open$1;
-            HOOK_API AGEHook<0x4C9A00>::Func<MM2::Stream *> Create$1;
+            HOOK_EXPORT(0x4C99C0, _Func<MM2::Stream *>, Open$1);
+            HOOK_EXPORT(0x4C9A00, _Func<MM2::Stream *>, Create$1);
 
-            HOOK_API AGEHook<0x4C9A40>::Func<MM2::Stream *> Open$2;
-            HOOK_API AGEHook<0x4C9A70>::Func<MM2::Stream *> Create$2;
+            HOOK_EXPORT(0x4C9A40, _Func<MM2::Stream *>, Open$2);
+            HOOK_EXPORT(0x4C9A70, _Func<MM2::Stream *>, Create$2);
 
-            HOOK_API AGEHook<0x4C9AA0>::MemberFunc<int> Read;
-            HOOK_API AGEHook<0x4C9BF0>::MemberFunc<int> Write;
-            HOOK_API AGEHook<0x4C9D00>::MemberFunc<int> GetCh;
-            HOOK_API AGEHook<0x4C9D30>::MemberFunc<int> PutCh;
-            HOOK_API AGEHook<0x4C9D60>::MemberFunc<int> Seek;
-            HOOK_API AGEHook<0x4C9DB0>::MemberFunc<int> Tell;
-            HOOK_API AGEHook<0x4C9DC0>::MemberFunc<int> Close;
-            HOOK_API AGEHook<0x4C9E00>::MemberFunc<int> Size;
-            HOOK_API AGEHook<0x4C9E60>::MemberFunc<int> Flush;
+            HOOK_EXPORT(0x4C9AA0, _MemberFunc<int>, Read);
+            HOOK_EXPORT(0x4C9BF0, _MemberFunc<int>, Write);
+            HOOK_EXPORT(0x4C9D00, _MemberFunc<int>, GetCh);
+            HOOK_EXPORT(0x4C9D30, _MemberFunc<int>, PutCh);
+            HOOK_EXPORT(0x4C9D60, _MemberFunc<int>, Seek);
+            HOOK_EXPORT(0x4C9DB0, _MemberFunc<int>, Tell);
+            HOOK_EXPORT(0x4C9DC0, _MemberFunc<int>, Close);
+            HOOK_EXPORT(0x4C9E00, _MemberFunc<int>, Size);
+            HOOK_EXPORT(0x4C9E60, _MemberFunc<int>, Flush);
         }
 
-        HOOK_API AGEHook<0x4C9F20>::Func<int> fseek;
-        HOOK_API AGEHook<0x4C9F80>::Func<int> fgets;
-        HOOK_API AGEHook<0x4C9FF0>::Func<int> fscanf;
+        HOOK_EXPORT(0x4C9F20, _Func<int>, fseek);
+        HOOK_EXPORT(0x4C9F80, _Func<int>, fgets);
+        HOOK_EXPORT(0x4C9FF0, _Func<int>, fscanf);
     }
 
     typedef void (*EnumFilesCallback)(LPCSTR, bool, LPVOID);

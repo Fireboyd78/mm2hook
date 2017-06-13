@@ -31,49 +31,49 @@ namespace MM2
     {
         namespace DirSnd
         {
-            HOOK_API AGEHook<0x5A5080>::Func<MM2::DirSnd *> Init;
+            HOOK_EXPORT(0x5A5080, _Func<MM2::DirSnd *>, Init);
 
-            HOOK_API AGEHook<0x5A4ED0>::MemberFunc<void> $$ctor;
-            HOOK_API AGEHook<0x5A4F30>::MemberFunc<void> $$dtor;
+            HOOK_EXPORT(0x5A4ED0, _MemberFunc<void>, $$ctor);
+            HOOK_EXPORT(0x5A4F30, _MemberFunc<void>, $$dtor);
 
-            HOOK_API AGEHook<0x5A4FD0>::MemberFunc<void> DeInit;
+            HOOK_EXPORT(0x5A4FD0, _MemberFunc<void>, DeInit);
 
-            HOOK_API AGEHook<0x5A5160>::MemberFunc<int> Init3DListener;
+            HOOK_EXPORT(0x5A5160, _MemberFunc<int>, Init3DListener);
 
-            HOOK_API AGEHook<0x5A51C0>::MemberFunc<int> IsDSDeviceInList;
-            HOOK_API AGEHook<0x5A5390>::MemberFunc<void> SetDeviceRating;
-            HOOK_API AGEHook<0x5A5510>::MemberFunc<int> EnumDSDevices;
+            HOOK_EXPORT(0x5A51C0, _MemberFunc<int>, IsDSDeviceInList);
+            HOOK_EXPORT(0x5A5390, _MemberFunc<void>, SetDeviceRating);
+            HOOK_EXPORT(0x5A5510, _MemberFunc<int>, EnumDSDevices);
 
-            HOOK_API AGEHook<0x5A5530>::MemberFunc<int> InitPrimarySoundBuffer;
-            HOOK_API AGEHook<0x5A5630>::MemberFunc<int> CreatePrimaryInterfaceAndBuffer;
+            HOOK_EXPORT(0x5A5530, _MemberFunc<int>, InitPrimarySoundBuffer);
+            HOOK_EXPORT(0x5A5630, _MemberFunc<int>, CreatePrimaryInterfaceAndBuffer);
 
-            HOOK_API AGEHook<0x5A5770>::MemberFunc<void> ClearDSDeviceList;
+            HOOK_EXPORT(0x5A5770, _MemberFunc<void>, ClearDSDeviceList);
 
-            HOOK_API AGEHook<0x5A5860>::MemberFunc<void> SetPrimaryBufferFormat;
+            HOOK_EXPORT(0x5A5860, _MemberFunc<void>, SetPrimaryBufferFormat);
 
-            HOOK_API AGEHook<0x5A5950>::MemberFunc<void> ScanAvailableDSFormats;
-            HOOK_API AGEHook<0x5A5A30>::MemberFunc<char *> TranslateDSError;
+            HOOK_EXPORT(0x5A5950, _MemberFunc<void>, ScanAvailableDSFormats);
+            HOOK_EXPORT(0x5A5A30, _MemberFunc<char *>, TranslateDSError);
 
-            HOOK_API AGEHook<0x5A5BB0>::MemberFunc<void> SetBitDepth;
-            HOOK_API AGEHook<0x5A5BD0>::MemberFunc<char **> GetDeviceNames;
-            HOOK_API AGEHook<0x5A5C00>::MemberFunc<UINT> GetNum3DHallBufs;
+            HOOK_EXPORT(0x5A5BB0, _MemberFunc<void>, SetBitDepth);
+            HOOK_EXPORT(0x5A5BD0, _MemberFunc<char **>, GetDeviceNames);
+            HOOK_EXPORT(0x5A5C00, _MemberFunc<UINT>, GetNum3DHallBufs);
         }
         namespace mmDirSnd
         {
-            HOOK_API AGEHook<0x51CC50>::Func<MM2::mmDirSnd *> Init;
+            HOOK_EXPORT(0x51CC50, _Func<MM2::mmDirSnd *>, Init);
 
-            HOOK_API AGEHook<0x51CBE0>::MemberFunc<void> $$ctor;
-            HOOK_API AGEHook<0x51CC00>::MemberFunc<void> $$dtor;
+            HOOK_EXPORT(0x51CBE0, _MemberFunc<void>, $$ctor);
+            HOOK_EXPORT(0x51CC00, _MemberFunc<void>, $$dtor);
 
-            HOOK_API AGEHook<0x51CC10>::MemberFunc<void> DeInit;
+            HOOK_EXPORT(0x51CC10, _MemberFunc<void>, DeInit);
 
-            HOOK_API AGEHook<0x51CD90>::MemberFunc<int> InitPrimarySoundBuffer;
+            HOOK_EXPORT(0x51CD90, _MemberFunc<int>, InitPrimarySoundBuffer);
 
-            HOOK_API AGEHook<0x51CE60>::MemberFunc<UINT> EAXEnabled;
-            HOOK_API AGEHook<0x51CE70>::MemberFunc<UINT> DSound3DEnabled;
+            HOOK_EXPORT(0x51CE60, _MemberFunc<UINT>, EAXEnabled);
+            HOOK_EXPORT(0x51CE70, _MemberFunc<UINT>, DSound3DEnabled);
         }
         namespace AudCreatureContainer {
-            HOOK_API AGEHook<0x00510CF0>::MemberFunc<void> PlayAvoidanceReaction;
+            HOOK_EXPORT(0x00510CF0, _MemberFunc<void>, PlayAvoidanceReaction);
         }
     }
 

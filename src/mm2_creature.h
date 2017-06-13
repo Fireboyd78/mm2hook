@@ -13,11 +13,11 @@ namespace MM2
     namespace $
     {
         namespace  pedRagdollMgr {
-            HOOK_API AGEHook<0x0057B8B0>::MemberFunc<void> $$ctor;
-            HOOK_API AGEHook<0x0057B910>::MemberFunc<void> $$dtor;
+            HOOK_EXPORT(0x0057B8B0, _MemberFunc<void>, $$ctor);
+            HOOK_EXPORT(0x0057B910, _MemberFunc<void>, $$dtor);
 
-            HOOK_API AGEHook<0x006B4740>::Type<MM2::pedRagdollMgr *> Instance;
-            HOOK_API AGEHook<0x0057B9B0>::MemberFunc<void> Init;
+            HOOK_EXPORT(0x006B4740, _Type<MM2::pedRagdollMgr *>, Instance);
+            HOOK_EXPORT(0x0057B9B0, _MemberFunc<void>, Init);
         }
     }
     

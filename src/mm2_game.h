@@ -22,50 +22,50 @@ namespace MM2
     {
         namespace mmGame
         {
-            HOOK_API AGEHook<0x412550>::MemberFunc<void> $$ctor;
-            HOOK_API AGEHook<0x413940>::MemberFunc<void> $$dtor;
+            HOOK_EXPORT(0x412550, _MemberFunc<void>, $$ctor);
+            HOOK_EXPORT(0x413940, _MemberFunc<void>, $$dtor);
 
-            HOOK_API AGEHook<0x413E90>::MemberFunc<void> Update;
-            HOOK_API AGEHook<0x4144A0>::MemberFunc<void> UpdatePaused;
-            HOOK_API AGEHook<0x413D40>::MemberFunc<void> Reset;
+            HOOK_EXPORT(0x413E90, _MemberFunc<void>, Update);
+            HOOK_EXPORT(0x4144A0, _MemberFunc<void>, UpdatePaused);
+            HOOK_EXPORT(0x413D40, _MemberFunc<void>, Reset);
 
-            HOOK_API AGEHook<0x412710>::MemberFunc<int>  Init;
+            HOOK_EXPORT(0x412710, _MemberFunc<int>,  Init);
 
-            HOOK_API AGEHook<0x413650>::MemberFunc<void> InitGameStrings;
-            HOOK_API AGEHook<0x4133F0>::MemberFunc<void> InitOtherPlayers;
+            HOOK_EXPORT(0x413650, _MemberFunc<void>, InitGameStrings);
+            HOOK_EXPORT(0x4133F0, _MemberFunc<void>, InitOtherPlayers);
 
-            HOOK_API AGEHook<0x414290>::MemberFunc<void> HitWaterHandler;
+            HOOK_EXPORT(0x414290, _MemberFunc<void>, HitWaterHandler);
 
-            HOOK_API AGEHook<0x414280>::MemberFunc<void> DropThruCityHandler;
-            HOOK_API AGEHook<0x414E50>::MemberFunc<void> SendChatMessage;
+            HOOK_EXPORT(0x414280, _MemberFunc<void>, DropThruCityHandler);
+            HOOK_EXPORT(0x414E50, _MemberFunc<void>, SendChatMessage);
 
-            HOOK_API AGEHook<0x414D30>::MemberFunc<void> BeDone;
+            HOOK_EXPORT(0x414D30, _MemberFunc<void>, BeDone);
         }
         namespace mmMultiCR
         {
-            HOOK_API AGEHook<0x00426D10>::MemberFunc<void> UpdateTimeWarning;
-            HOOK_API AGEHook<0x004272E0>::MemberFunc<void> CycleInterest;
+            HOOK_EXPORT(0x00426D10, _MemberFunc<void>, UpdateTimeWarning);
+            HOOK_EXPORT(0x004272E0, _MemberFunc<void>, CycleInterest);
         }
         namespace mmGameManager
         {
-            HOOK_API AGEHook<0x5E0D08>::Type<MM2::mmGameManager *> Instance;
+            HOOK_EXPORT(0x5E0D08, _Type<MM2::mmGameManager *>, Instance);
         }
         namespace mmGameMusicData
         {
-            HOOK_API AGEHook<0x434060>::MemberFunc<bool> LoadAmbientSFX;
+            HOOK_EXPORT(0x434060, _MemberFunc<bool>, LoadAmbientSFX);
         }
         namespace mmHudMap {
 
         }
         namespace mmHUD
         {
-            HOOK_API AGEHook<0x42E1F0>::MemberFunc<void> SetMessage$1;
-            HOOK_API AGEHook<0x42E240>::MemberFunc<void> SetMessage$2;
+            HOOK_EXPORT(0x42E1F0, _MemberFunc<void>, SetMessage$1);
+            HOOK_EXPORT(0x42E240, _MemberFunc<void>, SetMessage$2);
 
-            HOOK_API AGEHook<0x42D280>::MemberFunc<void> PostChatMessage;
+            HOOK_EXPORT(0x42D280, _MemberFunc<void>, PostChatMessage);
         }
         namespace mmPlayer {
-            HOOK_API AGEHook<0x004039B0>::MemberFunc<void> ReInit;
+            HOOK_EXPORT(0x004039B0, _MemberFunc<void>, ReInit);
         }
 
     }
