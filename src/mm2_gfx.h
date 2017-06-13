@@ -12,6 +12,15 @@ namespace MM2
         {
             HOOK_API AGEHook<0x4B1C00>::MemberFunc<void> Reset;
         }
+        namespace ltLight {
+            HOOK_API AGEHook<0x0059ACB0>::MemberFunc<void> Draw;
+            HOOK_API AGEHook<0x0059AD90>::MemberFunc<void> DrawGlow;
+            HOOK_API AGEHook<0x0059AE30>::Func<void> DrawGlowBegin;
+            HOOK_API AGEHook<0x0059AEF0>::Func<void> DrawGlowEnd;
+            HOOK_API AGEHook<0x0059B390>::Func<void> SetUpGfxLightBegin;
+            HOOK_API AGEHook<0x0059B5B0>::MemberFunc<void> SetUpGfxLight;
+            HOOK_API AGEHook<0x0059B5B0>::Func<void> SetUpGfxLightEnd;
+        }
     }
 
     // what kind of primitive to draw
@@ -123,6 +132,8 @@ namespace MM2
         static AGEHook<0x684D34>::Type<bool> sm_EnableSetLOD;
         static AGEHook<0x684D36>::Type<bool> sm_Allow32;
     };
+
+    HOOK_API AGEHook<0x004B30F0>::Func<gfxTexture *> $gfxGetTexture;
 
     HOOK_API AGEHook<0x4ABE00>::Func<bool> $gfxAutoDetect;
     HOOK_API AGEHook<0x4A8CE0>::Func<void> $gfxPipeline_SetRes;

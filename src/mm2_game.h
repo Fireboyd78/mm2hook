@@ -1,20 +1,22 @@
 #pragma once
 #include "mm2_common.h"
 #include "mm2_base.h"
+#include "mm2_vehicle.h"
+#include "mm2_ui.h"
 
 namespace MM2
 {
     // Forward declarations
-    extern class mmCar;
     extern class mmGame;
     extern class mmGameManager;
     extern class mmGameMusicData;
     extern class mmHUD;
     extern class mmPlayer;
-    extern class mmPopup;
-
+    extern class dgPhysEntity;
+    
     // External declarations
     extern class asNode;
+    extern class mmPopup;
 
     namespace $
     {
@@ -39,6 +41,11 @@ namespace MM2
 
             HOOK_API AGEHook<0x414D30>::MemberFunc<void> BeDone;
         }
+        namespace mmMultiCR
+        {
+            HOOK_API AGEHook<0x00426D10>::MemberFunc<void> UpdateTimeWarning;
+            HOOK_API AGEHook<0x004272E0>::MemberFunc<void> CycleInterest;
+        }
         namespace mmGameManager
         {
             HOOK_API AGEHook<0x5E0D08>::Type<MM2::mmGameManager *> Instance;
@@ -47,6 +54,9 @@ namespace MM2
         {
             HOOK_API AGEHook<0x434060>::MemberFunc<bool> LoadAmbientSFX;
         }
+        namespace mmHudMap {
+
+        }
         namespace mmHUD
         {
             HOOK_API AGEHook<0x42E1F0>::MemberFunc<void> SetMessage$1;
@@ -54,20 +64,12 @@ namespace MM2
 
             HOOK_API AGEHook<0x42D280>::MemberFunc<void> PostChatMessage;
         }
-        namespace mmPopup
-        {
-            HOOK_API AGEHook<0x42A280>::MemberFunc<int>  IsEnabled;
-            HOOK_API AGEHook<0x42B4F0>::MemberFunc<void> Lock;
-            HOOK_API AGEHook<0x42B500>::MemberFunc<void> Unlock;
-            HOOK_API AGEHook<0x42A400>::MemberFunc<void> ProcessChat;
+        namespace mmPlayer {
+            HOOK_API AGEHook<0x004039B0>::MemberFunc<void> ReInit;
         }
+
     }
 
-    class mmCar {
-        // vehCarSim: 0xB8 (size: ~0x1560)
-    private:
-        byte _buffer[0x25C];
-    };
 
     class mmGame : public asNode {        
     public:
@@ -198,45 +200,28 @@ namespace MM2
         }
     };
 
+    class mmHudMap {
+
+    };
+
     class mmPlayer {
     private:
         byte _buffer[0x23A4];
     public:
-        inline mmCar* getCar(void) const {
-            return getPtr<mmCar>(this, 0x2C);
+        inline vehCar* getCar(void) const {
+            return getPtr<vehCar>(this, 0x2C);
         };
 
         inline mmHUD* getHUD(void) const {
             return getPtr<mmHUD>(this, 0x288);
         };
-    };
 
-    class mmPopup {
-        // PUMain: 0x1C (size: 0xC8)
-        // PUQuit: 0x20 (size: 0xC4)
-        // PUExit: 0x24 (size: 0xBC)
-        // TODO...
-    private:
-        byte _buffer[0x60];
-    public:
-        inline mmGame* getGame(void) const {
-            return *getPtr<mmGame*>(this, 0x18);
-        };
+        inline mmHudMap* getHudmap(void) const {
+            return getPtr<mmHudMap>(this, 0x38A);
+        }
 
-        AGE_API int IsEnabled(void) {
-            return $::mmPopup::IsEnabled(this);
-        };
-
-        AGE_API void Lock(void) {
-            $::mmPopup::Lock(this);
-        };
-
-        AGE_API void Unlock(void) {
-            $::mmPopup::Unlock(this);
-        };
-
-        AGE_API void ProcessChat(void) {
-            $::mmPopup::ProcessChat(this);
-        };
+        void ReInit(char* basename) {
+            $::mmPlayer::ReInit(this, basename);
+        }
     };
 }

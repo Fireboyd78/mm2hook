@@ -12,6 +12,9 @@ namespace MM2
 
     namespace $
     {
+        namespace Matrix34 {
+            HOOK_API AGEHook<0x004BBF50>::MemberFunc<void> Identity;
+        }
         namespace Vector2
         {
             HOOK_API AGEHook<0x45CC60>::MemberFunc<float> Mag;
@@ -96,6 +99,10 @@ namespace MM2
         float m32;
         float m33;
         float m34;
+
+        void Identity() {
+            $::Matrix34::Identity(this);
+        }
     };
 
     class Matrix44 {
