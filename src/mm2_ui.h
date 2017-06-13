@@ -80,9 +80,11 @@ namespace MM2
         // TODO...
     private:
         byte _buffer[0x60];
+    protected:
+        ageHook::Field<0x18, mmGame *> _game;
     public:
         inline mmGame* getGame(void) const {
-            return *getPtr<mmGame*>(this, 0x18);
+            return _game.get(this);
         };
 
         AGE_API int IsEnabled(void) {

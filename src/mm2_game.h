@@ -32,7 +32,10 @@ namespace MM2
     }
 
 
-    class mmGame : public asNode {        
+    class mmGame : public asNode {
+    protected:
+        ageHook::Field<0x48, mmPlayer *> _player;
+        ageHook::Field<0x94, mmPopup *> _popup;
     public:
         AGE_API mmGame(void) {
             PUSH_VTABLE();
@@ -47,11 +50,11 @@ namespace MM2
         };
 
         inline mmPlayer* getPlayer(void) const {
-            return *getPtr<mmPlayer*>(this, 0x48);
+            return _player.get(this);
         };
 
         inline mmPopup* getPopup(void) const {
-            return *getPtr<mmPopup*>(this, 0x94);
+            return _popup.get(this);
         };
 
         /*
@@ -129,13 +132,15 @@ namespace MM2
         // mmMultiBlitz: 0x1B0
     private:
         byte _buffer[0x1B8];
+    protected:
+        ageHook::Field<0x188, mmGame *> _game;
     public:
         static mmGameManager * Instance(void) {
             return $::mmGameManager::Instance;
         };
 
         inline mmGame* getGame(void) const {
-            return *getPtr<mmGame*>(this, 0x188);
+            return _game.get(this);
         };
 
         /* TODO?
@@ -188,17 +193,22 @@ namespace MM2
     class mmPlayer {
     private:
         byte _buffer[0x23A4];
+    protected:
+        ageHook::Field<0x2C, vehCar *> _car;
+        ageHook::Field<0x288, mmHUD *> _hud;
+        ageHook::Field<0x38A, mmHudMap *> _hudmap;
+
     public:
         inline vehCar* getCar(void) const {
-            return getPtr<vehCar>(this, 0x2C);
+            return _car.get(this);
         };
 
         inline mmHUD* getHUD(void) const {
-            return getPtr<mmHUD>(this, 0x288);
+            return _hud.get(this);
         };
 
         inline mmHudMap* getHudmap(void) const {
-            return getPtr<mmHudMap>(this, 0x38A);
+            return _hudmap.get(this);
         }
 
         void ReInit(char* basename) {
