@@ -5,38 +5,29 @@
 namespace MM2
 {
     // Forward declarations
-    extern class vehCarAudioContainer;
-
-    namespace $
-    {
-        namespace vehCar {
-            HOOK_EXPORT(0x0042C2C0, _MemberFunc<void>, SetDrivable);
-            HOOK_EXPORT(0x0042CA80, _MemberFunc<MM2::lvlInstance *>, GetInst);
-        }
-        namespace vehCarAudioContainer
-        {
-            HOOK_EXPORT(0x4D0C80, _Func<void>, SetSirenCSVName);
-        }
-    }
-
-    class vehCarAudioContainer {
-    public:
-        AGE_API static void SetSirenCSVName(LPCSTR name) {
-            $::vehCarAudioContainer::SetSirenCSVName(name);
-        };
-    };
+    class vehCar;
+    class vehCarAudioContainer;
+    class vehPoliceCarAudio;
 
     class vehCar {
         // vehCarSim: 0xB8 (size: ~0x1560)
     public:
         void SetDrivable(bool unk, bool unk1) {
-            $::vehCar::SetDrivable(this, unk, unk1);
+            ageHook::Thunk<0x42C2C0>::Call<void>(this, unk, unk1);
         }
+
         virtual lvlInstance* GetInst() {
-            return $::vehCar::GetInst(this);
+            return ageHook::Thunk<0x42CA80>::Call<lvlInstance *>(this);
         }
     private:
         byte _buffer[0x25C];
+    };
+
+    class vehCarAudioContainer {
+    public:
+        AGE_API static void SetSirenCSVName(LPCSTR name) {
+            ageHook::Thunk<0x4D0C80>::Call<void>(name);
+        };
     };
 
     class vehPoliceCarAudio {

@@ -20,54 +20,15 @@ namespace MM2
 
     namespace $
     {
-        namespace mmGame
-        {
-            HOOK_EXPORT(0x412550, _MemberFunc<void>, $$ctor);
-            HOOK_EXPORT(0x413940, _MemberFunc<void>, $$dtor);
-
-            HOOK_EXPORT(0x413E90, _MemberFunc<void>, Update);
-            HOOK_EXPORT(0x4144A0, _MemberFunc<void>, UpdatePaused);
-            HOOK_EXPORT(0x413D40, _MemberFunc<void>, Reset);
-
-            HOOK_EXPORT(0x412710, _MemberFunc<int>,  Init);
-
-            HOOK_EXPORT(0x413650, _MemberFunc<void>, InitGameStrings);
-            HOOK_EXPORT(0x4133F0, _MemberFunc<void>, InitOtherPlayers);
-
-            HOOK_EXPORT(0x414290, _MemberFunc<void>, HitWaterHandler);
-
-            HOOK_EXPORT(0x414280, _MemberFunc<void>, DropThruCityHandler);
-            HOOK_EXPORT(0x414E50, _MemberFunc<void>, SendChatMessage);
-
-            HOOK_EXPORT(0x414D30, _MemberFunc<void>, BeDone);
-        }
         namespace mmMultiCR
         {
-            HOOK_EXPORT(0x00426D10, _MemberFunc<void>, UpdateTimeWarning);
-            HOOK_EXPORT(0x004272E0, _MemberFunc<void>, CycleInterest);
+            HOOK_EXPORT(0x426D10, _MemberFunc<void>, UpdateTimeWarning);
+            HOOK_EXPORT(0x4272E0, _MemberFunc<void>, CycleInterest);
         }
         namespace mmGameManager
         {
             HOOK_EXPORT(0x5E0D08, _Type<MM2::mmGameManager *>, Instance);
         }
-        namespace mmGameMusicData
-        {
-            HOOK_EXPORT(0x434060, _MemberFunc<bool>, LoadAmbientSFX);
-        }
-        namespace mmHudMap {
-
-        }
-        namespace mmHUD
-        {
-            HOOK_EXPORT(0x42E1F0, _MemberFunc<void>, SetMessage$1);
-            HOOK_EXPORT(0x42E240, _MemberFunc<void>, SetMessage$2);
-
-            HOOK_EXPORT(0x42D280, _MemberFunc<void>, PostChatMessage);
-        }
-        namespace mmPlayer {
-            HOOK_EXPORT(0x004039B0, _MemberFunc<void>, ReInit);
-        }
-
     }
 
 
@@ -75,13 +36,13 @@ namespace MM2
     public:
         AGE_API mmGame(void) {
             PUSH_VTABLE();
-            $::mmGame::$$ctor(this);
+            ageHook::Thunk<0x412550>::Call<void>(this);
             POP_VTABLE();
         };
 
         AGE_API virtual ~mmGame(void) {
             PUSH_VTABLE();
-            $::mmGame::$$dtor(this);
+            ageHook::Thunk<0x413940>::Call<void>(this);
             POP_VTABLE();
         };
 
@@ -93,18 +54,38 @@ namespace MM2
             return *getPtr<mmPopup*>(this, 0x94);
         };
 
+        /*
+            asNode virtuals
+        */
+
+        AGE_API virtual void Update(void) {
+            ageHook::Thunk<0x413E90>::Call<void>(this); //Update);
+        };
+
+        AGE_API virtual void Reset(void) {
+            ageHook::Thunk<0x413D40>::Call<void>(this); //Reset);
+        };
+
+        AGE_API virtual void UpdatePaused(void) {
+            ageHook::Thunk<0x4144A0>::Call<void>(this); //UpdatePaused);
+        };
+
+        /*
+            mmGame virtuals
+        */
+
         AGE_API virtual int Init(void) {
-            return $::mmGame::Init(this);
+            return ageHook::Thunk<0x412710>::Call<int>(this);
         };
 
         AGE_API virtual void InitGameStrings(void) {
-            $::mmGame::InitGameStrings(this);
+            ageHook::Thunk<0x413650>::Call<void>(this);
         };
 
         AGE_API virtual void InitMyPlayer(void) PURE;
 
         AGE_API virtual void InitOtherPlayers(void) {
-            $::mmGame::InitOtherPlayers(this);
+            ageHook::Thunk<0x4133F0>::Call<void>(this);
         };
 
         AGE_API virtual void InitGameObjects(void) PURE;
@@ -115,21 +96,21 @@ namespace MM2
         AGE_API virtual void NextRace(void) PURE;
 
         AGE_API virtual void HitWaterHandler(void) {
-            $::mmGame::HitWaterHandler(this);
+            ageHook::Thunk<0x414290>::Call<void>(this);
         };
 
         AGE_API virtual void DropThruCityHandler(void) {
-            $::mmGame::DropThruCityHandler(this);
+            ageHook::Thunk<0x414280>::Call<void>(this);
         };
 
         AGE_API virtual void SendChatMessage(char *message) {
-            $::mmGame::SendChatMessage(this, message);
+            ageHook::Thunk<0x414E50>::Call<void>(this, message);
         };
 
         AGE_API virtual void SwitchState(int) PURE;
 
         AGE_API virtual void BeDone(int p1) {
-            $::mmGame::BeDone(this, p1);
+            ageHook::Thunk<0x414D30>::Call<void>(this, p1);
         };
 
         AGE_API virtual void * GetWaypoints(void) PURE;
@@ -172,7 +153,7 @@ namespace MM2
     class mmGameMusicData {
     public:
         AGE_API bool LoadAmbientSFX(LPCSTR name) {
-            return $::mmGameMusicData::LoadAmbientSFX(this, name);
+            return ageHook::Thunk<0x434060>::Call<bool>(this, name);
         };
     };
 
@@ -181,15 +162,15 @@ namespace MM2
         byte _buffer[0xB9C]; // unconfirmed
     public:
         AGE_API void SetMessage(LPCSTR message, float duration, int p2) {
-            $::mmHUD::SetMessage$1(this, message, duration, p2);
+            ageHook::Thunk<0x42E1F0>::Call<void>(this, message, duration, p2);
         };
 
         AGE_API void SetMessage(LPCSTR message) {
-            $::mmHUD::SetMessage$2(this, message);
+            ageHook::Thunk<0x42E240>::Call<void>(this, message);
         };
 
         AGE_API void PostChatMessage(LPCSTR message) {
-            $::mmHUD::PostChatMessage(this, message);
+            ageHook::Thunk<0x42D280>::Call<void>(this, message);
         };
 
         static void RegisterLua(luaClassBinder<mmHUD> *lc) {
@@ -221,7 +202,7 @@ namespace MM2
         }
 
         void ReInit(char* basename) {
-            $::mmPlayer::ReInit(this, basename);
+            ageHook::Thunk<0x4039B0>::Call<void>(this, basename);
         }
     };
 }
