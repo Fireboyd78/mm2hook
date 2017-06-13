@@ -175,6 +175,22 @@ public:
         }
     };
 
+    template <int _address>
+    class Thunk {
+    private:
+        static constexpr LPVOID address = reinterpret_cast<LPVOID>(_address);
+    public:
+        template<typename TRet, typename ...TArgs>
+        static constexpr TRet Call(TArgs ...args) {
+            return static_cast<MethodCall<TRet, TArgs...>>(address)(This, args...);
+        };
+
+        template<typename TRet, class TThis, typename ...TArgs>
+        static constexpr TRet Call(const TThis &&This, TArgs ...args) {
+            return static_cast<MemberCall<TRet, TThis, TArgs...>>(address)(This, args...);
+        };
+    };
+
     template <typename TRet>
     class Func {
     protected:
