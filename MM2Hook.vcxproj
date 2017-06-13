@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -22,6 +22,7 @@
     <LinkIncremental>false</LinkIncremental>
     <PlatformToolset Condition="'$(VisualStudioVersion)' == '12.0'">v120</PlatformToolset>
     <PlatformToolset Condition="'$(VisualStudioVersion)' == '14.0'">v140</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)' == '15.0'">v141</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
     <OutDir>bin\$(Configuration)\</OutDir>
     <IntDir>$(OutDir)\obj\</IntDir>
@@ -30,12 +31,6 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <PlatformToolset>v141</PlatformToolset>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
@@ -206,21 +201,11 @@
     <ClInclude Include="src\AGE.h" />
     <ClInclude Include="src\common.h" />
     <ClInclude Include="src\logfile.h" />
-    <ClInclude Include="src\mm2_creature.h" />
-    <ClInclude Include="src\mm2_inst.h" />
-    <ClInclude Include="src\mm2_level.h" />
-    <ClInclude Include="src\mm2_phys.h" />
-    <ClInclude Include="src\mm2_ui.h" />
     <ClInclude Include="src\patch.h" />
     <ClInclude Include="src\util.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\logfile.cpp" />
-    <ClCompile Include="src\mm2_creature.cpp" />
-    <ClCompile Include="src\mm2_inst.cpp" />
-    <ClCompile Include="src\mm2_level.cpp" />
-    <ClCompile Include="src\mm2_phys.cpp" />
-    <ClCompile Include="src\mm2_ui.cpp" />
     <ClCompile Include="src\patch.cpp" />
     <ClCompile Include="src\util.cpp" />
   </ItemGroup>
@@ -234,14 +219,19 @@
     <ClInclude Include="src\mm2_base.h" />
     <ClInclude Include="src\mm2_city.h" />
     <ClInclude Include="src\mm2_common.h" />
+    <ClInclude Include="src\mm2_creature.h" />
     <ClInclude Include="src\mm2_data.h" />
     <ClInclude Include="src\mm2_game.h" />
     <ClInclude Include="src\mm2_gfx.h" />
     <ClInclude Include="src\mm2_input.h" />
+    <ClInclude Include="src\mm2_inst.h" />
+    <ClInclude Include="src\mm2_level.h" />
     <ClInclude Include="src\mm2_lua.h" />
+    <ClInclude Include="src\mm2_phys.h" />
     <ClInclude Include="src\mm2_rgl.h" />
     <ClInclude Include="src\mm2_utils.h" />
     <ClInclude Include="src\mm2_stream.h" />
+    <ClInclude Include="src\mm2_ui.h" />
     <ClInclude Include="src\mm2_vector.h" />
     <ClInclude Include="src\mm2_vehicle.h" />
   </ItemGroup>
@@ -251,13 +241,18 @@
     <ClCompile Include="src\mm2_audio.cpp" />
     <ClCompile Include="src\mm2_base.cpp" />
     <ClCompile Include="src\mm2_city.cpp" />
+    <ClCompile Include="src\mm2_creature.cpp" />
     <ClCompile Include="src\mm2_data.cpp" />
     <ClCompile Include="src\mm2_game.cpp" />
     <ClCompile Include="src\mm2_gfx.cpp" />
+    <ClCompile Include="src\mm2_level.cpp" />
+    <ClCompile Include="src\mm2_phys.cpp" />
     <ClCompile Include="src\mm2_input.cpp" />
+    <ClCompile Include="src\mm2_inst.cpp" />
     <ClCompile Include="src\mm2_lua.cpp" />
     <ClCompile Include="src\mm2_rgl.cpp" />
     <ClCompile Include="src\mm2_stream.cpp" />
+    <ClCompile Include="src\mm2_ui.cpp" />
     <ClCompile Include="src\mm2_utils.cpp" />
     <ClCompile Include="src\mm2_vehicle.cpp" />
   </ItemGroup>
