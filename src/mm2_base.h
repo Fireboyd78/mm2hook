@@ -12,24 +12,11 @@ namespace MM2
     // External declarations
     extern class datParser;
 
-    namespace $
-    {
-        namespace Base
-        {
-            HOOK_EXPORT(0x4C8200, _MemberFunc<void>, $$dtor);
-        }
-        namespace asCullable
-        {
-            HOOK_EXPORT(0x460EA0, _MemberFunc<void>, $$dtor);
-            HOOK_EXPORT(0x4A3440, _MemberFunc<void>, Cull);
-        }
-    }
-
     class Base {
     public:
         AGE_API virtual ~Base() {
             PUSH_VTABLE();
-            $::Base::$$dtor(this);
+            ageHook::Thunk<0x4C8200>::Call<void>(this);
             POP_VTABLE();
         };
     };
@@ -38,12 +25,12 @@ namespace MM2
     public:
         AGE_API virtual ~asCullable() {
             PUSH_VTABLE();
-            $::asCullable::$$dtor(this);
+            ageHook::Thunk<0x460EA0>::Call<void>(this);
             POP_VTABLE();
         };
 
         AGE_API virtual void Cull(void) {
-            $::asCullable::Cull(this);
+            ageHook::Thunk<0x4A3440>::Call<void>(this);
         };
     };
 
