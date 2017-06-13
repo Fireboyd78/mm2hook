@@ -182,7 +182,7 @@ public:
     public:
         template<typename TRet, typename ...TArgs>
         static constexpr TRet Call(TArgs ...args) {
-            return static_cast<MethodCall<TRet, TArgs...>>(address)(This, args...);
+            return static_cast<MethodCall<TRet, TArgs...>>(address)(args...);
         };
 
         template<typename TRet, class TThis, typename ...TArgs>
