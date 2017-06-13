@@ -175,19 +175,31 @@ public:
         }
     };
 
-    template <int _address>
+    template<int offset, typename TValue>
+    class Field {
+    public:
+        template <class TThis>
+        static constexpr inline TValue get(const TThis *p) {
+            return *(TValue*)((BYTE*)p + offset);
+        };
+
+        template <class TThis>
+        static constexpr inline void set(const TThis *p, TValue value) {
+            *(TValue*)((BYTE*)p + offset) = value;
+        };
+    };
+
+    template <int address>
     class Thunk {
-    private:
-        static constexpr LPVOID address = reinterpret_cast<LPVOID>(_address);
     public:
         template<typename TRet, typename ...TArgs>
         static constexpr TRet Call(TArgs ...args) {
-            return static_cast<MethodCall<TRet, TArgs...>>(address)(args...);
+            return reinterpret_cast<MethodCall<TRet, TArgs...>>(address)(args...);
         };
 
         template<typename TRet, class TThis, typename ...TArgs>
         static constexpr TRet Call(const TThis &&This, TArgs ...args) {
-            return static_cast<MemberCall<TRet, TThis, TArgs...>>(address)(This, args...);
+            return reinterpret_cast<MemberCall<TRet, TThis, TArgs...>>(address)(This, args...);
         };
     };
 
