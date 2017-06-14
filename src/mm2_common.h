@@ -37,6 +37,12 @@ using _Func = ageHook::Func<TArgs...>;
 template <typename ...TArgs>
 using _MemberFunc = ageHook::MemberFunc<TArgs...>;
 
+template <int address>
+using _Thunk = ageHook::Thunk<address>;
+
+template <int address>
+using _StaticThunk = ageHook::StaticThunk<address>;
+
 #include "mm2_utils.h"
 #include "mm2_vector.h"
 

@@ -18,6 +18,8 @@
 #define NOTHROW                 __declspec(nothrow)
 #define NOVTABLE                __declspec(novtable)
 
+#define INLINE_CONSTEXPR        constexpr __forceinline
+
 // short-hand for NOINLINE
 #define NO_INL                  NOINLINE
 

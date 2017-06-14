@@ -26,7 +26,7 @@ namespace MM2
     class vehCarAudioContainer {
     public:
         AGE_API static void SetSirenCSVName(LPCSTR name) {
-            ageHook::Thunk<0x4D0C80>::Call<void>(name);
+            ageHook::StaticThunk<0x4D0C80>::Call<void>(name);
         };
     };
 

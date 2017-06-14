@@ -176,35 +176,39 @@ public:
     };
 
     template<int offset, typename TValue>
-    class Field {
+    struct Field {
     public:
         template <class TThis>
-        static constexpr inline TValue get(const TThis *p) {
+        static INLINE_CONSTEXPR TValue get(const TThis *p) {
             return *(TValue*)((BYTE*)p + offset);
         };
 
         template <class TThis>
-        static constexpr inline void set(const TThis *p, TValue value) {
+        static INLINE_CONSTEXPR void set(const TThis *p, TValue value) {
             *(TValue*)((BYTE*)p + offset) = value;
         };
 
         template <class TThis>
-        static constexpr inline TValue* ptr(const TThis *p) {
+        static INLINE_CONSTEXPR TValue* ptr(const TThis *p) {
             return (TValue*)((BYTE*)p + offset);
         };
     };
 
     template <int address>
-    class Thunk {
+    struct Thunk {
+    public:
+        template<typename TRet, class TThis, typename ...TArgs>
+        static INLINE_CONSTEXPR TRet Call(const TThis &&This, TArgs ...args) {
+            return static_cast<MemberCall<TRet, TThis, TArgs...>>(reinterpret_cast<LPVOID>(address))(This, args...);
+        };
+    };
+
+    template <int address>
+    struct StaticThunk {
     public:
         template<typename TRet, typename ...TArgs>
-        static constexpr TRet Call(TArgs ...args) {
-            return reinterpret_cast<MethodCall<TRet, TArgs...>>(address)(args...);
-        };
-
-        template<typename TRet, class TThis, typename ...TArgs>
-        static constexpr TRet Call(const TThis &&This, TArgs ...args) {
-            return reinterpret_cast<MemberCall<TRet, TThis, TArgs...>>(address)(This, args...);
+        static INLINE_CONSTEXPR TRet Call(TArgs ...args) {
+            return static_cast<MethodCall<TRet, TArgs...>>(reinterpret_cast<LPVOID>(address))(args...);
         };
     };
 
@@ -216,7 +220,7 @@ public:
         constexpr Func(int address) : lpFunc(reinterpret_cast<LPVOID>(address)) {};
 
         template<typename ...TArgs>
-        inline constexpr TRet operator()(TArgs ...args) const {
+        INLINE_CONSTEXPR TRet operator()(TArgs ...args) const {
             return static_cast<MethodCall<TRet, TArgs...>>(lpFunc)(args...);
         };
 
@@ -225,12 +229,12 @@ public:
             constexpr StdCall(int address) : Func<TRet>(address) {};
 
             template<typename ...TArgs>
-            inline constexpr TRet operator()(TArgs ...args) const {
+            INLINE_CONSTEXPR TRet operator()(TArgs ...args) const {
                 return static_cast<StdMethodCall<TRet, TArgs...>>(lpFunc)(args...);
             };
 
             template <typename TRet, typename... TArgs>
-            inline constexpr operator StdMethodCall<TRet, TArgs...>() const {
+            INLINE_CONSTEXPR operator StdMethodCall<TRet, TArgs...>() const {
                 return static_cast<StdMethodCall<TRet, TArgs...>>(lpFunc);
             };
         };
@@ -240,12 +244,12 @@ public:
             constexpr ThisCall(int address) : Func<TRet>(address) {};
 
             template<typename ...TArgs, class TThis>
-            inline constexpr TRet operator()(const TThis &&This, TArgs ...args) const {
+            INLINE_CONSTEXPR TRet operator()(const TThis &&This, TArgs ...args) const {
                 return static_cast<MemberCall<TRet, TThis, TArgs...>>(lpFunc)(This, args...);
             };
 
             template <typename TRet, class TThis, typename... TArgs>
-            inline constexpr operator MemberCall<TRet, TThis, TArgs...>() const {
+            INLINE_CONSTEXPR operator MemberCall<TRet, TThis, TArgs...>() const {
                 return static_cast<MemberCall<TRet, TThis, TArgs...>>(lpFunc);
             };
         };
@@ -257,12 +261,12 @@ public:
         constexpr MemberFunc(int address) : Func<TRet>(address) {};
 
         template<typename ...TArgs, class TThis>
-        inline constexpr TRet operator()(const TThis &&This, TArgs ...args) const {
+        INLINE_CONSTEXPR TRet operator()(const TThis &&This, TArgs ...args) const {
             return static_cast<MemberCall<TRet, TThis, TArgs...>>(lpFunc)(This, args...);
         };
 
         template <typename TRet, class TThis, typename... TArgs>
-        inline constexpr operator MemberCall<TRet, TThis, TArgs...>() const {
+        INLINE_CONSTEXPR operator MemberCall<TRet, TThis, TArgs...>() const {
             return static_cast<MemberCall<TRet, TThis, TArgs...>>(lpFunc);
         };
     };
@@ -276,11 +280,11 @@ public:
     public:
         constexpr Func(int address) : Func<TRet>(address) {};
 
-        inline TRet operator()(TArgs ...args) const {
+        INLINE_CONSTEXPR TRet operator()(TArgs ...args) const {
             return static_cast<MethodCall>(lpFunc)(args...);
         };
 
-        inline operator MethodCall() const {
+        INLINE_CONSTEXPR operator MethodCall() const {
             return static_cast<MethodCall>(lpFunc);
         };
     };
@@ -294,11 +298,11 @@ public:
     public:
         constexpr Func(int address) : Func<TRet>(address) {};
 
-        inline TRet operator()(TArgs ...args) const {
+        INLINE_CONSTEXPR TRet operator()(TArgs ...args) const {
             return static_cast<StdMethodCall>(lpFunc)(args...);
         };
 
-        inline operator StdMethodCall() const {
+        INLINE_CONSTEXPR operator StdMethodCall() const {
             return static_cast<StdMethodCall>(lpFunc);
         };
     };
@@ -312,11 +316,11 @@ public:
     public:
         constexpr Func(int address) : Func<TRet>(address) {};
 
-        inline TRet operator()(const TThis &&This, TArgs ...args) const {
+        INLINE_CONSTEXPR TRet operator()(const TThis &&This, TArgs ...args) const {
             return static_cast<MemberCall>(lpFunc)(args...);
         };
 
-        inline operator MemberCall() const {
+        INLINE_CONSTEXPR operator MemberCall() const {
             return static_cast<MemberCall>(lpFunc);
         };
     };
