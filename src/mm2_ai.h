@@ -35,10 +35,10 @@ namespace MM2
 
     class aiPedestrian {
     protected:
-        ageHook::Field<0xC0, aiPedAudio *> _audio;
+        ageHook::Field<0xC0, aiPedAudio> _audio;
     public:
         inline aiPedAudio* getAudio(void) const {
-            return _audio.get(this);
+            return _audio.ptr(this);
         };
     };
 

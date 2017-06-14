@@ -194,17 +194,18 @@ namespace MM2
     private:
         byte _buffer[0x23A4];
     protected:
-        ageHook::Field<0x2C, vehCar *> _car;
-        ageHook::Field<0x288, mmHUD *> _hud;
+        ageHook::Field<0x2C, vehCar> _car;
+        ageHook::Field<0x288, mmHUD> _hud;
+
         ageHook::Field<0x38A, mmHudMap *> _hudmap;
 
     public:
         inline vehCar* getCar(void) const {
-            return _car.get(this);
+            return _car.ptr(this);
         };
 
         inline mmHUD* getHUD(void) const {
-            return _hud.get(this);
+            return _hud.ptr(this);
         };
 
         inline mmHudMap* getHudmap(void) const {
