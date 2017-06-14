@@ -187,6 +187,11 @@ public:
         static constexpr inline void set(const TThis *p, TValue value) {
             *(TValue*)((BYTE*)p + offset) = value;
         };
+
+        template <class TThis>
+        static constexpr inline TValue* ptr(const TThis *p) {
+            return (TValue*)((BYTE*)p + offset);
+        };
     };
 
     template <int address>
