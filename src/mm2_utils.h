@@ -1,9 +1,6 @@
 #pragma once
 #include "mm2_common.h"
 
-// resolves externals for static AGEHook members in classes
-#define DECLARE_HOOK(x) decltype(x) x
-
 /*
     Game patching functions
 */

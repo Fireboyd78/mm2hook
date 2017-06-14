@@ -10,25 +10,23 @@ Multiple declarations will cause compiler errors!
 */
 #ifdef MM2_API_EXPORT
 # define HOOK_API
-# define HOOK_EXPORT(addr, type, name)  HOOK_API type name (addr)
+# define HOOK_EXPORT(addr, type, name) HOOK_API type name (addr)
 #else
 # define HOOK_API extern
 # define HOOK_EXPORT(addr, type, name) HOOK_API type name
 #endif
 #pragma once
 
+#define HOOK_SET(addr, type, name) type name (addr)
+#define HOOK_DECLARE(addr,t) decltype(t) t (addr)
+
 //
 // MM2 uses DirectX 7
 //
 #define DIRECTX_VERSION 0x0700
 
-#pragma warning(disable:4483)   // disable warning/error about __identifier(<string>)
-
 #include "common.h"
-
 #include "AGE.h"
-
-#define HOOK_SET(addr, type, name) type name (addr)
 
 template <typename TType>
 using _Type = ageHook::Type<TType>;

@@ -4,4 +4,4 @@ using namespace MM2;
 /*
     vehPoliceCarAudio
 */
-DECLARE_HOOK(vehPoliceCarAudio::iNumCopsPursuingPlayer)(0x6AFFE4);
+HOOK_DECLARE(0x6AFFE4, vehPoliceCarAudio::iNumCopsPursuingPlayer);

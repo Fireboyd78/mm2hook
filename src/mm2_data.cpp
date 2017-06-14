@@ -4,4 +4,4 @@ using namespace MM2;
 /*
     datOutput
 */
-DECLARE_HOOK(datOutput::sm_Stream)(0x6A3D40);
+HOOK_DECLARE(0x6A3D40, datOutput::sm_Stream);

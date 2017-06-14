@@ -4,5 +4,5 @@ using namespace MM2;
 /*
     gfxTexture
 */
-DECLARE_HOOK(gfxTexture::sm_EnableSetLOD)(0x684D34);
-DECLARE_HOOK(gfxTexture::sm_Allow32)(0x684D36);
+HOOK_DECLARE(0x684D34, gfxTexture::sm_EnableSetLOD);
+HOOK_DECLARE(0x684D36, gfxTexture::sm_Allow32);

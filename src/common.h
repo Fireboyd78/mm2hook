@@ -36,6 +36,8 @@ using namespace LuaIntf;
 
 //  C4091: '__declspec(novtable)': ignored on left of 'x' when no variable is declared
 #pragma warning (disable : 4091)
+// disable warning/error about __identifier(<string>)
+#pragma warning(disable:4483)
 
 // Unsigned type definitions
 typedef unsigned char byte;
