@@ -2,6 +2,7 @@
 using namespace MM2;
 
 /* psdl.obj */
+
 void    MM2::vglTexCoord2f          (float u, float v)                                          { return _StaticThunk<0x45CFD0>::Call<void>(u, v); }
 void    MM2::vglVertex3f            (float x, float y, float z)                                 { return _StaticThunk<0x45CFF0>::Call<void>(x, y, z); }
 void    MM2::vglVertex3f            (Vector3 position)                                          { return _StaticThunk<0x45D080>::Call<void>(position); }
@@ -54,12 +55,3 @@ void    MM2::rglDrawTexture         (gfxTexture *texture)                       
 void    MM2::rglPushMatrix          (void)                                                      { return _StaticThunk<0x4A7750>::Call<void>(); }
 void    MM2::rglPopMatrix           (void)                                                      { return _StaticThunk<0x4A7790>::Call<void>(); }
 void    MM2::rglMultMatrix          (Matrix34 &p1)                                              { return _StaticThunk<0x4A77D0>::Call<void>(&p1); }
-
-void test()
-{
-    MM2::rglDrawTexture((gfxTexture *)0);
-    MM2::rglDrawTexture((gfxTexture *)1);
-    MM2::rglDrawTexture((gfxTexture *)2);
-
-    MM2::vglVertex3f(Vector3(1, 1, 1));
-}
