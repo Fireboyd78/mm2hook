@@ -22,6 +22,15 @@ namespace MM2
         }
     }
 
+    class gfxViewport
+    {
+
+    };
+
+    class cltLight
+    {
+
+    };
     // what kind of primitive to draw
     // same values as D3DPRIMITIVETYPE
     enum gfxDrawMode {

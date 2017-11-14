@@ -8,6 +8,8 @@ namespace MM2
     class lvlLevel;
     class lvlSDL;
 
+    extern class lvlInstance;
+
     class lvlLevel {
     public:
         AGE_API void MoveToRoom(lvlInstance *instance, int room) {

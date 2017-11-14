@@ -17,6 +17,7 @@ namespace MM2
     // External declarations
     extern class asNode;
     extern class mmPopup;
+    extern class vehCar;
 
     namespace $
     {
@@ -194,20 +195,59 @@ namespace MM2
         }
     };
 
-    class mmHudMap {
+    class mmHudMap : public asNode {
+    public:
+        AGE_API void Activate() { ageHook::Thunk<0x42EEE0>::Call<void>(this); }
+        AGE_API void Deactivate() { ageHook::Thunk<0x42EEF0>::Call<void>(this); }
 
+        AGE_API void SetOrient(bool a1) { ageHook::Thunk<0x42FA40>::Call<void>(this, a1); }
+        AGE_API void SetZoomIn(bool a1) { ageHook::Thunk<0x42FA20>::Call<void>(this, a1); }
+
+        AGE_API void ToggleMapOrient() { ageHook::Thunk<0x42FA10>::Call<void>(this); }
+        AGE_API void ToggleMapRes() { ageHook::Thunk<0x42FA00>::Call<void>(this); }
+
+        AGE_API bool GetOrient() { return ageHook::Thunk<0x42FA50>::Call<bool>(this); }
+        AGE_API bool GetZoomIn() { return ageHook::Thunk<0x42FA30>::Call<bool>(this); }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<mmHudMap>("mmHudMap")
+                .addFunction("Activate", &Activate)
+                .addFunction("Deactivate", &Deactivate)
+                .addFunction("SetOrient", &SetOrient)
+                .addFunction("SetZoomIn", &SetZoomIn)
+                .addFunction("ToggleMapOrient", &ToggleMapOrient)
+                .addFunction("ToggleMapRes", &ToggleMapRes)
+                .addFunction("GetOrient", &GetOrient)
+                .addFunction("GetZoomIn", &GetZoomIn)
+                //.addFunction("GetCurrentMapMode", &GetCurrentMapMode)
+                //.addFunction("GetNextMapMode", &GetNextMapMode)
+                //.addFunction("SetMapMode", &SetMapMode)
+            .endClass();  
+        }
+    protected:
+        AGE_API int GetCurrentMapMode() { return ageHook::Thunk<0x42EF20>::Call<int>(this);}
+        AGE_API int GetNextMapMode() { return ageHook::Thunk<0x42EF00>::Call<int>(this); }
+        AGE_API void SetMapMode(int a1) { ageHook::Thunk<0x42EF30>::Call<void>(this, a1); }
     };
 
-    class mmPlayer {
+    class mmPlayer : public asNode {
     private:
         byte _buffer[0x23A4];
     protected:
         ageHook::Field<0x2C, vehCar> _car;
         ageHook::Field<0x288, mmHUD> _hud;
 
-        ageHook::Field<0x38A, mmHudMap *> _hudmap;
+        ageHook::Field<0x38A, mmHudMap> _hudmap;
 
     public:
+        //asNode virtuals
+        virtual AGE_API void BeforeSave() override { ageHook::Thunk<0x403990>::Call<void>(this);  }
+        virtual AGE_API void AfterLoad() override { ageHook::Thunk<0x4039A0>::Call<void>(this); }
+        virtual AGE_API void FileIO(datParser &parser) override { ageHook::Thunk<0x406320>::Call<void>(this, &parser); }
+        virtual AGE_API void Reset() override { ageHook::Thunk<0x404A60>::Call<void>(this); }
+        virtual AGE_API void Update() override { ageHook::Thunk<0x405760>::Call<void>(this);  }
+
+        //non virtual
         inline vehCar* getCar(void) const {
             return _car.ptr(this);
         };
@@ -217,19 +257,40 @@ namespace MM2
         };
 
         inline mmHudMap* getHudmap(void) const {
-            return _hudmap.get(this);
+            return _hudmap.ptr(this);
         }
 
-        void ReInit(LPCSTR basename) {
-            ageHook::Thunk<0x4039B0>::Call<void>(this, basename);
-        }
+        AGE_API void EnableRegen(bool a1) { return ageHook::Thunk<0x406160>::Call<void>(this, a1); }
+        AGE_API float FilterSteering(float a1) { return ageHook::Thunk<0x404C90>::Call<float>(this, a1); }
+        AGE_API bool IsMaxDamaged() { return ageHook::Thunk<0x406140>::Call<int>(this); }
+        AGE_API void ResetDamage() { ageHook::Thunk<0x406180>::Call<void>(this); }
+        AGE_API void SetCamera(int a1, int a2) { ageHook::Thunk<0x404710>::Call<void>(this, a1, a2); }
+        AGE_API void SetMPPostCam(Matrix34 * a1, float a2) { ageHook::Thunk<0x404460>::Call<void>(this, a1, a2); }
+        AGE_API void SetPostRaceCam() { ageHook::Thunk<0x404350>::Call<void>(this); }
+        AGE_API void SetPreRaceCam() { ageHook::Thunk<0x404250>::Call<void>(this); }
+        AGE_API void SetSteering(float a1) { ageHook::Thunk<0x404C50>::Call<void>(this, a1); }
+        AGE_API void SetWideFOV(bool a1) { ageHook::Thunk<0x404580>::Call<void>(this, a1); }
+        AGE_API void ReInit(LPCSTR basename) { ageHook::Thunk<0x4039B0>::Call<void>(this, basename); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<mmPlayer>("mmPlayer")
+                //virtuals
+                .addFunction("Reset", &Reset)
+                //non virtuals
                 .addFunction("getCar", &getCar)
                 .addFunction("getHUD", &getHUD)
                 .addFunction("getHudmap", &getHudmap)
+                .addFunction("EnableRegen", &EnableRegen)
+                .addFunction("FilterSteering", &FilterSteering)
+                .addFunction("IsMaxDamaged", &IsMaxDamaged)
                 .addFunction("ReInit", &ReInit)
+                .addFunction("ResetDamage", &ResetDamage)
+                .addFunction("SetCamera", &SetCamera)
+                .addFunction("SetMPPostCam", &SetMPPostCam)
+                .addFunction("SetPostRaceCam", &SetPostRaceCam)
+                .addFunction("SetPreRaceCam", &SetPreRaceCam)
+                .addFunction("SetSteering", &SetSteering)
+                .addFunction("SetWideFOV", &SetWideFOV)
             .endClass();
         }
     };
