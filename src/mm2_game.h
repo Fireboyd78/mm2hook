@@ -113,6 +113,13 @@ namespace MM2
         };
 
         AGE_API virtual void * GetWaypoints(void) PURE;
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<mmGame>("mmGame")
+                .addFunction("getPlayer", &getPlayer)
+                .addFunction("getPopup", &getPopup)
+            .endClass();
+        }
     };
 
     class mmGameManager {
@@ -147,6 +154,13 @@ namespace MM2
         void mmGameManager::ForcePopupUI(void)
         void mmGameManager::ForceReplayUI(void)
         */
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<mmGameManager>("mmGameManager")
+                .addStaticFunction("Instance", [] {return (mmGameManager *)Instance; })
+                .addFunction("getGame", &getGame)
+            .endClass();
+        }
     };
 
     class mmGameMusicData {
@@ -206,8 +220,17 @@ namespace MM2
             return _hudmap.get(this);
         }
 
-        void ReInit(char* basename) {
+        void ReInit(LPCSTR basename) {
             ageHook::Thunk<0x4039B0>::Call<void>(this, basename);
+        }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<mmPlayer>("mmPlayer")
+                .addFunction("getCar", &getCar)
+                .addFunction("getHUD", &getHUD)
+                .addFunction("getHudmap", &getHudmap)
+                .addFunction("ReInit", &ReInit)
+            .endClass();
         }
     };
 }

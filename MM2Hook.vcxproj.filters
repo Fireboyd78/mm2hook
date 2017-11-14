@@ -27,6 +27,9 @@
     <Filter Include="LuaIntf Files\src">
       <UniqueIdentifier>{0904d3f2-eaad-4117-adf8-0d83ae6bc977}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\handlers">
+      <UniqueIdentifier>{80b5258d-e239-4ca7-9e7a-ab675b35ccf7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\lua\lapi.h">
@@ -230,6 +233,12 @@
     <ClInclude Include="src\mm2_ui.h">
       <Filter>Source Files\mm2</Filter>
     </ClInclude>
+    <ClInclude Include="src\handlers\bugfix_handlers.h">
+      <Filter>Source Files\handlers</Filter>
+    </ClInclude>
+    <ClInclude Include="src\handlers\feature_handlers.h">
+      <Filter>Source Files\handlers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
@@ -387,6 +396,12 @@
     </ClCompile>
     <ClCompile Include="src\mm2_ui.cpp">
       <Filter>Source Files\mm2</Filter>
+    </ClCompile>
+    <ClCompile Include="src\handlers\bugfix_handlers.cpp">
+      <Filter>Source Files\handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\handlers\feature_handlers.cpp">
+      <Filter>Source Files\handlers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

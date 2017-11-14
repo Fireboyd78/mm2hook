@@ -211,6 +211,16 @@ void MM2Lua::Initialize() {
 
     LogFile::WriteLine("Loading main script...");
     LoadMainScript();
+
+    //load specific luas
+    mmGameManager::BindLua(L);
+    mmPlayer::BindLua(L);
+    mmGame::BindLua(L);
+    lvlAiMap::BindLua(L);
+    lvlAiRoad::BindLua(L);
+    aiMap::BindLua(L);
+    
+    
 }
 
 void MM2Lua::Reset()

@@ -6,6 +6,7 @@ namespace MM2
 {
     // Forward declarations
     class lvlLevel;
+    class lvlSDL;
 
     class lvlLevel {
     public:
@@ -14,4 +15,7 @@ namespace MM2
         }
     };
     
+    class lvlSDL {
+
+    };
 }

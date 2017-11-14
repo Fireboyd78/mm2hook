@@ -5,6 +5,7 @@
 /*
     Class definitions
 */
+#include "mm2_stream.h"
 #include "mm2_ai.h"
 #include "mm2_audio.h"
 #include "mm2_base.h"
@@ -14,7 +15,6 @@
 #include "mm2_gfx.h"
 #include "mm2_input.h"
 #include "mm2_rgl.h"
-#include "mm2_stream.h"
 #include "mm2_vehicle.h"
 #include "mm2_ui.h"
 #include "mm2_creature.h"

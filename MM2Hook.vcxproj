@@ -14,7 +14,7 @@
     <ProjectGuid>{6CC7F4D6-BD50-4664-B731-1034CA380774}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>MM2Hook</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
@@ -102,6 +102,8 @@
     Lua 5.3.2 files
   -->
   <ItemGroup>
+    <ClInclude Include="src\handlers\bugfix_handlers.h" />
+    <ClInclude Include="src\handlers\feature_handlers.h" />
     <ClInclude Include="src\lua\lapi.h" />
     <ClInclude Include="src\lua\lauxlib.h" />
     <ClInclude Include="src\lua\lcode.h" />
@@ -130,6 +132,8 @@
     <ClInclude Include="src\lua\lzio.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\handlers\bugfix_handlers.cpp" />
+    <ClCompile Include="src\handlers\feature_handlers.cpp" />
     <ClCompile Include="src\lua\lapi.c" />
     <ClCompile Include="src\lua\lauxlib.c" />
     <ClCompile Include="src\lua\lbaselib.c" />

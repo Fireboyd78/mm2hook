@@ -132,6 +132,10 @@ namespace MM2
         static ageHook::Type<bool> sm_Allow32;
     };
 
+    class gfxImage {
+    public:
+        void Scale(int a1, int a2) { ageHook::Thunk<0x4AEDC0>::Call<void>(this, a1, a2); }
+    };
     declhook(0x004B30F0, _Func<gfxTexture *>, $gfxGetTexture);
 
     declhook(0x4ABE00, _Func<bool>, $gfxAutoDetect);
