@@ -31,49 +31,49 @@ namespace MM2
     {
         namespace DirSnd
         {
-            HOOK_EXPORT(0x5A5080, _Func<MM2::DirSnd *>, Init);
+            declhook(0x5A5080, _Func<MM2::DirSnd *>, Init);
 
-            HOOK_EXPORT(0x5A4ED0, _MemberFunc<void>, $$ctor);
-            HOOK_EXPORT(0x5A4F30, _MemberFunc<void>, $$dtor);
+            declhook(0x5A4ED0, _MemberFunc<void>, $$ctor);
+            declhook(0x5A4F30, _MemberFunc<void>, $$dtor);
 
-            HOOK_EXPORT(0x5A4FD0, _MemberFunc<void>, DeInit);
+            declhook(0x5A4FD0, _MemberFunc<void>, DeInit);
 
-            HOOK_EXPORT(0x5A5160, _MemberFunc<int>, Init3DListener);
+            declhook(0x5A5160, _MemberFunc<int>, Init3DListener);
 
-            HOOK_EXPORT(0x5A51C0, _MemberFunc<int>, IsDSDeviceInList);
-            HOOK_EXPORT(0x5A5390, _MemberFunc<void>, SetDeviceRating);
-            HOOK_EXPORT(0x5A5510, _MemberFunc<int>, EnumDSDevices);
+            declhook(0x5A51C0, _MemberFunc<int>, IsDSDeviceInList);
+            declhook(0x5A5390, _MemberFunc<void>, SetDeviceRating);
+            declhook(0x5A5510, _MemberFunc<int>, EnumDSDevices);
 
-            HOOK_EXPORT(0x5A5530, _MemberFunc<int>, InitPrimarySoundBuffer);
-            HOOK_EXPORT(0x5A5630, _MemberFunc<int>, CreatePrimaryInterfaceAndBuffer);
+            declhook(0x5A5530, _MemberFunc<int>, InitPrimarySoundBuffer);
+            declhook(0x5A5630, _MemberFunc<int>, CreatePrimaryInterfaceAndBuffer);
 
-            HOOK_EXPORT(0x5A5770, _MemberFunc<void>, ClearDSDeviceList);
+            declhook(0x5A5770, _MemberFunc<void>, ClearDSDeviceList);
 
-            HOOK_EXPORT(0x5A5860, _MemberFunc<void>, SetPrimaryBufferFormat);
+            declhook(0x5A5860, _MemberFunc<void>, SetPrimaryBufferFormat);
 
-            HOOK_EXPORT(0x5A5950, _MemberFunc<void>, ScanAvailableDSFormats);
-            HOOK_EXPORT(0x5A5A30, _MemberFunc<char *>, TranslateDSError);
+            declhook(0x5A5950, _MemberFunc<void>, ScanAvailableDSFormats);
+            declhook(0x5A5A30, _MemberFunc<char *>, TranslateDSError);
 
-            HOOK_EXPORT(0x5A5BB0, _MemberFunc<void>, SetBitDepth);
-            HOOK_EXPORT(0x5A5BD0, _MemberFunc<char **>, GetDeviceNames);
-            HOOK_EXPORT(0x5A5C00, _MemberFunc<UINT>, GetNum3DHallBufs);
+            declhook(0x5A5BB0, _MemberFunc<void>, SetBitDepth);
+            declhook(0x5A5BD0, _MemberFunc<char **>, GetDeviceNames);
+            declhook(0x5A5C00, _MemberFunc<UINT>, GetNum3DHallBufs);
         }
         namespace mmDirSnd
         {
-            HOOK_EXPORT(0x51CC50, _Func<MM2::mmDirSnd *>, Init);
+            declhook(0x51CC50, _Func<MM2::mmDirSnd *>, Init);
 
-            HOOK_EXPORT(0x51CBE0, _MemberFunc<void>, $$ctor);
-            HOOK_EXPORT(0x51CC00, _MemberFunc<void>, $$dtor);
+            declhook(0x51CBE0, _MemberFunc<void>, $$ctor);
+            declhook(0x51CC00, _MemberFunc<void>, $$dtor);
 
-            HOOK_EXPORT(0x51CC10, _MemberFunc<void>, DeInit);
+            declhook(0x51CC10, _MemberFunc<void>, DeInit);
 
-            HOOK_EXPORT(0x51CD90, _MemberFunc<int>, InitPrimarySoundBuffer);
+            declhook(0x51CD90, _MemberFunc<int>, InitPrimarySoundBuffer);
 
-            HOOK_EXPORT(0x51CE60, _MemberFunc<UINT>, EAXEnabled);
-            HOOK_EXPORT(0x51CE70, _MemberFunc<UINT>, DSound3DEnabled);
+            declhook(0x51CE60, _MemberFunc<UINT>, EAXEnabled);
+            declhook(0x51CE70, _MemberFunc<UINT>, DSound3DEnabled);
         }
         namespace AudCreatureContainer {
-            HOOK_EXPORT(0x00510CF0, _MemberFunc<void>, PlayAvoidanceReaction);
+            declhook(0x00510CF0, _MemberFunc<void>, PlayAvoidanceReaction);
         }
     }
 

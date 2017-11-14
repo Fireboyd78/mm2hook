@@ -19,11 +19,11 @@ namespace MM2
     namespace $
     {
         namespace UIMenu {
-            HOOK_EXPORT(0x004E0980, _MemberFunc<void>, AssignBackground);
-            HOOK_EXPORT(0x004E1A90, _MemberFunc<MM2::UIButton *>, AddButton);
-            HOOK_EXPORT(0x004E2340, _MemberFunc<MM2::UIBMButton *>, AddBMButton);
-            HOOK_EXPORT(0x004E2340, _MemberFunc<MM2::UIIcon *>, AddIcon);
-            HOOK_EXPORT(0x004E1BB0, _MemberFunc<MM2::UILabel *>, AddLabel);
+            declhook(0x004E0980, _MemberFunc<void>, AssignBackground);
+            declhook(0x004E1A90, _MemberFunc<MM2::UIButton *>, AddButton);
+            declhook(0x004E2340, _MemberFunc<MM2::UIBMButton *>, AddBMButton);
+            declhook(0x004E2340, _MemberFunc<MM2::UIIcon *>, AddIcon);
+            declhook(0x004E1BB0, _MemberFunc<MM2::UILabel *>, AddLabel);
         }
     }
     

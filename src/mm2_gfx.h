@@ -8,18 +8,17 @@ namespace MM2
 
     namespace $
     {
-        namespace gfxLight
-        {
-            HOOK_EXPORT(0x4B1C00, _MemberFunc<void>, Reset);
+        namespace gfxLight {
+            declhook(0x4B1C00, _MemberFunc<void>, Reset);
         }
         namespace ltLight {
-            HOOK_EXPORT(0x0059ACB0, _MemberFunc<void>, Draw);
-            HOOK_EXPORT(0x0059AD90, _MemberFunc<void>, DrawGlow);
-            HOOK_EXPORT(0x0059AE30, _Func<void>, DrawGlowBegin);
-            HOOK_EXPORT(0x0059AEF0, _Func<void>, DrawGlowEnd);
-            HOOK_EXPORT(0x0059B390, _Func<void>, SetUpGfxLightBegin);
-            HOOK_EXPORT(0x0059B5B0, _MemberFunc<void>, SetUpGfxLight);
-            HOOK_EXPORT(0x0059B5B0, _Func<void>, SetUpGfxLightEnd);
+            declhook(0x59ACB0, _MemberFunc<void>, Draw);
+            declhook(0x59AD90, _MemberFunc<void>, DrawGlow);
+            declhook(0x59AE30, _Func<void>, DrawGlowBegin);
+            declhook(0x59AEF0, _Func<void>, DrawGlowEnd);
+            declhook(0x59B390, _Func<void>, SetUpGfxLightBegin);
+            declhook(0x59B5B0, _MemberFunc<void>, SetUpGfxLight);
+            declhook(0x59B5B0, _Func<void>, SetUpGfxLightEnd);
         }
     }
 
@@ -133,72 +132,72 @@ namespace MM2
         static ageHook::Type<bool> sm_Allow32;
     };
 
-    HOOK_EXPORT(0x004B30F0, _Func<gfxTexture *>, $gfxGetTexture);
+    declhook(0x004B30F0, _Func<gfxTexture *>, $gfxGetTexture);
 
-    HOOK_EXPORT(0x4ABE00, _Func<bool>, $gfxAutoDetect);
-    HOOK_EXPORT(0x4A8CE0, _Func<void>, $gfxPipeline_SetRes);
+    declhook(0x4ABE00, _Func<bool>, $gfxAutoDetect);
+    declhook(0x4A8CE0, _Func<void>, $gfxPipeline_SetRes);
 
-    HOOK_EXPORT(0x4A88F0, _Func<WNDPROC>, $gfxPipeline_gfxWindowProc);
+    declhook(0x4A88F0, _Func<WNDPROC>, $gfxPipeline_gfxWindowProc);
 
-    HOOK_EXPORT(0x4AC3D0, _Func<LPD3DENUMDEVICESCALLBACK7>, $DeviceCallback);
-    HOOK_EXPORT(0x4AC6F0, _Func<LPDDENUMMODESCALLBACK2>, $ResCallback);
+    declhook(0x4AC3D0, _Func<LPD3DENUMDEVICESCALLBACK7>, $DeviceCallback);
+    declhook(0x4AC6F0, _Func<LPDDENUMMODESCALLBACK2>, $ResCallback);
 
-    HOOK_EXPORT(0x682FA0, _Type<HWND>, hWndParent);
-    HOOK_EXPORT(0x6830B8, _Type<HWND>, hWndMain);
+    declhook(0x682FA0, _Type<HWND>, hWndParent);
+    declhook(0x6830B8, _Type<HWND>, hWndMain);
 
-    HOOK_EXPORT(0x68311C, _Type<LPCSTR>, lpWindowTitle);
+    declhook(0x68311C, _Type<LPCSTR>, lpWindowTitle);
 
-    HOOK_EXPORT(0x6830F0, _Type<ATOM>, ATOM_Class);
-    HOOK_EXPORT(0x683108, _Type<LPCSTR>, IconID);
+    declhook(0x6830F0, _Type<ATOM>, ATOM_Class);
+    declhook(0x683108, _Type<LPCSTR>, IconID);
 
-    HOOK_EXPORT(0x5CA3EC, _Type<bool>, pageFlip);
-    HOOK_EXPORT(0x5CA3ED, _Type<bool>, hasBorder);
-    HOOK_EXPORT(0x5CA3EE, _Type<bool>, useMultiTexture);
-    HOOK_EXPORT(0x5CA664, _Type<bool>, enableHWTnL);
+    declhook(0x5CA3EC, _Type<bool>, pageFlip);
+    declhook(0x5CA3ED, _Type<bool>, hasBorder);
+    declhook(0x5CA3EE, _Type<bool>, useMultiTexture);
+    declhook(0x5CA664, _Type<bool>, enableHWTnL);
 
-    HOOK_EXPORT(0x68451D, _Type<bool>, novblank);
+    declhook(0x68451D, _Type<bool>, novblank);
 
-    HOOK_EXPORT(0x6830D0, _Type<bool>, inWindow);
-    HOOK_EXPORT(0x6830D1, _Type<bool>, isMaximized);
-    HOOK_EXPORT(0x6830D2, _Type<bool>, tripleBuffer);
-    HOOK_EXPORT(0x6830D3, _Type<bool>, useReference);
-    HOOK_EXPORT(0x6830D4, _Type<bool>, useSoftware);
-    HOOK_EXPORT(0x6830D5, _Type<bool>, useAgeSoftware);
-    HOOK_EXPORT(0x6830D6, _Type<bool>, useBlade);
-    HOOK_EXPORT(0x6830D7, _Type<bool>, useSysMem);
+    declhook(0x6830D0, _Type<bool>, inWindow);
+    declhook(0x6830D1, _Type<bool>, isMaximized);
+    declhook(0x6830D2, _Type<bool>, tripleBuffer);
+    declhook(0x6830D3, _Type<bool>, useReference);
+    declhook(0x6830D4, _Type<bool>, useSoftware);
+    declhook(0x6830D5, _Type<bool>, useAgeSoftware);
+    declhook(0x6830D6, _Type<bool>, useBlade);
+    declhook(0x6830D7, _Type<bool>, useSysMem);
 
-    HOOK_EXPORT(0x6830D8, _Type<int>, useInterface);
+    declhook(0x6830D8, _Type<int>, useInterface);
 
-    HOOK_EXPORT(0x684518, _Type<LPDIRECTDRAWCREATEEX>, lpDirectDrawCreateEx);
+    declhook(0x684518, _Type<LPDIRECTDRAWCREATEEX>, lpDirectDrawCreateEx);
 
-    HOOK_EXPORT(0x6830A8, _Type<IDirectDraw7 *>, lpDD);
-    HOOK_EXPORT(0x6830AC, _Type<IDirect3D7 *>, lpD3D);
-    HOOK_EXPORT(0x6830C8, _Type<IDirect3DDevice7 *>, lpD3DDev);
-    HOOK_EXPORT(0x6830CC, _Type<IDirectDrawSurface7 *>, lpdsRend);
+    declhook(0x6830A8, _Type<IDirectDraw7 *>, lpDD);
+    declhook(0x6830AC, _Type<IDirect3D7 *>, lpD3D);
+    declhook(0x6830C8, _Type<IDirect3DDevice7 *>, lpD3DDev);
+    declhook(0x6830CC, _Type<IDirectDrawSurface7 *>, lpdsRend);
 
-    HOOK_EXPORT(0x683130, _Type<gfxInterface>, gfxInterfaces);
-    HOOK_EXPORT(0x6844C0, _Type<unsigned int>, gfxInterfaceCount);
+    declhook(0x683130, _Type<gfxInterface>, gfxInterfaces);
+    declhook(0x6844C0, _Type<unsigned int>, gfxInterfaceCount);
 
-    HOOK_EXPORT(0x6844C8, _Type<int>, gfxInterfaceChoice);
+    declhook(0x6844C8, _Type<int>, gfxInterfaceChoice);
 
-    HOOK_EXPORT(0x6844B0, _Type<int>, gfxMinScreenWidth);
-    HOOK_EXPORT(0x6844CC, _Type<int>, gfxMinScreenHeight);
+    declhook(0x6844B0, _Type<int>, gfxMinScreenWidth);
+    declhook(0x6844CC, _Type<int>, gfxMinScreenHeight);
 
-    HOOK_EXPORT(0x6844FC, _Type<int>, gfxMaxScreenWidth);
-    HOOK_EXPORT(0x6844D8, _Type<int>, gfxMaxScreenHeight);
+    declhook(0x6844FC, _Type<int>, gfxMaxScreenWidth);
+    declhook(0x6844D8, _Type<int>, gfxMaxScreenHeight);
 
-    HOOK_EXPORT(0x6B165C, _Type<int>, gfxTexQuality);
-    HOOK_EXPORT(0x6857D0, _Type<int>, gfxTexReduceSize);
+    declhook(0x6B165C, _Type<int>, gfxTexQuality);
+    declhook(0x6857D0, _Type<int>, gfxTexReduceSize);
 
-    HOOK_EXPORT(0x6830F4, _Type<float>, window_fWidth);
-    HOOK_EXPORT(0x683120, _Type<float>, window_fHeight);
+    declhook(0x6830F4, _Type<float>, window_fWidth);
+    declhook(0x683120, _Type<float>, window_fHeight);
 
-    HOOK_EXPORT(0x683128, _Type<int>, window_iWidth);
-    HOOK_EXPORT(0x683100, _Type<int>, window_iHeight);
+    declhook(0x683128, _Type<int>, window_iWidth);
+    declhook(0x683100, _Type<int>, window_iHeight);
 
-    HOOK_EXPORT(0x6830E4, _Type<int>, window_ZDepth);
-    HOOK_EXPORT(0x6830F8, _Type<int>, window_ColorDepth);
+    declhook(0x6830E4, _Type<int>, window_ZDepth);
+    declhook(0x6830F8, _Type<int>, window_ColorDepth);
 
-    HOOK_EXPORT(0x6830EC, _Type<int>, window_X);
-    HOOK_EXPORT(0x683110, _Type<int>, window_Y);
+    declhook(0x6830EC, _Type<int>, window_X);
+    declhook(0x683110, _Type<int>, window_Y);
 }

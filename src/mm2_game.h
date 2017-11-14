@@ -22,12 +22,8 @@ namespace MM2
     {
         namespace mmMultiCR
         {
-            HOOK_EXPORT(0x426D10, _MemberFunc<void>, UpdateTimeWarning);
-            HOOK_EXPORT(0x4272E0, _MemberFunc<void>, CycleInterest);
-        }
-        namespace mmGameManager
-        {
-            HOOK_EXPORT(0x5E0D08, _Type<MM2::mmGameManager *>, Instance);
+            declhook(0x426D10, _MemberFunc<void>, UpdateTimeWarning);
+            declhook(0x4272E0, _MemberFunc<void>, CycleInterest);
         }
     }
 
@@ -135,9 +131,7 @@ namespace MM2
     protected:
         ageHook::Field<0x188, mmGame *> _game;
     public:
-        static mmGameManager * Instance(void) {
-            return $::mmGameManager::Instance;
-        };
+        static ageHook::Type<mmGameManager *> Instance;
 
         inline mmGame* getGame(void) const {
             return _game.get(this);

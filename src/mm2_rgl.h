@@ -35,71 +35,77 @@ namespace MM2
         Vector2 texCoords;
     };
 
-    AGE_EXT void vglTexCoord2f(float u, float v);
-    AGE_EXT void vglVertex3f(float x, float y, float z);
-    AGE_EXT void vglVertex3f(Vector3 position);
-    AGE_EXT void vgl_VERTEX_VCT1(float x, float y, float z);
-    AGE_EXT void vgl_VERTEX_VNT1(float x, float y, float z);
-    AGE_EXT void vglSetFormat(uint p1, uint p2, uint p3, uint p4);
-    AGE_EXT void vglBegin(gfxDrawMode drawMode, int p2);
-    AGE_EXT void vglEnd(void);
-    AGE_EXT void vglBeginBatch(void);
-    AGE_EXT void vglEndBatch(void);
-    AGE_EXT void vglBindTexture(gfxTexture *texture);
-    AGE_EXT void vglDrawLabel(const Vector3 &position, const char *text);
+    /*
+        Type declarations
+    */
+
+    extern ageHook::Type<uint>              vglCloudMapEnable;
+
+    extern ageHook::Type<void(*)(float, float, float)>
+                                            vglVertex;
+
+    extern ageHook::Type<uint>              vglCurrentColor;
+    extern ageHook::Type<vglVCT1_t *>       vglVCT1;
+    extern ageHook::Type<float>             vglCurrentNZ;
+    extern ageHook::Type<float>             vglCurrentNX;
+    extern ageHook::Type<float>             vglCurrentNY;
+    extern ageHook::Type<int>               vglCount;
+    extern ageHook::Type<float>             vglCurrentT;
+    extern ageHook::Type<float>             vglCurrentS;
+    extern ageHook::Type<vglVNT1_t *>       vglVNT1;
+    extern ageHook::Type<gfxTexture *>      vglCloudMapTexture;
+
+    extern ageHook::Type<Matrix44 *>        mtxstack;
+
+    /*
+        Function declarations
+    */
+
+    extern void vglTexCoord2f(float u, float v);
+    extern void vglVertex3f(float x, float y, float z);
+    extern void vglVertex3f(Vector3 position);
+    extern void vgl_VERTEX_VCT1(float x, float y, float z);
+    extern void vgl_VERTEX_VNT1(float x, float y, float z);
+    extern void vglSetFormat(uint p1, uint p2, uint p3, uint p4);
+    extern void vglBegin(gfxDrawMode drawMode, int p2);
+    extern void vglEnd(void);
+    extern void vglBeginBatch(void);
+    extern void vglEndBatch(void);
+    extern void vglBindTexture(gfxTexture *texture);
+    extern void vglDrawLabel(const Vector3 &position, const char *text);
 
     template <typename ...TArgs>
-    AGE_EXT void vglDrawLabelf(const Vector3 &position, const char *format, TArgs ...args);
+    extern void vglDrawLabelf(const Vector3 &position, const char *format, TArgs ...args);
 
-    AGE_EXT void vglSetCloudMap(const char *texture);
-    AGE_EXT void vglSetOffset(float x, float y, float z);
-    AGE_EXT bool rglEnableDisable(rglToken token, bool value);
-    AGE_EXT bool rglIsEnabled(rglToken token);
-    AGE_EXT void rglWorldMatrix(const Matrix34 &mtx);
-    AGE_EXT void rglWorldIdentity(void);
-    AGE_EXT void rglCard(const Vector3 &position);
-    AGE_EXT void rglBindTexture2(const gfxTexture *texture);
-    AGE_EXT void tglDrawParticle(const Vector3 &p1, float p2, const Vector4 &p3);
-    AGE_EXT void tglDrawRotatedParticle(const Vector3 &p1, float p2, float p3, const Vector4 &p4);
+    extern void vglSetCloudMap(const char *texture);
+    extern void vglSetOffset(float x, float y, float z);
+    extern bool rglEnableDisable(rglToken token, bool value);
+    extern bool rglIsEnabled(rglToken token);
+    extern void rglWorldMatrix(const Matrix34 &mtx);
+    extern void rglWorldIdentity(void);
+    extern void rglCard(const Vector3 &position);
+    extern void rglBindTexture2(const gfxTexture *texture);
+    extern void tglDrawParticle(const Vector3 &p1, float p2, const Vector4 &p3);
+    extern void tglDrawRotatedParticle(const Vector3 &p1, float p2, float p3, const Vector4 &p4);
 
-    AGE_EXT uint mkfrgba(float r, float g, float b, float a);
+    extern uint mkfrgba(float r, float g, float b, float a);
 
-    AGE_EXT void rglOpenPipe(int p1, int p2, bool p3);
-    AGE_EXT void rglClosePipe(void);
-    AGE_EXT void rglBeginFrame(uint p1);
-    AGE_EXT void rglEndFrame(void);
-    AGE_EXT void rglCameraMatrix(const Matrix34 &p1);
-    AGE_EXT int rglAlive(void);
-    AGE_EXT void rglDrawBox(const Vector3 &p1, const Matrix34 &p2);
-    AGE_EXT void rglDrawSolidBox(const Vector3 &p1, const Matrix34 &p2, const Vector3 &p3);
-    AGE_EXT void rglDrawAxis(float p1, const Matrix34 &p2);
-    AGE_EXT void rglDrawSphere(float p1, int p2);
-    AGE_EXT void rglDrawSphere(float p1, const Matrix34 &p2, int p3);
-    AGE_EXT void rglDrawEllipsoid(const Vector3 &p1, const Matrix34 &p2, int p3);
-    AGE_EXT void rglDrawParticle(const Vector3 &p1, float p2, const Vector4 &p3);
-    AGE_EXT void rglResetDrawTexture(void);
-    AGE_EXT void rglDrawTexture(gfxTexture *texture);
-    AGE_EXT void rglPushMatrix(void);
-    AGE_EXT void rglPopMatrix(void);
-    AGE_EXT void rglMultMatrix(Matrix34 &p1);
-
-    HOOK_EXPORT(0x661928, _Type<uint>,          vglCloudMapEnable);
-
-    HOOK_EXPORT(0x661970, _Type<void(*)(float, float, float)>,
-                                                vglVertex);
-
-    HOOK_EXPORT(0x661974, _Type<uint>,          vglCurrentColorTest);
-
-    HOOK_EXPORT(0x661974, _Type<uint>,          vglCurrentColor);
-    HOOK_EXPORT(0x682B48, _Type<vglVCT1_t *>,   vglVCT1);
-    HOOK_EXPORT(0x682B4C, _Type<float>,         vglCurrentNZ);
-    HOOK_EXPORT(0x682B50, _Type<float>,         vglCurrentNX);
-    HOOK_EXPORT(0x682B54, _Type<float>,         vglCurrentNY);
-    HOOK_EXPORT(0x682B58, _Type<int>,           vglCount);
-    HOOK_EXPORT(0x682B5C, _Type<float>,         vglCurrentT);
-    HOOK_EXPORT(0x682B60, _Type<float>,         vglCurrentS);
-    HOOK_EXPORT(0x682B68, _Type<vglVNT1_t *>,   vglVNT1);
-    HOOK_EXPORT(0x682B74, _Type<gfxTexture *>,  vglCloudMapTexture);
-
-    HOOK_EXPORT(0x682F98, _Type<Matrix44 *>,    mtxstack);
+    extern void rglOpenPipe(int p1, int p2, bool p3);
+    extern void rglClosePipe(void);
+    extern void rglBeginFrame(uint p1);
+    extern void rglEndFrame(void);
+    extern void rglCameraMatrix(const Matrix34 &p1);
+    extern int rglAlive(void);
+    extern void rglDrawBox(const Vector3 &p1, const Matrix34 &p2);
+    extern void rglDrawSolidBox(const Vector3 &p1, const Matrix34 &p2, const Vector3 &p3);
+    extern void rglDrawAxis(float p1, const Matrix34 &p2);
+    extern void rglDrawSphere(float p1, int p2);
+    extern void rglDrawSphere(float p1, const Matrix34 &p2, int p3);
+    extern void rglDrawEllipsoid(const Vector3 &p1, const Matrix34 &p2, int p3);
+    extern void rglDrawParticle(const Vector3 &p1, float p2, const Vector4 &p3);
+    extern void rglResetDrawTexture(void);
+    extern void rglDrawTexture(gfxTexture *texture);
+    extern void rglPushMatrix(void);
+    extern void rglPopMatrix(void);
+    extern void rglMultMatrix(Matrix34 &p1);
 }

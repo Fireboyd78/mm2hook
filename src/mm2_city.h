@@ -13,39 +13,39 @@ namespace MM2
 
     namespace $
     {
-        HOOK_EXPORT(0x6299A8, _Type<cityTimeWeatherLighting[16]>, timeWeathers);
+        declhook(0x6299A8, _Type<cityTimeWeatherLighting[16]>, timeWeathers);
 
         namespace cityLevel
         {
-            HOOK_EXPORT(0x445820, _Func<void>::ThisCall, DrawRooms);
-            HOOK_EXPORT(0x443E50, _Func<void>::ThisCall, SetObjectDetail);
+            declhook(0x445820, _Func<void>::ThisCall, DrawRooms);
+            declhook(0x443E50, _Func<void>::ThisCall, SetObjectDetail);
         }
         namespace sdlCommon
         {
-            HOOK_EXPORT(0x45CBC0, _Func<bool>, BACKFACE);
-            HOOK_EXPORT(0x448090, _Func<void>, UpdateLighting);
+            declhook(0x45CBC0, _Func<bool>, BACKFACE);
+            declhook(0x448090, _Func<void>, UpdateLighting);
         }
         namespace sdlPage16
         {
-            HOOK_EXPORT(0x45A4E0, _MemberFunc<void>, $$ctor);
+            declhook(0x45A4E0, _MemberFunc<void>, $$ctor);
 
-            HOOK_EXPORT(0x448330, _MemberFunc<void>, Draw);
+            declhook(0x448330, _MemberFunc<void>, Draw);
 
-            HOOK_EXPORT(0x45A560, _MemberFunc<void>, ArcMap);
-            HOOK_EXPORT(0x45A760, _MemberFunc<void>, WallMap);
-            HOOK_EXPORT(0x45A900, _MemberFunc<bool>, PointInPerimeter);
+            declhook(0x45A560, _MemberFunc<void>, ArcMap);
+            declhook(0x45A760, _MemberFunc<void>, WallMap);
+            declhook(0x45A900, _MemberFunc<bool>, PointInPerimeter);
 
-            HOOK_EXPORT(0x45A9F0, _MemberFunc<void>, GetCentroid);
-            HOOK_EXPORT(0x45D110, _MemberFunc<int>, GetPerimeterCount);
-            HOOK_EXPORT(0x45D120, _MemberFunc<int>, GetPerimeterVertexIndex);
-            HOOK_EXPORT(0x45D140, _MemberFunc<const MM2::Vector3 &>, GetCodedVertex);
-            HOOK_EXPORT(0x45D160, _MemberFunc<float>, GetFloat);
-            HOOK_EXPORT(0x45D170, _MemberFunc<MM2::gfxTexture *>, GetTexture);
+            declhook(0x45A9F0, _MemberFunc<void>, GetCentroid);
+            declhook(0x45D110, _MemberFunc<int>, GetPerimeterCount);
+            declhook(0x45D120, _MemberFunc<int>, GetPerimeterVertexIndex);
+            declhook(0x45D140, _MemberFunc<const MM2::Vector3 &>, GetCodedVertex);
+            declhook(0x45D160, _MemberFunc<float>, GetFloat);
+            declhook(0x45D170, _MemberFunc<MM2::gfxTexture *>, GetTexture);
 
-            HOOK_EXPORT(0x450880, _Func<uint>, GetShadedColor$1);
-            HOOK_EXPORT(0x450910, _Func<uint>, GetShadedColor$2);
+            declhook(0x450880, _Func<uint>, GetShadedColor$1);
+            declhook(0x450910, _Func<uint>, GetShadedColor$2);
 
-            HOOK_EXPORT(0x45BF90, _Func<MM2::sdlPage16 *>, LoadBinary);
+            declhook(0x45BF90, _Func<MM2::sdlPage16 *>, LoadBinary);
         }
     }
 

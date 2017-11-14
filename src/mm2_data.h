@@ -20,60 +20,60 @@ namespace MM2
     {
         namespace datArgParser
         {
-            HOOK_EXPORT(0x4C6190, _Func<bool>, Get_Any);
-            HOOK_EXPORT(0x4C61C0, _Func<bool>, Get_Int);
-            HOOK_EXPORT(0x4C6210, _Func<bool>, Get_Float);
-            HOOK_EXPORT(0x4C6260, _Func<bool>, Get_String);
+            declhook(0x4C6190, _Func<bool>, Get_Any);
+            declhook(0x4C61C0, _Func<bool>, Get_Int);
+            declhook(0x4C6210, _Func<bool>, Get_Float);
+            declhook(0x4C6260, _Func<bool>, Get_String);
 
-            HOOK_EXPORT(0x4C62A0, _Func<int>, GetArgCount);
+            declhook(0x4C62A0, _Func<int>, GetArgCount);
         }
         namespace datAssetManager
         {
-            HOOK_EXPORT(0x4C55E0, _Func<void>, FullPath$1);
-            HOOK_EXPORT(0x4C56F0, _Func<void>, FullPath$2);
-            HOOK_EXPORT(0x4C59B0, _Func<bool>, Exists$1);
-            HOOK_EXPORT(0x4C59E0, _Func<bool>, Exists$2);
+            declhook(0x4C55E0, _Func<void>, FullPath$1);
+            declhook(0x4C56F0, _Func<void>, FullPath$2);
+            declhook(0x4C59B0, _Func<bool>, Exists$1);
+            declhook(0x4C59E0, _Func<bool>, Exists$2);
         }
         namespace datCallback
         {
-            HOOK_EXPORT(0x4C7A40, _MemberFunc<void>, $$ctor$void);
+            declhook(0x4C7A40, _MemberFunc<void>, $$ctor$void);
 
-            HOOK_EXPORT(0x4C7A50, _MemberFunc<void>, $$ctor$ThisCB$1);
-            HOOK_EXPORT(0x4C7A80, _MemberFunc<void>, $$ctor$ThisCB$2);
-            HOOK_EXPORT(0x4C7AA0, _MemberFunc<void>, $$ctor$ThisCB$3);
+            declhook(0x4C7A50, _MemberFunc<void>, $$ctor$ThisCB$1);
+            declhook(0x4C7A80, _MemberFunc<void>, $$ctor$ThisCB$2);
+            declhook(0x4C7AA0, _MemberFunc<void>, $$ctor$ThisCB$3);
 
-            HOOK_EXPORT(0x4C7AC0, _MemberFunc<void>, $$ctor$CB$1);
-            HOOK_EXPORT(0x4C7AF0, _MemberFunc<void>, $$ctor$CB$2);
-            HOOK_EXPORT(0x4C7B20, _MemberFunc<void>, $$ctor$CB$3);
+            declhook(0x4C7AC0, _MemberFunc<void>, $$ctor$CB$1);
+            declhook(0x4C7AF0, _MemberFunc<void>, $$ctor$CB$2);
+            declhook(0x4C7B20, _MemberFunc<void>, $$ctor$CB$3);
 
-            HOOK_EXPORT(0x4C7B50, _MemberFunc<void>, Call);
+            declhook(0x4C7B50, _MemberFunc<void>, Call);
         }
         namespace datOutput
         {
-            HOOK_EXPORT(0x4C9530, _Func<void>, CloseLog);
-            HOOK_EXPORT(0x4C9590, _Func<bool>, OpenLog);
-            HOOK_EXPORT(0x4C95A0, _Func<void>, SetOutputMask);
+            declhook(0x4C9530, _Func<void>, CloseLog);
+            declhook(0x4C9590, _Func<bool>, OpenLog);
+            declhook(0x4C95A0, _Func<void>, SetOutputMask);
         }
         namespace datParser
         {
-            HOOK_EXPORT(0x4A78E0, _MemberFunc<void>, $$ctor);
-            HOOK_EXPORT(0x4A7920, _MemberFunc<void>, $$dtor);
+            declhook(0x4A78E0, _MemberFunc<void>, $$ctor);
+            declhook(0x4A7920, _MemberFunc<void>, $$dtor);
 
-            HOOK_EXPORT(0x4A7980, _MemberFunc<MM2::datParser *>, AddParser);
-            HOOK_EXPORT(0x4A79D0, _MemberFunc<MM2::datParserRecord &>, AddRecord);
+            declhook(0x4A7980, _MemberFunc<MM2::datParser *>, AddParser);
+            declhook(0x4A79D0, _MemberFunc<MM2::datParserRecord &>, AddRecord);
 
-            HOOK_EXPORT(0x4A7A90, _MemberFunc<bool>, Load$1);
-            HOOK_EXPORT(0x4A7AF0, _MemberFunc<bool>, Load$2);
-            HOOK_EXPORT(0x4A7B40, _MemberFunc<bool>, Load$3);
+            declhook(0x4A7A90, _MemberFunc<bool>, Load$1);
+            declhook(0x4A7AF0, _MemberFunc<bool>, Load$2);
+            declhook(0x4A7B40, _MemberFunc<bool>, Load$3);
 
-            HOOK_EXPORT(0x4A7B90, _MemberFunc<bool>, Save$1);
-            HOOK_EXPORT(0x4A7C00, _MemberFunc<bool>, Save$2);
-            HOOK_EXPORT(0x4A7C50, _MemberFunc<bool>, Save$3);
+            declhook(0x4A7B90, _MemberFunc<bool>, Save$1);
+            declhook(0x4A7C00, _MemberFunc<bool>, Save$2);
+            declhook(0x4A7C50, _MemberFunc<bool>, Save$3);
         }
         namespace datTimeManager
         {
-            HOOK_EXPORT(0x4C6300, _Func<void>, Reset);
-            HOOK_EXPORT(0x4C6340, _Func<void>, Update);
+            declhook(0x4C6300, _Func<void>, Reset);
+            declhook(0x4C6340, _Func<void>, Update);
         }
     }
 

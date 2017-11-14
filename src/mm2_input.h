@@ -11,7 +11,7 @@ namespace MM2
     {
         namespace ioInput
         {
-            HOOK_EXPORT(0x4BA910, _Func<void>, Update);
+            declhook(0x4BA910, _Func<void>, Update);
         }
     }
 

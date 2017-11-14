@@ -13,73 +13,73 @@ namespace MM2
     namespace $
     {
         namespace Matrix34 {
-            HOOK_EXPORT(0x004BBF50, _MemberFunc<void>, Identity);
+            declhook(0x4BBF50, _MemberFunc<void>, Identity);
         }
         namespace Vector2
         {
-            HOOK_EXPORT(0x45CC60, _MemberFunc<float>, Mag);
-            HOOK_EXPORT(0x45CC80, _MemberFunc<float>, Mag2);
+            declhook(0x45CC60, _MemberFunc<float>, Mag);
+            declhook(0x45CC80, _MemberFunc<float>, Mag2);
         }
         namespace Vector3
         {
-            HOOK_EXPORT(0x45CDC0, _MemberFunc<float>, InvMag);
-            HOOK_EXPORT(0x466490, _MemberFunc<float>, Mag);
-            HOOK_EXPORT(0x46C990, _MemberFunc<float>, Mag2);
+            declhook(0x45CDC0, _MemberFunc<float>, InvMag);
+            declhook(0x466490, _MemberFunc<float>, Mag);
+            declhook(0x46C990, _MemberFunc<float>, Mag2);
 
-            HOOK_EXPORT(0x45CCB0, _MemberFunc<void>, Set$1);
-            HOOK_EXPORT(0x480AA0, _MemberFunc<void>, Set$2);
+            declhook(0x45CCB0, _MemberFunc<void>, Set$1);
+            declhook(0x480AA0, _MemberFunc<void>, Set$2);
 
-            HOOK_EXPORT(0x45CE00, _MemberFunc<void>, Add);
-            HOOK_EXPORT(0x484420, _MemberFunc<void>, AddScaled);
-            HOOK_EXPORT(0x45CD30, _MemberFunc<void>, Subtract);
-            HOOK_EXPORT(0x474000, _MemberFunc<void>, SubtractScaled);
-            HOOK_EXPORT(0x42EB40, _MemberFunc<void>, Scale$1);
-            HOOK_EXPORT(0x45CE40, _MemberFunc<void>, Scale$2);
-            HOOK_EXPORT(0x595B70, _MemberFunc<void>, InvScale);
-            HOOK_EXPORT(0x4C0390, _MemberFunc<void>, RotateX);
-            HOOK_EXPORT(0x4C03D0, _MemberFunc<void>, RotateY);
-            HOOK_EXPORT(0x4C0400, _MemberFunc<void>, RotateZ);
-            HOOK_EXPORT(0x4C0020, _MemberFunc<void>, RotateAboutAxis);
+            declhook(0x45CE00, _MemberFunc<void>, Add);
+            declhook(0x484420, _MemberFunc<void>, AddScaled);
+            declhook(0x45CD30, _MemberFunc<void>, Subtract);
+            declhook(0x474000, _MemberFunc<void>, SubtractScaled);
+            declhook(0x42EB40, _MemberFunc<void>, Scale$1);
+            declhook(0x45CE40, _MemberFunc<void>, Scale$2);
+            declhook(0x595B70, _MemberFunc<void>, InvScale);
+            declhook(0x4C0390, _MemberFunc<void>, RotateX);
+            declhook(0x4C03D0, _MemberFunc<void>, RotateY);
+            declhook(0x4C0400, _MemberFunc<void>, RotateZ);
+            declhook(0x4C0020, _MemberFunc<void>, RotateAboutAxis);
 
-            HOOK_EXPORT(0x4C0430, _MemberFunc<float>, Angle);
-            HOOK_EXPORT(0x4C0500, _MemberFunc<float>, FastAngle);
-            HOOK_EXPORT(0x4BFF20, _MemberFunc<bool>, Approach);
-            HOOK_EXPORT(0x45CE80, _MemberFunc<void>, Cross$1);
-            HOOK_EXPORT(0x4429C0, _MemberFunc<void>, Cross$2);
-            HOOK_EXPORT(0x45CEC0, _MemberFunc<float>, Dist);
-            HOOK_EXPORT(0x45CF00, _MemberFunc<float>, FlatDist);
-            HOOK_EXPORT(0x466470, _MemberFunc<float>, Dot$1);
-            HOOK_EXPORT(0x43BBB0, _MemberFunc<void>, Dot$2);
-            HOOK_EXPORT(0x479560, _MemberFunc<void>, Dot3x3);
-            HOOK_EXPORT(0x4795C0, _MemberFunc<void>, Dot3x3Transpose);
-            HOOK_EXPORT(0x494C00, _MemberFunc<void>, Lerp);
-            HOOK_EXPORT(0x480AC0, _MemberFunc<void>, Negate);
+            declhook(0x4C0430, _MemberFunc<float>, Angle);
+            declhook(0x4C0500, _MemberFunc<float>, FastAngle);
+            declhook(0x4BFF20, _MemberFunc<bool>, Approach);
+            declhook(0x45CE80, _MemberFunc<void>, Cross$1);
+            declhook(0x4429C0, _MemberFunc<void>, Cross$2);
+            declhook(0x45CEC0, _MemberFunc<float>, Dist);
+            declhook(0x45CF00, _MemberFunc<float>, FlatDist);
+            declhook(0x466470, _MemberFunc<float>, Dot$1);
+            declhook(0x43BBB0, _MemberFunc<void>, Dot$2);
+            declhook(0x479560, _MemberFunc<void>, Dot3x3);
+            declhook(0x4795C0, _MemberFunc<void>, Dot3x3Transpose);
+            declhook(0x494C00, _MemberFunc<void>, Lerp);
+            declhook(0x480AC0, _MemberFunc<void>, Negate);
 
-            HOOK_EXPORT(0x522B80, _MemberFunc<bool>, IsEqual);
+            declhook(0x522B80, _MemberFunc<bool>, IsEqual);
 
-            HOOK_EXPORT(0x45CCD0, _MemberFunc<void>, $$op_e_add$1);
-            HOOK_EXPORT(0x45CD00, _MemberFunc<void>, $$op_e_sub$1);
-            HOOK_EXPORT(0x43DD50, _MemberFunc<void>, $$op_e_mul);
-            HOOK_EXPORT(0x479520, _MemberFunc<void>, $$op_e_add$2);
-            HOOK_EXPORT(0x470180, _MemberFunc<void>, $$op_e_sub$2);
+            declhook(0x45CCD0, _MemberFunc<void>, $$op_e_add$1);
+            declhook(0x45CD00, _MemberFunc<void>, $$op_e_sub$1);
+            declhook(0x43DD50, _MemberFunc<void>, $$op_e_mul);
+            declhook(0x479520, _MemberFunc<void>, $$op_e_add$2);
+            declhook(0x470180, _MemberFunc<void>, $$op_e_sub$2);
 
-            HOOK_EXPORT(0x491860, _MemberFunc<MM2::Vector3>, $$op_sub);
-            HOOK_EXPORT(0x4918A0, _MemberFunc<MM2::Vector3>, $$op_div);
-            HOOK_EXPORT(0x541770, _MemberFunc<MM2::Vector3>, $$op_mod);
+            declhook(0x491860, _MemberFunc<MM2::Vector3>, $$op_sub);
+            declhook(0x4918A0, _MemberFunc<MM2::Vector3>, $$op_div);
+            declhook(0x541770, _MemberFunc<MM2::Vector3>, $$op_mod);
         }
         namespace Vector4
         {
-            HOOK_EXPORT(0x43DD80, _MemberFunc<void>, Set);
-            HOOK_EXPORT(0x494C90, _MemberFunc<void>, Cross);
-            HOOK_EXPORT(0x494C40, _MemberFunc<void>, Subtract);
-            HOOK_EXPORT(0x43DDA0, _MemberFunc<float>, Dot$1);
-            HOOK_EXPORT(0x494C70, _MemberFunc<float>, Dot3);
-            HOOK_EXPORT(0x4C1170, _MemberFunc<MM2::Vector4 &>, Dot$2);
-            HOOK_EXPORT(0x4C1200, _MemberFunc<MM2::Vector4 &>, Dot3x3);
-            HOOK_EXPORT(0x4C52D0, _MemberFunc<void>, ComputePlane$1);
-            HOOK_EXPORT(0x4C53B0, _MemberFunc<void>, ComputePlane$2);
-            HOOK_EXPORT(0x4C53F0, _MemberFunc<void>, Min);
-            HOOK_EXPORT(0x4C5460, _MemberFunc<void>, Max);
+            declhook(0x43DD80, _MemberFunc<void>, Set);
+            declhook(0x494C90, _MemberFunc<void>, Cross);
+            declhook(0x494C40, _MemberFunc<void>, Subtract);
+            declhook(0x43DDA0, _MemberFunc<float>, Dot$1);
+            declhook(0x494C70, _MemberFunc<float>, Dot3);
+            declhook(0x4C1170, _MemberFunc<MM2::Vector4 &>, Dot$2);
+            declhook(0x4C1200, _MemberFunc<MM2::Vector4 &>, Dot3x3);
+            declhook(0x4C52D0, _MemberFunc<void>, ComputePlane$1);
+            declhook(0x4C53B0, _MemberFunc<void>, ComputePlane$2);
+            declhook(0x4C53F0, _MemberFunc<void>, Min);
+            declhook(0x4C5460, _MemberFunc<void>, Max);
         }
     }
 

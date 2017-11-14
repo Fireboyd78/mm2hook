@@ -36,38 +36,39 @@ static Matrix34 sm_DashOffset;
 // ==========================
 // Function hooks
 // ==========================
-HOOK_SET(0x4A3370, _Func<void>::ThisCall, $asLinearCS_Update);
-HOOK_SET(0x4415E0, _Func<void>::ThisCall, $dgBangerInstance_Draw);
-HOOK_SET(0x577210, _Func<void>::ThisCall, $memSafeHeap_Init);
-HOOK_SET(0x4AEDC0, _Func<void>::ThisCall, $gfxImage_Scale);
+ageHook::Func<void>::ThisCall $asLinearCS_Update        ( 0x4A3370 );
+ageHook::Func<void>::ThisCall $dgBangerInstance_Draw    ( 0x4415E0 );
+ageHook::Func<void>::ThisCall $memSafeHeap_Init         ( 0x577210 );
+ageHook::Func<void>::ThisCall $gfxImage_Scale           ( 0x4AEDC0 );
 
 /*
     TODO: Move VGL stuff to a separate file?
 */
 
-HOOK_SET(0x4A1290, _Func<void>::ThisCall, $asCullManager_Init);
+ageHook::Func<void>::ThisCall $asCullManager_Init       ( 0x4A1290 );
 
 // ==========================
 // Pointer hooks
 // ==========================
 
-HOOK_SET(0x5C571C, _Type<float>, obj_NoDrawThresh); // default: 300.0
-HOOK_SET(0x5C6658, _Type<float>, obj_VLowThresh);  // default: 200.0
-HOOK_SET(0x5C665C, _Type<float>, obj_LowThresh);   // default: 100.0
-HOOK_SET(0x5C6660, _Type<float>, obj_MedThresh);   // default: 40.0
+ageHook::Type<float> obj_NoDrawThresh                   ( 0x5C571C ); // default: 300.0
+ageHook::Type<float> obj_VLowThresh                     ( 0x5C6658 ); // default: 200.0
+ageHook::Type<float> obj_LowThresh                      ( 0x5C665C ); // default: 100.0
+ageHook::Type<float> obj_MedThresh                      ( 0x5C6660 ); // default: 40.0
 
-HOOK_SET(0x5C5708, _Type<float>, sdl_VLowThresh);  // default: 300.0
-HOOK_SET(0x5C570C, _Type<float>, sdl_LowThresh);   // default: 100.0
-HOOK_SET(0x5C5710, _Type<float>, sdl_MedThresh);   // default: 50.0
+ageHook::Type<float> sdl_VLowThresh                     ( 0x5C5708 );  // default: 300.0
+ageHook::Type<float> sdl_LowThresh                      ( 0x5C570C );  // default: 100.0
+ageHook::Type<float> sdl_MedThresh                      ( 0x5C5710 );  // default: 50.0
 
-HOOK_SET(0x661738, _Type<asNode>, ROOT);
 
-HOOK_SET(0x6B167C, _Type<char[40]>, cityName);
-HOOK_SET(0x6B16A4, _Type<char[40]>, cityName2);
+ageHook::Type<asNode> ROOT                              ( 0x661738 );
 
-HOOK_SET(0x62B068, _Type<int>, timeOfDay);
+ageHook::Type<char[40]> cityName                        ( 0x6B167C );
+ageHook::Type<char[40]> cityName2                       ( 0x6B16A4 );
 
-HOOK_SET(0x627518, _Type<int>, vehCar_bHeadlights);
+ageHook::Type<int> timeOfDay                            ( 0x62B068 );
+
+ageHook::Type<int> vehCar_bHeadlights                   ( 0x627518 );
 
 /*
     ===========================================================================
@@ -86,7 +87,7 @@ bool HandleKeyPress(DWORD vKey)
         {
             // tell the game to open a chat box,
             // and then use a local variable to check if it's open
-            mmGameManager *mgr = mmGameManager::Instance();
+            mmGameManager *mgr = mmGameManager::Instance;
             auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
 
             if (gamePtr != NULL)
@@ -155,7 +156,7 @@ class aiPathHandler {
 public:
     void UpdatePedestrians(void) {
         numPedUpdateAttempts = 0;
-        $aiPath_UpdatePedestrians(this);
+        $::aiPath::UpdatePedestrians(this);
     }
 
     static void Install() {
@@ -172,7 +173,7 @@ public:
     void Update(void) {
         if (numPedUpdateAttempts < 256) {
             ++numPedUpdateAttempts;
-            $aiPedestrian_Update(this);
+            $::aiPedestrian::Update(this);
         }
     }
 
@@ -192,7 +193,7 @@ public:
         // fixes incorrect music bug
         vehPoliceCarAudio::iNumCopsPursuingPlayer = 0;
 
-        $aiPoliceForce_Reset(this);
+        $::aiPoliceForce::Reset(this);
     }
 
     static void Install() {
@@ -882,10 +883,10 @@ public:
 };
 
 // oh look, more stuff aaron wanted .-.
-HOOK_SET(0x45DA00, _Func<int>, $lvlAiMap_GetRoom);
-HOOK_SET(0x45D720, _Func<void>, $lvlAiMap_SetRoad); // lvlAiMap::SetRoad(class lvlSDL const *, int, bool)
-HOOK_SET(0x45D860, _Func<uint>, $lvlAiMap_GetNumRoads);
-HOOK_SET(0x45DA50, _Func<int>, $lvlAiMap_GetNumRooms);
+ageHook::Func<int> $lvlAiMap_GetRoom        ( 0x45DA00 );
+ageHook::Func<void> $lvlAiMap_SetRoad       ( 0x45D720 ); // lvlAiMap::SetRoad(class lvlSDL const *, int, bool)
+ageHook::Func<uint> $lvlAiMap_GetNumRoads   ( 0x45D860 );
+ageHook::Func<int> $lvlAiMap_GetNumRooms    ( 0x45DA50 );
 
 // no error checking or resetting done
 int lvl_aiRoad = 0;
@@ -1090,8 +1091,8 @@ public:
     }
 };
 
-LPVOID sdlPage16Handler::blockPtr;
-LPVOID sdlPage16Handler::attributePtr;
+declfield(sdlPage16Handler::blockPtr);
+declfield(sdlPage16Handler::attributePtr);
 
 class vglHandler {
 private:
@@ -1735,7 +1736,7 @@ public:
 
         datOutput::sm_Stream = Stream::Create("mm2.log", &logFileMethods);
 
-        LogFile::WriteLine((datOutput::sm_Stream) ? "Done!" : "FAIL!");
+        LogFile::WriteLine((datOutput::sm_Stream.ptr()) ? "Done!" : "FAIL!");
 
         if (datArgParser::Get("age_debug") || datArgParser::Get("ageDebug"))
         {

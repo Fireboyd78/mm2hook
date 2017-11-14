@@ -110,64 +110,63 @@ public:
         TType *lpValue;
     public:
         constexpr Type(int address) : lpValue(reinterpret_cast<TType *>(address)) {};
-
-        inline TType* get() const {
-            return this->lpValue;
+        
+        // gets the lvalue reference of the current value
+        inline TType& get() const {
+            return *lpValue;
         }
 
+        // sets the current value
         inline void set(TType value) {
             *lpValue = value;
         }
 
+        // gets the pointer to the current value
+        inline TType* ptr() const {
+            return lpValue;
+        }
+
         /*
-        TType*->TMember - Pointer to struct of TType
+            TType*->TMember - Pointer to struct of TType
         */
         inline TType& operator->() const {
-            return *this->get();
+            return *lpValue;
         };
 
         /*
-        &TType - Instance of TType
+            &TType - Instance of TType
         */
         inline TType* operator&() const {
-            return this->get();
+            return lpValue;
         };
 
         /*
-        *TType - Pointer to TType
+            *TType - Pointer to TType
         */
         inline TType& operator*() const {
-            return *this->get();
+            return *lpValue;
         };
 
-
         /*
-        TType*(this) - Convert this to TType pointer
-        */
-        explicit inline operator TType*() const {
-            return this->get();
-        }
-
-        /*
-        TType&(this) - Convert this to TType reference
+            TType&(this) - Convert this to TType reference
         */
         inline operator TType&() const {
-            return *this->get();
+            return *lpValue;
         }
 
         /*
-        TType[0] - Pointer is TType array
+            TType[0] - Pointer is TType array
         */
         inline TType& operator[](int index) const {
-            return this->get()[index];
+            return lpValue[index];
         }
 
         /*
-        this() - TType is function pointer
+            this() - TType is function pointer
         */
         template <typename... TArgs>
         inline auto operator()(TArgs... args) {
-            return (*this->get())(args...);
+            return (*lpValue)(args...);
         }
 
         inline TType& operator=(TType value) {
@@ -272,7 +271,7 @@ public:
     };
 
     /*
-    __cdecl function declaration
+        __cdecl function declaration
     */
     template <typename TRet, typename... TArgs>
     class Func<MethodCall<TRet, TArgs...>> : protected Func<TRet> {
@@ -290,7 +289,7 @@ public:
     };
 
     /*
-    __stdcall function declaration
+        __stdcall function declaration
     */
     template <typename TRet, typename... TArgs>
     class Func<StdMethodCall<TRet, TArgs...>> : protected Func<TRet> {
@@ -308,7 +307,7 @@ public:
     };
 
     /*
-    __thiscall function declaration
+        __thiscall function declaration
     */
     template <typename TRet, class TThis, typename... TArgs>
     class Func<MemberCall<TRet, TThis, TArgs...>> : protected Func<TRet> {

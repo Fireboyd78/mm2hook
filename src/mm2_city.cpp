@@ -4,5 +4,5 @@ using namespace MM2;
 /*
     sdlCommon
 */
-HOOK_DECLARE(0x62B090, sdlCommon::sm_CamPos);
-HOOK_DECLARE(0x62B0A0, sdlCommon::sm_LightTable);
+declfield(sdlCommon::sm_CamPos)     (0x62B090);
+declfield(sdlCommon::sm_LightTable) (0x62B0A0);

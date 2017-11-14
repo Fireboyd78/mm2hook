@@ -1,6 +1,23 @@
 #include "mm2_rgl.h"
 using namespace MM2;
 
+declfield(MM2::vglCloudMapEnable)   (0x661928);
+
+declfield(MM2::vglVertex)           (0x661970);
+
+declfield(MM2::vglCurrentColor)     (0x661974);
+declfield(MM2::vglVCT1)             (0x682B48);
+declfield(MM2::vglCurrentNZ)        (0x682B4C);
+declfield(MM2::vglCurrentNX)        (0x682B50);
+declfield(MM2::vglCurrentNY)        (0x682B54);
+declfield(MM2::vglCount)            (0x682B58);
+declfield(MM2::vglCurrentT)         (0x682B5C);
+declfield(MM2::vglCurrentS)         (0x682B60);
+declfield(MM2::vglVNT1)             (0x682B68);
+declfield(MM2::vglCloudMapTexture)  (0x682B74);
+
+declfield(MM2::mtxstack)            (0x682F98);
+
 /* psdl.obj */
 
 void    MM2::vglTexCoord2f          (float u, float v)                                          { return _StaticThunk<0x45CFD0>::Call<void>(u, v); }

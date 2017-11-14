@@ -44,7 +44,7 @@ void luaSetGlobals()
     if (!isMainLuaLoaded)
         return;
 
-    mmGameManager *gameMgr = mmGameManager::Instance();
+    mmGameManager *gameMgr = mmGameManager::Instance;
 
     auto pGame = (gameMgr != NULL) ? gameMgr->getGame() : NULL;
     auto pPlayer = (pGame != NULL) ? pGame->getPlayer() : NULL;

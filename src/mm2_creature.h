@@ -13,22 +13,22 @@ namespace MM2
     namespace $
     {
         namespace  pedRagdollMgr {
-            HOOK_EXPORT(0x0057B8B0, _MemberFunc<void>, $$ctor);
-            HOOK_EXPORT(0x0057B910, _MemberFunc<void>, $$dtor);
+            declhook(0x57B8B0, _MemberFunc<void>, $$ctor);
+            declhook(0x57B910, _MemberFunc<void>, $$dtor);
 
-            HOOK_EXPORT(0x006B4740, _Type<MM2::pedRagdollMgr *>, Instance);
-            HOOK_EXPORT(0x0057B9B0, _MemberFunc<void>, Init);
+            declhook(0x57B9B0, _MemberFunc<void>, Init);
         }
     }
     
     class pedRagdollMgr : public asNode {
     public:
+        static ageHook::Type<pedRagdollMgr *> Instance;
+
         AGE_API pedRagdollMgr(void) {
             PUSH_VTABLE();
             $::pedRagdollMgr::$$ctor(this);
             POP_VTABLE();
         }
-
 
         AGE_API virtual ~pedRagdollMgr(void) {
             PUSH_VTABLE();
@@ -40,11 +40,5 @@ namespace MM2
         AGE_API void Init(int numThings, char** things) {
             $::pedRagdollMgr::Init(this, numThings, things);
         }
-
-        static pedRagdollMgr * Instance(void) {
-            return $::pedRagdollMgr::Instance;
-        };
     };
-
-
 }

@@ -10,15 +10,15 @@ NAKED void x(LPCSTR str, ...) { \
     __asm jmp dword ptr ds:$##x \
 }
 
-HOOK_EXPORT(0x4C9720, _Func<void>, $Printf);
-HOOK_EXPORT(0x4C9750, _Func<void>, $Messagef);
-HOOK_EXPORT(0x4C9780, _Func<void>, $Displayf);
-HOOK_EXPORT(0x4C97B0, _Func<void>, $Warningf);
-HOOK_EXPORT(0x4C97E0, _Func<void>, $Errorf);
-HOOK_EXPORT(0x4C9810, _Func<void>, $Quitf);
-HOOK_EXPORT(0x4C9850, _Func<void>, $Abortf);
+declhook(0x4C9720, _Func<void>, $Printf);
+declhook(0x4C9750, _Func<void>, $Messagef);
+declhook(0x4C9780, _Func<void>, $Displayf);
+declhook(0x4C97B0, _Func<void>, $Warningf);
+declhook(0x4C97E0, _Func<void>, $Errorf);
+declhook(0x4C9810, _Func<void>, $Quitf);
+declhook(0x4C9850, _Func<void>, $Abortf);
 
-HOOK_EXPORT(0x534790, _Func<char *>, $AngelReadString);
+declhook(0x534790, _Func<char *>, $AngelReadString);
 
 namespace MM2
 {

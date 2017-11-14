@@ -4,4 +4,4 @@ using namespace MM2;
 /*
     datOutput
 */
-HOOK_DECLARE(0x6A3D40, datOutput::sm_Stream);
+declfield(datOutput::sm_Stream)(0x6A3D40);
