@@ -63,6 +63,7 @@ namespace MM2
         */
 
         virtual AGE_API void Reset(void)                    PURE;
+        virtual AGE_API Vector3 const & SetPosition()       PURE;
         virtual AGE_API int IsVisible(gfxViewport const * a1)
                                                             { return ageHook::Thunk<0x4649F0>::Call<int>(this, a1); }
 
@@ -96,7 +97,7 @@ namespace MM2
                                                             { ageHook::Thunk<0x4630B0>::Call<void>(this); }
         virtual AGE_API int SetupGfxLights(Matrix34 const & a1)
                                                             { return ageHook::Thunk<0x464670>::Call<int>(this, a1); }
-        virtual AGE_API phBound const * GetBound(int a1)    { return ageHook::Thunk<0x4648C0>::Call<phBound const*>(this, a1); };
+        virtual AGE_API phBound * GetBound(int a1)          { return ageHook::Thunk<0x4648C0>::Call<phBound *>(this, a1); };
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<lvlInstance>("lvlInstance")
