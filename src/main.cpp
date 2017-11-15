@@ -1,5 +1,6 @@
 #include "handlers\bugfix_handlers.h"
 #include "handlers\feature_handlers.h"
+#include "discord_presence.h"
 #include "main.h"
 
 using namespace MM2;
@@ -469,6 +470,8 @@ private:
             Initialize the rest of the handlers
             Order doesn't really matter, just whatever looks neat
         */
+
+		InstallHandler<discordRichPresence>("discordRichPresence");
 
         InstallHandler<aiPathHandler>("aiPath");
         InstallHandler<aiPedestrianHandler>("aiPedestrian");
