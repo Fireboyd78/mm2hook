@@ -58,7 +58,14 @@ void InstallCallback(LPCSTR name,
                      auto_ptr lpAddr,
                      std::initializer_list<cbInfo> callbacks)
 {
-    LogFile::Format(" - Installing callback [%08X] for '%s':\n", lpAddr, name);
+    if (name != NULL)
+    {
+        LogFile::Format(" - Installing callback [%08X] for '%s':\n", lpAddr, name);
+    }
+    else
+    {
+        LogFile::Format(" - Installing callback [%08X]:\n", lpAddr);
+    }
 
     if (description != NULL)
         LogFile::Format(" - Description: %s\n", description);
