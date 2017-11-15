@@ -225,10 +225,20 @@ void ReloadScript()
     LogFile::WriteLine("Reloading main script...");
     LoadMainScript();
 
-    auto hud = Lua::getGlobal<MM2::mmHUD *>(L, "hud");
+    mmGameManager *mgr = mmGameManager::Instance;
+    auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
 
-    if (hud != NULL)
-        hud->SetMessage("Lua script reloaded.", 3.5, 0);
+    if (gamePtr != NULL)
+    {
+        auto hud = Lua::getGlobal<MM2::mmHUD *>(L, "hud");
+
+        if (hud != NULL)
+            hud->SetMessage("Lua script reloaded.", 3.5, 0);
+    }
+    else
+    {
+        LogFile::WriteLine("Lua script reloaded.\n");
+    }
 }
 
 bool MM2Lua::IsLoaded()
