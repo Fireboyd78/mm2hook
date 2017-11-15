@@ -62,14 +62,14 @@ namespace MM2
             lvlInstance virtuals
         */
 
-        virtual AGE_API void Reset(void)                    PURE;
-        virtual AGE_API Vector3 const & SetPosition()       PURE;
+        virtual AGE_API void Reset()                        PURE;
+        virtual AGE_API Vector3 const & GetPosition()       PURE;
         virtual AGE_API int IsVisible(gfxViewport const * a1)
                                                             { return ageHook::Thunk<0x4649F0>::Call<int>(this, a1); }
 
-        virtual AGE_API Matrix34 const & GetMatrix(Matrix34 &)
+        virtual AGE_API Matrix34 const & GetMatrix(Matrix34 & a1)
                                                             PURE;
-        virtual AGE_API void SetMatrix(Matrix34 const &)    PURE;
+        virtual AGE_API void SetMatrix(Matrix34 const & a1) PURE;
         
         virtual AGE_API void SetVariant(int a1)             { ageHook::Thunk<0x4643D0>::Call<void>(this, a1); }
         virtual AGE_API float const GetRadius()             { return ageHook::Thunk<0x4643E0>::Call<float>(this); }

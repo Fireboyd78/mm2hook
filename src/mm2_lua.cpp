@@ -263,6 +263,8 @@ void MM2Lua::Initialize() {
     aiMap::BindLua(L);
     vehCar::BindLua(L);
     vehCarDamage::BindLua(L);
+    vehCarSim::BindLua(L);
+    vehCarModel::BindLua(L);
     
 }
 
