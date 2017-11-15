@@ -8,6 +8,7 @@ namespace MM2
     class lvlLevel;
     class lvlSDL;
 
+    // External declarations
     extern class lvlInstance;
 
     class lvlLevel {

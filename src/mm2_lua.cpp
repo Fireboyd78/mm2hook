@@ -44,6 +44,8 @@ void luaSetGlobals()
     if (!isMainLuaLoaded)
         return;
 
+    LogFile::Write("Updating Lua globals...");
+
     mmGameManager *gameMgr = mmGameManager::Instance;
 
     auto pGame = (gameMgr != NULL) ? gameMgr->getGame() : NULL;
@@ -52,6 +54,8 @@ void luaSetGlobals()
 
     if (pHUD != NULL)
         Lua::setGlobal(L, "hud", pHUD);
+
+    LogFile::WriteLine("Done!");
 }
 
 LUAMOD_API int luaopen_MM2(lua_State * L)

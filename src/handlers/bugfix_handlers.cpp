@@ -4,7 +4,10 @@ using namespace MM2;
 
 int numPedUpdateAttempts = 0;
 
-//--AIPATHHANDLER--
+/*
+    aiPathHandler
+*/
+
 void aiPathHandler::UpdatePedestrians(void) {
     numPedUpdateAttempts = 0;
     $::aiPath::UpdatePedestrians(this);
@@ -18,9 +21,10 @@ void aiPathHandler::Install() {
     );
 }
 
+/*
+    aiPedestrianHandler
+*/
 
-
-//--AIPEDESTRIANHANDLER--
 void aiPedestrianHandler::Update(void) {
     if (numPedUpdateAttempts < 256) {
         ++numPedUpdateAttempts;
@@ -36,8 +40,10 @@ void aiPedestrianHandler::Install() {
     );
 }
 
+/*
+    aiPoliceForceHandler
+*/
 
-//--AIPOLICEFORCEHANDLER--
 void aiPoliceForceHandler::Reset(void) {
     // reset number of cops pursuing player
     // fixes incorrect music bug
@@ -54,8 +60,11 @@ void aiPoliceForceHandler::Install() {
         }
     );
 }
-\
-//-GFXIMAGEHANDLER
+
+/*
+    gfxImageHandler
+*/
+
 void gfxImageHandler::Scale(int width, int height) {
     width = *window_iWidth;
     height = *window_iHeight;
@@ -70,5 +79,3 @@ void gfxImageHandler::Install() {
         }
     );
 }
-
-

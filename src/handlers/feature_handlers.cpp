@@ -3,7 +3,30 @@
 
 using namespace MM2;
 
-//--asCullManagerHandler--
+// ==========================
+// Pointer hooks
+// ==========================
+
+ageHook::Type<float> obj_NoDrawThresh       ( 0x5C571C ); // default: 300.0
+ageHook::Type<float> obj_VLowThresh         ( 0x5C6658 ); // default: 200.0
+ageHook::Type<float> obj_LowThresh          ( 0x5C665C ); // default: 100.0
+ageHook::Type<float> obj_MedThresh          ( 0x5C6660 ); // default: 40.0
+
+ageHook::Type<float> sdl_VLowThresh         ( 0x5C5708 );  // default: 300.0
+ageHook::Type<float> sdl_LowThresh          ( 0x5C570C );  // default: 100.0
+ageHook::Type<float> sdl_MedThresh          ( 0x5C5710 );  // default: 50.0
+
+ageHook::Type<char[40]> cityName            ( 0x6B167C );
+ageHook::Type<char[40]> cityName2           ( 0x6B16A4 );
+
+ageHook::Type<int> timeOfDay                ( 0x62B068 );
+
+ageHook::Type<int> vehCar_bHeadlights       ( 0x627518 );
+
+/*
+    asCullManagerHandler
+*/
+
 void asCullManagerHandler::Init(int maxCullables, int maxCullables2D) {
     maxCullables = 1024;
     maxCullables2D = 256;
@@ -21,19 +44,10 @@ void asCullManagerHandler::Install() {
     );
 }
 
-//--cityLevelHandler--
-ageHook::Type<float> obj_NoDrawThresh(0x5C571C); // default: 300.0
-ageHook::Type<float> obj_VLowThresh(0x5C6658); // default: 200.0
-ageHook::Type<float> obj_LowThresh(0x5C665C); // default: 100.0
-ageHook::Type<float> obj_MedThresh(0x5C6660); // default: 40.0
+/*
+    cityLevelHandler
+*/
 
-ageHook::Type<float> sdl_VLowThresh(0x5C5708);  // default: 300.0
-ageHook::Type<float> sdl_LowThresh(0x5C570C);  // default: 100.0
-ageHook::Type<float> sdl_MedThresh(0x5C5710);  // default: 50.0
-
-ageHook::Type<int> timeOfDay(0x62B068);
-
-//generic functions
 const double cosNum = 1.570796;
 
 Vector3 addPitch(Vector3 *vec, float pitch) {
@@ -56,9 +70,9 @@ float normalize(float value) {
 
 Vector3 intToColor(int value) {
     return {
-        (float)((char)((value & 0xFF0000) >> 16) / 256.0),
-        (float)((char)((value & 0xFF00) >> 8) / 256.0),
-        (float)((char)((value & 0xFF)) / 256.0),
+        (float)((char)((value & 0xFF0000) >> 16) / 256.0f),
+        (float)((char)((value & 0xFF00) >> 8) / 256.0f),
+        (float)((char)((value & 0xFF)) / 256.0f),
     };
 }
 
@@ -195,7 +209,10 @@ void cityLevelHandler::Install() {
     );
 }
 
-/*----gfxPipelineHandler----*/
+/*
+    gfxPipelineHandler
+*/
+
 void gfxPipelineHandler::gfxApplySettings(void) {
     auto gfxInterface = &gfxInterfaces[gfxInterfaceChoice];
 
@@ -207,7 +224,6 @@ void gfxPipelineHandler::gfxApplySettings(void) {
     useInterface = gfxInterfaceChoice;
 }
 
-bool gfxPipelineHandler::isConsoleOpen = false;
 bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
 {
     // Inform Lua of any changes beforehand
@@ -215,36 +231,35 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
 
     switch (vKey) {
         // '~'
-    case VK_OEM_2: case VK_OEM_3:
+        case VK_OEM_2: case VK_OEM_3:
         // '`'
-    case VK_OEM_8:
-    {
-        // tell the game to open a chat box,
-        // and then use a local variable to check if it's open
-        mmGameManager *mgr = mmGameManager::Instance;
-        auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
-
-        if (gamePtr != NULL)
+        case VK_OEM_8:
         {
-            auto popup = gamePtr->getPopup();
+            // tell the game to open a chat box,
+            // and then use a local variable to check if it's open
+            mmGameManager *mgr = mmGameManager::Instance;
+            auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
 
-            if (popup != NULL) {
-                // don't try opening it again if it's already open
-                if (popup->IsEnabled() && isConsoleOpen)
-                    return true;
+            if (gamePtr != NULL)
+            {
+                auto popup = gamePtr->getPopup();
 
-                popup->ProcessChat();
-                isConsoleOpen = true;
+                if (popup != NULL) {
+                    // don't try opening it again if it's already open
+                    if (popup->IsEnabled() && g_bConsoleOpen)
+                        return true;
+
+                    popup->ProcessChat();
+                    g_bConsoleOpen = true;
+                }
             }
-        }
-    } return true;
+        } return true;
 
-    case VK_F7:
-    {
-        // TODO: make this a separate plugin
-        // toggle vehicle headlights
-        //vehCar_bHeadlights = !vehCar_bHeadlights;
-    } return true;
+        case VK_F7: {
+            // TODO: make this a separate plugin
+            // toggle vehicle headlights
+            //vehCar_bHeadlights = !vehCar_bHeadlights;
+        } return true;
     }
 
     return false;
@@ -559,8 +574,7 @@ bool insideTunnel = false;
 LPVOID sdlPage16Handler::blockPtr; // current block pointer
 LPVOID sdlPage16Handler::attributePtr; // current attribute pointer
 
-// this MUST clean up the stack, hence the stdcall
-void __stdcall sdlPage16Handler::SetAttributePointer(LPVOID lpBlock) {
+void sdlPage16Handler::SetAttributePointer(LPVOID lpBlock) {
     attributePtr = lpBlock;
 }
 
@@ -638,10 +652,11 @@ void sdlPage16Handler::Install() {
     );
 }
 
-/*--vglHandler--*/
+/*
+    vglHandler
+*/
 
-//PRIVATE
-unsigned int vglHandler::GetAdjustedColor(gfxDrawMode drawMode, unsigned int color) {
+unsigned int GetAdjustedColor(gfxDrawMode drawMode, unsigned int color) {
     if (sdlPage16Handler::blockPtr != NULL)
     {
         // fullbright
@@ -713,7 +728,6 @@ unsigned int vglHandler::GetAdjustedColor(gfxDrawMode drawMode, unsigned int col
     return sdlPage16::GetShadedColor(color, vglResultColor.color);
 }
 
-//PUBLIC
 void vglHandler::vglBeginShaded(gfxDrawMode drawMode, int p1) {
     // Save current vgl color
     vglColor = *vglCurrentColor;
@@ -783,9 +797,9 @@ void vglHandler::Install() {
     }
 }
 
-/*--mmGameMusicDataHandler--*/
-ageHook::Type<char[40]> cityName(0x6B167C);
-ageHook::Type<char[40]> cityName2(0x6B16A4);
+/*
+    mmGameMusicDataHandler
+*/
 
 bool mmGameMusicDataHandler::LoadAmbientSFX(LPCSTR name) {
     char buffer[80];
@@ -807,7 +821,10 @@ void mmGameMusicDataHandler::Install() {
 }
 
 
-/*---vehCarAudioContainerHandler---*/
+/*
+    vehCarAudioContainerHandler
+*/
+
 void vehCarAudioContainerHandler::SetSirenCSVName(LPCSTR name) {
     char buffer[80];
     sprintf(buffer, "%spolicesiren", *cityName);
@@ -837,18 +854,25 @@ void datCallbackExtensionHandler::Install() {
     InstallPatch("datCallback Code Cave", { 0xFF, 0xE1 }, { 0x4C7BE3 });
 }
 
-/*--lvlHandler--*/
+/*
+    lvlHandler
+*/
+
 // no error checking or resetting done
 int lvl_aiRoad = 0;
 
 int lvl_aiRoom = 0;
 int lvl_aiRoomId = 0;
 
+bool bRoadDebug = false;
+
 // generic handler for propulation stuff
 void lvlHandler::SetAIRoad(const lvlSDL *lvlSDL, int road, bool p3) {
     lvl_aiRoad = road;
 
-    Warningf("Propulating road %d", road);
+    if (bRoadDebug)
+        Warningf("Propulating road %d", road);
+
     lvlAiMap::SetRoad(lvlSDL, road, p3);
 };
 
@@ -859,7 +883,7 @@ int lvlHandler::GetAIRoom(int room) {
     return lvl_aiRoom;
 };
 
-/*void EnumerateSDL(int p1, void(*iter)(const void *, int, int, int, const ushort *, void *), void *context) {
+void lvlHandler::EnumerateSDL(int p1, SDLIteratorCB iter, void *context) {
     int *page = (*getPtr<int**>(this, 0x54))[p1];
 
     ushort *attributes = *getPtr<ushort*>(page, 0x14);
@@ -882,7 +906,7 @@ int lvlHandler::GetAIRoom(int room) {
         }
 
     } while (!(attribute & 0x80));
-}*/
+}
 
 void lvlHandler::InvalidCommand(int cmd, void *attrPtr, void *roadPtr) {
     int type = ((cmd >> 3) & 0xF);
@@ -901,26 +925,7 @@ void lvlHandler::InvalidCommand(int cmd, void *attrPtr, void *roadPtr) {
 };
 
 void lvlHandler::Install() {
-    // patches the Quitf call in lvlSDL::Enumerate
-    InstallPatch({
-        0x8B, 0x45 , 0x10,  // mov eax, [ebp+arg_8]
-        0x50,               // push eax     ; roadPtr
-        0x57,               // push edi     ; attrPtr
-        0x53,               // push ebx     ; cmd
-
-                            // 0x45BEEE
-                            0x90,
-                            0x90, 0x90, 0x90, 0x90, 0x90,
-    }, {
-        0x45BEE8,
-    });
-
-    // invalid command fix
-    InstallPatch({
-        0x90, 0x90, 0x90, 0x90, 0x90, 0x90,
-    }, {
-        0x45BE84,
-    });
+    bRoadDebug = datArgParser::Get("roadDebug");
 
     InstallCallback("lvlAiMap::SetRoad", "Allows for more detailed information when propulating roads.",
         &SetAIRoad, {
@@ -934,22 +939,49 @@ void lvlHandler::Install() {
         }
     );
 
-    InstallCallback("lvlSDL::Enumerate", "Hooks a call to Quitf to print out more detailed information.",
-        &InvalidCommand, {
-            cbHook<CALL>(0x45BEF4),
-        }
-    );
-
-    /*
-    InstallCallback("lvlSDL::Enumerate", "New enumerate function.",
-    &EnumerateSDL, {
-    cbHook<JMP>(0x45BE50),
+    if (datArgParser::Get("sdlEnumTest"))
+    {
+        InstallCallback("lvlSDL::Enumerate", "New enumerate function.",
+            &EnumerateSDL, {
+                cbHook<JMP>(0x45BE50),
+            }
+        );
     }
-    );
-    */
+    else
+    {
+        // patches the Quitf call in lvlSDL::Enumerate
+        InstallPatch({
+            0x8B, 0x45 , 0x10,  // mov eax, [ebp+arg_8]
+            0x50,               // push eax     ; roadPtr
+            0x57,               // push edi     ; attrPtr
+            0x53,               // push ebx     ; cmd
+
+            // 0x45BEEE
+            0x90,
+            0x90, 0x90, 0x90, 0x90, 0x90,
+        }, {
+            0x45BEE8,
+        });
+
+        // invalid command fix
+        InstallPatch({
+            0x90, 0x90, 0x90, 0x90, 0x90, 0x90,
+        }, {
+            0x45BE84,
+        });
+
+        InstallCallback("lvlSDL::Enumerate", "Hooks a call to Quitf to print out more detailed information.",
+            &InvalidCommand, {
+                cbHook<CALL>(0x45BEF4),
+            }
+        );
+    }   
 }
 
-/*--memSafeHeapHandler--*/
+/*
+    memSafeHeapHandler
+*/
+
 int g_heapSize = 128;
 
 void memSafeHeapHandler::Init(void *memAllocator, unsigned int heapSize, bool p3, bool p4, bool checkAlloc) {
@@ -971,13 +1003,16 @@ void memSafeHeapHandler::Install() {
     );
 }
 
-/*--mmGameHandler--*/
+/*
+    mmGameHandler
+*/
+
 void mmGameHandler::SendChatMessage(char *message) {
-    if (gfxPipelineHandler::isConsoleOpen) {
+    if (g_bConsoleOpen) {
         MM2Lua::SendCommand(message);
 
         // return normal chatbox behavior
-        gfxPipelineHandler::isConsoleOpen = false;
+        g_bConsoleOpen = false;
     }
     else {
         LogFile::Format("Got chat message: %s\n", message);
@@ -998,7 +1033,10 @@ void mmGameHandler::Install() {
     );
 }
 
-/*---mmDirSndHandler--*/
+/*
+    mmDirSndHandler
+*/
+
 mmDirSnd* mmDirSndHandler::Init(ulong sampleRate, bool enableStero, int p3, int volume, char *deviceName, short p6, short p7) {
     if (*deviceName == '\0') {
         deviceName = "Primary Sound Driver";
@@ -1023,22 +1061,25 @@ void mmDirSndHandler::Install() {
     );
 }
 
-/*--BridgeFerryHandler--*/
 /*
-By default, bridges are treated as "Cullables" instead of "Drawables" (MM2 is weird)
-
-Before the patch, Cull calls dgBangerInstance::Draw, and Draw does nothing.
-With the patch, these 2 functions are swapped around, so Draw calls dgBangerInstance::Draw, and Cull does nothing.
-
-Problem solved, right? Nope. Cull is called by gizBridgeMgr::Cull, where as Draw is called by cityLevel::DrawRooms.
-
-gizBridgeMgr has it's own maximum draw distance for bridges, so gizBridgeMgr::Cull draws them fine at range.
-But cityLevel::DrawRooms uses the prop lod distances, so the bridges end up disappearing a lot sooner.
-
-A "solution" is to manually set the LOD distance values (see cityLevel::SetObjectDetail).
-But that would cause everything to be drawn further, and decrase FPS.
-It also seems to create rendering artifacts when set too high.
+    BridgeFerryHandler
 */
+/*
+    By default, bridges are treated as "Cullables" instead of "Drawables" (MM2 is weird)
+    
+    Before the patch, Cull calls dgBangerInstance::Draw, and Draw does nothing.
+    With the patch, these 2 functions are swapped around, so Draw calls dgBangerInstance::Draw, and Cull does nothing.
+    
+    Problem solved, right? Nope. Cull is called by gizBridgeMgr::Cull, where as Draw is called by cityLevel::DrawRooms.
+    
+    gizBridgeMgr has it's own maximum draw distance for bridges, so gizBridgeMgr::Cull draws them fine at range.
+    But cityLevel::DrawRooms uses the prop lod distances, so the bridges end up disappearing a lot sooner.
+    
+    A "solution" is to manually set the LOD distance values (see cityLevel::SetObjectDetail).
+    But that would cause everything to be drawn further, and decrase FPS.
+    It also seems to create rendering artifacts when set too high.
+*/
+
 void BridgeFerryHandler::Cull(int lod) {
     // TODO: Make this do something?
 }
@@ -1095,10 +1136,6 @@ void mmDashViewHandler::Install() {
     );
 }
 
-
-/*---FIELD DECLARATIONS---*/
-#ifndef features_declared
-#define features_declared
-//declfield(sdlPage16Handler::blockPtr);
-//declfield(sdlPage16Handler::attributePtr);
+#ifndef FEATURES_DECLARED
+#define FEATURES_DECLARED
 #endif

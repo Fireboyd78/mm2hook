@@ -39,21 +39,12 @@ namespace MM2
 
     class ioEventQueue {
     public:
-        AGE_API static bool Pop(ioEvent *outEvent) {
-            return ageHook::StaticThunk<0x4BA930>::Call<bool>(outEvent);
-        };
-
-        AGE_API static bool Peek(ioEvent *outEvent, int *idx) {
-            return ageHook::StaticThunk<0x4BA980>::Call<bool>(outEvent, idx);
-        };
-
-        AGE_API static void Queue(ioEvent::ioEventType type, int x, int y, int value) {
-            ageHook::StaticThunk<0x4BA9D0>::Call<void>(type, x, y, value);
-        };
-
-        AGE_API static void Command(void *command) {
-            ageHook::StaticThunk<0x4BAA50>::Call<void>(command);
-        };
+        AGE_API static bool Pop(ioEvent *outEvent)          { return ageHook::StaticThunk<0x4BA930>::Call<bool>(outEvent); };
+        AGE_API static bool Peek(ioEvent *outEvent, int *idx)
+                                                            { return ageHook::StaticThunk<0x4BA980>::Call<bool>(outEvent, idx); };
+        AGE_API static void Queue(ioEvent::ioEventType type, int x, int y, int value)
+                                                            { ageHook::StaticThunk<0x4BA9D0>::Call<void>(type, x, y, value); };
+        AGE_API static void Command(void *command)          { ageHook::StaticThunk<0x4BAA50>::Call<void>(command); };
     };
 
     class ioMouse {

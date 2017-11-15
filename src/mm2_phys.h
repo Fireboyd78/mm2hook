@@ -6,6 +6,13 @@
 namespace MM2
 {
     // Forward declarations
+    class phCollider;
+    class phInterialCs;
+    class dgPhysEntity;
+    class dgBangerInstance;
+    class phBound;
+
+    // External declarations
     extern class lvlInstance;
     
     class phCollider {
@@ -16,8 +23,7 @@ namespace MM2
 
     };
 
-
-    class dgPhysEntity : public Base{
+    class dgPhysEntity : public Base {
     public:
         virtual AGE_API void FirstImpactCallback() { ageHook::Thunk<0x42CC20>::Call<void>(this); }
         virtual AGE_API bool RequiresTerrainCollision() { return ageHook::Thunk<0x42CC10>::Call<bool>(this); }
@@ -52,6 +58,4 @@ namespace MM2
             .endClass();
         }
     };
-
-
 }

@@ -30,7 +30,7 @@ namespace MM2
             POP_VTABLE();
         }
 
-        AGE_API virtual ~pedRagdollMgr(void) {
+        virtual AGE_API ~pedRagdollMgr(void) {
             PUSH_VTABLE();
             $::pedRagdollMgr::$$dtor(this);
             POP_VTABLE();

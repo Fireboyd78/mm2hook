@@ -60,7 +60,7 @@ namespace MM2
         }
 
         AGE_API bool IsPlayer() {
-            return ageHook::Thunk<0x42C890>::Call<int>(this);
+            return ageHook::Thunk<0x42C890>::Call<bool>(this);
         }
 
         //todo: this is broken

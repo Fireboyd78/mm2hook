@@ -15,7 +15,6 @@ FILE *ageLogFile;
 // Pointer hooks
 // ==========================
 ageHook::Type<asNode> ROOT                              ( 0x661738 );
-ageHook::Type<int> vehCar_bHeadlights                   ( 0x627518 );
 
 /*
     ===========================================================================
