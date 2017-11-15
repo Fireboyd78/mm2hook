@@ -1049,7 +1049,7 @@ void BridgeFerryHandler::Draw(int lod) {
 
 void BridgeFerryHandler::Install() {
     // revert bridges/ferries to how they were in the betas
-    InstallCallback("Bridge/Ferry: Cull",
+    InstallCallback("Bridge/Ferry: Cull", "Quick'n dirty fix for fullbright bridges/ferries.",
         &Cull, {
             cbHook<CALL>(0x5780BC), // gizBridgeMgr::Cull
             cbHook<CALL>(0x5798F0), // gizFerryMgr::Cull
