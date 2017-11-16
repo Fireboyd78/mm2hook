@@ -265,7 +265,8 @@ void MM2Lua::Initialize() {
     vehCarDamage::BindLua(L);
     vehCarSim::BindLua(L);
     vehCarModel::BindLua(L);
-    
+    vehBreakableMgr::BindLua(L);
+    vehBreakable::BindLua(L);
 }
 
 void MM2Lua::Reset()

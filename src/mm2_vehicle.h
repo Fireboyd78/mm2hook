@@ -2,6 +2,7 @@
 #include "mm2_common.h"
 #include "mm2_inst.h"
 #include "mm2_game.h"
+#include "mm2_breakable.h"
 
 namespace MM2
 {
@@ -11,9 +12,20 @@ namespace MM2
     class vehPoliceCarAudio;
 
     class vehCarModel : public lvlInstance {
+    protected:
+        ageHook::Field<0xAC, vehBreakableMgr *> _mechanicalBreakableMgr;
+        ageHook::Field<0xA0, vehBreakableMgr *> _genericBreakableMgr;
     public:
         AGE_API vehCarModel()                               { ageHook::Thunk<0x4CCF20>::Call<void>(this); }
         AGE_API ~vehCarModel()                              { ageHook::Thunk<0x4CCF80>::Call<void>(this); }
+
+        inline vehBreakableMgr * getGenBreakableMgr(void) const {
+            return _genericBreakableMgr.get(this);
+        }
+        
+        inline vehBreakableMgr * getMechBreakableMgr(void) const {
+            return _mechanicalBreakableMgr.get(this);
+        }
 
         AGE_API void BreakElectrics(Vector3* a1)            { ageHook::Thunk<0x4CEFE0>::Call<void>(this, a1); }
         AGE_API void ClearDamage()                          { ageHook::Thunk<0x4CDFF0>::Call<void>(this); }
@@ -29,7 +41,7 @@ namespace MM2
         virtual AGE_API Vector3 const & GetPosition() override
                                                             { return ageHook::Thunk<0x4CEF50>::Call<Vector3 const &>(this); }
         virtual AGE_API Matrix34 const & GetMatrix(Matrix34 const & a1)
-                                                            { return ageHook::Thunk<0x4CEF50>::Call<Matrix34 const &>(this, a1); }
+                                                            { return ageHook::Thunk<0x4CEF90>::Call<Matrix34 const &>(this, a1); }
         virtual AGE_API void SetMatrix(Matrix34 const & a1) override 
                                                             { ageHook::Thunk<0x4CEFA0>::Call<void>(this); }
         virtual AGE_API dgPhysEntity* GetEntity() override  { return ageHook::Thunk<0x4CEFC0>::Call<dgPhysEntity*>(this); }
@@ -50,6 +62,9 @@ namespace MM2
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<vehCarModel>("vehCarModel")
+                .addFunction("getGenBreakableMgr", &getGenBreakableMgr)
+                .addFunction("getMechBreakableMgr", &getMechBreakableMgr)
+                .addFunction("GetPosition", &GetPosition)
                 .addFunction("Reset", &Reset)
                 .addFunction("BreakElectrics", &BreakElectrics)
                 .addFunction("ClearDamage", &ClearDamage)
@@ -74,7 +89,7 @@ namespace MM2
         AGE_API void ReconfigureDrivetrain()                { ageHook::Thunk<0x4CC0B0>::Call<void>(this); }
         AGE_API void SetHackedImpactParams()                { ageHook::Thunk<0x4CC080>::Call<void>(this); }
         AGE_API void RestoreImpactParams()                  { ageHook::Thunk<0x4CC050>::Call<void>(this); }
-
+        AGE_API void SetResetPos(Vector3 * a1)              { ageHook::Thunk<0x4CC830>::Call<void>(this, a1); }
         /*
             asNode virtuals
         */
@@ -94,6 +109,7 @@ namespace MM2
                 .addFunction("ReconfigureDrivetrain", &ReconfigureDrivetrain)
                 .addFunction("SetHackedImpactParams", &SetHackedImpactParams)
                 .addFunction("RestoreImpactParams", &RestoreImpactParams)
+                .addFunction("SetResetPos", &SetResetPos)
                 .endClass();
         }
     private:
@@ -160,9 +176,13 @@ namespace MM2
             return _model.get(this);
         }
 
-        AGE_API void SetDrivable(BOOL a1, BOOL a2)          { ageHook::Thunk<0x42C2C0>::Call<void>(this, a1, a2); }
+
         AGE_API void ClearDamage()                          { ageHook::Thunk<0x42C450>::Call<void>(this); }
         AGE_API bool IsPlayer()                             { return ageHook::Thunk<0x42C890>::Call<bool>(this); }
+        AGE_API void Init(char const* a1, int a2, int a3, bool a4, bool a5)
+                                                            { ageHook::Thunk<0x42BE10>::Call<void>(this, a1, a2, a3, a4, a5); }
+        AGE_API void InitAudio(char const* a1, int a2)      { ageHook::Thunk<0x42C1F0>::Call<void>(this, a1, a2); }
+        AGE_API void SetDrivable(BOOL a1, BOOL a2)          { ageHook::Thunk<0x42C2C0>::Call<void>(this, a1, a2); }
 
         /*
             dgPhysEntity virtuals
@@ -179,9 +199,12 @@ namespace MM2
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<vehCar>("vehCar")
+                .addConstructor(LUA_ARGS(bool))
                 .addFunction("getCarDamage", &getCarDamage)
                 .addFunction("getCarSim", &getCarSim)
                 .addFunction("getModel", &getModel)
+                .addFunction("Init", &Init)
+                .addFunction("InitAudio", &InitAudio)
                 .addFunction("GetInst", &GetInst)
                 .addFunction("ClearDamage", &ClearDamage)
                 .addFunction("SetDrivable", &SetDrivable, LUA_ARGS(bool,bool))
