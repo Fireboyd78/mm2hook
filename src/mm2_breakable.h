@@ -30,8 +30,8 @@ namespace MM2
                                                             { ageHook::Thunk<0x4D86A0 >::Call<void>(this, a1, a2, a3, a4, a5); }
         AGE_API void Create(char const * a1, char const * a2, class modStatic * * a3, int a4, int a5)
                                                             { ageHook::Thunk<0x4D8600 >::Call<void>(this, a1, a2, a3, a4, a5); }
-        AGE_API void Eject(vehBreakable* a1, float a2)      { ageHook::Thunk<0x4D8940>::Call<void>(this, a1, a2); }
-        AGE_API void EjectAll(float a1)                     { ageHook::Thunk<0x4D8BB0>::Call<void>(this, a1); }
+        AGE_API void Eject(vehBreakable* a1, int a2)        { ageHook::Thunk<0x4D8940>::Call<void>(this, a1, a2); }
+        AGE_API void EjectAll(int a1)                       { ageHook::Thunk<0x4D8BB0>::Call<void>(this, a1); }
         AGE_API vehBreakable* Get(int a1)                   { return ageHook::Thunk<0x4D86F0>::Call<vehBreakable*>(this, a1); }
 
         static void BindLua(LuaState L) {
