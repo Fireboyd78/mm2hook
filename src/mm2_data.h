@@ -161,6 +161,16 @@ namespace MM2
             return reinterpret_cast<unsigned int&>(callback) | flags;
         }
 
+        template <typename ...TArgs>
+        void virtual_callback(uint callback, TArgs ...args) const {
+            (_class->*reinterpret_cast<VirtualCall<void, Base, TArgs...> &>(callback))(args...);
+        }
+
+        template <typename ...TArgs>
+        void method_callback(uint callback, TArgs ...args) const {
+            reinterpret_cast<MethodCall<void, TArgs...> &>(callback)(args...);
+        }
+
     public:
         AGE_API datCallback()
             : _class(NULL)
@@ -191,16 +201,6 @@ namespace MM2
             , _callback(0x4C7BE3 | ParamCount2)
             , _parameter(parameter)
         { }
-
-        template <typename ...TArgs>
-        void virtual_callback(uint callback, TArgs ...args) const {
-            (_class->*reinterpret_cast<VirtualCall<void, Base, TArgs...> &>(callback))(args...);
-        }
-
-        template <typename ...TArgs>
-        void method_callback(uint callback, TArgs ...args) const {
-            reinterpret_cast<MethodCall<void, TArgs...> &>(callback)(args...);
-        }
 
         AGE_API void Call(void* parameter)
         {
