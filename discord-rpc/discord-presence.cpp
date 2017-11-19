@@ -92,9 +92,10 @@ int discordHandler::GameInit(void) {
     ageHook::Thunk<0x412710>::Call<int>(this); // mmGame::init
 
     mmCityInfo * cityInfo = CityListPtr->GetCurrentCity();
+    mmVehInfo * vehInfo = VehicleListPtr->GetVehicleInfo(vehicleName);
 
     g_mm2Info.city = cityInfo->GetLocalisedName(); // TODO: get localised name
-    g_mm2Info.vehicle = vehicleName;
+    g_mm2Info.vehicle = vehInfo->GetDescription();
     g_mm2Info.race = raceName;
     g_mm2Info.inRace = true;
     g_mm2Info.inMultiplayer = false; // TODO: update this properly
