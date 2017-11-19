@@ -23,7 +23,7 @@ namespace MM2
         BOOL valid;
         int unlockScore;
         int unlockFlags;
-        int unk_F4;
+        BOOL isLocked;
         int horsepower;
         int topSpeed;
         int durability;
