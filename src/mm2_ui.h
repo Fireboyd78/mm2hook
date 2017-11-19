@@ -6,11 +6,13 @@
 namespace MM2
 {
     // Forward declarations
-    class UIMenu;
+    union eqEvent;
+    class uiWidget;
+    class UIButton;
     class UIBMButton;
     class UIIcon;
-    class UIButton;
     class UILabel;
+    class UIMenu;
     class mmPopup;
 
     //External declarations
@@ -19,61 +21,94 @@ namespace MM2
     namespace $
     {
         namespace UIMenu {
-            declhook(0x004E0980, _MemberFunc<void>, AssignBackground);
-            declhook(0x004E1A90, _MemberFunc<MM2::UIButton *>, AddButton);
-            declhook(0x004E2340, _MemberFunc<MM2::UIBMButton *>, AddBMButton);
-            declhook(0x004E2340, _MemberFunc<MM2::UIIcon *>, AddIcon);
-            declhook(0x004E1BB0, _MemberFunc<MM2::UILabel *>, AddLabel);
+            declhook(0x4E0980, _MemberFunc<void>, AssignBackground);
+            declhook(0x4E1A90, _MemberFunc<MM2::UIButton *>, AddButton);
+            declhook(0x4E2340, _MemberFunc<MM2::UIBMButton *>, AddBMButton);
+            declhook(0x4E2340, _MemberFunc<MM2::UIIcon *>, AddIcon);
+            declhook(0x4E1BB0, _MemberFunc<MM2::UILabel *>, AddLabel);
         }
     }
+
+    union eqEvent {
+        struct data {
+            int p0;
+            int p1;
+            int p2;
+            int p3;
+            int p4;
+            int p5;
+            int p6;
+            int p7;
+            int p8;
+        } _s;
+        char buffer[36];
+    };
     
-    class UILabel {
+    class uiWidget : public asNode {
+        virtual AGE_API void Disable(void)                  { ageHook::Thunk<0x4E7330>::Call<void>(this); }
+        virtual AGE_API void Enable(void)                   { ageHook::Thunk<0x4E7340>::Call<void>(this); }
+        virtual AGE_API void TurnOn(void)                   { ageHook::Thunk<0x4E7350>::Call<void>(this); }
+        virtual AGE_API void TurnOff(void)                  { ageHook::Thunk<0x4E7370>::Call<void>(this); }
+        virtual AGE_API void SetReadOnly(BOOL readonly)     { ageHook::Thunk<0x4E7380>::Call<void>(this, readonly); }
+        virtual AGE_API void Action(eqEvent event)          { ageHook::Thunk<0x4E73A0>::Call<void>(this, event); }
+        virtual AGE_API void CaptureAction(eqEvent event)   { ageHook::Thunk<0x4E73B0>::Call<void>(this, event); }
+        virtual AGE_API void Switch(int a1)                 { ageHook::Thunk<0x4E7480>::Call<void>(this, a1); }
+        virtual AGE_API void EvalMouseX(float x)            { ageHook::Thunk<0x4E73C0>::Call<void>(this, x); }
+        virtual AGE_API char * ReturnDescription(void)      { return ageHook::Thunk<0x4E73D0>::Call<char *>(this); }
+        virtual AGE_API void SetPosition(float x, float y)
+                                                            { ageHook::Thunk<0x4E73E0>::Call<void>(this, x, y); }
+        virtual AGE_API float GetScreenHeight(void)         { return ageHook::Thunk<0x4E73F0>::Call<float>(this); }
+    };
+
+    class UIButton : public uiWidget {
     public:
-        void SetText(char* text) {
+        AGE_API void SetType(int type)                      { ageHook::Thunk<0x4ED140>::Call<void>(this, type); }
+
+        /*
+            asNode virtuals
+        */
+
+        virtual AGE_API void Update(void)                   { ageHook::Thunk<0x4A0DB0>::Call<void>(this); };
+
+        /*
+            uiWidget virtuals
+        */
+
+        virtual AGE_API void Disable(void)                  { ageHook::Thunk<0x4ED1F0>::Call<void>(this); }
+        virtual AGE_API void Enable(void)                   { ageHook::Thunk<0x4ED1D0>::Call<void>(this); }
+        virtual AGE_API void SetReadOnly(BOOL readOnly)     { ageHook::Thunk<0x4ED090>::Call<void>(this, readOnly); }
+        virtual AGE_API void Action(eqEvent event)          { ageHook::Thunk<0x4ED040>::Call<void>(this, event); }
+        virtual AGE_API void Switch(int a1)                 { ageHook::Thunk<0x4ED0D0>::Call<void>(this, a1); }
+    };
+
+
+    class UIBMButton : public uiWidget {
+
+    };
+
+    class UIIcon : public uiWidget {
+
+    };
+
+    class UILabel : public uiWidget {
+    public:
+        AGE_API void SetText(char* text) {
             ageHook::Thunk<0x4ED3A0>::Call<void>(this, text);
         }
 
-        void SetBlink(bool blink) {
+        AGE_API void SetBlink(bool blink) {
             ageHook::Thunk<0x4ED400>::Call<void>(this, blink);
         }
     };
 
-    class UIIcon {
-
-    };
-
-    class UIWidget {
-
-    };
-    class UIButton {
+    class UIMenu : public asNode {
     public:
-        virtual void SetReadOnly(bool readOnly) {
-            ageHook::Thunk<0x4ED090>::Call<void>(this, readOnly);
-        }
-        virtual void Enable() {
-            ageHook::Thunk<0x4ED1D0>::Call<void>(this);
-        }
-        virtual void Disable() {
-            ageHook::Thunk<0x4ED1F0>::Call<void>(this);
-        }
-        void SetType(int type) {
-            ageHook::Thunk<0x4ED140>::Call<void>(this, type);
-        }
-    };
-
-
-    class UIBMButton {
-
-    };
-
-    class UIMenu {
-    public:
-        AGE_API void AddButton(int unk, char* name, float f1, float f2, float f3, float f4, int i1, int i2, MM2::datCallback callback , int i3) {
+        AGE_API void AddButton(int unk, char* name, float f1, float f2, float f3, float f4, int i1, int i2, MM2::datCallback callback, int i3) {
             $::UIMenu::AddButton(this, unk, name, f1, f2, f3, f4, i1, i2, callback, i3);
         };
     };
 
-    class mmPopup {
+    class mmPopup : public asNode {
         // PUMain: 0x1C (size: 0xC8)
         // PUQuit: 0x20 (size: 0xC4)
         // PUExit: 0x24 (size: 0xBC)
@@ -87,21 +122,9 @@ namespace MM2
             return _game.get(this);
         };
 
-        AGE_API int IsEnabled(void) {
-            return ageHook::Thunk<0x42A280>::Call<int>(this);
-        };
-
-        AGE_API void Lock(void) {
-            ageHook::Thunk<0x42B4F0>::Call<void>(this);
-        };
-
-        AGE_API void Unlock(void) {
-            ageHook::Thunk<0x42B500>::Call<void>(this);
-        };
-
-        AGE_API void ProcessChat(void) {
-            ageHook::Thunk<0x42A400>::Call<void>(this);
-        };
+        AGE_API int IsEnabled(void)                         { return ageHook::Thunk<0x42A280>::Call<int>(this); };
+        AGE_API void Lock(void)                             { ageHook::Thunk<0x42B4F0>::Call<void>(this); };
+        AGE_API void Unlock(void)                           { ageHook::Thunk<0x42B500>::Call<void>(this); };
+        AGE_API void ProcessChat(void)                      { ageHook::Thunk<0x42A400>::Call<void>(this); };
     };
-
 }

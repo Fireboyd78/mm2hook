@@ -44,6 +44,8 @@ void luaSetGlobals()
     if (!isMainLuaLoaded)
         return;
 
+    LogFile::Write("Updating Lua globals...");
+
     mmGameManager *gameMgr = mmGameManager::Instance;
 
     auto pGame = (gameMgr != NULL) ? gameMgr->getGame() : NULL;
@@ -52,6 +54,8 @@ void luaSetGlobals()
 
     if (pHUD != NULL)
         Lua::setGlobal(L, "hud", pHUD);
+
+    LogFile::WriteLine("Done!");
 }
 
 LUAMOD_API int luaopen_MM2(lua_State * L)
@@ -136,8 +140,43 @@ LUAMOD_API int luaopen_MM2(lua_State * L)
             .addVariableRef("y", &Vector4::Y)
             .addVariableRef("z", &Vector4::Z)
             .addVariableRef("w", &Vector4::W)
-        .endClass();
+        .endClass()
+        
+         .beginClass<Matrix34>("Matrix34")
+                .addFactory([](float m11 = 0.0, float m12 = 0.0, float m13 = 0.0, float m14 = 0.0, float m21 = 0.0, float m22 = 0.0, float m23 = 0.0, float m24 = 0.0, float m31 = 0.0, float m32 = 0.0, float m33 = 0.0, float m34 = 0.0) {
+                auto mtx = new Matrix34();
+                mtx->m11 = m11;
+                mtx->m12 = m12;
+                mtx->m13 = m13;
+                mtx->m14 = m14;
 
+                mtx->m21 = m21;
+                mtx->m22 = m22;
+                mtx->m23 = m23;
+                mtx->m24 = m24;
+
+                mtx->m31 = m31;
+                mtx->m32 = m32;
+                mtx->m33 = m33;
+                mtx->m34 = m34;
+
+                return mtx;
+            }, LUA_ARGS(_opt<float>, _opt<float>, _opt<float>, _opt<float>, _opt<float>, _opt<float>, _opt<float>, _opt<float>, _opt<float>, _opt<float>, _opt<float>, _opt<float>))
+                .addVariableRef("m11", &Matrix34::m11)
+                .addVariableRef("m12", &Matrix34::m12)
+                .addVariableRef("m13", &Matrix34::m13)
+                .addVariableRef("m14", &Matrix34::m14)
+                .addVariableRef("m21", &Matrix34::m21)
+                .addVariableRef("m22", &Matrix34::m22)
+                .addVariableRef("m23", &Matrix34::m23)
+                .addVariableRef("m24", &Matrix34::m24)
+                .addVariableRef("m31", &Matrix34::m31)
+                .addVariableRef("m32", &Matrix34::m32)
+                .addVariableRef("m33", &Matrix34::m33)
+                .addVariableRef("m34", &Matrix34::m34)
+                .addFunction("Identity", &Matrix34::Identity)
+            .endClass();
+                
 
     // testing
     asLuaNode<asNode>::RegisterLua(L, "asNode");
@@ -186,10 +225,20 @@ void ReloadScript()
     LogFile::WriteLine("Reloading main script...");
     LoadMainScript();
 
-    auto hud = Lua::getGlobal<MM2::mmHUD *>(L, "hud");
+    mmGameManager *mgr = mmGameManager::Instance;
+    auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
 
-    if (hud != NULL)
-        hud->SetMessage("Lua script reloaded.", 3.5, 0);
+    if (gamePtr != NULL)
+    {
+        auto hud = Lua::getGlobal<MM2::mmHUD *>(L, "hud");
+
+        if (hud != NULL)
+            hud->SetMessage("Lua script reloaded.", 3.5, 0);
+    }
+    else
+    {
+        LogFile::WriteLine("Lua script reloaded.\n");
+    }
 }
 
 bool MM2Lua::IsLoaded()
@@ -213,14 +262,21 @@ void MM2Lua::Initialize() {
     LoadMainScript();
 
     //load specific luas
+    mmHudMap::BindLua(L);
     mmGameManager::BindLua(L);
     mmPlayer::BindLua(L);
     mmGame::BindLua(L);
+    lvlInstance::BindLua(L);
+    phBound::BindLua(L);
     lvlAiMap::BindLua(L);
     lvlAiRoad::BindLua(L);
     aiMap::BindLua(L);
-    
-    
+    vehCar::BindLua(L);
+    vehCarDamage::BindLua(L);
+    vehCarSim::BindLua(L);
+    vehCarModel::BindLua(L);
+    vehBreakableMgr::BindLua(L);
+    vehBreakable::BindLua(L);
 }
 
 void MM2Lua::Reset()

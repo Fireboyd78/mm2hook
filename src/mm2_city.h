@@ -72,6 +72,8 @@ namespace MM2
         /*0x48*/int Ambient; // looks like the alpha is ignored
     };
 
+    typename typedef void(*SDLIteratorCB)(const void *, int, int, int, const ushort *, void *);
+
     class sdlCommon {
     public:
         static ageHook::Type<Vector3> sm_CamPos;

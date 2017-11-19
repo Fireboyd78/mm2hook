@@ -17,6 +17,7 @@ namespace MM2
     // External declarations
     extern class asNode;
     extern class mmPopup;
+    extern class vehCar;
 
     namespace $
     {
@@ -39,7 +40,7 @@ namespace MM2
             POP_VTABLE();
         };
 
-        AGE_API virtual ~mmGame(void) {
+        virtual AGE_API ~mmGame(void) {
             PUSH_VTABLE();
             ageHook::Thunk<0x413940>::Call<void>(this);
             POP_VTABLE();
@@ -57,62 +58,30 @@ namespace MM2
             asNode virtuals
         */
 
-        AGE_API virtual void Update(void) {
-            ageHook::Thunk<0x413E90>::Call<void>(this); //Update);
-        };
-
-        AGE_API virtual void Reset(void) {
-            ageHook::Thunk<0x413D40>::Call<void>(this); //Reset);
-        };
-
-        AGE_API virtual void UpdatePaused(void) {
-            ageHook::Thunk<0x4144A0>::Call<void>(this); //UpdatePaused);
-        };
+        virtual AGE_API void Update(void)                   { ageHook::Thunk<0x413E90>::Call<void>(this); };
+        virtual AGE_API void Reset(void)                    { ageHook::Thunk<0x413D40>::Call<void>(this); };
+        virtual AGE_API void UpdatePaused(void)             { ageHook::Thunk<0x4144A0>::Call<void>(this); };
 
         /*
             mmGame virtuals
         */
 
-        AGE_API virtual int Init(void) {
-            return ageHook::Thunk<0x412710>::Call<int>(this);
-        };
-
-        AGE_API virtual void InitGameStrings(void) {
-            ageHook::Thunk<0x413650>::Call<void>(this);
-        };
-
-        AGE_API virtual void InitMyPlayer(void) PURE;
-
-        AGE_API virtual void InitOtherPlayers(void) {
-            ageHook::Thunk<0x4133F0>::Call<void>(this);
-        };
-
-        AGE_API virtual void InitGameObjects(void) PURE;
-        AGE_API virtual void InitHUD(void) PURE;
-        AGE_API virtual void UpdateGameInput(int) PURE;
-        AGE_API virtual void UpdateDebugKeyInput(int) PURE;
-        AGE_API virtual void UpdateGame(void) PURE;
-        AGE_API virtual void NextRace(void) PURE;
-
-        AGE_API virtual void HitWaterHandler(void) {
-            ageHook::Thunk<0x414290>::Call<void>(this);
-        };
-
-        AGE_API virtual void DropThruCityHandler(void) {
-            ageHook::Thunk<0x414280>::Call<void>(this);
-        };
-
-        AGE_API virtual void SendChatMessage(char *message) {
-            ageHook::Thunk<0x414E50>::Call<void>(this, message);
-        };
-
-        AGE_API virtual void SwitchState(int) PURE;
-
-        AGE_API virtual void BeDone(int p1) {
-            ageHook::Thunk<0x414D30>::Call<void>(this, p1);
-        };
-
-        AGE_API virtual void * GetWaypoints(void) PURE;
+        virtual AGE_API int Init(void)                      { return ageHook::Thunk<0x412710>::Call<int>(this); };
+        virtual AGE_API void InitGameStrings(void)          { ageHook::Thunk<0x413650>::Call<void>(this); };
+        virtual AGE_API void InitMyPlayer(void)             PURE;
+        virtual AGE_API void InitOtherPlayers(void)         { ageHook::Thunk<0x4133F0>::Call<void>(this); };
+        virtual AGE_API void InitGameObjects(void)          PURE;
+        virtual AGE_API void InitHUD(void)                  PURE;
+        virtual AGE_API void UpdateGameInput(int)           PURE;
+        virtual AGE_API void UpdateDebugKeyInput(int)       PURE;
+        virtual AGE_API void UpdateGame(void)               PURE;
+        virtual AGE_API void NextRace(void)                 PURE;
+        virtual AGE_API void HitWaterHandler(void)          { ageHook::Thunk<0x414290>::Call<void>(this); };
+        virtual AGE_API void DropThruCityHandler(void)      { ageHook::Thunk<0x414280>::Call<void>(this); };
+        virtual AGE_API void SendChatMessage(char *message) { ageHook::Thunk<0x414E50>::Call<void>(this, message); };
+        virtual AGE_API void SwitchState(int)               PURE;
+        virtual AGE_API void BeDone(int p1)                 { ageHook::Thunk<0x414D30>::Call<void>(this, p1); };
+        virtual AGE_API void * GetWaypoints(void)           PURE;
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<mmGame>("mmGame")
@@ -165,26 +134,17 @@ namespace MM2
 
     class mmGameMusicData {
     public:
-        AGE_API bool LoadAmbientSFX(LPCSTR name) {
-            return ageHook::Thunk<0x434060>::Call<bool>(this, name);
-        };
+        AGE_API bool LoadAmbientSFX(LPCSTR name)            { return ageHook::Thunk<0x434060>::Call<bool>(this, name); };
     };
 
     class mmHUD : public asNode {
     private:
         byte _buffer[0xB9C]; // unconfirmed
     public:
-        AGE_API void SetMessage(LPCSTR message, float duration, int p2) {
-            ageHook::Thunk<0x42E1F0>::Call<void>(this, message, duration, p2);
-        };
-
-        AGE_API void SetMessage(LPCSTR message) {
-            ageHook::Thunk<0x42E240>::Call<void>(this, message);
-        };
-
-        AGE_API void PostChatMessage(LPCSTR message) {
-            ageHook::Thunk<0x42D280>::Call<void>(this, message);
-        };
+        AGE_API void SetMessage(LPCSTR message, float duration, int p2)
+                                                            { ageHook::Thunk<0x42E1F0>::Call<void>(this, message, duration, p2); };
+        AGE_API void SetMessage(LPCSTR message)             { ageHook::Thunk<0x42E240>::Call<void>(this, message); };
+        AGE_API void PostChatMessage(LPCSTR message)        { ageHook::Thunk<0x42D280>::Call<void>(this, message); };
 
         static void RegisterLua(luaClassBinder<mmHUD> *lc) {
             asNode::RegisterLua(lc);
@@ -194,18 +154,46 @@ namespace MM2
         }
     };
 
-    class mmHudMap {
+    class mmHudMap : public asNode {
+    public:
+        AGE_API void Activate()                             { ageHook::Thunk<0x42EEE0>::Call<void>(this); }
+        AGE_API void Deactivate()                           { ageHook::Thunk<0x42EEF0>::Call<void>(this); }
+        AGE_API void SetOrient(bool a1)                     { ageHook::Thunk<0x42FA40>::Call<void>(this, a1); }
+        AGE_API void SetZoomIn(bool a1)                     { ageHook::Thunk<0x42FA20>::Call<void>(this, a1); }
+        AGE_API void ToggleMapOrient()                      { ageHook::Thunk<0x42FA10>::Call<void>(this); }
+        AGE_API void ToggleMapRes()                         { ageHook::Thunk<0x42FA00>::Call<void>(this); }
+        AGE_API bool GetOrient()                            { return ageHook::Thunk<0x42FA50>::Call<bool>(this); }
+        AGE_API bool GetZoomIn()                            { return ageHook::Thunk<0x42FA30>::Call<bool>(this); }
 
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<mmHudMap>("mmHudMap")
+                .addFunction("Activate", &Activate)
+                .addFunction("Deactivate", &Deactivate)
+                .addFunction("SetOrient", &SetOrient)
+                .addFunction("SetZoomIn", &SetZoomIn)
+                .addFunction("ToggleMapOrient", &ToggleMapOrient)
+                .addFunction("ToggleMapRes", &ToggleMapRes)
+                .addFunction("GetOrient", &GetOrient)
+                .addFunction("GetZoomIn", &GetZoomIn)
+                //.addFunction("GetCurrentMapMode", &GetCurrentMapMode)
+                //.addFunction("GetNextMapMode", &GetNextMapMode)
+                //.addFunction("SetMapMode", &SetMapMode)
+            .endClass();  
+        }
+    protected:
+        AGE_API int GetCurrentMapMode()                     { return ageHook::Thunk<0x42EF20>::Call<int>(this);}
+        AGE_API int GetNextMapMode()                        { return ageHook::Thunk<0x42EF00>::Call<int>(this); }
+        AGE_API void SetMapMode(int a1)                     { ageHook::Thunk<0x42EF30>::Call<void>(this, a1); }
     };
 
-    class mmPlayer {
+    class mmPlayer : public asNode {
     private:
         byte _buffer[0x23A4];
     protected:
         ageHook::Field<0x2C, vehCar> _car;
         ageHook::Field<0x288, mmHUD> _hud;
 
-        ageHook::Field<0x38A, mmHudMap *> _hudmap;
+        ageHook::Field<0x38A, mmHudMap> _hudmap;
 
     public:
         inline vehCar* getCar(void) const {
@@ -217,19 +205,49 @@ namespace MM2
         };
 
         inline mmHudMap* getHudmap(void) const {
-            return _hudmap.get(this);
+            return _hudmap.ptr(this);
         }
 
-        void ReInit(LPCSTR basename) {
-            ageHook::Thunk<0x4039B0>::Call<void>(this, basename);
-        }
+        AGE_API void EnableRegen(bool a1)                   { return ageHook::Thunk<0x406160>::Call<void>(this, a1); }
+        AGE_API float FilterSteering(float a1)              { return ageHook::Thunk<0x404C90>::Call<float>(this, a1); }
+        AGE_API bool IsMaxDamaged()                         { return ageHook::Thunk<0x406140>::Call<bool>(this); }
+        AGE_API void ResetDamage()                          { ageHook::Thunk<0x406180>::Call<void>(this); }
+        AGE_API void SetCamera(int a1, int a2)              { ageHook::Thunk<0x404710>::Call<void>(this, a1, a2); }
+        AGE_API void SetMPPostCam(Matrix34 * a1, float a2)  { ageHook::Thunk<0x404460>::Call<void>(this, a1, a2); }
+        AGE_API void SetPostRaceCam()                       { ageHook::Thunk<0x404350>::Call<void>(this); }
+        AGE_API void SetPreRaceCam()                        { ageHook::Thunk<0x404250>::Call<void>(this); }
+        AGE_API void SetSteering(float a1)                  { ageHook::Thunk<0x404C50>::Call<void>(this, a1); }
+        AGE_API void SetWideFOV(bool a1)                    { ageHook::Thunk<0x404580>::Call<void>(this, a1); }
+        AGE_API void ReInit(LPCSTR basename)                { ageHook::Thunk<0x4039B0>::Call<void>(this, basename); }
+
+        /*
+            asNode virtuals
+        */
+
+        virtual AGE_API void BeforeSave()                   { ageHook::Thunk<0x403990>::Call<void>(this); }
+        virtual AGE_API void AfterLoad()                    { ageHook::Thunk<0x4039A0>::Call<void>(this); }
+        virtual AGE_API void FileIO(datParser &parser)      { ageHook::Thunk<0x406320>::Call<void>(this, &parser); }
+        virtual AGE_API void Reset()                        { ageHook::Thunk<0x404A60>::Call<void>(this); }
+        virtual AGE_API void Update()                       { ageHook::Thunk<0x405760>::Call<void>(this); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<mmPlayer>("mmPlayer")
                 .addFunction("getCar", &getCar)
                 .addFunction("getHUD", &getHUD)
                 .addFunction("getHudmap", &getHudmap)
+                .addFunction("EnableRegen", &EnableRegen)
+                .addFunction("FilterSteering", &FilterSteering)
+                .addFunction("IsMaxDamaged", &IsMaxDamaged)
                 .addFunction("ReInit", &ReInit)
+                .addFunction("ResetDamage", &ResetDamage)
+                .addFunction("SetCamera", &SetCamera)
+                .addFunction("SetMPPostCam", &SetMPPostCam)
+                .addFunction("SetPostRaceCam", &SetPostRaceCam)
+                .addFunction("SetPreRaceCam", &SetPreRaceCam)
+                .addFunction("SetSteering", &SetSteering)
+                .addFunction("SetWideFOV", &SetWideFOV)
+                //virtuals
+                .addFunction("Reset", &Reset)
             .endClass();
         }
     };

@@ -93,16 +93,19 @@ public:
     virtual void Initialize() {};
 };
 
+template <typename TRet, typename... TArgs>
+using MethodCall = TRet(*)(TArgs...);
+
+template <typename TRet, class TThis, typename... TArgs>
+using MemberCall = TRet(__thiscall *)(const TThis, TArgs...);
+
+template <typename TRet, typename... TArgs>
+using StdMethodCall = TRet(__stdcall *)(TArgs...);
+
+template <typename TRet, class TThis, typename... TArgs>
+using VirtualCall = TRet(TThis::*)(TArgs...);
+
 class ageHook {
-private:
-    template <typename TRet, typename... TArgs>
-    using MethodCall = TRet(*)(TArgs...);
-
-    template <typename TRet, class TThis, typename... TArgs>
-    using MemberCall = TRet(__thiscall *)(const TThis, TArgs...);
-
-    template <typename TRet, typename... TArgs>
-    using StdMethodCall = TRet(__stdcall *)(TArgs...);
 public:
     template <typename TType>
     class Type {

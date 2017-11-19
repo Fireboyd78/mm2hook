@@ -239,6 +239,15 @@
     <ClInclude Include="src\handlers\feature_handlers.h">
       <Filter>Source Files\handlers</Filter>
     </ClInclude>
+    <ClInclude Include="src\mm2_breakable.h">
+      <Filter>Source Files\mm2</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mm2_static2.h">
+      <Filter>Source Files\mm2</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mm2_bound.h">
+      <Filter>Source Files\mm2</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
@@ -402,6 +411,15 @@
     </ClCompile>
     <ClCompile Include="src\handlers\feature_handlers.cpp">
       <Filter>Source Files\handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mm2_breakable.cpp">
+      <Filter>Source Files\mm2</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mm2_static2.cpp">
+      <Filter>Source Files\mm2</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mm2_bound.cpp">
+      <Filter>Source Files\mm2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

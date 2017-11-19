@@ -131,19 +131,8 @@ namespace MM2
         Callback type definitions
     */
 
-    typedef void(__thiscall Base::*LPDATCALLBACK_THIS)(void);
-    typedef void(__thiscall Base::*LPDATCALLBACK_THIS_1)(void *);
-    typedef void(__thiscall Base::*LPDATCALLBACK_THIS_2)(void *, void *);
-
-    typedef void(*LPDATCALLBACK)(void);
-    typedef void(*LPDATCALLBACK_1)(void *);
-    typedef void(*LPDATCALLBACK_2)(void *, void *);
-
     class datCallback
     {
-    public:
-        class Base;
-
     protected:
         enum Flags
         {
@@ -172,38 +161,48 @@ namespace MM2
             return reinterpret_cast<unsigned int&>(callback) | flags;
         }
 
+        template <typename ...TArgs>
+        void virtual_callback(uint callback, TArgs ...args) const {
+            (_class->*reinterpret_cast<VirtualCall<void, Base, TArgs...> &>(callback))(args...);
+        }
+
+        template <typename ...TArgs>
+        void method_callback(uint callback, TArgs ...args) const {
+            reinterpret_cast<MethodCall<void, TArgs...> &>(callback)(args...);
+        }
+
     public:
-        datCallback()
+        AGE_API datCallback()
             : _class(NULL)
             , _callback(NULL)
             , _parameter(NULL)
         { }
 
-        datCallback(void(*callback)())
+        AGE_API datCallback(void(*callback)())
             : _class((Base*)callback)
             , _callback(0x4C7BE3 | ParamCount0)
             , _parameter(NULL)
         { }
         
-        datCallback(void(__stdcall *callback)(void*), void* parameter)
+        AGE_API datCallback(void(__stdcall *callback)(void*), void* parameter)
             : _class((Base*)callback)
             , _callback(0x4C7BE3 | ParamCount1)
             , _parameter(parameter)
         { }
 
-        datCallback(void(__stdcall *callback)())
+        AGE_API datCallback(void(__stdcall *callback)())
             : _class((Base*)callback)
             , _callback(0x4C7BE3 | ParamCount0)
             , _parameter(NULL)
         { }
 
-        datCallback(void(__stdcall *callback)(void*, void*), void* parameter)
+        AGE_API datCallback(void(__stdcall *callback)(void*, void*), void* parameter)
             : _class((Base*)callback)
             , _callback(0x4C7BE3 | ParamCount2)
             , _parameter(parameter)
         { }
 
-        void Call(void* parameter)
+        AGE_API void Call(void* parameter)
         {
             auto callback = _get_callback();
             auto flags = _get_flags();
@@ -214,18 +213,17 @@ namespace MM2
                 {
                     switch (flags)
                     {
-                    case ParamCount0: return (_class->*reinterpret_cast<void(Base::*&)()>(callback))();
-                    case ParamCount1: return (_class->*reinterpret_cast<void(Base::*&)(void*)>(callback))(_parameter);
-                    case ParamCount2: return (_class->*reinterpret_cast<void(Base::*&)(void*, void*)>(callback))(_parameter, parameter);
+                        case ParamCount0: return virtual_callback(callback);
+                        case ParamCount1: return virtual_callback(callback, _parameter);
+                        case ParamCount2: return virtual_callback(callback, _parameter, parameter);
                     }
-                }
-                else
+                } else
                 {
                     switch (flags)
                     {
-                    case ParamCount0: return reinterpret_cast<void(*&)()>(callback)();
-                    case ParamCount1: return reinterpret_cast<void(*&)(void*)>(callback)(_parameter);
-                    case ParamCount2: return reinterpret_cast<void(*&)(void*, void*)>(callback)(_parameter, parameter);
+                        case ParamCount0: return method_callback(callback);
+                        case ParamCount1: return method_callback(callback, _parameter);
+                        case ParamCount2: return method_callback(callback, _parameter, parameter);
                     }
                 }
             }

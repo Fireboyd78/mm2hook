@@ -193,7 +193,7 @@ namespace MM2
             return $::DirSnd::GetNum3DHallBufs(this);
         };
 
-        AGE_API virtual int InitPrimarySoundBuffer(DWORD p1, BYTE p2, char *p3) {
+        virtual AGE_API int InitPrimarySoundBuffer(DWORD p1, BYTE p2, char *p3) {
             return $::DirSnd::InitPrimarySoundBuffer(this, p1, p2, p3);
         };
     };
@@ -232,7 +232,7 @@ namespace MM2
             return $::mmDirSnd::DSound3DEnabled(this);
         };
 
-        AGE_API virtual int InitPrimarySoundBuffer(DWORD p1, BYTE p2, char *p3) {
+        virtual AGE_API int InitPrimarySoundBuffer(DWORD p1, BYTE p2, char *p3) {
             return $::mmDirSnd::InitPrimarySoundBuffer(this, p1, p2, p3);
         };
     };

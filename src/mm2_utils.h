@@ -52,6 +52,14 @@ inline void InstallCallback(LPCSTR name, auto_ptr lpAddr, std::initializer_list<
     InstallCallback(name, NULL, lpAddr, callbacks);
 }
 
+inline void InstallCallback(auto_ptr lpAddr, std::initializer_list<cbInfo> callbacks, LPCSTR description) {
+    InstallCallback(NULL, description, lpAddr, callbacks);
+}
+
+inline void InstallCallback(auto_ptr lpAddr, std::initializer_list<cbInfo> callbacks) {
+    InstallCallback(NULL, NULL, lpAddr, callbacks);
+}
+
 void InstallVTableHook(LPCSTR name, auto_ptr lpAddr, std::initializer_list<unsigned int> addresses);
 
 union ColorARGB
