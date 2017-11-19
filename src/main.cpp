@@ -1,8 +1,79 @@
 #include "handlers\bugfix_handlers.h"
 #include "handlers\feature_handlers.h"
+#include "discord-rpc.h"
 #include "main.h"
 
+#include <time.h>
+
 using namespace MM2;
+
+// ==========================
+// Discord related stuff
+// ==========================
+static const char* APPLICATION_ID = "379767166267817984";
+static int64_t StartTime;
+
+void handleDiscordReady() {
+    printf("Discord's ready...\n");
+}
+
+void handleDiscordError(int errorCode, const char *message) {
+    printf("Discord error number %d: %s\n", errorCode, message);
+}
+
+void handleDiscordDisconnected(int errorCode, const char *message) {
+    printf("Discord disconnected! Error number %d: %s\n", errorCode, message);
+}
+
+void handleDiscordJoinGame(const char *joinSecret) {
+    printf("Joining game... invite: %s\n", joinSecret);
+}
+
+void handleDiscordSpectateGame(const char *spectateSecret) {
+    printf("Spectating game... invite: %s\n", spectateSecret);
+}
+
+void handleDiscordJoinRequest(const DiscordJoinRequest * request) {
+    printf("Handling Discord join request...\n");
+}
+
+void UpdateDiscord(bool inRace) {
+    const char* discordDetails = "";
+
+    if (inRace) {
+        discordDetails = "In a race";
+    }
+    else {
+        discordDetails = "In menu";
+    }
+
+    DiscordRichPresence discordPresence;
+    memset(&discordPresence, 0, sizeof(discordPresence));
+    discordPresence.details = discordDetails;
+    discordPresence.largeImageKey = "canary-large";
+    discordPresence.smallImageKey = "ptb-small";
+    discordPresence.partyId = "party1234";
+    discordPresence.partySize = 1;
+    discordPresence.partyMax = 8;
+    discordPresence.matchSecret = "xyzzyx";
+    discordPresence.joinSecret = "join";
+    discordPresence.spectateSecret = "spectate";
+    discordPresence.instance = 0;
+    Discord_UpdatePresence(&discordPresence);
+}
+
+void InitDiscord() {
+    DiscordEventHandlers handlers;
+    memset(&handlers, 0, sizeof(handlers));
+    handlers.ready = handleDiscordReady;
+    handlers.errored = handleDiscordError;
+    handlers.disconnected = handleDiscordDisconnected;
+    handlers.joinGame = handleDiscordJoinGame;
+    handlers.spectateGame = handleDiscordSpectateGame;
+    handlers.joinRequest = handleDiscordJoinRequest;
+    LogFile::WriteLine("Initializing Discord...");
+    Discord_Initialize(APPLICATION_ID, &handlers, 1, NULL);
+}
 
 // ==========================
 // Game-related properties
@@ -326,6 +397,37 @@ public:
     }
 };
 
+//Updates Discord data
+class DiscordHandler {
+public:
+    //When the player enters a race
+    int Init(void) { 
+
+        UpdateDiscord(true);
+
+        return ageHook::Thunk<0x412710>::Call<int>(this); // mmGame::init
+    }
+
+    //When the player exits a race
+    void BeDone(int) {
+        UpdateDiscord(false);
+    }
+
+    static void Install() {
+        InstallCallback("mmGame::Init", "When starting a race, updates Discord data accordingly",
+            &Init, {
+                cbHook<JMP>(0x433AA0),      //mmGameSingle::Init
+                cbHook<CALL>(0x438F81),     //mmGameMulti::Init
+            }
+        );
+        InstallCallback("mmGame::BeDone", "When exiting a race, updates Discord data accordingly",
+            &BeDone, {
+                cbHook<JMP>(0x414DF1),      //end of mmGame::BeDone
+            }
+        );
+    }
+};
+
 class TimeHandler {
 public:
     static void Reset(void) {
@@ -467,6 +569,7 @@ private:
             Initialize the rest of the handlers
             Order doesn't really matter, just whatever looks neat
         */
+        InstallHandler<DiscordHandler>("discordHandler");
 
         InstallHandler<aiPathHandler>("aiPath");
         InstallHandler<aiPedestrianHandler>("aiPedestrian");
@@ -538,6 +641,10 @@ public:
             if (datArgParser::Get("assetDebug"))
                 assetDebug = 1;
         }
+
+        InitDiscord();
+
+        UpdateDiscord(false);
     }
 
     static void Reset(bool restarting) {
@@ -563,6 +670,9 @@ public:
     static void Stop() {
         if (gameClosing)
         {
+            LogFile::WriteLine("Shutting down Discord...");
+            Discord_Shutdown();
+
             LogFile::WriteLine("Hook shutdown request received.");
 
             LogFile::Close();
