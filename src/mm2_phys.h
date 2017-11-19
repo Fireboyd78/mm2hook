@@ -23,6 +23,26 @@ namespace MM2
 
     };
 
+    class phMaterial {
+
+    };
+
+    class phIntersectionPoint {
+
+    };
+
+    class phIntersection {
+
+    };
+
+    class phSegment {
+
+    };
+
+    class phImpactBase {
+
+    };
+
     class dgPhysEntity : public Base {
     public:
         virtual AGE_API void PreUpdate()                    { ageHook::Thunk<0x42CBE0>::Call<void>(this); }
@@ -41,18 +61,5 @@ namespace MM2
     class dgBangerInstance {
     public:
         void Draw(int a1) { ageHook::Thunk<0x4415E0>::Call<void>(this, a1); }
-    };
-
-    class phBound {
-    public:
-        void SetOffset(Vector3& offset) {
-            ageHook::Thunk<0x4872C0>::Call<void>(this, &offset);
-        }
-
-        static void BindLua(LuaState L) {
-            LuaBinding(L).beginClass<phBound>("phBound")
-                .addFunction("SetOffset", &SetOffset)
-            .endClass();
-        }
     };
 }
