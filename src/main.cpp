@@ -2,6 +2,8 @@
 #include "handlers\feature_handlers.h"
 #include "main.h"
 
+#include <discord-presence.h>
+
 using namespace MM2;
 
 // ==========================
@@ -462,6 +464,8 @@ private:
         InstallHandler<memSafeHeapHandler>("memSafeHeap");
         
         InstallHandler<datCallbackExtensionHandler>("datCallback Extensions");
+
+        InstallHandler<discordHandler>("Discord Rich Presence");
 
         /*
             Initialize the rest of the handlers

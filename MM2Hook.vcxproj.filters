@@ -30,6 +30,9 @@
     <Filter Include="Source Files\handlers">
       <UniqueIdentifier>{80b5258d-e239-4ca7-9e7a-ab675b35ccf7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Discord Rich Presence">
+      <UniqueIdentifier>{f5a0a057-e458-42d5-b643-cc6123a2590e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\lua\lapi.h">
@@ -245,6 +248,12 @@
     <ClInclude Include="src\mm2_static2.h">
       <Filter>Source Files\mm2</Filter>
     </ClInclude>
+    <ClInclude Include="discord-rpc\discord-presence.h">
+      <Filter>Source Files\Discord Rich Presence</Filter>
+    </ClInclude>
+    <ClInclude Include="discord-rpc\discord-rpc.h">
+      <Filter>Source Files\Discord Rich Presence</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
@@ -414,6 +423,9 @@
     </ClCompile>
     <ClCompile Include="src\mm2_static2.cpp">
       <Filter>Source Files\mm2</Filter>
+    </ClCompile>
+    <ClCompile Include="discord-rpc\discord-presence.cpp">
+      <Filter>Source Files\Discord Rich Presence</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

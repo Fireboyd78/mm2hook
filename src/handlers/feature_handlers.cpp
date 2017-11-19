@@ -16,9 +16,6 @@ ageHook::Type<float> sdl_VLowThresh         ( 0x5C5708 );  // default: 300.0
 ageHook::Type<float> sdl_LowThresh          ( 0x5C570C );  // default: 100.0
 ageHook::Type<float> sdl_MedThresh          ( 0x5C5710 );  // default: 50.0
 
-ageHook::Type<char[40]> cityName            ( 0x6B167C );
-ageHook::Type<char[40]> cityName2           ( 0x6B16A4 );
-
 ageHook::Type<int> timeOfDay                ( 0x62B068 );
 
 ageHook::Type<int> vehCar_bHeadlights       ( 0x627518 );
