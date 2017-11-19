@@ -6,6 +6,8 @@ namespace MM2
     // Forward declarations
     class cityTimeWeatherLighting;
     class sdlPage16;
+    class mmCityInfo;
+    class mmCityList;
 
     // External declarations
     extern class gfxTexture;
@@ -159,4 +161,65 @@ namespace MM2
             return $::sdlPage16::GetShadedColor$2(p1, p2, p3);
         }
     };
+
+    class mmCityInfo {
+    private:
+        char localisedName[40];
+        char mapName[40];
+        char raceDir[40];
+
+        byte _buffer[0x20];
+    public:
+        AGE_API mmCityInfo(void) {
+            PUSH_VTABLE();
+            ageHook::Thunk<0x52A540>::Call<void>(this);
+            POP_VTABLE();
+        }
+
+        virtual AGE_API ~mmCityInfo(void) {
+            PUSH_VTABLE();
+            ageHook::Thunk<0x52A560>::Call<void>(this);
+            POP_VTABLE();
+        }
+
+        inline char * GetLocalisedName(void) {
+            return localisedName;
+        }
+
+        inline char * GetMapName(void) {
+            return mapName;
+        }
+
+        inline char * GetRaceDir(void) {
+            return raceDir;
+        }
+    };
+
+    class mmCityList {
+    private:
+        mmCityInfo **cityInfos;
+        int numCities;
+        int curCity;
+    public:
+        AGE_API mmCityList(void) {
+            PUSH_VTABLE();
+            ageHook::Thunk<0x524160>::Call<void>(this);
+            POP_VTABLE();
+        }
+
+        virtual AGE_API ~mmCityList(void) {
+            PUSH_VTABLE();
+            ageHook::Thunk<0x524180>::Call<void>(this);
+            POP_VTABLE();
+        }
+
+        AGE_API int GetCityID(char *city)                   { return ageHook::Thunk<0x524270>::Call<int>(this, city); }
+
+        AGE_API mmCityInfo * GetCityInfo(int city)          { return ageHook::Thunk<0x5241F0>::Call<mmCityInfo *>(this, city); }
+        AGE_API mmCityInfo * GetCityInfo(char *city)        { return ageHook::Thunk<0x524220>::Call<mmCityInfo *>(this, city); }
+
+        AGE_API mmCityInfo * GetCurrentCity(void)           { return ageHook::Thunk<0x524320>::Call<mmCityInfo *>(this); }
+    };
+
+    declhook(0x6B1CA0, _Type<mmCityList *>, CityListPtr);
 }
