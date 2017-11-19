@@ -569,6 +569,8 @@ public:
         {
             LogFile::WriteLine("Hook shutdown request received.");
 
+            discordHandler::Release();
+
             LogFile::Close();
             L.close(); // release Lua
 

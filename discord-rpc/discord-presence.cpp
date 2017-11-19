@@ -36,8 +36,8 @@ void InitDiscord(void) {
     presence.largeImageKey = "canary-large";
     presence.smallImageKey = "ptb-small";
     presence.partyId = "party1234";
-    presence.partySize = 1;
-    presence.partyMax = 8;
+    presence.partySize = 0;
+    presence.partyMax = 0;
     presence.matchSecret = "xyzzyx";
     presence.joinSecret = "join";
     presence.spectateSecret = "spectate";
@@ -60,8 +60,8 @@ void InitDiscord(void) {
 void UpdateDiscord(mm2RichPresenceInfo &mm2Info) {
     LPCSTR state;
 
-    char stateBuf[256];
-    char details[256];
+    char stateBuf[256]{ NULL };
+    char details[256]{ NULL };
 
     if (mm2Info.inRace) {
         state = (mm2Info.inMultiplayer) ? "In a multiplayer race" : "In a race";
@@ -91,7 +91,9 @@ int discordHandler::GameInit(void) {
 
     ageHook::Thunk<0x412710>::Call<int>(this); // mmGame::init
 
-    g_mm2Info.city = cityName; // TODO: get localised name
+    mmCityInfo * cityInfo = CityListPtr->GetCurrentCity();
+
+    g_mm2Info.city = cityInfo->GetLocalisedName(); // TODO: get localised name
     g_mm2Info.vehicle = vehicleName;
     g_mm2Info.race = raceName;
     g_mm2Info.inRace = true;
@@ -126,6 +128,7 @@ void discordHandler::Install() {
     );
 
     InitDiscord();
+    UpdateDiscord(g_mm2Info);
 }
 
 void discordHandler::Release() {
