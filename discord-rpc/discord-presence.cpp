@@ -45,52 +45,151 @@ void InitDiscord(void) {
     Discord_Initialize(APPLICATION_ID, &handlers, 1, NULL);
 }
 
+char * carImageKeys[20] = {
+    "vpcoop",
+    "vpbug",
+    "vpcab",
+    "vpcaddie",
+    "vpford",
+    "vpmustang99",
+    "vpcop",
+    "vpbullet",
+    "vppanoz",
+    "vpbus",
+    "vpddbus",
+    "vpcentury",
+    "vpcoop2k",
+    "vpdune",
+    "vpvwcup",
+    "vp4x4",
+    "vpauditt",
+    "vpdb7",
+    "vppanozgt",
+    "vplafrance",
+};
+
+bool isCruiseMode(void) {
+    return (gameMode == 0);
+}
+
+bool isCrashCourse(void) {
+    return (gameMode == 6);
+}
+
+bool isRaceMode(void) {
+    switch (gameMode) {
+        case 1: // Checkpoint
+        case 3: // Circut
+        case 4: // Blitz
+            return true;
+    }
+
+    return false;
+}
+
+const char * getGameModeName(void) {
+    switch (gameMode) {
+        case 0:     return "Cruise";
+        case 1:     return "Checkpoint";
+        case 2:     return "Cops N' Robbers";
+        case 3:     return "Circuit";
+        case 4:     return "Blitz";
+        case 6:     return "Crash Course";
+    }
+
+    return NULL;
+}
+
+char * getRaceName(void) {
+    // TODO: figure out the actual race name
+    return "???";
+}
+
+char * getCarImageKey(mmVehInfo *vehInfo) {
+    char *imageKey = NULL;
+    char *baseName = vehInfo->GetBaseName();
+
+    int vehicleId = VehicleListPtr->GetVehicleID(baseName);
+
+    if (vehicleId < 20) {
+        imageKey = carImageKeys[vehicleId];
+
+        // FALLBACK: Check if vehicle exists in a non-default slot
+        if (VehicleListPtr->GetVehicleID(imageKey) != vehicleId) {
+            imageKey = NULL;
+
+            // try finding it in the list
+            for (int i = 0; i < 20; i++) {
+                char *key = carImageKeys[i];
+
+                if (strcmp(key, baseName) == 0) {
+                    // update the vehicle id for clarity
+                    vehicleId = VehicleListPtr->GetVehicleID(key);
+                    imageKey = key;
+                    break;
+                }
+            }
+        }
+    }
+
+    return (imageKey != NULL) ? imageKey : "nocardesc";
+}
+
+char* getCityImageKey(mmCityInfo *cityInfo) {
+    char* cityName = cityInfo->GetMapName();
+
+    if ((strcmp(cityName, "london") == 0) || (strcmp(cityName, "sf") == 0))
+        return cityName;
+
+    return "nocitydesc";
+}
+
 void UpdateDiscord(mm2RichPresenceInfo &mm2Info) {
     LPCSTR state;
-    LPCSTR largeImageText = NULL;
-    LPCSTR smallImageText = NULL;
 
     LPCSTR partyID = NULL;
-    int partySize = NULL;
-    int partyMax = NULL;
+    int partySize = 0;
+    int partyMax = 0;
 
-    int8_t instance = NULL;
+    int8_t instance = 0;
 
     char stateBuf[256]{ NULL };
     char details[256]{ NULL };
 
+    presence.largeImageKey = NULL;
+    presence.largeImageText = NULL;
+    presence.smallImageKey = NULL;
+    presence.smallImageText = NULL;
+
     if (mm2Info.inRace) {
         if (mm2Info.inMultiplayer) {
-            state = "In a multiplayer race";
+            state = (isRaceMode()) ? "Racing online" : "In multiplayer";
+
             instance = 0;
             partySize = 1;
             partyMax = 8;
         }
-        else {
-            state = "In a race";
+
+        state = (isRaceMode()) ? "In a race" : "In singleplayer";
+
+        if (isCruiseMode()) {
+            sprintf(details, "Cruisin' around");
+        } else if (isRaceMode() || isCrashCourse()) {
+            sprintf(details, "%s: %s", getGameModeName(), getRaceName());
+        } else {
+            sprintf(details, "%s", getGameModeName());
         }
 
-        if ((mm2Info.vehicle != NULL) && (mm2Info.city != NULL)) {          
-            largeImageText = mm2Info.city;
-            smallImageText = mm2Info.vehicle;
-        }
-
-        if (strcmp(mm2Info.raceMode, "Cruise") == 0 || strcmp(mm2Info.raceMode, "Cops N' Robbers") == 0) {
-            sprintf(details, "%s", mm2Info.raceMode);
-        }
-        else {
-            sprintf(details, "%s: %s", mm2Info.raceMode, mm2Info.raceName);
-        }
+        presence.largeImageText = mm2Info.city;
+        presence.largeImageKey = mm2Info.cityImageKey;
+        presence.smallImageText = mm2Info.vehicle;
+        presence.smallImageKey = mm2Info.vehicleImageKey;
     } else {
         state = "In main menu";
-        mm2Info.cityImageKey = "menu";
-        largeImageText = "Main menu";
+        presence.largeImageKey = "menu";
+        presence.largeImageText = "Main menu";
     }
 
-    presence.largeImageKey = mm2Info.cityImageKey;
-    presence.largeImageText = largeImageText;
-    presence.smallImageKey = mm2Info.carImageKey;
-    presence.smallImageText = smallImageText;
     presence.state = state;
     presence.details = details;
 
@@ -104,112 +203,6 @@ void UpdateDiscord(mm2RichPresenceInfo &mm2Info) {
     Discord_UpdatePresence(&presence);
 }
 
-const char* getCarImageKey(mm2RichPresenceInfo &mm2Info) {
-    const char* carDescription = mm2Info.vehicle;
-    const char* carImageKey = "";
-
-    //Compare the car descriptions so we can use the appropriate images
-    if (strcmp(carDescription, "Mini Cooper Classic") == 0) {
-        carImageKey = "vpcoop";
-    }
-    else if (strcmp(carDescription, "VW New Beetle") == 0) {
-        carImageKey = "vpbug";
-    }
-    else if (strcmp(carDescription, "London Cab") == 0) {
-        carImageKey = "vpcab";
-    }
-    else if (strcmp(carDescription, "Cadillac Eldorado") == 0) {
-        carImageKey = "vpcaddie";
-    }
-    else if (strcmp(carDescription, "Ford F-350 Super Duty") == 0) {
-        carImageKey = "vpford";
-    }
-    else if (strcmp(carDescription, "Ford Mustang GT") == 0) {
-        carImageKey = "vpmustang99";
-    }
-    else if (strcmp(carDescription, "Ford Mustang Cruiser") == 0) {
-        carImageKey = "vpcop";
-    }
-    else if (strcmp(carDescription, "Ford Mustang Fastback") == 0) {
-        carImageKey = "vpbullet";
-    }
-    else if (strcmp(carDescription, "Panoz AIV Roadster") == 0) {
-        carImageKey = "vppanoz";
-    }
-    else if (strcmp(carDescription, "City Bus") == 0) {
-        carImageKey = "vpbus";
-    }
-    else if (strcmp(carDescription, "Double-Decker Bus") == 0) {
-        carImageKey = "vpddbus";
-    }
-    else if (strcmp(carDescription, "Freightliner Century Class") == 0) {
-        carImageKey = "vpcentury";
-    }
-    else if (strcmp(carDescription, "New Mini Cooper") == 0) {
-        carImageKey = "vpcoop2k";
-    }
-    else if (strcmp(carDescription, "VW New Beetle Dune") == 0) {
-        carImageKey = "vpdune";
-    }
-    else if (strcmp(carDescription, "VW New Beetle RSi") == 0) {
-        carImageKey = "vpvwcup";
-    }
-    else if (strcmp(carDescription, "Light Tactical Vehicle") == 0) {
-        carImageKey = "vp4x4";
-    }
-    else if (strcmp(carDescription, "Audi TT Coupe") == 0) {
-        carImageKey = "vpauditt";
-    }
-    else if (strcmp(carDescription, "Aston Martin DB7 Vantage") == 0) {
-        carImageKey = "vpdb7";
-    }
-    else if (strcmp(carDescription, "Panoz GTR-1") == 0) {
-        carImageKey = "vppanozgt";
-    }
-    else if (strcmp(carDescription, "American LaFrance Eagle") == 0) {
-        carImageKey = "vplafrance";
-    }
-    
-    else {
-        carImageKey = "nocardesc";
-    }
-
-    return carImageKey;
-}
-
-const char* getCityImageKey(mm2RichPresenceInfo &mm2Info) {
-    const char* cityName = mm2Info.city;
-    const char* cityImageKey = "";
-
-    //Compare the city name so we can use the appropriate images
-    if (strcmp(cityName, "San Francisco") == 0) {
-        cityImageKey = "sf";
-    }
-    else if (strcmp(cityName, "London") == 0) {
-        cityImageKey = "london";
-    }
-    else {
-        cityImageKey = "nocitydesc";
-    }
-
-    return cityImageKey;
-}
-
-const char* getRaceMode() {
-    const char* raceMode = NULL;
-
-    switch (gameMode) {
-    case 0: raceMode = "Cruise";            break;
-    case 1: raceMode = "Checkpoint";        break;
-    case 2: raceMode = "Cops N' Robbers";   break;
-    case 3: raceMode = "Circuit";           break;
-    case 4: raceMode = "Blitz";             break;
-    case 6: raceMode = "Crash Course";      break;
-    }
-
-    return raceMode;
-}
-
 int discordHandler::GameInit(void) {
     LogFile::WriteLine("[discord] GameInit called.");
 
@@ -218,14 +211,13 @@ int discordHandler::GameInit(void) {
     mmCityInfo * cityInfo = CityListPtr->GetCurrentCity();
     mmVehInfo * vehInfo = VehicleListPtr->GetVehicleInfo(vehicleName);
 
-    g_mm2Info.city = cityInfo->GetLocalisedName(); // TODO: get localised name
-    g_mm2Info.vehicle = vehInfo->GetDescription();
-    g_mm2Info.carImageKey = getCarImageKey(g_mm2Info);
-    g_mm2Info.cityImageKey = getCityImageKey(g_mm2Info);
-    g_mm2Info.raceMode = getRaceMode();
-    g_mm2Info.raceName = "Who knows???";
     g_mm2Info.inRace = true;
     g_mm2Info.inMultiplayer = false; // TODO: update this properly
+    g_mm2Info.city = cityInfo->GetLocalisedName();
+    g_mm2Info.cityImageKey = getCityImageKey(cityInfo);
+    g_mm2Info.vehicle = vehInfo->GetDescription();
+    g_mm2Info.vehicleImageKey = getCarImageKey(vehInfo);
+    g_mm2Info.raceName = getRaceName();
     UpdateDiscord(g_mm2Info);
 
     return 1;
@@ -234,14 +226,13 @@ int discordHandler::GameInit(void) {
 void discordHandler::GameBeDone(int) {
     LogFile::WriteLine("[discord] GameBeDone called.");
 
-    g_mm2Info.city = NULL;
-    g_mm2Info.vehicle = NULL;
-    g_mm2Info.raceMode = NULL;
-    g_mm2Info.raceName = NULL;
     g_mm2Info.inRace = false;
     g_mm2Info.inMultiplayer = false;
-    g_mm2Info.cityImageKey = "menu";
-    g_mm2Info.carImageKey = NULL;
+    g_mm2Info.city = NULL;
+    g_mm2Info.cityImageKey = NULL;
+    g_mm2Info.vehicle = NULL;
+    g_mm2Info.vehicleImageKey = NULL;
+    g_mm2Info.raceName = NULL;
     UpdateDiscord(g_mm2Info);
 }
 

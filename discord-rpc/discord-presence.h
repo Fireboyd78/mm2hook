@@ -9,13 +9,12 @@ struct mm2RichPresenceInfo {
     bool inRace;
     bool inMultiplayer;
 
-    const char *raceMode;
-    const char *raceName;
-    const char *vehicle;
     const char *city;
-
-    const char *carImageKey;
     const char *cityImageKey;
+    const char *vehicle;
+    const char *vehicleImageKey;
+
+    const char *raceName;
 };
 
 static mm2RichPresenceInfo g_mm2Info;
