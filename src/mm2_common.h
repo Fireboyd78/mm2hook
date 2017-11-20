@@ -58,6 +58,36 @@ namespace MM2 {
     extern void Quitf(LPCSTR str, ...);
     extern void Abortf(LPCSTR str, ...);
 
+    class string {
+    public:
+        AGE_API string(const char *str)                     { ageHook::Thunk<0x505070>::Call<void>(this, str); }
+
+        AGE_API string(char *str, int len) {
+            buffer = str;
+            length = len;
+        }
+
+        AGE_API void operator+=(char c)                     { ageHook::Thunk<0x49F4C0>::Call<void>(this, c); }
+        AGE_API void operator+=(const char *str)            { ageHook::Thunk<0x49F3E0>::Call<void>(this, str); }
+        AGE_API void operator-=(const char *str)            { ageHook::Thunk<0x49F6D0>::Call<void>(this, str); }
+        AGE_API void operator=(const char *str)             { ageHook::Thunk<0x4A0A90>::Call<void>(this, str); }
+
+        AGE_API string operator+(const string &str) const   { return ageHook::Thunk<0x4A0B00>::Call<string>(this, &str); }
+        AGE_API string operator+(const char *str) const     { return ageHook::Thunk<0x49F180>::Call<string>(this, str); }
+        AGE_API string operator-(const char *str) const     { return ageHook::Thunk<0x49F560>::Call<string>(this, str); }
+
+        AGE_API int NumSubStrings(void) const               { return ageHook::Thunk<0x4A0A20>::Call<int>(this); }
+        
+        AGE_API string SubString(int index) const           { return ageHook::Thunk<0x4A0910>::Call<string>(this, index); }
+
+        inline operator char *(void) const {
+            return buffer;
+        }
+
+        char *buffer;
+        int length;
+    };
+
     extern char * AngelReadString(UINT stringId);
 
     declhook(0x402180, _Func<void>, $CreateGameMutex);
