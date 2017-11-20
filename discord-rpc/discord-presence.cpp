@@ -100,8 +100,21 @@ const char * getGameModeName(void) {
     return NULL;
 }
 
-char * getRaceName(void) {
-    // TODO: figure out the actual race name
+char * getRaceName(int raceId) {
+    char buffer[512]{ NULL };
+    
+    mmCityInfo *cityInfo = CityListPtr->GetCurrentCity();
+
+    if (cityInfo->GetRaceNames(gameMode, buffer) > 0) {
+        string raceNames = string(buffer);
+        int numRaces = raceNames.NumSubStrings();
+
+        if (raceId < numRaces)
+            return raceNames.SubString(raceId + 1);
+
+        Errorf("RACENAME(%d) -- OVERFLOW!!!\n", raceId);
+    }
+
     return "???";
 }
 
@@ -175,7 +188,7 @@ void UpdateDiscord(mm2RichPresenceInfo &mm2Info) {
         if (isCruiseMode()) {
             sprintf(details, "Cruisin' around");
         } else if (isRaceMode() || isCrashCourse()) {
-            sprintf(details, "%s: %s", getGameModeName(), getRaceName());
+            sprintf(details, "%s: %s", getGameModeName(), mm2Info.raceName);
         } else {
             sprintf(details, "%s", getGameModeName());
         }
@@ -217,7 +230,7 @@ int discordHandler::GameInit(void) {
     g_mm2Info.cityImageKey = getCityImageKey(cityInfo);
     g_mm2Info.vehicle = vehInfo->GetDescription();
     g_mm2Info.vehicleImageKey = getCarImageKey(vehInfo);
-    g_mm2Info.raceName = getRaceName();
+    g_mm2Info.raceName = getRaceName(raceId);
     UpdateDiscord(g_mm2Info);
 
     return 1;

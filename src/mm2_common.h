@@ -111,11 +111,12 @@ namespace MM2 {
     // not sure how exactly it's supposed to work
     declhook(0x6B17C8, _Type<int>, gameState); // -1 = ???, 0 = main menu, 1 = race
 
+    declhook(0x6B1614, _Type<int>, raceId);
+
     declhook(0x6B167C, _Type<char[40]>, cityName);
     declhook(0x6B16A4, _Type<char[40]>, cityName2);
 
     declhook(0x6B048C, _Type<char[32]>, vehicleName);
-    declhook(0x6B0570, _Type<char[64]>, raceName);
 
     declhook(0x6B1610, _Type<int>, gameMode); //0 = Cruise, 1 = Checkpoint, 2 = Cops N' Robbers, 3 = Circuit, 4 = Blitz, 6 = Crash Course
 
