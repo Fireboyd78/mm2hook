@@ -168,7 +168,35 @@ namespace MM2
         char mapName[40];
         char raceDir[40];
 
-        byte _buffer[0x20];
+        char *blitzNames;
+        char *checkpointNames;
+        char *circuitNames;
+        
+        BOOL isValid;
+
+        int blitzCount;
+        int checkpointCount;
+        int circuitCount;
+
+        int _unk[2]; // ???
+
+        inline char * getRaceNamesPtr(int mode) {
+            switch (mode) {
+                case 1: return checkpointNames;
+                case 3: return circuitNames;
+                case 4: return blitzNames;
+            }
+            return NULL;
+        }
+
+        inline int getRaceNamesCount(int mode) {
+            switch (mode) {
+                case 1: return checkpointCount;
+                case 3: return circuitCount;
+                case 4: return blitzCount;
+            }
+            return -1;
+        }
     public:
         AGE_API mmCityInfo(void) {
             PUSH_VTABLE();
@@ -192,6 +220,17 @@ namespace MM2
 
         inline char * GetRaceDir(void) {
             return raceDir;
+        }
+
+        inline int GetRaceNames(int mode, char *buffer) {
+            char *names = getRaceNamesPtr(mode);
+
+            if (names != NULL) {
+                strcpy(buffer, names);
+                return getRaceNamesCount(mode);
+            }
+
+            return -1;
         }
     };
 
