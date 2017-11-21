@@ -58,6 +58,36 @@ namespace MM2 {
     extern void Quitf(LPCSTR str, ...);
     extern void Abortf(LPCSTR str, ...);
 
+    class string {
+    public:
+        AGE_API string(const char *str)                     { ageHook::Thunk<0x505070>::Call<void>(this, str); }
+
+        AGE_API string(char *str, int len) {
+            buffer = str;
+            length = len;
+        }
+
+        AGE_API void operator+=(char c)                     { ageHook::Thunk<0x49F4C0>::Call<void>(this, c); }
+        AGE_API void operator+=(const char *str)            { ageHook::Thunk<0x49F3E0>::Call<void>(this, str); }
+        AGE_API void operator-=(const char *str)            { ageHook::Thunk<0x49F6D0>::Call<void>(this, str); }
+        AGE_API void operator=(const char *str)             { ageHook::Thunk<0x4A0A90>::Call<void>(this, str); }
+
+        AGE_API string operator+(const string &str) const   { return ageHook::Thunk<0x4A0B00>::Call<string>(this, &str); }
+        AGE_API string operator+(const char *str) const     { return ageHook::Thunk<0x49F180>::Call<string>(this, str); }
+        AGE_API string operator-(const char *str) const     { return ageHook::Thunk<0x49F560>::Call<string>(this, str); }
+
+        AGE_API int NumSubStrings(void) const               { return ageHook::Thunk<0x4A0A20>::Call<int>(this); }
+        
+        AGE_API string SubString(int index) const           { return ageHook::Thunk<0x4A0910>::Call<string>(this, index); }
+
+        inline operator char *(void) const {
+            return buffer;
+        }
+
+        char *buffer;
+        int length;
+    };
+
     extern char * AngelReadString(UINT stringId);
 
     declhook(0x402180, _Func<void>, $CreateGameMutex);
@@ -80,6 +110,15 @@ namespace MM2 {
     // think this is actually some sort of game state
     // not sure how exactly it's supposed to work
     declhook(0x6B17C8, _Type<int>, gameState); // -1 = ???, 0 = main menu, 1 = race
+
+    declhook(0x6B1614, _Type<int>, raceId);
+
+    declhook(0x6B167C, _Type<char[40]>, cityName);
+    declhook(0x6B16A4, _Type<char[40]>, cityName2);
+
+    declhook(0x6B048C, _Type<char[32]>, vehicleName);
+
+    declhook(0x6B1610, _Type<int>, gameMode); //0 = Cruise, 1 = Checkpoint, 2 = Cops N' Robbers, 3 = Circuit, 4 = Blitz, 6 = Crash Course
 
     declhook(0x6A3AA8, _Type<int>, joyDebug);
     declhook(0x6A3C0C, _Type<int>, assetDebug);

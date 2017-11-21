@@ -2,6 +2,8 @@
 #include "handlers\feature_handlers.h"
 #include "main.h"
 
+#include <discord-presence.h>
+
 using namespace MM2;
 
 // ==========================
@@ -463,6 +465,8 @@ private:
         
         InstallHandler<datCallbackExtensionHandler>("datCallback Extensions");
 
+        InstallHandler<discordHandler>("Discord Rich Presence");
+
         /*
             Initialize the rest of the handlers
             Order doesn't really matter, just whatever looks neat
@@ -564,6 +568,8 @@ public:
         if (gameClosing)
         {
             LogFile::WriteLine("Hook shutdown request received.");
+
+            discordHandler::Release();
 
             LogFile::Close();
             L.close(); // release Lua

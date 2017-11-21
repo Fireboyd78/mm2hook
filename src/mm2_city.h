@@ -6,6 +6,8 @@ namespace MM2
     // Forward declarations
     class cityTimeWeatherLighting;
     class sdlPage16;
+    class mmCityInfo;
+    class mmCityList;
 
     // External declarations
     extern class gfxTexture;
@@ -159,4 +161,104 @@ namespace MM2
             return $::sdlPage16::GetShadedColor$2(p1, p2, p3);
         }
     };
+
+    class mmCityInfo {
+    private:
+        char localisedName[40];
+        char mapName[40];
+        char raceDir[40];
+
+        char *blitzNames;
+        char *checkpointNames;
+        char *circuitNames;
+        
+        BOOL isValid;
+
+        int blitzCount;
+        int checkpointCount;
+        int circuitCount;
+
+        int _unk[2]; // ???
+
+        inline char * getRaceNamesPtr(int mode) {
+            switch (mode) {
+                case 1: return checkpointNames;
+                case 3: return circuitNames;
+                case 4: return blitzNames;
+            }
+            return NULL;
+        }
+
+        inline int getRaceNamesCount(int mode) {
+            switch (mode) {
+                case 1: return checkpointCount;
+                case 3: return circuitCount;
+                case 4: return blitzCount;
+            }
+            return -1;
+        }
+    public:
+        AGE_API mmCityInfo(void) {
+            PUSH_VTABLE();
+            ageHook::Thunk<0x52A540>::Call<void>(this);
+            POP_VTABLE();
+        }
+
+        virtual AGE_API ~mmCityInfo(void) {
+            PUSH_VTABLE();
+            ageHook::Thunk<0x52A560>::Call<void>(this);
+            POP_VTABLE();
+        }
+
+        inline char * GetLocalisedName(void) {
+            return localisedName;
+        }
+
+        inline char * GetMapName(void) {
+            return mapName;
+        }
+
+        inline char * GetRaceDir(void) {
+            return raceDir;
+        }
+
+        inline int GetRaceNames(int mode, char *buffer) {
+            char *names = getRaceNamesPtr(mode);
+
+            if (names != NULL) {
+                strcpy(buffer, names);
+                return getRaceNamesCount(mode);
+            }
+
+            return -1;
+        }
+    };
+
+    class mmCityList {
+    private:
+        mmCityInfo **cityInfos;
+        int numCities;
+        int curCity;
+    public:
+        AGE_API mmCityList(void) {
+            PUSH_VTABLE();
+            ageHook::Thunk<0x524160>::Call<void>(this);
+            POP_VTABLE();
+        }
+
+        virtual AGE_API ~mmCityList(void) {
+            PUSH_VTABLE();
+            ageHook::Thunk<0x524180>::Call<void>(this);
+            POP_VTABLE();
+        }
+
+        AGE_API int GetCityID(char *city)                   { return ageHook::Thunk<0x524270>::Call<int>(this, city); }
+
+        AGE_API mmCityInfo * GetCityInfo(int city)          { return ageHook::Thunk<0x5241F0>::Call<mmCityInfo *>(this, city); }
+        AGE_API mmCityInfo * GetCityInfo(char *city)        { return ageHook::Thunk<0x524220>::Call<mmCityInfo *>(this, city); }
+
+        AGE_API mmCityInfo * GetCurrentCity(void)           { return ageHook::Thunk<0x524320>::Call<mmCityInfo *>(this); }
+    };
+
+    declhook(0x6B1CA0, _Type<mmCityList *>, CityListPtr);
 }
