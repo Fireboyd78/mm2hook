@@ -257,6 +257,9 @@
     <ClInclude Include="discord-rpc\discord-rpc.h">
       <Filter>Source Files\Discord Rich Presence</Filter>
     </ClInclude>
+    <ClInclude Include="src\mm2_network.h">
+      <Filter>Source Files\mm2</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
@@ -432,6 +435,9 @@
     </ClCompile>
     <ClCompile Include="discord-rpc\discord-presence.cpp">
       <Filter>Source Files\Discord Rich Presence</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mm2_network.cpp">
+      <Filter>Source Files\mm2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

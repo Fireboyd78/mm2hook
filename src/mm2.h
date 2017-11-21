@@ -24,6 +24,7 @@
 #include "mm2_static2.h"
 #include "mm2_breakable.h"
 #include "mm2_level.h"
+#include "mm2_network.h"
 
 #include "mm2_lua.h"
 
