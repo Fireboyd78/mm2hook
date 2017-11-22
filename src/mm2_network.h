@@ -286,7 +286,6 @@ namespace MM2 {
         DWORD a18;
         DWORD a19;
         DWORD a20;
-        DWORD a20;
         DWORD a21;
         DWORD a22;
         DWORD a23;
@@ -387,8 +386,8 @@ namespace MM2 {
         AGE_API int GetNumSessions(void)                                                                                { return ageHook::Thunk<0x5715F0>::Call<int>(this); }
         AGE_API void SealSession(void)                                                                                  { return ageHook::Thunk<0x571600>::Call<void>(this); }
         AGE_API void UnSealSession(void)                                                                                { return ageHook::Thunk<0x571700>::Call<void>(this); }
-        AGE_API void GetSessionData(struct NETSESSION_DESC *sessionData)                                                { return ageHook::Thunk<0x571800>::Call<void>(this, sessionData); }
-        AGE_API void SetSessionData(struct NETSESSION_DESC *sessionData, char *a3)                                      { return ageHook::Thunk<0x5718E0>::Call<void>(this, sessionData, a3); }
+        AGE_API void GetSessionData(NETSESSION_DESC *sessionData)                                                       { return ageHook::Thunk<0x571800>::Call<void>(this, sessionData); }
+        AGE_API void SetSessionData(NETSESSION_DESC *sessionData, char *a3)                                             { return ageHook::Thunk<0x5718E0>::Call<void>(this, sessionData, a3); }
         AGE_API int GetSessionSynch(int a2)                                                                             { return ageHook::Thunk<0x571A00>::Call<int>(this, a2); }
         AGE_API void GetSessionAsynch(void)                                                                             { return ageHook::Thunk<0x571AB0>::Call<void>(this); }
         AGE_API void StopSessionsAsynch(void)                                                                           { return ageHook::Thunk<0x571B10>::Call<void>(this); }
