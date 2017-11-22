@@ -14,7 +14,7 @@
     <ProjectGuid>{6CC7F4D6-BD50-4664-B731-1034CA380774}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>MM2Hook</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
@@ -208,6 +208,7 @@
     <ClInclude Include="src\logfile.h" />
     <ClInclude Include="src\mm2_bound.h" />
     <ClInclude Include="src\mm2_breakable.h" />
+    <ClInclude Include="src\mm2_network.h" />
     <ClInclude Include="src\mm2_static2.h" />
     <ClInclude Include="src\patch.h" />
     <ClInclude Include="src\util.h" />
@@ -216,6 +217,7 @@
     <ClCompile Include="src\logfile.cpp" />
     <ClCompile Include="src\mm2_bound.cpp" />
     <ClCompile Include="src\mm2_breakable.cpp" />
+    <ClCompile Include="src\mm2_network.cpp" />
     <ClCompile Include="src\mm2_static2.cpp" />
     <ClCompile Include="src\patch.cpp" />
     <ClCompile Include="src\util.cpp" />
