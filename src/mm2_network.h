@@ -20,6 +20,8 @@ namespace MM2 {
     class DPSESSIONDESC2;
     class IDirectPlay4;
 
+    class NETSESSION_DESC;
+
     class asNetwork;
 
     class DPACCOUNTDESC {
@@ -263,6 +265,78 @@ namespace MM2 {
         DPSESSIONDESC2 dpSessionDesc2;
     };
 
+    class NETSESSION_DESC {
+    private:
+        byte _buffer[0x44];
+    public:
+        char sessionDetails[32];
+        DWORD a5;
+        DWORD a6;
+        DWORD a7;
+        DWORD a8;
+        DWORD a9;
+        DWORD a10;
+        DWORD a11;
+        DWORD a12;
+        DWORD a13;
+        DWORD a14;
+        DWORD a15;
+        DWORD a16;
+        DWORD a17;
+        DWORD a18;
+        DWORD a19;
+        DWORD a20;
+        DWORD a20;
+        DWORD a21;
+        DWORD a22;
+        DWORD a23;
+        DWORD a24;
+        DWORD a25;
+        DWORD a26;
+        DWORD a27;
+        DWORD a28;
+        DWORD a29;
+        DWORD a30;
+        DWORD a31;
+        DWORD a32;
+        DWORD a33;
+        DWORD a34;
+        DWORD a35;
+        DWORD a36;
+        DWORD a37;
+        DWORD a38;
+        DWORD a39;
+        DWORD a40;
+        DWORD a41;
+        DWORD a42;
+        DWORD a43;
+        DWORD a44;
+        DWORD a45;
+        DWORD a46;
+        DWORD a47;
+        DWORD a48;
+        DWORD a49;
+        DWORD a50;
+        DWORD a51;
+        DWORD a52;
+        DWORD a53;
+        DWORD a54;
+        DWORD a55;
+        DWORD a56;
+        DWORD a57;
+        DWORD a58;
+        DWORD a59;
+        DWORD a60;
+        DWORD a61;
+        DWORD a62;
+        DWORD a63;
+        DWORD a64;
+        DWORD a65;
+        DWORD raceDetails;
+        DWORD a67;
+        DWORD pedestrianDensity;
+    };
+
     class asNetwork {
     public:
         AGE_API asNetwork(void) {
@@ -305,7 +379,7 @@ namespace MM2 {
         AGE_API signed int GetEnumPlayerData(int a2, void *lpData, DWORD lpdwDataSize)                                  { return ageHook::Thunk<0x570E10>::Call<int>(this, a2, lpData, lpdwDataSize); }
         AGE_API int GetPlayerdata(DPID idPlayer, void *lpData, DWORD lpdwDataSize)                                      { return ageHook::Thunk<0x570EE0>::Call<int>(this, idPlayer, lpData, lpdwDataSize); }
         AGE_API IDirectPlay4 * Ping(DPID idPlayer)                                                                      { return ageHook::Thunk<0x570F90>::Call<IDirectPlay4 *>(this, idPlayer); }
-        AGE_API int CreateSession(char *a2, char *a3, int a4, struct NETSESSION_DESC *a5)                               { return ageHook::Thunk<0x571070>::Call<int>(this, a2, a3, a4, a5); }
+        AGE_API int CreateSession(char *sessionName, char *sessionPassword, int sessionMaxPlayers, NETSESSION_DESC *sessionData) { return ageHook::Thunk<0x571070>::Call<int>(this, sessionName, sessionPassword, sessionMaxPlayers, sessionData); }
         AGE_API int JoinSession(char *a2, struct _GUID *a3, char *a4)                                                   { return ageHook::Thunk<0x571170>::Call<int>(this, a2, a3, a4); }
         AGE_API void CloseSession(void)                                                                                 { return ageHook::Thunk<0x571550>::Call<void>(this); }
         AGE_API char * GetEnumSession(int a2)                                                                           { return ageHook::Thunk<0x571590>::Call<char *>(this); }
@@ -313,8 +387,8 @@ namespace MM2 {
         AGE_API int GetNumSessions(void)                                                                                { return ageHook::Thunk<0x5715F0>::Call<int>(this); }
         AGE_API void SealSession(void)                                                                                  { return ageHook::Thunk<0x571600>::Call<void>(this); }
         AGE_API void UnSealSession(void)                                                                                { return ageHook::Thunk<0x571700>::Call<void>(this); }
-        AGE_API void GetSessionData(struct NETSESSION_DESC *a2)                                                         { return ageHook::Thunk<0x571800>::Call<void>(this); }
-        AGE_API void SetSessionData(struct NETSESSION_DESC *a2, char *a3)                                               { return ageHook::Thunk<0x5718E0>::Call<void>(this); }
+        AGE_API void GetSessionData(struct NETSESSION_DESC *sessionData)                                                { return ageHook::Thunk<0x571800>::Call<void>(this, sessionData); }
+        AGE_API void SetSessionData(struct NETSESSION_DESC *sessionData, char *a3)                                      { return ageHook::Thunk<0x5718E0>::Call<void>(this, sessionData, a3); }
         AGE_API int GetSessionSynch(int a2)                                                                             { return ageHook::Thunk<0x571A00>::Call<int>(this, a2); }
         AGE_API void GetSessionAsynch(void)                                                                             { return ageHook::Thunk<0x571AB0>::Call<void>(this); }
         AGE_API void StopSessionsAsynch(void)                                                                           { return ageHook::Thunk<0x571B10>::Call<void>(this); }
