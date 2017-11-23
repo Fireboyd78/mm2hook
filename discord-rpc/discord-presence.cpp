@@ -201,6 +201,8 @@ void UpdateDiscord(mm2RichPresenceInfo &mm2Info) {
     } else {
         if (mm2Info.inMultiplayer) {
             state = ("In multiplayer lobby");
+            presence.largeImageKey = "mpmenu";
+            presence.largeImageText = "Multiplayer lobby";
 
             instance = 0;
             partySize = mm2Info.lobbyCurrentPlayers;
