@@ -223,3 +223,16 @@ namespace variadic
     template <bool B, bool... BB>
     constexpr bool true_for_any<B, BB...> = B || true_for_any<BB...>;
 }
+
+template <class TBase>
+struct base_t {
+    typename typedef base_t type;
+
+    template<typename TRet, typename ...TArgs>
+    using cast_t = TRet(TBase::*)(TArgs...);
+
+    template<typename TRet, class TClass, typename ...TArgs>
+    static constexpr cast_t<TRet, TArgs...> cast(TRet (TClass::*func)(TArgs...)) {
+        return static_cast<cast_t<TRet, TArgs...>>(func);
+    }
+};
