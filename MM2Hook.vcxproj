@@ -208,6 +208,7 @@
     <ClInclude Include="src\logfile.h" />
     <ClInclude Include="src\mm2_bound.h" />
     <ClInclude Include="src\mm2_breakable.h" />
+    <ClInclude Include="src\mm2_network.h" />
     <ClInclude Include="src\mm2_static2.h" />
     <ClInclude Include="src\patch.h" />
     <ClInclude Include="src\util.h" />
@@ -216,6 +217,7 @@
     <ClCompile Include="src\logfile.cpp" />
     <ClCompile Include="src\mm2_bound.cpp" />
     <ClCompile Include="src\mm2_breakable.cpp" />
+    <ClCompile Include="src\mm2_network.cpp" />
     <ClCompile Include="src\mm2_static2.cpp" />
     <ClCompile Include="src\patch.cpp" />
     <ClCompile Include="src\util.cpp" />
