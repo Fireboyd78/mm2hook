@@ -164,4 +164,9 @@ namespace MM2
     public:
 
     };
+
+    template<>
+    void luaAddModule<module_inst>(LuaState L) {
+        luaBind<lvlInstance>(L);
+    }
 }

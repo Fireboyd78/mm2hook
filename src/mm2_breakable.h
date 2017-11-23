@@ -71,4 +71,10 @@ namespace MM2
 
     ASSERT_SIZEOF(vehBreakable, 0x4C);
     ASSERT_SIZEOF(vehBreakableMgr, 0x20);
+
+    template<>
+    void luaAddModule<module_breakable>(LuaState L) {
+        luaBind<vehBreakable>(L);
+        luaBind<vehBreakableMgr>(L);
+    }
 }

@@ -13,22 +13,6 @@ void mm2L_error(LPCSTR message)
     MM2::Abortf("[Lua] Error -- %s", message);
 }
 
-void luaAddGlobals(lua_State * L)
-{
-    typedef void(__cdecl *printer_type)(LPCSTR);
-
-    LuaBinding(L)
-        .addFunction("Printf", (printer_type)&Printf)
-        .addFunction("Messagef", (printer_type)&Messagef)
-        .addFunction("Displayf", (printer_type)&Displayf)
-        .addFunction("Warningf", (printer_type)&Warningf)
-        .addFunction("Errorf", (printer_type)&Errorf)
-        .addFunction("Quitf", (printer_type)&Quitf)
-        .addFunction("Abortf", (printer_type)&Abortf)
-
-        .addFunction("AngelReadString", &AngelReadString);
-}
-
 void luaAddModule_LogFile(lua_State * L)
 {
     LuaBinding(L)
@@ -37,6 +21,17 @@ void luaAddModule_LogFile(lua_State * L)
             .addFunction("Write", &LogFile::Write)
             .addFunction("WriteLine", &LogFile::WriteLine)
         .endModule();
+}
+
+// these need to be here due to header file placement
+// maybe this should be fixed...
+void luaAddModule_Vector(lua_State *L)
+{
+    luaBind<Vector2>(L);
+    luaBind<Vector3>(L);
+    luaBind<Vector4>(L);
+    luaBind<Matrix34>(L);
+    luaBind<Matrix44>(L);
 }
 
 void luaSetGlobals()
@@ -58,129 +53,39 @@ void luaSetGlobals()
     LogFile::WriteLine("Done!");
 }
 
-LUAMOD_API int luaopen_MM2(lua_State * L)
+LUAMOD_API int luaopen_MM2(lua_State *L)
 {
     LogFile::Write(" - Registering MM2 library...");
 
     LuaRef mod = LuaRef::createTable(L);
     auto modL = mod.state();
 
-    luaAddGlobals(modL);
     luaAddModule_LogFile(modL);
+    luaAddModule_Vector(modL);
 
-    LuaBinding(L)
-        .beginClass<datOutput>("datOutput")
-            .addStaticFunction("OpenLog", &datOutput::OpenLog)
-            .addStaticFunction("CloseLog", &datOutput::CloseLog)
-            .addStaticFunction("SetOutputMask", &datOutput::SetOutputMask)
-        .endClass()
-
-        .beginClass<mmPopup>("mmPopup")
-            .addFunction("IsEnabled", &mmPopup::IsEnabled)
-            .addFunction("Lock", &mmPopup::Lock)
-            .addFunction("Unlock", &mmPopup::Unlock)
-            .addFunction("ProcessChat", &mmPopup::ProcessChat)
-        .endClass()
-
-        .beginClass<Stream>("Stream")
-            .addFactory([](LPCSTR filename, bool createFile = false) {
-                auto stream = (createFile) ? Stream::Create(filename) : Stream::Open(filename, false);
-                return stream;
-            }, LUA_ARGS(LPCSTR, _opt<bool>))
-            .addStaticFunction("DumpOpenFiles", &Stream::DumpOpenFiles)
-
-            .addStaticFunction("Open", static_cast<Stream * (*)(LPCSTR, bool)>(&Stream::Open))
-            .addStaticFunction("Create", static_cast<Stream * (*)(LPCSTR)>(&Stream::Create))
-
-            .addFunction("Read", &Stream::Read)
-            .addFunction("Write", &Stream::Write)
-            .addFunction("GetCh", &Stream::GetCh)
-            .addFunction("PutCh", &Stream::PutCh)
-            .addFunction("Seek", &Stream::Seek)
-            .addFunction("Tell", &Stream::Tell)
-            .addFunction("Close", &Stream::Close)
-            .addFunction("Size", &Stream::Size)
-            .addFunction("Flush", &Stream::Flush)
-        .endClass()
-
-        .beginClass<Vector2>("Vector2")
-            .addFactory([](float x = 0.0, float y = 0.0) {
-                auto vec = new Vector2;
-                vec->X = x;
-                vec->Y = y;
-                return vec;
-            }, LUA_ARGS(_opt<float>, _opt<float>))
-            .addVariableRef("x", &Vector2::X)
-            .addVariableRef("y", &Vector2::Y)
-        .endClass()
-
-        .beginClass<Vector3>("Vector3")
-            .addFactory([](float x = 0.0, float y = 0.0, float z = 0.0) {
-                auto vec = new Vector3;
-                vec->X = x;
-                vec->Y = y;
-                vec->Z = z;
-                return vec;
-            }, LUA_ARGS(_opt<float>, _opt<float>, _opt<float>))
-            .addVariableRef("x", &Vector3::X)
-            .addVariableRef("y", &Vector3::Y)
-            .addVariableRef("z", &Vector3::Z)
-        .endClass()
-
-        .beginClass<Vector4>("Vector4")
-            .addFactory([](float x = 0.0, float y = 0.0, float z = 0.0, float w = 0.0) {
-                auto vec = new Vector4;
-                vec->X = x;
-                vec->Y = y;
-                vec->Z = z;
-                vec->W = w;
-                return vec;
-            }, LUA_ARGS(_opt<float>, _opt<float>, _opt<float>, _opt<float>))
-            .addVariableRef("x", &Vector4::X)
-            .addVariableRef("y", &Vector4::Y)
-            .addVariableRef("z", &Vector4::Z)
-            .addVariableRef("w", &Vector4::W)
-        .endClass()
-        
-         .beginClass<Matrix34>("Matrix34")
-                .addFactory([](float m11 = 0.0, float m12 = 0.0, float m13 = 0.0, float m14 = 0.0, float m21 = 0.0, float m22 = 0.0, float m23 = 0.0, float m24 = 0.0, float m31 = 0.0, float m32 = 0.0, float m33 = 0.0, float m34 = 0.0) {
-                auto mtx = new Matrix34();
-                mtx->m11 = m11;
-                mtx->m12 = m12;
-                mtx->m13 = m13;
-                mtx->m14 = m14;
-
-                mtx->m21 = m21;
-                mtx->m22 = m22;
-                mtx->m23 = m23;
-                mtx->m24 = m24;
-
-                mtx->m31 = m31;
-                mtx->m32 = m32;
-                mtx->m33 = m33;
-                mtx->m34 = m34;
-
-                return mtx;
-            }, LUA_ARGS(_opt<float>, _opt<float>, _opt<float>, _opt<float>, _opt<float>, _opt<float>, _opt<float>, _opt<float>, _opt<float>, _opt<float>, _opt<float>, _opt<float>))
-                .addVariableRef("m11", &Matrix34::m11)
-                .addVariableRef("m12", &Matrix34::m12)
-                .addVariableRef("m13", &Matrix34::m13)
-                .addVariableRef("m14", &Matrix34::m14)
-                .addVariableRef("m21", &Matrix34::m21)
-                .addVariableRef("m22", &Matrix34::m22)
-                .addVariableRef("m23", &Matrix34::m23)
-                .addVariableRef("m24", &Matrix34::m24)
-                .addVariableRef("m31", &Matrix34::m31)
-                .addVariableRef("m32", &Matrix34::m32)
-                .addVariableRef("m33", &Matrix34::m33)
-                .addVariableRef("m34", &Matrix34::m34)
-                .addFunction("Identity", &Matrix34::Identity)
-            .endClass();
-                
-
-    // testing
-    asLuaNode<asNode>::RegisterLua(L, "asNode");
-    asLuaNode<mmHUD>::RegisterLua(L, "mmHUD");
+    // register all Lua modules
+    // empty modules will be safely ignored
+    luaAddModule<module_ai>(modL);
+    luaAddModule<module_audio>(modL);
+    luaAddModule<module_base>(modL);
+    luaAddModule<module_bound>(modL);
+    luaAddModule<module_breakable>(modL);
+    luaAddModule<module_city>(modL);
+    luaAddModule<module_common>(modL);
+    luaAddModule<module_creature>(modL);
+    luaAddModule<module_data>(modL);
+    luaAddModule<module_game>(modL);
+    luaAddModule<module_gfx>(modL);
+    luaAddModule<module_input>(modL);
+    luaAddModule<module_inst>(modL);
+    luaAddModule<module_level>(modL);
+    luaAddModule<module_network>(modL);
+    luaAddModule<module_phys>(modL);
+    luaAddModule<module_rgl>(modL);
+    luaAddModule<module_static2>(modL);
+    luaAddModule<module_stream>(modL);
+    luaAddModule<module_ui>(modL);
+    luaAddModule<module_vehicle>(modL);
 
     mod.pushToStack();
 
@@ -260,23 +165,6 @@ void MM2Lua::Initialize() {
 
     LogFile::WriteLine("Loading main script...");
     LoadMainScript();
-
-    //load specific luas
-    mmHudMap::BindLua(L);
-    mmGameManager::BindLua(L);
-    mmPlayer::BindLua(L);
-    mmGame::BindLua(L);
-    lvlInstance::BindLua(L);
-    phBound::BindLua(L);
-    lvlAiMap::BindLua(L);
-    lvlAiRoad::BindLua(L);
-    aiMap::BindLua(L);
-    vehCar::BindLua(L);
-    vehCarDamage::BindLua(L);
-    vehCarSim::BindLua(L);
-    vehCarModel::BindLua(L);
-    vehBreakableMgr::BindLua(L);
-    vehBreakable::BindLua(L);
 }
 
 void MM2Lua::Reset()

@@ -52,4 +52,9 @@ namespace MM2
         static ageHook::Type<float> InvWidth;
         static ageHook::Type<float> InvHeight;
     };
+
+    template<>
+    void luaAddModule<module_input>(LuaState L) {
+
+    }
 }

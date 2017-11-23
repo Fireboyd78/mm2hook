@@ -45,4 +45,9 @@ namespace MM2
                 .endClass();
         }
     };
+
+    template<>
+    void luaAddModule<module_bound>(LuaState L) {
+        luaBind<phBound>(L);
+    }
 }

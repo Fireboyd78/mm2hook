@@ -107,4 +107,11 @@ namespace MM2
             .endClass();
         }
     };
+
+    template<>
+    void luaAddModule<module_ai>(LuaState L) {
+        luaBind<aiMap>(L);
+        luaBind<lvlAiMap>(L);
+        luaBind<lvlAiRoad>(L);
+    }
 }

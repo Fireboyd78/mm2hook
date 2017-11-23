@@ -45,7 +45,51 @@ using _StaticThunk = ageHook::StaticThunk<address>;
 #include "mm2_utils.h"
 #include "mm2_vector.h"
 
+enum mm2_module {
+    module_ai,
+    module_audio,
+    module_base,
+    module_bound,
+    module_breakable,
+    module_city,
+    module_common,
+    module_creature,
+    module_data,
+    module_game,
+    module_gfx,
+    module_input,
+    module_inst,
+    module_level,
+    module_network,
+    module_phys,
+    module_rgl,
+    module_static2,
+    module_stream,
+    module_ui,
+    module_vehicle,
+
+    module_count, // number of Lua modules
+};
+
+template<class TNode>
+using luaClassBinder = CppBindClass<TNode, LuaBinding>;
+
 namespace MM2 {
+    template <class T>
+    static inline void luaBind(LuaState L) {
+        T::BindLua(L);
+    }
+
+    template <class T>
+    static inline void luaBind(LuaState L, LPCSTR name) {
+        luaClassBinder<T> lc = LuaBinding(L).beginClass<T>(name);
+        T::BindLua(&lc);
+        lc.endClass();
+    }
+
+    template <enum mm2_module>
+    static inline void luaAddModule(LuaState L) { /* do nothing */ }
+
     struct LocString {
         char buffer[512];
     };
@@ -124,4 +168,20 @@ namespace MM2 {
     declhook(0x6A3C0C, _Type<int>, assetDebug);
     declhook(0x683104, _Type<int>, gfxDebug);
     declhook(0x6B4C24, _Type<int>, audDebug);
+
+    template<>
+    void luaAddModule<module_common>(LuaState L) {
+        typedef void(__cdecl *printer_type)(LPCSTR);
+
+        LuaBinding(L)
+            .addFunction("Printf", (printer_type)&Printf)
+            .addFunction("Messagef", (printer_type)&Messagef)
+            .addFunction("Displayf", (printer_type)&Displayf)
+            .addFunction("Warningf", (printer_type)&Warningf)
+            .addFunction("Errorf", (printer_type)&Errorf)
+            .addFunction("Quitf", (printer_type)&Quitf)
+            .addFunction("Abortf", (printer_type)&Abortf)
+
+            .addFunction("AngelReadString", &AngelReadString);
+    }
 };

@@ -126,5 +126,19 @@ namespace MM2
         AGE_API void Lock(void)                             { ageHook::Thunk<0x42B4F0>::Call<void>(this); };
         AGE_API void Unlock(void)                           { ageHook::Thunk<0x42B500>::Call<void>(this); };
         AGE_API void ProcessChat(void)                      { ageHook::Thunk<0x42A400>::Call<void>(this); };
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<mmPopup>("mmPopup")
+                .addFunction("IsEnabled", &IsEnabled)
+                .addFunction("Lock", &Lock)
+                .addFunction("Unlock", &Unlock)
+                .addFunction("ProcessChat", &ProcessChat)
+            .endClass();
+        }
     };
+
+    template<>
+    void luaAddModule<module_ui>(LuaState L) {
+        luaBind<mmPopup>(L);
+    }
 }

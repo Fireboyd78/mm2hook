@@ -106,7 +106,7 @@ namespace MM2
         AGE_API void SetVisible(bool a1)                    {ageHook::Thunk<0x4CF050>::Call<void>(this, a1); }
         
         /*
-        lvlInstance virtuals
+            lvlInstance virtuals
         */
 
         virtual AGE_API void Reset()  override              { ageHook::Thunk<0x4CDFD0>::Call<void>(this); }
@@ -162,6 +162,7 @@ namespace MM2
         AGE_API void SetHackedImpactParams()                { ageHook::Thunk<0x4CC080>::Call<void>(this); }
         AGE_API void RestoreImpactParams()                  { ageHook::Thunk<0x4CC050>::Call<void>(this); }
         AGE_API void SetResetPos(Vector3 * a1)              { ageHook::Thunk<0x4CC830>::Call<void>(this, a1); }
+        
         /*
             asNode virtuals
         */
@@ -206,6 +207,7 @@ namespace MM2
         /*
             asNode virtuals
         */
+
         virtual AGE_API void Update() override              { ageHook::Thunk<0x5B2C30>::Call<void>(this); }
         virtual AGE_API void Reset() override               { ageHook::Thunk<0x4CAE60>::Call<void>(this); }
         virtual AGE_API void FileIO(datParser &parser) override
@@ -268,7 +270,6 @@ namespace MM2
         virtual AGE_API void Update() override              { ageHook::Thunk<0x42C690>::Call<void>(this); }
         virtual AGE_API void PreUpdate() override           { ageHook::Thunk<0x42C480>::Call<void>(this); }
 
-
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<vehCar>("vehCar")
                 .addConstructor(LUA_ARGS(bool))
@@ -298,4 +299,12 @@ namespace MM2
     public:
         static ageHook::Type<int> iNumCopsPursuingPlayer;
     };
+
+    template<>
+    void luaAddModule<module_vehicle>(LuaState L) {
+        luaBind<vehCar>(L);
+        luaBind<vehCarDamage>(L);
+        luaBind<vehCarModel>(L);
+        luaBind<vehCarSim>(L);
+    }
 }

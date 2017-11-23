@@ -103,6 +103,46 @@ namespace MM2
         void Identity() {
             $::Matrix34::Identity(this);
         }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<Matrix34>("Matrix34")
+                .addFactory([](float m11 = 0.0, float m12 = 0.0, float m13 = 0.0, float m14 = 0.0,
+                            float m21 = 0.0, float m22 = 0.0, float m23 = 0.0, float m24 = 0.0,
+                            float m31 = 0.0, float m32 = 0.0, float m33 = 0.0, float m34 = 0.0) {
+                    auto mtx = new Matrix34();
+                    mtx->m11 = m11;
+                    mtx->m12 = m12;
+                    mtx->m13 = m13;
+                    mtx->m14 = m14;
+
+                    mtx->m21 = m21;
+                    mtx->m22 = m22;
+                    mtx->m23 = m23;
+                    mtx->m24 = m24;
+
+                    mtx->m31 = m31;
+                    mtx->m32 = m32;
+                    mtx->m33 = m33;
+                    mtx->m34 = m34;
+                    return mtx;
+                }, LUA_ARGS(_opt<float>, _opt<float>, _opt<float>, _opt<float>,
+                        _opt<float>, _opt<float>, _opt<float>, _opt<float>,
+                        _opt<float>, _opt<float>, _opt<float>, _opt<float>))
+                .addVariableRef("m11", &Matrix34::m11)
+                .addVariableRef("m12", &Matrix34::m12)
+                .addVariableRef("m13", &Matrix34::m13)
+                .addVariableRef("m14", &Matrix34::m14)
+                .addVariableRef("m21", &Matrix34::m21)
+                .addVariableRef("m22", &Matrix34::m22)
+                .addVariableRef("m23", &Matrix34::m23)
+                .addVariableRef("m24", &Matrix34::m24)
+                .addVariableRef("m31", &Matrix34::m31)
+                .addVariableRef("m32", &Matrix34::m32)
+                .addVariableRef("m33", &Matrix34::m33)
+                .addVariableRef("m34", &Matrix34::m34)
+                .addFunction("Identity", &Matrix34::Identity)
+            .endClass();
+        }
     };
 
     class Matrix44 {
@@ -126,6 +166,59 @@ namespace MM2
         float m42;
         float m43;
         float m44;
+
+        void Identity(void)                                 { return ageHook::Thunk<0x4C0730>::Call<void>(this); }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<Matrix44>("Matrix44")
+                .addFactory([](float m11 = 0.0, float m12 = 0.0, float m13 = 0.0, float m14 = 0.0,
+                            float m21 = 0.0, float m22 = 0.0, float m23 = 0.0, float m24 = 0.0,
+                            float m31 = 0.0, float m32 = 0.0, float m33 = 0.0, float m34 = 0.0,
+                            float m41 = 0.0, float m42 = 0.0, float m43 = 0.0, float m44 = 0.0) {
+                    auto mtx = new Matrix44();
+                    mtx->m11 = m11;
+                    mtx->m12 = m12;
+                    mtx->m13 = m13;
+                    mtx->m14 = m14;
+
+                    mtx->m21 = m21;
+                    mtx->m22 = m22;
+                    mtx->m23 = m23;
+                    mtx->m24 = m24;
+
+                    mtx->m31 = m31;
+                    mtx->m32 = m32;
+                    mtx->m33 = m33;
+                    mtx->m34 = m34;
+
+                    mtx->m41 = m41;
+                    mtx->m42 = m42;
+                    mtx->m43 = m43;
+                    mtx->m44 = m44;
+                    return mtx;
+                }, LUA_ARGS(_opt<float>, _opt<float>, _opt<float>, _opt<float>,
+                        _opt<float>, _opt<float>, _opt<float>, _opt<float>,
+                        _opt<float>, _opt<float>, _opt<float>, _opt<float>,
+                        _opt<float>, _opt<float>, _opt<float>, _opt<float>))
+                .addVariableRef("m11", &Matrix44::m11)
+                .addVariableRef("m12", &Matrix44::m12)
+                .addVariableRef("m13", &Matrix44::m13)
+                .addVariableRef("m14", &Matrix44::m14)
+                .addVariableRef("m21", &Matrix44::m21)
+                .addVariableRef("m22", &Matrix44::m22)
+                .addVariableRef("m23", &Matrix44::m23)
+                .addVariableRef("m24", &Matrix44::m24)
+                .addVariableRef("m31", &Matrix44::m31)
+                .addVariableRef("m32", &Matrix44::m32)
+                .addVariableRef("m33", &Matrix44::m33)
+                .addVariableRef("m34", &Matrix44::m34)
+                .addVariableRef("m41", &Matrix44::m41)
+                .addVariableRef("m42", &Matrix44::m42)
+                .addVariableRef("m43", &Matrix44::m43)
+                .addVariableRef("m44", &Matrix44::m44)
+                .addFunction("Identity", &Matrix44::Identity)
+            .endClass();
+        }
     };
 
     class Vector2 {
@@ -146,6 +239,19 @@ namespace MM2
         AGE_API void Set(float x, float y) {
             X = x;
             Y = y;
+        }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<Vector2>("Vector2")
+                .addFactory([](float x = 0.0, float y = 0.0) {
+                    auto vec = new Vector2;
+                    vec->X = x;
+                    vec->Y = y;
+                    return vec;
+                }, LUA_ARGS(_opt<float>, _opt<float>))
+                .addVariableRef("x", &Vector2::X)
+                .addVariableRef("y", &Vector2::Y)
+            .endClass();
         }
     };
 
@@ -278,6 +384,21 @@ namespace MM2
         AGE_API Vector3 operator%(const Vector3 &vec) const {
             return $::Vector3::$$op_mod(this, &vec);
         }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<Vector3>("Vector3")
+                .addFactory([](float x = 0.0, float y = 0.0, float z = 0.0) {
+                    auto vec = new Vector3;
+                    vec->X = x;
+                    vec->Y = y;
+                    vec->Z = z;
+                    return vec;
+                }, LUA_ARGS(_opt<float>, _opt<float>, _opt<float>))
+                .addVariableRef("x", &Vector3::X)
+                .addVariableRef("y", &Vector3::Y)
+                .addVariableRef("z", &Vector3::Z)
+            .endClass();
+        }
     };
 
     class Vector4 {
@@ -322,6 +443,23 @@ namespace MM2
         }
         AGE_API void Max(const Vector4 &vec1, const Vector4 &vec2) {
             $::Vector4::Max(this, &vec1, &vec2);
+        }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<Vector4>("Vector4")
+                .addFactory([](float x = 0.0, float y = 0.0, float z = 0.0, float w = 0.0) {
+                    auto vec = new Vector4;
+                    vec->X = x;
+                    vec->Y = y;
+                    vec->Z = z;
+                    vec->W = w;
+                    return vec;
+                }, LUA_ARGS(_opt<float>, _opt<float>, _opt<float>, _opt<float>))
+                .addVariableRef("x", &Vector4::X)
+                .addVariableRef("y", &Vector4::Y)
+                .addVariableRef("z", &Vector4::Z)
+                .addVariableRef("w", &Vector4::W)
+            .endClass();
         }
     };
 }
