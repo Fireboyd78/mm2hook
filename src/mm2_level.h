@@ -21,4 +21,9 @@ namespace MM2
     class lvlSDL {
 
     };
+
+    template<>
+    void luaAddModule<module_level>(LuaState L) {
+
+    }
 }

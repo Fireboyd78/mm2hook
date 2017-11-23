@@ -261,4 +261,9 @@ namespace MM2
     };
 
     declhook(0x6B1CA0, _Type<mmCityList *>, CityListPtr);
+
+    template<>
+    void luaAddModule<module_city>(LuaState L) {
+
+    }
 }

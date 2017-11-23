@@ -90,7 +90,9 @@ namespace MM2
         virtual AGE_API const char * GetDirName(void)       { return ageHook::Thunk<0x4A0DA0>::Call<const char *>(this); };
 
         template <class TNode>
-        static void RegisterLua(luaClassBinder<TNode> *lc) {
+        static void BindLua(luaClassBinder<TNode> *lc) {
+            lc->addProperty("name", &GetName, &SetName);
+
             lc->addFunction("AddChild", &AddChild);
             lc->addFunction("InsertChild", &InsertChild);
             lc->addFunction("RemoveChild", static_cast<int (TNode::*)(int)>(&RemoveChild));
@@ -101,7 +103,22 @@ namespace MM2
             lc->addFunction("NumChildren", &NumChildren);
             lc->addFunction("SwitchTo", &SwitchTo);
 
-            lc->addProperty("name", &GetName, &SetName);
+            lc->addFunction("Update", base_t<TNode>::cast(&Update));
+            lc->addFunction("Reset", base_t<TNode>::cast(&Reset));
+            lc->addFunction("ResChange", base_t<TNode>::cast(&ResChange));
+            lc->addFunction("UpdatePaused", base_t<TNode>::cast(&UpdatePaused));
+            lc->addFunction("FileIO", base_t<TNode>::cast(&FileIO));
+            lc->addFunction("AfterLoad", base_t<TNode>::cast(&AfterLoad));
+            lc->addFunction("BeforeSave", base_t<TNode>::cast(&BeforeSave));
+            lc->addFunction("Save", base_t<TNode>::cast(&Save));
+            lc->addFunction("Load", base_t<TNode>::cast(&Load));
+            lc->addFunction("GetClassName", base_t<TNode>::cast(&GetClassName));
+            lc->addFunction("GetDirName", base_t<TNode>::cast(&GetDirName));
         };
     };
+
+    template<>
+    void luaAddModule<module_base>(LuaState L) {
+        luaBind<asNode>(L, "asNode");
+    }
 }

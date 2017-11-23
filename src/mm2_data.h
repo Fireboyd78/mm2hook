@@ -250,6 +250,14 @@ namespace MM2
         AGE_API static void SetOutputMask(UINT mask) {
             $::datOutput::SetOutputMask(mask);
         };
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<datOutput>("datOutput")
+                .addStaticFunction("OpenLog", &OpenLog)
+                .addStaticFunction("CloseLog", &CloseLog)
+                .addStaticFunction("SetOutputMask", &SetOutputMask)
+            .endClass();
+        }
     };
 
     class datParserRecord {
@@ -403,4 +411,9 @@ namespace MM2
             $::datTimeManager::Update();
         };
     };
+
+    template<>
+    void luaAddModule<module_data>(LuaState L) {
+        luaBind<datOutput>(L);
+    }
 }

@@ -7,4 +7,9 @@ namespace MM2
     public:
 
     };
+
+    template<>
+    void luaAddModule<module_static2>(LuaState L) {
+
+    }
 }

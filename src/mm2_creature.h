@@ -41,4 +41,9 @@ namespace MM2
             $::pedRagdollMgr::Init(this, numThings, things);
         }
     };
+
+    template<>
+    void luaAddModule<module_creature>(LuaState L) {
+
+    }
 }

@@ -164,4 +164,9 @@ namespace MM2 {
         AGE_API char * GetEnumModem(int a2)                 { return ageHook::Thunk<0x5727C0>::Call<char *>(this, a2); }
         AGE_API int QueryModems(void)                       { return ageHook::Thunk<0x5727F0>::Call<int>(this); }
     };
+
+    template<>
+    void luaAddModule<module_network>(LuaState L) {
+
+    }
 }

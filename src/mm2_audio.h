@@ -236,4 +236,9 @@ namespace MM2
             return $::mmDirSnd::InitPrimarySoundBuffer(this, p1, p2, p3);
         };
     };
+
+    template<>
+    void luaAddModule<module_audio>(LuaState L) {
+
+    }
 }

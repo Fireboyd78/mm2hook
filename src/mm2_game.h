@@ -146,11 +146,11 @@ namespace MM2
         AGE_API void SetMessage(LPCSTR message)             { ageHook::Thunk<0x42E240>::Call<void>(this, message); };
         AGE_API void PostChatMessage(LPCSTR message)        { ageHook::Thunk<0x42D280>::Call<void>(this, message); };
 
-        static void RegisterLua(luaClassBinder<mmHUD> *lc) {
-            asNode::RegisterLua(lc);
+        static void BindLua(luaClassBinder<mmHUD> *lc) {
+            asNode::BindLua(lc);
 
-            lc->addFunction("SetMessage", static_cast<void (mmHUD::*)(LPCSTR, float, int)>(&mmHUD::SetMessage));
-            lc->addFunction("PostChatMessage", &mmHUD::PostChatMessage);
+            lc->addFunction("SetMessage", static_cast<void (mmHUD::*)(LPCSTR, float, int)>(&SetMessage));
+            lc->addFunction("PostChatMessage", &PostChatMessage);
         }
     };
 
@@ -251,4 +251,13 @@ namespace MM2
             .endClass();
         }
     };
+
+    template<>
+    void luaAddModule<module_game>(LuaState L) {
+        luaBind<mmGame>(L);
+        luaBind<mmGameManager>(L);
+        luaBind<mmHUD>(L, "mmHUD");
+        luaBind<mmHudMap>(L);
+        luaBind<mmPlayer>(L);
+    }
 }

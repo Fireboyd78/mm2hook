@@ -214,4 +214,9 @@ namespace MM2
 
     declhook(0x6830EC, _Type<int>, window_X);
     declhook(0x683110, _Type<int>, window_Y);
+
+    template<>
+    void luaAddModule<module_gfx>(LuaState L) {
+
+    }
 }

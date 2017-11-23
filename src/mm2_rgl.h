@@ -108,4 +108,9 @@ namespace MM2
     extern void rglPushMatrix(void);
     extern void rglPopMatrix(void);
     extern void rglMultMatrix(Matrix34 &p1);
+
+    template<>
+    void luaAddModule<module_rgl>(LuaState L) {
+
+    }
 }

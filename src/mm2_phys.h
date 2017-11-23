@@ -62,4 +62,9 @@ namespace MM2
     public:
         void Draw(int a1) { ageHook::Thunk<0x4415E0>::Call<void>(this, a1); }
     };
+
+    template<>
+    void luaAddModule<module_phys>(LuaState L) {
+
+    }
 }

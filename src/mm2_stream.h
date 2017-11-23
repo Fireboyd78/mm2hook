@@ -53,5 +53,33 @@ namespace MM2
         AGE_API int             Close           (void)                              { return ageHook::Thunk<0x4C9DC0>::Call<int>(this); };
         AGE_API int             Size            (void)                              { return ageHook::Thunk<0x4C9E00>::Call<int>(this); };
         AGE_API int             Flush           (void)                              { return ageHook::Thunk<0x4C9E60>::Call<int>(this); };
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<Stream>("Stream")
+                .addFactory([](LPCSTR filename, bool createFile = false) {
+                    auto stream = (createFile) ? Stream::Create(filename) : Stream::Open(filename, false);
+                    return stream;
+                }, LUA_ARGS(LPCSTR, _opt<bool>))
+                .addStaticFunction("DumpOpenFiles", &Stream::DumpOpenFiles)
+
+                .addStaticFunction("Open", static_cast<Stream * (*)(LPCSTR, bool)>(&Stream::Open))
+                .addStaticFunction("Create", static_cast<Stream * (*)(LPCSTR)>(&Stream::Create))
+
+                .addFunction("Read", &Stream::Read)
+                .addFunction("Write", &Stream::Write)
+                .addFunction("GetCh", &Stream::GetCh)
+                .addFunction("PutCh", &Stream::PutCh)
+                .addFunction("Seek", &Stream::Seek)
+                .addFunction("Tell", &Stream::Tell)
+                .addFunction("Close", &Stream::Close)
+                .addFunction("Size", &Stream::Size)
+                .addFunction("Flush", &Stream::Flush)
+            .endClass();
+        }
     };
+
+    template<>
+    void luaAddModule<module_stream>(LuaState L) {
+        luaBind<Stream>(L);
+    }
 }
