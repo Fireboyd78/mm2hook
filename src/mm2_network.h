@@ -91,11 +91,11 @@ namespace MM2 {
         }
 
         inline IDirectPlay4 * getDirectPlay(void) {
-            _dplay.get(this);
+            return _dplay.get(this);
         }
 
         inline IDirectPlayLobby3 * getDirectPlayLobby(void) {
-            _dplobby.get(this);
+            return _dplobby.get(this);
         }
 
         AGE_API int Initialize(int a2, int a3, int a4)      { return ageHook::Thunk<0x56FDC0>::Call<int>(this, a2, a3, a4); }

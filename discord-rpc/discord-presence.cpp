@@ -272,14 +272,16 @@ int discordHandler::DetectHostMPLobby(char *sessionName, char *sessionPassword, 
     return $::asNetwork::CreateSession(this, sessionName, sessionPassword, sessionMaxPlayers, sessionData);
 }
 
+byte data[sizeof(DPSESSIONDESC2)]{ NULL };
+
 int discordHandler::DetectJoinMPLobby(char *a2, _GUID *a3, char *a4) {
     LogFile::WriteLine("Entered multiplayer lobby");
     g_mm2Info.inMultiplayer = true;
 
-    byte data[sizeof(DPSESSIONDESC2)];
+    int result = $::asNetwork::JoinSession(this, a2, a3, a4);
+
     DWORD dataSize = 0;
 
-    int result = $::asNetwork::JoinSession(this, a2, a3, a4);
     asNetwork *netmgr = NETMGR.ptr();
     IDirectPlay4 *dplay = netmgr->getDirectPlay();
 
@@ -290,8 +292,6 @@ int discordHandler::DetectJoinMPLobby(char *a2, _GUID *a3, char *a4) {
     auto desc = (DPSESSIONDESC2*)data;
 
     g_mm2Info.lobbyMaxPlayers = desc->dwMaxPlayers;
-
-    LogFile::Format("# of max players= %d\n", g_mm2Info.lobbyMaxPlayers);
 
     UpdateDiscord(g_mm2Info);
 
