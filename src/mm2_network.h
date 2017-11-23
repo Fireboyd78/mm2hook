@@ -7,83 +7,67 @@
 namespace MM2 {
     //Forward declarations
     class asNetwork;
-    class NETSESSION_DESC;
+    
+    typedef int DPID; // player ID
 
-    // TODO: make this a struct
-    typedef DWORD DPID;
+    struct NETSESSION_DESC {
+        char info[256];
+        DWORD version; // default: 3
+        struct {
+            int timeOfDay       : 4;
+            int weatherType     : 4;
+            int raceId          : 4;
+            int gameMode        : 4;
+            int extraData       : 16;
+        } details;
+        union {
+            // raw settings data
+            DWORD _settings;
 
-    class NETSESSION_DESC {
-    private:
-        byte _buffer[0x44];
-    public:
-        char sessionDetails[32];
-        DWORD a5;
-        DWORD a6;
-        DWORD a7;
-        DWORD a8;
-        DWORD a9;
-        DWORD a10;
-        DWORD a11;
-        DWORD a12;
-        DWORD a13;
-        DWORD a14;
-        DWORD a15;
-        DWORD a16;
-        DWORD a17;
-        DWORD a18;
-        DWORD a19;
-        DWORD a20;
-        DWORD a21;
-        DWORD a22;
-        DWORD a23;
-        DWORD a24;
-        DWORD a25;
-        DWORD a26;
-        DWORD a27;
-        DWORD a28;
-        DWORD a29;
-        DWORD a30;
-        DWORD a31;
-        DWORD a32;
-        DWORD a33;
-        DWORD a34;
-        DWORD a35;
-        DWORD a36;
-        DWORD a37;
-        DWORD a38;
-        DWORD a39;
-        DWORD a40;
-        DWORD a41;
-        DWORD a42;
-        DWORD a43;
-        DWORD a44;
-        DWORD a45;
-        DWORD a46;
-        DWORD a47;
-        DWORD a48;
-        DWORD a49;
-        DWORD a50;
-        DWORD a51;
-        DWORD a52;
-        DWORD a53;
-        DWORD a54;
-        DWORD a55;
-        DWORD a56;
-        DWORD a57;
-        DWORD a58;
-        DWORD a59;
-        DWORD a60;
-        DWORD a61;
-        DWORD a62;
-        DWORD a63;
-        DWORD a64;
-        DWORD a65;
-        DWORD raceDetails;
-        DWORD a67;
+            /*
+                General settings
+                Valid for any game mode.
+            */
+            struct {
+                BOOL noRespawn  : 1;
+                int skillLevel  : 3;
+                int userData    : 12;
+                int extraData   : 16;
+            } settings;
+            /*
+                Race settings
+                Valid for racing game modes.
+            */
+            struct {
+                int             : 4; // s_settings
+                int numLaps     : 4;
+                int timeLimit   : 8;
+                int extraData   : 16;
+            } race_settings;
+            /*
+                Cops 'N Robbers settings
+                Valid for the Cops 'n Robbers game mode only.
+            */
+            struct {
+                int             : 4; // s_settings
+                // TODO: limits?
+                int cr_00       : 2;
+                int cr_01       : 2;
+                int goldMass    : 2;
+                int teamType    : 22; // 2 +20 bits (no extra data)
+            } cr_settings;
+        };
         DWORD pedestrianDensity;
     };
 
+    ASSERT_SIZEOF(NETSESSION_DESC, 0x110);
+    
     class asNetwork {
+    private:
+        byte _buffer[0x78];
+    protected:
+        ageHook::Field<0x18, IDirectPlay4 *> _dplay;
+        ageHook::Field<0x1C, IDirectPlayLobby3 *> _dplobby;
     public:
         AGE_API asNetwork(void) {
             PUSH_VTABLE();
@@ -95,6 +79,14 @@ namespace MM2 {
             PUSH_VTABLE();
             ageHook::Thunk<0x56FD70>::Call<void>(this);
             POP_VTABLE();
+        }
+
+        inline IDirectPlay4 * getDirectPlay(void) {
+            _dplay.get(this);
+        }
+
+        inline IDirectPlayLobby3 * getDirectPlayLobby(void) {
+            _dplobby.get(this);
         }
 
         AGE_API int Initialize(int a2, int a3, int a4)      { return ageHook::Thunk<0x56FDC0>::Call<int>(this, a2, a3, a4); }
@@ -127,7 +119,7 @@ namespace MM2 {
                                                             { return ageHook::Thunk<0x570D70>::Call<void>(this, idPlayer, lpData, dwDataSize); }
         AGE_API signed int GetEnumPlayerData(int a2, void *lpData, DWORD lpdwDataSize)
                                                             { return ageHook::Thunk<0x570E10>::Call<int>(this, a2, lpData, lpdwDataSize); }
-        AGE_API int GetPlayerdata(DPID idPlayer, void *lpData, DWORD lpdwDataSize)
+        AGE_API int GetPlayerData(DPID idPlayer, void *lpData, DWORD lpdwDataSize)
                                                             { return ageHook::Thunk<0x570EE0>::Call<int>(this, idPlayer, lpData, lpdwDataSize); }
         AGE_API IDirectPlay4 * Ping(DPID idPlayer)          { return ageHook::Thunk<0x570F90>::Call<IDirectPlay4 *>(this, idPlayer); }
         AGE_API int CreateSession(char *name, char *password, int maxPlayers, NETSESSION_DESC *sessionData)
