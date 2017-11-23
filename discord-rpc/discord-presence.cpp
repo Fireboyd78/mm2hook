@@ -180,7 +180,7 @@ void UpdateDiscord(mm2RichPresenceInfo &mm2Info) {
 
             instance = 0;
             partySize = mm2Info.lobbyCurrentPlayers;
-            partyMax = 8;
+            partyMax = mm2Info.lobbyMaxPlayers;
         }
 
         state = (isRaceMode()) ? "In a race" : "In singleplayer";
@@ -203,7 +203,7 @@ void UpdateDiscord(mm2RichPresenceInfo &mm2Info) {
 
             instance = 0;
             partySize = mm2Info.lobbyCurrentPlayers;
-            partyMax = 8;
+            partyMax = mm2Info.lobbyMaxPlayers;
         }
         else {
             state = "In main menu";
@@ -253,6 +253,7 @@ void discordHandler::GameBeDone(int) {
     g_mm2Info.inRace = false;
     g_mm2Info.inMultiplayer = false;
     g_mm2Info.lobbyCurrentPlayers = 0;
+    g_mm2Info.lobbyMaxPlayers = 0;
     g_mm2Info.city = NULL;
     g_mm2Info.cityImageKey = NULL;
     g_mm2Info.vehicle = NULL;
@@ -264,7 +265,8 @@ void discordHandler::GameBeDone(int) {
 int discordHandler::DetectHostMPLobby(char *sessionName, char *sessionPassword, int sessionMaxPlayers, NETSESSION_DESC *sessionData) {
     LogFile::WriteLine("Entered multiplayer lobby");
     g_mm2Info.inMultiplayer = true;
-    //g_mm2Info.lobbyCurrentPlayers = $::asNetwork::GetNumPlayers(this);
+    g_mm2Info.lobbyCurrentPlayers = 1;
+    g_mm2Info.lobbyMaxPlayers = sessionMaxPlayers;
     UpdateDiscord(g_mm2Info);
 
     return $::asNetwork::CreateSession(this, sessionName, sessionPassword, sessionMaxPlayers, sessionData);
@@ -273,9 +275,27 @@ int discordHandler::DetectHostMPLobby(char *sessionName, char *sessionPassword, 
 int discordHandler::DetectJoinMPLobby(char *a2, _GUID *a3, char *a4) {
     LogFile::WriteLine("Entered multiplayer lobby");
     g_mm2Info.inMultiplayer = true;
+
+    byte data[sizeof(DPSESSIONDESC2)];
+    DWORD dataSize = 0;
+
+    int result = $::asNetwork::JoinSession(this, a2, a3, a4);
+    asNetwork *netmgr = NETMGR.ptr();
+    IDirectPlay4 *dplay = netmgr->getDirectPlay();
+
+    dplay->GetSessionDesc(NULL, &dataSize); //Get the data size
+
+    dplay->GetSessionDesc(&data, &dataSize); //Populate our data buffer
+
+    auto desc = (DPSESSIONDESC2*)data;
+
+    g_mm2Info.lobbyMaxPlayers = desc->dwMaxPlayers;
+
+    LogFile::Format("# of max players= %d\n", g_mm2Info.lobbyMaxPlayers);
+
     UpdateDiscord(g_mm2Info);
 
-    return $::asNetwork::JoinSession(this, a2, a3, a4);
+    return result;
 }
 
 void discordHandler::DetectDisconnectMPLobby(void) {
