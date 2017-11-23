@@ -30,6 +30,7 @@ public:
     int DetectHostMPLobby(char *, char *, int, MM2::NETSESSION_DESC *);
     int DetectJoinMPLobby(char *, _GUID *, char *);
     void DetectDisconnectMPLobby(void);
+    void DetectDisconnectMPGame(void);
     int RefreshNumPlayersLobby(void);
 
 	static void Install(void);

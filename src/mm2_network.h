@@ -14,6 +14,7 @@ namespace MM2 {
             declhook(0x571170, _Func<int>::ThisCall, JoinSession);
             declhook(0x570870, _Func<void>::ThisCall, Disconnect);
             declhook(0x570AD0, _Func<int>::ThisCall, GetNumPlayers);
+            declhook(0x571550, _Func<void>::ThisCall, CloseSession);
         }
     }
     
