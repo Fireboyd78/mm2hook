@@ -7,6 +7,15 @@
 namespace MM2 {
     //Forward declarations
     class asNetwork;
+
+    namespace $ {
+        namespace asNetwork {
+            declhook(0x571070, _Func<int>::ThisCall, CreateSession);
+            declhook(0x571170, _Func<int>::ThisCall, JoinSession);
+            declhook(0x570870, _Func<void>::ThisCall, Disconnect);
+            declhook(0x570AD0, _Func<int>::ThisCall, GetNumPlayers);
+        }
+    }
     
     typedef int DPID; // player ID
 
@@ -164,6 +173,8 @@ namespace MM2 {
         AGE_API char * GetEnumModem(int a2)                 { return ageHook::Thunk<0x5727C0>::Call<char *>(this, a2); }
         AGE_API int QueryModems(void)                       { return ageHook::Thunk<0x5727F0>::Call<int>(this); }
     };
+
+    declhook(0x6B3968, _Type<asNetwork>, NETMGR);
 
     template<>
     void luaAddModule<module_network>(LuaState L) {
