@@ -179,11 +179,12 @@ void UpdateDiscord(mm2RichPresenceInfo &mm2Info) {
             state = (isRaceMode()) ? "Racing online" : "In multiplayer";
 
             instance = 0;
-            partySize = 1;
-            partyMax = 8;
+            partySize = mm2Info.lobbyCurrentPlayers;
+            partyMax = mm2Info.lobbyMaxPlayers;
         }
-
-        state = (isRaceMode()) ? "In a race" : "In singleplayer";
+        else {
+            state = (isRaceMode()) ? "In a race" : "In singleplayer";
+        }
 
         if (isCruiseMode()) {
             sprintf(details, "Cruisin' around");
@@ -198,9 +199,20 @@ void UpdateDiscord(mm2RichPresenceInfo &mm2Info) {
         presence.smallImageText = mm2Info.vehicle;
         presence.smallImageKey = mm2Info.vehicleImageKey;
     } else {
-        state = "In main menu";
-        presence.largeImageKey = "menu";
-        presence.largeImageText = "Main menu";
+        if (mm2Info.inMultiplayer) {
+            state = ("In multiplayer lobby");
+            presence.largeImageKey = "mpmenu";
+            presence.largeImageText = "Multiplayer lobby";
+
+            instance = 0;
+            partySize = mm2Info.lobbyCurrentPlayers;
+            partyMax = mm2Info.lobbyMaxPlayers;
+        }
+        else {
+            state = "In main menu";
+            presence.largeImageKey = "menu";
+            presence.largeImageText = "Main menu";
+        }
     }
 
     presence.state = state;
@@ -225,7 +237,6 @@ int discordHandler::GameInit(void) {
     mmVehInfo * vehInfo = VehicleListPtr->GetVehicleInfo(vehicleName);
 
     g_mm2Info.inRace = true;
-    g_mm2Info.inMultiplayer = false; // TODO: update this properly
     g_mm2Info.city = cityInfo->GetLocalisedName();
     g_mm2Info.cityImageKey = getCityImageKey(cityInfo);
     g_mm2Info.vehicle = vehInfo->GetDescription();
@@ -240,13 +251,70 @@ void discordHandler::GameBeDone(int) {
     LogFile::WriteLine("[discord] GameBeDone called.");
 
     g_mm2Info.inRace = false;
-    g_mm2Info.inMultiplayer = false;
     g_mm2Info.city = NULL;
     g_mm2Info.cityImageKey = NULL;
     g_mm2Info.vehicle = NULL;
     g_mm2Info.vehicleImageKey = NULL;
     g_mm2Info.raceName = NULL;
     UpdateDiscord(g_mm2Info);
+}
+
+int discordHandler::DetectHostMPLobby(char *sessionName, char *sessionPassword, int sessionMaxPlayers, NETSESSION_DESC *sessionData) {
+    LogFile::WriteLine("Entered multiplayer lobby");
+    g_mm2Info.inMultiplayer = true;
+    g_mm2Info.lobbyCurrentPlayers = 1;
+    g_mm2Info.lobbyMaxPlayers = sessionMaxPlayers;
+    UpdateDiscord(g_mm2Info);
+
+    return (reinterpret_cast<asNetwork *>(this))->CreateSession(sessionName, sessionPassword, sessionMaxPlayers, sessionData);
+}
+
+byte data[sizeof(DPSESSIONDESC2)]{ NULL };
+
+int discordHandler::DetectJoinMPLobby(char *a2, _GUID *a3, char *a4) {
+    LogFile::WriteLine("Entered multiplayer lobby");
+    g_mm2Info.inMultiplayer = true;
+
+    int result = (reinterpret_cast<asNetwork *>(this))->JoinSession(a2, a3, a4);
+
+    DWORD dataSize = 0;
+
+    asNetwork *netmgr = NETMGR.ptr();
+    IDirectPlay4 *dplay = netmgr->getDirectPlay();
+
+    dplay->GetSessionDesc(NULL, &dataSize); //Get the data size
+
+    dplay->GetSessionDesc(&data, &dataSize); //Populate our data buffer
+
+    auto desc = (DPSESSIONDESC2*)data;
+
+    g_mm2Info.lobbyMaxPlayers = desc->dwMaxPlayers;
+
+    UpdateDiscord(g_mm2Info);
+
+    return result;
+}
+
+void discordHandler::DetectDisconnectMPLobby(void) {
+    LogFile::WriteLine("Exited multiplayer lobby");
+    g_mm2Info.inMultiplayer = false;
+    UpdateDiscord(g_mm2Info);
+
+    (reinterpret_cast<asNetwork *>(this))->Disconnect();
+}
+
+void discordHandler::DetectDisconnectMPGame(void) {
+    LogFile::WriteLine("Exited multiplayer game");
+    g_mm2Info.inMultiplayer = false;
+    UpdateDiscord(g_mm2Info);
+
+    (reinterpret_cast<asNetwork *>(this))->CloseSession();
+}
+
+int discordHandler::RefreshNumPlayersLobby(void) {
+    g_mm2Info.lobbyCurrentPlayers = $::asNetwork::GetNumPlayers(this);
+    UpdateDiscord(g_mm2Info);
+    return g_mm2Info.lobbyCurrentPlayers;
 }
 
 void discordHandler::Install() {
@@ -259,6 +327,31 @@ void discordHandler::Install() {
     InstallCallback("mmGame::BeDone", "Updates Discord Rich Presence when exiting a race.",
         &GameBeDone, {
             cbHook<JMP>(0x414DF1),      //end of mmGame::BeDone
+        }
+    );
+    InstallCallback("asNetwork::CreateSession", "Update the multiplayer status to on when creating the lobby.",
+        &DetectHostMPLobby, {
+            cbHook<CALL>(0x4117C5),     //mmInterface::CreateSession
+        }
+    );
+    InstallCallback("asNetwork::JoinSession", "Update the multiplayer status to on when joining the lobby.",
+        &DetectJoinMPLobby, {
+            cbHook<CALL>(0x572782),     //asNetwork::JoinSession
+        }
+    );
+    InstallCallback("asNetwork::Disconnect", "Update the multiplayer status to off when exiting the lobby.",
+        &DetectDisconnectMPLobby, {
+            cbHook<CALL>(0x40D394),     //mmInterface::Switch
+        }
+    );
+    InstallCallback("asNetwork::CloseSession", "Update the multiplayer status to off when exiting the current game.",
+        &DetectDisconnectMPLobby, {
+            cbHook<CALL>(0x43B159),     //mmGameMulti::QuitNetwork
+        }
+    );
+    InstallCallback("asNetwork::GetNumPlayers", "Updates the number of players in a lobby",
+        &RefreshNumPlayersLobby, {
+            cbHook<CALL>(0x4111B1),     //mmInterface::RefreshPlayers
         }
     );
 

@@ -7,6 +7,16 @@
 namespace MM2 {
     //Forward declarations
     class asNetwork;
+
+    namespace $ {
+        namespace asNetwork {
+            declhook(0x571070, _Func<int>::ThisCall, CreateSession);
+            declhook(0x571170, _Func<int>::ThisCall, JoinSession);
+            declhook(0x570870, _Func<void>::ThisCall, Disconnect);
+            declhook(0x570AD0, _Func<int>::ThisCall, GetNumPlayers);
+            declhook(0x571550, _Func<void>::ThisCall, CloseSession);
+        }
+    }
     
     typedef int DPID; // player ID
 
@@ -82,11 +92,11 @@ namespace MM2 {
         }
 
         inline IDirectPlay4 * getDirectPlay(void) {
-            _dplay.get(this);
+            return _dplay.get(this);
         }
 
         inline IDirectPlayLobby3 * getDirectPlayLobby(void) {
-            _dplobby.get(this);
+            return _dplobby.get(this);
         }
 
         AGE_API int Initialize(int a2, int a3, int a4)      { return ageHook::Thunk<0x56FDC0>::Call<int>(this, a2, a3, a4); }
@@ -164,6 +174,8 @@ namespace MM2 {
         AGE_API char * GetEnumModem(int a2)                 { return ageHook::Thunk<0x5727C0>::Call<char *>(this, a2); }
         AGE_API int QueryModems(void)                       { return ageHook::Thunk<0x5727F0>::Call<int>(this); }
     };
+
+    declhook(0x6B3968, _Type<asNetwork>, NETMGR);
 
     template<>
     void luaAddModule<module_network>(LuaState L) {
