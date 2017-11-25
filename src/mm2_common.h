@@ -134,6 +134,10 @@ namespace MM2 {
 
     extern char * AngelReadString(UINT stringId);
 
+    struct Timer {
+        DWORD StartTime;
+    };
+
     declhook(0x402180, _Func<void>, $CreateGameMutex);
 
     declhook(0x4C9510, _Func<void>, $DefaultPrintString);
