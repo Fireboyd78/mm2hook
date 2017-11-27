@@ -103,11 +103,6 @@ namespace MM2 {
     };
 
     class asNetwork {
-    private:
-        byte _buffer[0x78];
-    protected:
-        ageHook::Field<0x18, IDirectPlay4 *> _dplay;
-        ageHook::Field<0x1C, IDirectPlayLobby3 *> _dplobby;
     public:
         datCallback SysMessageCB;
         datCallback AppMessageCB;
@@ -139,14 +134,6 @@ namespace MM2 {
             PUSH_VTABLE();
             ageHook::Thunk<0x56FD70>::Call<void>(this);
             POP_VTABLE();
-        }
-
-        inline IDirectPlay4 * getDirectPlay(void) {
-            return _dplay.get(this);
-        }
-
-        inline IDirectPlayLobby3 * getDirectPlayLobby(void) {
-            return _dplobby.get(this);
         }
 
         AGE_API int Initialize(int a2, int a3, int a4)      { return ageHook::Thunk<0x56FDC0>::Call<int>(this, a2, a3, a4); }
