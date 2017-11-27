@@ -1,5 +1,6 @@
 #pragma once
 #include "mm2_common.h"
+#include "mm2_data.h"
 
 #include <dplay.h>
 #include <dplobby.h>
@@ -7,6 +8,10 @@
 namespace MM2 {
     //Forward declarations
     class asNetwork;
+
+    //External declarations
+    extern class Timer;
+    extern class datCallback;
 
     namespace $ {
         namespace asNetwork {
@@ -71,14 +76,54 @@ namespace MM2 {
     };
 
     ASSERT_SIZEOF(NETSESSION_DESC, 0x110);
-    
-    class asNetwork {
-    private:
-        byte _buffer[0x78];
-    protected:
-        ageHook::Field<0x18, IDirectPlay4 *> _dplay;
-        ageHook::Field<0x1C, IDirectPlayLobby3 *> _dplobby;
+
+    class IZoneScore : public IUnknown
+    {
     public:
+        virtual HRESULT SendGameResults(GUID *, int, DWORD, DWORD, DWORD) = 0;
+        virtual void func_10() = 0;
+        virtual HRESULT SetGameSettings(int, const char *) = 0;
+        virtual void func_18() = 0;
+        virtual void func_1C() = 0;
+        virtual void func_20() = 0;
+        virtual void func_24() = 0;
+        virtual void func_28() = 0;
+        virtual void func_2C() = 0;
+        virtual void func_30() = 0;
+        virtual HRESULT SendGameState(IDirectPlayLobby3 *, int) = 0;
+        virtual void func_38() = 0;
+        virtual HRESULT SendFinalScore(IDirectPlayLobby3 *) = 0;
+        virtual HRESULT SendGameSettings(IDirectPlayLobby3 *) = 0;
+    };
+
+    struct netZoneScore {
+        IDirectPlayLobby3 *plobby;
+        GUID GUID;
+        IZoneScore *pZoneScore;
+    };
+
+    class asNetwork {
+    public:
+        datCallback SysMessageCB;
+        datCallback AppMessageCB;
+        IDirectPlay4A *pDPlay;
+        IDirectPlayLobby3A *pLobby;
+        DPID PlayerID;
+        DPLCONNECTION *pConnection;
+        GUID *pGUID;
+        void *nRecvBufSize;
+        uint32_t pRecvBuf;
+        float float34;
+        uint32_t MaxPlayers;
+        uint32_t SessionOpen;
+        uint32_t InLobby;
+        uint32_t dword44;
+        uint32_t dword48;
+        uint8_t IsHost;
+        Timer Time;
+        float Elapsed;
+        netZoneScore NetScore;
+
         AGE_API asNetwork(void) {
             PUSH_VTABLE();
             ageHook::Thunk<0x56FCD0>::Call<void>(this);
@@ -89,14 +134,6 @@ namespace MM2 {
             PUSH_VTABLE();
             ageHook::Thunk<0x56FD70>::Call<void>(this);
             POP_VTABLE();
-        }
-
-        inline IDirectPlay4 * getDirectPlay(void) {
-            return _dplay.get(this);
-        }
-
-        inline IDirectPlayLobby3 * getDirectPlayLobby(void) {
-            return _dplobby.get(this);
         }
 
         AGE_API int Initialize(int a2, int a3, int a4)      { return ageHook::Thunk<0x56FDC0>::Call<int>(this, a2, a3, a4); }

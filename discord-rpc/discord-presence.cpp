@@ -280,7 +280,7 @@ int discordHandler::DetectJoinMPLobby(char *a2, _GUID *a3, char *a4) {
     DWORD dataSize = 0;
 
     asNetwork *netmgr = NETMGR.ptr();
-    IDirectPlay4 *dplay = netmgr->getDirectPlay();
+    IDirectPlay4 *dplay = netmgr->pDPlay;
 
     dplay->GetSessionDesc(NULL, &dataSize); //Get the data size
 
