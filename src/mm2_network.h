@@ -1,10 +1,15 @@
 #pragma once
 #include "mm2_common.h"
+#include "mm2_data.h"
 
 #include <dplay.h>
 #include <dplobby.h>
 
 namespace MM2 {
+    //External declarations
+    extern class Timer;
+    extern class datCallback;
+
     //Forward declarations
     class asNetwork;
 
@@ -71,7 +76,32 @@ namespace MM2 {
     };
 
     ASSERT_SIZEOF(NETSESSION_DESC, 0x110);
-    
+
+    class IZoneScore : public IUnknown
+    {
+    public:
+        virtual HRESULT SendGameResults(GUID *, int, DWORD, DWORD, DWORD) = 0;
+        virtual void func_10() = 0;
+        virtual HRESULT SetGameSettings(int, const char *) = 0;
+        virtual void func_18() = 0;
+        virtual void func_1C() = 0;
+        virtual void func_20() = 0;
+        virtual void func_24() = 0;
+        virtual void func_28() = 0;
+        virtual void func_2C() = 0;
+        virtual void func_30() = 0;
+        virtual HRESULT SendGameState(IDirectPlayLobby3 *, int) = 0;
+        virtual void func_38() = 0;
+        virtual HRESULT SendFinalScore(IDirectPlayLobby3 *) = 0;
+        virtual HRESULT SendGameSettings(IDirectPlayLobby3 *) = 0;
+    };
+
+    struct netZoneScore {
+        IDirectPlayLobby3 *plobby;
+        GUID GUID;
+        IZoneScore *pZoneScore;
+    };
+
     class asNetwork {
     private:
         byte _buffer[0x78];
