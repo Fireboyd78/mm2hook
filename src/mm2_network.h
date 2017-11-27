@@ -6,12 +6,12 @@
 #include <dplobby.h>
 
 namespace MM2 {
+    //Forward declarations
+    class asNetwork;
+
     //External declarations
     extern class Timer;
     extern class datCallback;
-
-    //Forward declarations
-    class asNetwork;
 
     namespace $ {
         namespace asNetwork {
