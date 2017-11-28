@@ -66,29 +66,10 @@ namespace MM2 {
 
     ASSERT_SIZEOF(NETSESSION_DESC, 0x110);
 
-    class IZoneScore : public IUnknown
-    {
-    public:
-        virtual HRESULT SendGameResults(GUID *, int, DWORD, DWORD, DWORD) = 0;
-        virtual void func_10() = 0;
-        virtual HRESULT SetGameSettings(int, const char *) = 0;
-        virtual void func_18() = 0;
-        virtual void func_1C() = 0;
-        virtual void func_20() = 0;
-        virtual void func_24() = 0;
-        virtual void func_28() = 0;
-        virtual void func_2C() = 0;
-        virtual void func_30() = 0;
-        virtual HRESULT SendGameState(IDirectPlayLobby3 *, int) = 0;
-        virtual void func_38() = 0;
-        virtual HRESULT SendFinalScore(IDirectPlayLobby3 *) = 0;
-        virtual HRESULT SendGameSettings(IDirectPlayLobby3 *) = 0;
-    };
-
     struct netZoneScore {
         IDirectPlayLobby3 *plobby;
         GUID GUID;
-        IZoneScore *pZoneScore;
+        void *pZoneScore; // unused, never initialized
     };
 
     class asNetwork {
