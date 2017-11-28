@@ -79,10 +79,10 @@ LUAMOD_API int luaopen_MM2(lua_State *L)
     luaAddModule<module_input>(modL);
     luaAddModule<module_inst>(modL);
     luaAddModule<module_level>(modL);
+    luaAddModule<module_model>(modL);
     luaAddModule<module_network>(modL);
     luaAddModule<module_phys>(modL);
     luaAddModule<module_rgl>(modL);
-    luaAddModule<module_static2>(modL);
     luaAddModule<module_stream>(modL);
     luaAddModule<module_ui>(modL);
     luaAddModule<module_vehicle>(modL);

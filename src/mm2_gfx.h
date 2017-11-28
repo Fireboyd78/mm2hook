@@ -3,9 +3,6 @@
 
 namespace MM2
 {
-    // Forward declarations
-    extern struct gfxInterface;
-
     namespace $
     {
         namespace gfxLight {
@@ -111,6 +108,21 @@ namespace MM2
         };
     };
 
+    struct gfxMaterial {
+        Vector4 Diffuse;
+        Vector4 Ambient;
+        Vector4 Specular;
+        Vector4 Emissive;
+
+        float Shininess;
+
+        ColorRGBA Color; // 32-bit diffuse color
+
+        AGE_API void Reset(void) {
+            ageHook::Thunk<0x4B1BB0>::Call<void>(this);
+        };
+    };
+
     class gfxTexture {
     public:
         /*0x00*/uint VglBindIndex;
@@ -145,6 +157,28 @@ namespace MM2
     public:
         void Scale(int a1, int a2)                          { ageHook::Thunk<0x4AEDC0>::Call<void>(this, a1, a2); }
     };
+
+    class gfxPacket {
+    public:
+        gfxPacket *Next;
+        IDirect3DVertexBuffer7 *VertexBuffer;
+        int *Positions;
+        void *Vertices;
+        ushort VertexTypeDesc;
+        short StartVertex;
+        ushort AdjunctCount;
+        ushort TriCount;
+        ushort *Indices;
+        uint unk_1C;
+        uint unk_20;
+        byte unk_24;
+        uint unk_28;
+    };
+    
+    // yes, this is actually how it is in MM2
+    // seems like Angel moved everything to gfxPacket
+
+    class gfxPacketList : public gfxPacket {};
 
     declhook(0x004B30F0, _Func<gfxTexture *>, $gfxGetTexture);
 

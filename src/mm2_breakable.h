@@ -1,6 +1,5 @@
 #pragma once
 #include "mm2_common.h"
-#include "mm2_static2.h"
 
 namespace MM2
 {

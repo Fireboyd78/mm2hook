@@ -245,9 +245,6 @@
     <ClInclude Include="src\mm2_breakable.h">
       <Filter>Source Files\mm2</Filter>
     </ClInclude>
-    <ClInclude Include="src\mm2_static2.h">
-      <Filter>Source Files\mm2</Filter>
-    </ClInclude>
     <ClInclude Include="src\mm2_bound.h">
       <Filter>Source Files\mm2</Filter>
     </ClInclude>
@@ -258,6 +255,9 @@
       <Filter>Source Files\Discord Rich Presence</Filter>
     </ClInclude>
     <ClInclude Include="src\mm2_network.h">
+      <Filter>Source Files\mm2</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mm2_model.h">
       <Filter>Source Files\mm2</Filter>
     </ClInclude>
   </ItemGroup>
@@ -427,9 +427,6 @@
     <ClCompile Include="src\mm2_breakable.cpp">
       <Filter>Source Files\mm2</Filter>
     </ClCompile>
-    <ClCompile Include="src\mm2_static2.cpp">
-      <Filter>Source Files\mm2</Filter>
-    </ClCompile>
     <ClCompile Include="src\mm2_bound.cpp">
       <Filter>Source Files\mm2</Filter>
     </ClCompile>
@@ -437,6 +434,9 @@
       <Filter>Source Files\Discord Rich Presence</Filter>
     </ClCompile>
     <ClCompile Include="src\mm2_network.cpp">
+      <Filter>Source Files\mm2</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mm2_model.cpp">
       <Filter>Source Files\mm2</Filter>
     </ClCompile>
   </ItemGroup>
