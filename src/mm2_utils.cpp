@@ -32,23 +32,32 @@ void InstallCallback(auto_ptr lpAddr, cbInfo callback)
     auto addr = callback.addr;
     auto type = callback.type;
 
-    unsigned int dwRVA = lpAddr - (addr + 5);
+    unsigned int dwVA = lpAddr.dwHandler;
+    unsigned int dwRVA = (dwVA - (addr.dwHandler + 5));
 
     switch (type)
     {
         case hookType::CALL:
         {
-            mem::write<unsigned char, unsigned int>(addr, 0xE8, dwRVA);
+            if (mem::read<byte>(addr) == 0xFF) {
+                mem::write<byte, uint, byte>(addr, 0xE8, dwRVA, 0x90);
+            } else {
+                mem::write<byte, uint>(addr, 0xE8, dwRVA);
+            }
         } break;
 
         case hookType::JMP:
         {
-            mem::write<unsigned char, unsigned int>(addr, 0xE9, dwRVA);
+            if (mem::read<byte>(addr) == 0xFF) {
+                mem::write<byte, uint, byte>(addr, 0xE9, dwRVA, 0x90);
+            } else {
+                mem::write<byte, uint>(addr, 0xE9, dwRVA);
+            }
         } break;
 
         case hookType::PUSH:
         {
-            mem::write<unsigned char, unsigned int>(addr, 0x68, lpAddr);
+            mem::write<byte, uint>(addr, 0x68, lpAddr);
         } break;
     }
 }
