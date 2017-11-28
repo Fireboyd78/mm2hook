@@ -24,6 +24,21 @@ namespace mem
         return false;
     }
 
+    template <typename T>
+    inline T read(void *lpAddress) {
+        DWORD dwOldProtect;
+
+        if (VirtualProtect(lpAddress, sizeof(T), PAGE_EXECUTE_READ, &dwOldProtect))
+        {
+            T value = *reinterpret_cast<T *>(lpAddress);
+            VirtualProtect(lpAddress, sizeof(T), dwOldProtect, &dwOldProtect);
+
+            return value;
+        }
+
+        return NULL;
+    }
+
     template <typename ...TArgs>
     inline bool write(void *lpAddress, TArgs ...args)
     {
