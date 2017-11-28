@@ -116,7 +116,7 @@ namespace MM2
 
         float Shininess;
 
-        ColorRGBA Color; // 32-bit diffuse color
+        ColorARGB Color; // 32-bit diffuse color
 
         AGE_API void Reset(void) {
             ageHook::Thunk<0x4B1BB0>::Call<void>(this);

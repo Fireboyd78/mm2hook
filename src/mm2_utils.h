@@ -72,16 +72,6 @@ union ColorARGB
     unsigned int color;
 };
 
-union ColorRGBA
-{
-    struct
-    {
-        byte r, g, b, a;
-    };
-
-    unsigned int color;
-};
-
 template <
     unsigned int A, unsigned int R, unsigned int G, unsigned int B
 >
