@@ -178,12 +178,11 @@ public:
     static BOOL __stdcall AutoDetectCallback(GUID *lpGUID,
                                              LPSTR lpDriverDescription, LPSTR lpDriverName, LPVOID lpContext)
     {
-        LARGE_INTEGER tStart, tEnd, tElapsed;
-        LARGE_INTEGER tFrequency;
-
-        QueryPerformanceFrequency(&tFrequency);
+        stopwatch timer;
 
         Displayf("AutoDetect: GUID=%x, Description=%s, Name=%s", lpGUID, lpDriverDescription, lpDriverName);
+
+        timer.start();
 
         if (lpDirectDrawCreateEx(lpGUID, (LPVOID*)&lpDD, IID_IDirectDraw7, nullptr) == DD_OK)
         {
@@ -232,21 +231,23 @@ public:
             gfxMaxScreenWidth = 0;
             gfxMaxScreenHeight = 0;
 
-            QueryPerformanceCounter(&tStart);
+            stopwatch enumTimer;
+
+            enumTimer.start();
             lpDD->EnumDisplayModes(0, 0, gfxInterface, $ResCallback);
             lpDD->Release();
-            QueryPerformanceCounter(&tEnd);
+            enumTimer.stop();
 
-            tElapsed.QuadPart = (tEnd.QuadPart - tStart.QuadPart);
-            tElapsed.QuadPart *= 1000000;
-            tElapsed.QuadPart /= tFrequency.QuadPart;
-
-            Displayf("  Enumerated display modes in %.4f ms", tElapsed.QuadPart * 0.001);
+            Displayf("  Enumerated display modes in %.4f ms", enumTimer.elapsedMilliseconds());
 
             lpDD = nullptr;
 
             ++*gfxInterfaceCount;
         }
+
+        timer.stop();
+
+        Displayf("  Finished in %.4f ms", timer.elapsedMilliseconds());
 
         return TRUE;
     }
@@ -283,6 +284,12 @@ public:
 
         if (!datArgParser::Get("oldautodetect"))
         {
+            InstallCallback("ComputeCpuSpeed", "Removes the CPU speed calculation for the old auto detect method and improves startup times.",
+                &ReturnNullOrZero, {
+                    cbHook<CALL>(0x401208),
+                }
+            );
+
             // cbHook into the original AutoDetect and replace it with our own version
             InstallCallback("AutoDetectCallback", "Replaces the default AutoDetect method with a much faster one.",
                 &AutoDetectCallback, {
