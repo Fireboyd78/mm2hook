@@ -23,12 +23,12 @@ struct mm2RichPresenceInfo {
 
 static mm2RichPresenceInfo g_mm2Info;
 
-class discordHandler {
+class discordHandler : handler_t {
 public:
     int GameInit(void);
     void GameBeDone(int);
     int DetectHostMPLobby(char *, char *, int, MM2::NETSESSION_DESC *);
-    int DetectJoinMPLobby(char *, _GUID *, char *);
+    int DetectJoinMPLobby(char *, GUID *, char *);
     void DetectDisconnectMPLobby(void);
     void DetectDisconnectMPGame(void);
     int RefreshNumPlayersLobby(void);

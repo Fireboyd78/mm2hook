@@ -231,7 +231,7 @@ void UpdateDiscord(mm2RichPresenceInfo &mm2Info) {
 int discordHandler::GameInit(void) {
     LogFile::WriteLine("[discord] GameInit called.");
 
-    ageHook::Thunk<0x412710>::Call<int>(this); // mmGame::init
+    get<mmGame>()->mmGame::Init();
 
     mmCityInfo * cityInfo = CityListPtr->GetCurrentCity();
     mmVehInfo * vehInfo = VehicleListPtr->GetVehicleInfo(vehicleName);
@@ -266,16 +266,16 @@ int discordHandler::DetectHostMPLobby(char *sessionName, char *sessionPassword, 
     g_mm2Info.lobbyMaxPlayers = sessionMaxPlayers;
     UpdateDiscord(g_mm2Info);
 
-    return (reinterpret_cast<asNetwork *>(this))->CreateSession(sessionName, sessionPassword, sessionMaxPlayers, sessionData);
+    return get<asNetwork>()->CreateSession(sessionName, sessionPassword, sessionMaxPlayers, sessionData);
 }
 
 byte data[sizeof(DPSESSIONDESC2)]{ NULL };
 
-int discordHandler::DetectJoinMPLobby(char *a2, _GUID *a3, char *a4) {
+int discordHandler::DetectJoinMPLobby(char *a2, GUID *a3, char *a4) {
     LogFile::WriteLine("Entered multiplayer lobby");
     g_mm2Info.inMultiplayer = true;
 
-    int result = (reinterpret_cast<asNetwork *>(this))->JoinSession(a2, a3, a4);
+    int result = get<asNetwork>()->JoinSession(a2, a3, a4);
 
     DWORD dataSize = 0;
 
@@ -300,7 +300,7 @@ void discordHandler::DetectDisconnectMPLobby(void) {
     g_mm2Info.inMultiplayer = false;
     UpdateDiscord(g_mm2Info);
 
-    (reinterpret_cast<asNetwork *>(this))->Disconnect();
+    get<asNetwork>()->Disconnect();
 }
 
 void discordHandler::DetectDisconnectMPGame(void) {
@@ -308,11 +308,11 @@ void discordHandler::DetectDisconnectMPGame(void) {
     g_mm2Info.inMultiplayer = false;
     UpdateDiscord(g_mm2Info);
 
-    (reinterpret_cast<asNetwork *>(this))->CloseSession();
+    get<asNetwork>()->CloseSession();
 }
 
 int discordHandler::RefreshNumPlayersLobby(void) {
-    g_mm2Info.lobbyCurrentPlayers = $::asNetwork::GetNumPlayers(this);
+    g_mm2Info.lobbyCurrentPlayers = get<asNetwork>()->GetNumPlayers();
     UpdateDiscord(g_mm2Info);
     return g_mm2Info.lobbyCurrentPlayers;
 }

@@ -10,19 +10,8 @@ namespace MM2 {
     class asNetwork;
 
     //External declarations
-    extern class Timer;
     extern class datCallback;
 
-    namespace $ {
-        namespace asNetwork {
-            declhook(0x571070, _Func<int>::ThisCall, CreateSession);
-            declhook(0x571170, _Func<int>::ThisCall, JoinSession);
-            declhook(0x570870, _Func<void>::ThisCall, Disconnect);
-            declhook(0x570AD0, _Func<int>::ThisCall, GetNumPlayers);
-            declhook(0x571550, _Func<void>::ThisCall, CloseSession);
-        }
-    }
-    
     typedef int DPID; // player ID
 
     struct NETSESSION_DESC {
