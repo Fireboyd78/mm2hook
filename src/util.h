@@ -236,3 +236,10 @@ struct base_t {
         return static_cast<cast_t<TRet, TArgs...>>(func);
     }
 };
+
+struct handler_t {
+    template<class T>
+    inline T * get(void) {
+        return reinterpret_cast<T *>(this);
+    }
+};
