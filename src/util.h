@@ -243,3 +243,59 @@ struct handler_t {
         return reinterpret_cast<T *>(this);
     }
 };
+
+struct stopwatch {
+private:
+    static float ticksToSeconds;
+    static float ticksToMilliseconds;
+public:
+    unsigned int startTime;
+    unsigned int endTime;
+    
+    static unsigned int ticks() {
+        LARGE_INTEGER perf;
+        QueryPerformanceCounter(&perf);
+        return perf.LowPart;
+    }
+
+    stopwatch() {
+        if (ticksToSeconds == 0.0f) {
+            LARGE_INTEGER freq;
+            QueryPerformanceFrequency(&freq);
+            ticksToSeconds = (1.0f / freq.LowPart);
+            ticksToMilliseconds = (ticksToSeconds * 1000.0f);
+        }
+        reset();
+    }
+
+    inline unsigned int elapsedTicks() {
+        return (endTime - startTime);
+    }
+
+    inline float elapsedSeconds() {
+        return (endTime - startTime) * ticksToSeconds;
+    }
+
+    inline float elapsedMilliseconds() {
+        return (endTime - startTime) * ticksToMilliseconds;
+    }
+
+    void reset() {
+        startTime = 0;
+        endTime = 0;
+    }
+
+    void start() {
+        if (startTime == 0)
+            startTime = ticks();
+    }
+
+    void restart() {
+        startTime = ticks();
+        endTime = 0;
+    }
+
+    void stop() {
+        endTime = ticks();
+    }
+};

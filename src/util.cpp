@@ -1,4 +1,8 @@
 #include "common.h"
+#include "util.h"
+
+float stopwatch::ticksToSeconds = 0.0f;
+float stopwatch::ticksToMilliseconds = 0.0f;
 
 //
 // Debugging utilities
