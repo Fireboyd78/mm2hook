@@ -296,6 +296,7 @@ public:
     }
 
     void stop() {
-        endTime = ticks();
+        if (endTime == 0)
+            endTime = ticks();
     }
 };
