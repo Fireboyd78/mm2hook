@@ -28,7 +28,7 @@ namespace MM2
         int topSpeed;
         int durability;
         int mass;
-        int unk_108;
+        int rewardFlags;
         int unk_10C;
         int scoringBias;
         float uiDist;
