@@ -152,7 +152,7 @@ void cityLevelHandler::SetObjectDetail(int lod) {
         { 250.0f, 175.0f,  90.0f, 30.0f }, // Low       (Default: Medium)
         { 300.0f, 200.0f, 100.0f, 40.0f }, // Medium    (Default: High)
         { 300.0f, 200.0f, 130.0f, 70.0f }, // High      (Default: Very High)
-        { 640.0f, 480.0f, 160.0f, 80.0f }, // Very high (NEW)
+        { 400.0f, 300.0f, 175.0f, 90.0f }, // Very high (NEW)
     };
 
     // Using temporary variables so we don't need to constantly access pointers
