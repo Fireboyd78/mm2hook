@@ -52,11 +52,34 @@ void aiPoliceForceHandler::Reset(void) {
     $::aiPoliceForce::Reset(this);
 }
 
+BOOL aiPoliceForceHandler::IsPerpDrivingMadly(vehCar *perpCar) {
+    const float speedLimit = 70.0f;
+
+    if (ageHook::Thunk<0x53E2A0>::Call<BOOL>(this, perpCar)) {
+        float speed = perpCar->getCarSim()->getSpeed() * 2.2360249f;
+        bool speeding = (speed > speedLimit);
+
+        if (speeding)
+            LogFile::Format("PERP DETECTED!!! He's doing %.4f over the speed limit (%.4f)!\n", (speed - speedLimit), speedLimit);
+
+        return speeding;
+    }
+
+    return FALSE;
+}
+
 void aiPoliceForceHandler::Install() {
     InstallCallback("aiPoliceForce::Reset", "Resets the number of cops pursuing the player upon reset.",
         &Reset, {
             cbHook<CALL>(0x536AAE),
             cbHook<CALL>(0x550ECA),
+        }
+    );
+
+    // obviously doesn't belong in aiPoliceForceHandler, should either move it or make this a generic "PoliceHandler"
+    InstallCallback("aiPoliceOfficer::DetectPerpetrator", "Experimenting with making cops a little smarter about chasing people.",
+        &IsPerpDrivingMadly, {
+            cbHook<CALL>(0x53E057), // aiPoliceOfficer::Fov
         }
     );
 }
