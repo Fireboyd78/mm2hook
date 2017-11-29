@@ -262,6 +262,13 @@ public:
         return (ext != NULL) ? (_strcmpi(ext, ".cinfo") == 0) : false;
     }
 
+    bool ParseStateArgs(void) {
+        if (datArgParser::Get("allrewards"))
+            *unlockRewards = true;
+
+        return true;
+    }
+
     static void Install() {
         InstallCallback("CreateGameMutex", "Adds '-nomutex' argument to allow multiple game processes.",
             &CreateGameMutex, {
@@ -332,6 +339,10 @@ public:
                 }, "Disables physics collision error debugging (use '-physDebug' to enable)."
             );
         }
+
+        InstallCallback(&ParseStateArgs, {
+            cbHook<CALL>(0x4013A4)
+        }, "State pack argument parsing.");
     }
 };
 

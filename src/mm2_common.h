@@ -168,6 +168,8 @@ namespace MM2 {
 
     declhook(0x6B1610, _Type<int>, gameMode); //0 = Cruise, 1 = Checkpoint, 2 = Cops N' Robbers, 3 = Circuit, 4 = Blitz, 6 = Crash Course
 
+    declhook(0x6B19B4, _Type<bool>, unlockRewards);
+
     declhook(0x6A3AA8, _Type<int>, joyDebug);
     declhook(0x6A3C0C, _Type<int>, assetDebug);
     declhook(0x683104, _Type<int>, gfxDebug);
