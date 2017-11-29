@@ -53,16 +53,20 @@ void aiPoliceForceHandler::Reset(void) {
 }
 
 BOOL aiPoliceForceHandler::IsPerpDrivingMadly(vehCar *perpCar) {
-    const float speedLimit = 70.0f;
-
+    const float speedLimit = 90.0f;
+    
     if (ageHook::Thunk<0x53E2A0>::Call<BOOL>(this, perpCar)) {
         float speed = perpCar->getCarSim()->getSpeed() * 2.2360249f;
-        bool speeding = (speed > speedLimit);
-
-        if (speeding)
+        
+        if (speed > speedLimit) {
             LogFile::Format("PERP DETECTED!!! He's doing %.4f over the speed limit (%.4f)!\n", (speed - speedLimit), speedLimit);
-
-        return speeding;
+            return TRUE;
+        }
+    }
+    
+    if (ageHook::Thunk<0x53E390>::Call<BOOL>(this, perpCar)) {
+        LogFile::WriteLine("OFFICER INVOLVED COLLISION WITH PERP!");
+        return TRUE;
     }
 
     return FALSE;
