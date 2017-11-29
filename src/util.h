@@ -269,15 +269,17 @@ public:
     }
 
     inline unsigned int elapsedTicks() {
-        return (endTime - startTime);
+        int curTime = (endTime != 0) ? endTime : ticks();
+
+        return (curTime - startTime);
     }
 
     inline float elapsedSeconds() {
-        return (endTime - startTime) * ticksToSeconds;
+        return elapsedTicks() * ticksToSeconds;
     }
 
     inline float elapsedMilliseconds() {
-        return (endTime - startTime) * ticksToMilliseconds;
+        return elapsedTicks() * ticksToMilliseconds;
     }
 
     void reset() {
