@@ -189,28 +189,29 @@ namespace MM2 {
         float CopDensity;
         float OpponentDensity;
 
-        /* -- unused -- */
-        float unk_18; // default: 0.5
-        float unk_1C; // default: 0.5
-        float unk_20; // default: 0.5
-        bool unk_24;  // default: 1
-        int unk_28;   // default: 0
-        /* ------------ */
+        /* ---- MC1 leftovers ---- */
+        float unk_18; // unused (default: 0.5)
+        float unk_1C; // unused (default: 0.5)
+        float unk_20; // unused (default: 0.5)
+        bool unk_24;  // unused (default: 1)
+
+        int NumberOfCTFRacers; // default: 0
+        /* ----------------------- */
 
         BOOL DisableAI;
 
-        int unk_30; // replay-related
-        int unk_34; // replay-related (default: 100)
-
+        int unk_30; // unused
         int MaxAmbientVehicles;
-        int unk_3C;
-        int unk_40; // default: 1
-        int unk_44; // default: 1
+        int MaxAmbientPedestrians; // unused -- assumed name (default: 100)
+        int unk_3C; // unused
+
+        BOOL EnableCableCars;
+        BOOL EnableSubways;
 
         int NumLaps;
 
         int TextureQuality;
-        int unk_50; // default: 99
+        int unk_50; // unused (default: 99)
 
         int TimeOfDay;
         int WeatherType;
@@ -218,7 +219,7 @@ namespace MM2 {
         int AudioFlags;
 
         BOOL EnablePedestrians;
-        int unk_68;
+        void *unk_68; // related to hookmen
     };
 
     class mmStatePack : public dgStatePack {
