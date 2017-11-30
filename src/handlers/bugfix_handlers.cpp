@@ -54,8 +54,11 @@ void aiPoliceForceHandler::Reset(void) {
 
 BOOL aiPoliceForceHandler::IsPerpDrivingMadly(vehCar *perpCar) {
     const float speedLimit = 90.0f;
-    
-    if (ageHook::Thunk<0x53E2A0>::Call<BOOL>(this, perpCar)) {
+
+    char *vehName = perpCar->getCarDamage()->GetName(); // we can't use vehCarSim because the game forces vpcop to vpmustang99...
+    bool isCop = ageHook::StaticThunk<0x4D1A70>::Call<bool>(vehName);
+
+    if (!isCop && ageHook::Thunk<0x53E2A0>::Call<BOOL>(this, perpCar)) {
         float speed = perpCar->getCarSim()->getSpeed() * 2.2360249f;
         
         if (speed > speedLimit) {
