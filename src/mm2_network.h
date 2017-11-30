@@ -94,17 +94,8 @@ namespace MM2 {
         float Elapsed;
         netZoneScore NetScore;
 
-        AGE_API asNetwork(void) {
-            PUSH_VTABLE();
-            ageHook::Thunk<0x56FCD0>::Call<void>(this);
-            POP_VTABLE();
-        }
-
-        virtual AGE_API ~asNetwork(void) {
-            PUSH_VTABLE();
-            ageHook::Thunk<0x56FD70>::Call<void>(this);
-            POP_VTABLE();
-        }
+        AGE_API asNetwork(void)                             { ageHook::Thunk<0x56FCD0>::Call<void>(this); }
+        AGE_API ~asNetwork(void)                            { ageHook::Thunk<0x56FD70>::Call<void>(this); }
 
         AGE_API int Initialize(int a2, int a3, int a4)      { return ageHook::Thunk<0x56FDC0>::Call<int>(this, a2, a3, a4); }
         AGE_API int InitializeLobby(int a2, int a3)         { return ageHook::Thunk<0x56FE20>::Call<int>(this, a2, a3); }
