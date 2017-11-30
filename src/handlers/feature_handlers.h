@@ -94,9 +94,10 @@ public:
     static void Install();
 };
 
-class mmGameHandler {
+class mmGameHandler : handler_t {
 public:
     void SendChatMessage(char *message);
+    void InitWeather(void);
 
     static void Install();
 };

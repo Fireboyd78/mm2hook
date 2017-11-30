@@ -54,6 +54,8 @@ namespace MM2
             return _popup.get(this);
         };
 
+        AGE_API void InitWeather(void)                      { ageHook::Thunk<0x413370>::Call<void>(this); }
+
         /*
             asNode virtuals
         */

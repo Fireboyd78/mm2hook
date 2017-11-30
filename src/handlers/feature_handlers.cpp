@@ -1016,6 +1016,14 @@ void mmGameHandler::SendChatMessage(char *message) {
     }
 }
 
+ageHook::Type<float> wheelFriction(0x5CF6B8);
+
+void mmGameHandler::InitWeather(void) {
+    // reset the wheel friction in case it got changed
+    wheelFriction = 1.0f;
+    get<mmGame>()->InitWeather();
+}
+
 void mmGameHandler::Install() {
     InstallPatch("Increases chat buffer size.", { 60 }, {
         0x4E68B5,
@@ -1026,6 +1034,12 @@ void mmGameHandler::Install() {
     InstallCallback("mmGame::SendChatMessage", "Passes any chat messages to the handler.",
         &SendChatMessage, {
             cbHook<JMP>(0x414EB6),
+        }
+    );
+
+    InstallCallback("mmGame::InitWeather", "Fixes a bug where the rainy weather effects do not get reset.",
+        &InitWeather, {
+            cbHook<CALL>(0x4131C0), // mmGame::Init
         }
     );
 }
