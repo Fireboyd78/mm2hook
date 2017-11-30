@@ -141,6 +141,229 @@ namespace MM2 {
         DWORD StartTime;
     };
 
+    class NetStartArray {
+        ulong Slots[10];
+    public:
+        AGE_API void Clear(void)                            { return ageHook::Thunk<0x5235C0>::Call<void>(this); }
+        AGE_API int GetIndex(ulong playerId)                { return ageHook::Thunk<0x5235D0>::Call<int>(this, playerId); }
+        AGE_API void ClearIndex(ulong playerId)             { return ageHook::Thunk<0x5235F0>::Call<void>(this, playerId); }
+        AGE_API int AssignOpenIndex(ulong playerId)         { return ageHook::Thunk<0x523610>::Call<int>(this, playerId); }
+        AGE_API void Init(ulong *playerIds)                 { return ageHook::Thunk<0x523650>::Call<void>(this, playerIds); }
+    };
+
+    enum dgGameMode {
+        Cruise,
+        Checkpoint,
+        CnR,
+        Circuit,
+        Blitz,
+        CRoam, // unused
+        CrashCourse,
+    };
+
+    enum dgSkillLevel {
+        Amateur,
+        Professional,
+    };
+
+    /*
+        !!! IMPORTANT !!!
+
+        Regarding dgStatePack and mmStatePack:
+
+        There's quite a bit of unused stuff unfortunately.
+        Some things are leftover from MM1 and others are just never actually used.
+
+        You should verify what you're doing is actually used by the game.
+    */
+
+    struct dgStatePack {
+        static ageHook::Type<dgStatePack *> Instance;
+
+        dgGameMode GameMode;
+
+        int RaceId;
+
+        float TrafficDensity;
+        float PedestrianDensity;
+        float CopDensity;
+        float OpponentDensity;
+
+        /* -- unused -- */
+        float unk_18; // default: 0.5
+        float unk_1C; // default: 0.5
+        float unk_20; // default: 0.5
+        bool unk_24;  // default: 1
+        int unk_28;   // default: 0
+        /* ------------ */
+
+        BOOL DisableAI;
+
+        int unk_30; // replay-related
+        int unk_34; // replay-related (default: 100)
+
+        int MaxAmbientVehicles;
+        int unk_3C;
+        int unk_40; // default: 1
+        int unk_44; // default: 1
+
+        int NumLaps;
+
+        int TextureQuality;
+        int unk_50; // default: 99
+
+        int TimeOfDay;
+        int WeatherType;
+        dgSkillLevel SkillLevel;
+        int AudioFlags;
+
+        BOOL EnablePedestrians;
+        int unk_68;
+    };
+
+    class mmStatePack : public dgStatePack {
+    public:
+        char CityName[40];
+        char CityLocale[40]; // same as city name, referred to as 'locale'?
+        char ReplayName[40];
+
+        int VehicleId;
+
+        int InputDevice;
+        int unk_EC; // seems heavily tied into multiplayer, but also has singleplayer uses?
+
+        BOOL CopsChaseAI; // cops will chase after opponents
+        int unk_F4; // unused
+
+        BOOL Shutdown; // stop the process
+
+        /*
+            Player settings
+        */
+
+        float Difficulty; // based on the SkillLevel
+        int TransmissionType;
+        float PhysicsRealism; // unused :(
+        BOOL UseForceFeedback;
+        BOOL DisableProfile;
+
+        char VehicleName[80];
+        int VehiclePaintjob;
+
+        char NetName[80];
+        
+        /*
+            Race settings?
+        */
+
+        float TimeLimit;
+
+        int SplashScreen; // -1 = ???, 0 = main menu, 1 = race
+        BOOL DisableRegen; // educated guess based on a skipped call to mmPlayer::UpdateRegen if true
+
+        /*
+            Audio settings
+        */
+
+        float SoundFXVolume;
+        float AudioBalance;
+        float MusicVolume;
+        short NumAudioChannels;
+        short unk_1CE[10]; // unused -- not sure what this might've been
+        char AudioDeviceName[200];
+        bool HasMusicCD; // allow use of music player if true
+
+        /*
+            Cops 'n Robbers settings
+        */
+
+        int CnRMode;
+        int CnRLimitType;
+        int CnRTeam;
+        float CnRTimeLimit;
+        int CnRPointLimit;
+        int CnRGoldMass;
+
+        /*
+            Unknown settings (unused)
+        */
+
+        int unk_2C4; // default: 0
+        int unk_2C8; // default: 0
+        char unk_2CC[160];
+
+        /*
+            View settings (NAMES NEED CONFIRMATION!)
+        */
+
+        bool unk_36C;
+        char MapMode;
+        bool UseWideFOV;
+        bool ShowDash;
+
+        bool ShowMirror;
+        bool unk_371;
+        bool unk_372;
+        bool ShowIcons;
+
+        bool unk_374;
+        bool unk_375;
+        bool HudOrient;
+        bool HudZoomIn;
+
+        /*
+            Graphics settings
+        */
+
+        BOOL BestTextureFilter; // MM1 - unused
+        BOOL InterlacedRendering; // MM1 - unused
+        float FarClip;
+        BOOL EnableSky;
+        float LightingQuality;
+        BOOL UsePortals;
+        int ObjectDetail;
+        BOOL EnableReflections; // vehicle reflections
+        int CloudShadowQuality;
+
+        /*
+            Cheat settings?
+        */
+
+        BOOL IsCheating; // true if player entered a cheatcode
+        float TimeLimitOverride; // overrides TimeLimit when > 0
+        BOOL UnlockRewards; // only works on startup
+
+        /*
+            Multiplayer settings
+        */
+
+        bool AllowCheaters; // don't check tuning CRC
+        bool ShowMultiplayerResults; // display results at end of multiplayer
+        bool IsHost; // unconfirmed
+        bool UseDialup;
+
+        /*
+            Global settings?
+        */
+
+        BOOL UseIME;
+        HIMC IMEContext;
+
+        bool InCrashCourse;
+
+        NetStartArray NetStartArray;
+    };
+
+    /*
+        Make sure all of our ducks are in a row --
+        The size of this stuff is EXTREMELY important!
+    */
+    ASSERT_SIZEOF(NetStartArray, 0x28);
+    ASSERT_SIZEOF(dgGameMode, 4);
+    ASSERT_SIZEOF(dgSkillLevel, 4);
+    ASSERT_SIZEOF(dgStatePack, 0x6C);
+    ASSERT_SIZEOF(mmStatePack, 0x3E0);
+
     declhook(0x402180, _Func<void>, $CreateGameMutex);
 
     declhook(0x4C9510, _Func<void>, $DefaultPrintString);
@@ -156,22 +379,7 @@ namespace MM2 {
     declhook(0x5E0CC4, _Type<void(*)(void)>, __VtResumeSampling);
     declhook(0x5E0CD8, _Type<void(*)(void)>, __VtPauseSampling);
 
-    declhook(0x6B1708, _Type<BOOL>, gameClosing);
-
-    // think this is actually some sort of game state
-    // not sure how exactly it's supposed to work
-    declhook(0x6B17C8, _Type<int>, gameState); // -1 = ???, 0 = main menu, 1 = race
-
-    declhook(0x6B1614, _Type<int>, raceId);
-
-    declhook(0x6B167C, _Type<char[40]>, cityName);
-    declhook(0x6B16A4, _Type<char[40]>, cityName2);
-
-    declhook(0x6B048C, _Type<char[32]>, vehicleName);
-
-    declhook(0x6B1610, _Type<int>, gameMode); //0 = Cruise, 1 = Checkpoint, 2 = Cops N' Robbers, 3 = Circuit, 4 = Blitz, 6 = Crash Course
-
-    declhook(0x6B19B4, _Type<bool>, unlockRewards);
+    declhook(0x6B1610, _TypeProxy<mmStatePack>, MMSTATE);
 
     declhook(0x6A3AA8, _Type<int>, joyDebug);
     declhook(0x6A3C0C, _Type<int>, assetDebug);

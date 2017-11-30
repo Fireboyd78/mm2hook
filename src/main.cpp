@@ -264,7 +264,7 @@ public:
 
     bool ParseStateArgs(void) {
         if (datArgParser::Get("allrewards"))
-            *unlockRewards = true;
+            MMSTATE->UnlockRewards = true;
 
         return true;
     }
@@ -573,7 +573,7 @@ public:
     }
 
     static void Start() {
-        if (!gameClosing)
+        if (!MMSTATE->Shutdown)
         {
             // GameLoop was restarted
             Reset(false);
@@ -583,7 +583,7 @@ public:
     }
 
     static void Stop() {
-        if (gameClosing)
+        if (MMSTATE->Shutdown)
         {
             LogFile::WriteLine("Hook shutdown request received.");
 

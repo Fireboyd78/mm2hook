@@ -34,3 +34,5 @@ namespace MM2
         return $AngelReadString(stringId);
     }
 }
+
+declfield(dgStatePack::Instance)(0x6276F8);

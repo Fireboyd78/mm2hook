@@ -182,7 +182,7 @@ namespace MM2 {
         AGE_API int QueryModems(void)                       { return ageHook::Thunk<0x5727F0>::Call<int>(this); }
     };
 
-    declhook(0x6B3968, _Type<asNetwork>, NETMGR);
+    declhook(0x6B3968, _TypeProxy<asNetwork>, NETMGR);
 
     template<>
     void luaAddModule<module_network>(LuaState L) {

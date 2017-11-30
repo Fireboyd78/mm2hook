@@ -378,7 +378,7 @@ void gfxPipelineHandler::SetRes(int width, int height, int cdepth, int zdepth, b
     }
 
     // We don't want to set the width/height if we are in a menu, it just fucks it up
-    if (gameState != 0) {
+    if (MMSTATE->SplashScreen != 0) {
         if (datArgParser::Get("max")) {
             HDC hDC = GetDC(NULL);
             width = GetDeviceCaps(hDC, HORZRES);
@@ -800,7 +800,7 @@ void vglHandler::Install() {
 
 bool mmGameMusicDataHandler::LoadAmbientSFX(LPCSTR name) {
     char buffer[80];
-    sprintf(buffer, "%sambience", *cityName);
+    sprintf(buffer, "%sambience", MMSTATE->CityName);
 
     LPCSTR szAmbientSFX = (datAssetManager::Exists("aud\\dmusic\\csv_files", buffer, "csv")) ? buffer : "sfambience";
 
@@ -824,7 +824,7 @@ void mmGameMusicDataHandler::Install() {
 
 void vehCarAudioContainerHandler::SetSirenCSVName(LPCSTR name) {
     char buffer[80];
-    sprintf(buffer, "%spolicesiren", *cityName);
+    sprintf(buffer, "%spolicesiren", MMSTATE->CityName);
 
     LPCSTR szSirenName = (datAssetManager::Exists("aud\\cardata\\player", buffer, "csv")) ? buffer : "sfpolicesiren";
 

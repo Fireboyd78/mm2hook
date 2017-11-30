@@ -68,44 +68,33 @@ char * carImageKeys[20] = {
     "vplafrance",
 };
 
-bool isCruiseMode(void) {
-    return (gameMode == 0);
-}
-
-bool isCrashCourse(void) {
-    return (gameMode == 6);
-}
-
-bool isRaceMode(void) {
-    switch (gameMode) {
-        case 1: // Checkpoint
-        case 3: // Circut
-        case 4: // Blitz
+bool isRaceMode() {
+    switch (MMSTATE->GameMode) {
+        case dgGameMode::Checkpoint:
+        case dgGameMode::Circuit:
+        case dgGameMode::Blitz:
             return true;
     }
 
     return false;
 }
 
-const char * getGameModeName(void) {
-    switch (gameMode) {
-        case 0:     return "Cruise";
-        case 1:     return "Checkpoint";
-        case 2:     return "Cops N' Robbers";
-        case 3:     return "Circuit";
-        case 4:     return "Blitz";
-        case 6:     return "Crash Course";
-    }
-
-    return NULL;
-}
+static const char * gameModeNames[] = {
+    "Cruise",
+    "Checkpoint",
+    "Cops N' Robbers",
+    "Circuit",
+    "Blitz",
+    "---",
+    "Crash Course",
+};
 
 char * getRaceName(int raceId) {
     char buffer[512]{ NULL };
     
     mmCityInfo *cityInfo = CityListPtr->GetCurrentCity();
 
-    if (cityInfo->GetRaceNames(gameMode, buffer) > 0) {
+    if (cityInfo->GetRaceNames(MMSTATE->GameMode, buffer) > 0) {
         string raceNames = string(buffer);
         int numRaces = raceNames.NumSubStrings();
 
@@ -175,23 +164,33 @@ void UpdateDiscord(mm2RichPresenceInfo &mm2Info) {
     presence.smallImageText = NULL;
 
     if (mm2Info.inRace) {
+        bool raceMode = isRaceMode();
+        
         if (mm2Info.inMultiplayer) {
-            state = (isRaceMode()) ? "Racing online" : "In multiplayer";
+            state = (raceMode) ? "Racing online" : "In multiplayer";
 
             instance = 0;
             partySize = mm2Info.lobbyCurrentPlayers;
             partyMax = mm2Info.lobbyMaxPlayers;
         }
         else {
-            state = (isRaceMode()) ? "In a race" : "In singleplayer";
+            state = (raceMode) ? "In a race" : "In singleplayer";
         }
 
-        if (isCruiseMode()) {
-            sprintf(details, "Cruisin' around");
-        } else if (isRaceMode() || isCrashCourse()) {
-            sprintf(details, "%s: %s", getGameModeName(), mm2Info.raceName);
-        } else {
-            sprintf(details, "%s", getGameModeName());
+        switch (MMSTATE->GameMode) {
+            case dgGameMode::Cruise:
+            case dgGameMode::CRoam:
+                sprintf(details, "Cruisin' around");
+                break;
+            case dgGameMode::Checkpoint:
+            case dgGameMode::Circuit:
+            case dgGameMode::Blitz:
+            case dgGameMode::CrashCourse:
+                sprintf(details, "%s: %s", gameModeNames[MMSTATE->GameMode], mm2Info.raceName);
+                break;
+            case dgGameMode::CnR:
+                sprintf(details, "%s", gameModeNames[MMSTATE->GameMode]);
+                break;
         }
 
         presence.largeImageText = mm2Info.city;
@@ -200,7 +199,7 @@ void UpdateDiscord(mm2RichPresenceInfo &mm2Info) {
         presence.smallImageKey = mm2Info.vehicleImageKey;
     } else {
         if (mm2Info.inMultiplayer) {
-            state = ("In multiplayer lobby");
+            state = "In multiplayer lobby";
             presence.largeImageKey = "mpmenu";
             presence.largeImageText = "Multiplayer lobby";
 
@@ -234,14 +233,14 @@ int discordHandler::GameInit(void) {
     get<mmGame>()->mmGame::Init();
 
     mmCityInfo * cityInfo = CityListPtr->GetCurrentCity();
-    mmVehInfo * vehInfo = VehicleListPtr->GetVehicleInfo(vehicleName);
+    mmVehInfo * vehInfo = VehicleListPtr->GetVehicleInfo(MMSTATE->VehicleName);
 
     g_mm2Info.inRace = true;
     g_mm2Info.city = cityInfo->GetLocalisedName();
     g_mm2Info.cityImageKey = getCityImageKey(cityInfo);
     g_mm2Info.vehicle = vehInfo->GetDescription();
     g_mm2Info.vehicleImageKey = getCarImageKey(vehInfo);
-    g_mm2Info.raceName = getRaceName(raceId);
+    g_mm2Info.raceName = getRaceName(MMSTATE->RaceId);
     UpdateDiscord(g_mm2Info);
 
     return 1;
@@ -266,7 +265,7 @@ int discordHandler::DetectHostMPLobby(char *sessionName, char *sessionPassword, 
     g_mm2Info.lobbyMaxPlayers = sessionMaxPlayers;
     UpdateDiscord(g_mm2Info);
 
-    return get<asNetwork>()->CreateSession(sessionName, sessionPassword, sessionMaxPlayers, sessionData);
+    return NETMGR->CreateSession(sessionName, sessionPassword, sessionMaxPlayers, sessionData);
 }
 
 byte data[sizeof(DPSESSIONDESC2)]{ NULL };
@@ -275,12 +274,11 @@ int discordHandler::DetectJoinMPLobby(char *a2, GUID *a3, char *a4) {
     LogFile::WriteLine("Entered multiplayer lobby");
     g_mm2Info.inMultiplayer = true;
 
-    int result = get<asNetwork>()->JoinSession(a2, a3, a4);
+    int result = NETMGR->JoinSession(a2, a3, a4);
 
     DWORD dataSize = 0;
 
-    asNetwork *netmgr = NETMGR.ptr();
-    IDirectPlay4 *dplay = netmgr->pDPlay;
+    IDirectPlay4 *dplay = NETMGR->pDPlay;
 
     dplay->GetSessionDesc(NULL, &dataSize); //Get the data size
 
@@ -300,7 +298,7 @@ void discordHandler::DetectDisconnectMPLobby(void) {
     g_mm2Info.inMultiplayer = false;
     UpdateDiscord(g_mm2Info);
 
-    get<asNetwork>()->Disconnect();
+    NETMGR->Disconnect();
 }
 
 void discordHandler::DetectDisconnectMPGame(void) {
@@ -308,11 +306,11 @@ void discordHandler::DetectDisconnectMPGame(void) {
     g_mm2Info.inMultiplayer = false;
     UpdateDiscord(g_mm2Info);
 
-    get<asNetwork>()->CloseSession();
+    NETMGR->CloseSession();
 }
 
 int discordHandler::RefreshNumPlayersLobby(void) {
-    g_mm2Info.lobbyCurrentPlayers = get<asNetwork>()->GetNumPlayers();
+    g_mm2Info.lobbyCurrentPlayers = NETMGR->GetNumPlayers();
     UpdateDiscord(g_mm2Info);
     return g_mm2Info.lobbyCurrentPlayers;
 }
@@ -336,7 +334,7 @@ void discordHandler::Install() {
     );
     InstallCallback("asNetwork::JoinSession", "Update the multiplayer status to on when joining the lobby.",
         &DetectJoinMPLobby, {
-            cbHook<CALL>(0x572782),     //asNetwork::JoinSession
+            cbHook<CALL>(0x572782),     //asNetwork::JoinSession(int, char *)
         }
     );
     InstallCallback("asNetwork::Disconnect", "Update the multiplayer status to off when exiting the lobby.",
