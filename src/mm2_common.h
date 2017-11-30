@@ -30,6 +30,9 @@ Multiple declarations will cause compiler errors!
 template <typename TType>
 using _Type = ageHook::Type<TType>;
 
+template <typename TType>
+using _TypeProxy = ageHook::TypeProxy<TType>;
+
 template <typename ...TArgs>
 using _Func = ageHook::Func<TArgs...>;
 

@@ -177,6 +177,27 @@ public:
         }
     };
 
+    template <typename TType>
+    class TypeProxy {
+    protected:
+        TType *lpValue;
+    public:
+        static_assert(!std::is_pointer<TType>::value, "Type proxy cannot be a pointer to a class.");
+
+        constexpr TypeProxy(int address) : lpValue(reinterpret_cast<TType *>(address)) {};
+
+        inline void read(TType &value)              { memcpy(&value, lpValue, sizeof(TType)); }
+        inline void write(TType &value)             { memcpy(lpValue, &value, sizeof(TType)); }
+
+        inline TType* operator->() const            { return lpValue; }
+        inline TType* operator&() const             { return lpValue; }
+        inline TType& operator*() const             { return *lpValue; }
+        inline TType& operator[](int index) const   { return &lpValue[index]; }
+
+        inline operator TType*() const              { return lpValue; }
+        inline operator TType&() const              { return *lpValue; }
+    };
+
     template<int offset, typename TValue>
     struct Field {
     public:
