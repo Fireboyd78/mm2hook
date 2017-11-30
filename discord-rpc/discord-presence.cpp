@@ -353,6 +353,57 @@ void discordHandler::Install() {
         }
     );
 
+    //Set working directory to MM2's directory. Thx Discord
+    char commandArgs[MAX_PATH];
+    char path[MAX_PATH];
+    strcpy(commandArgs, GetCommandLine());
+
+    int counter = 0;
+    int i = 0;
+
+    //Find the size of the MM2 path in the arg string
+    while (counter < 2) {
+        if (commandArgs[i] == '\"') {
+            counter++;
+        }
+        else if (commandArgs[i] == NULL) {
+            i = 0;
+            break;
+        }
+        i++;
+    }
+
+    //Get the folder path only, exclude the executable
+    if (i) {
+        while (true) {
+            if (commandArgs[i] == '\\') {
+                break;
+            }
+            else if (commandArgs[i] == NULL) {
+                i = 0;
+                break;
+            }
+            i--;
+        }
+    }
+
+    //If everything went correctly, copy to 'path' the final path
+    if (i) {
+        int j;
+        for (j = 0; j < i - 1; j++) {
+            path[j] = commandArgs[j + 1];
+        }
+
+        path[j] = NULL;
+    }
+
+    if (SetCurrentDirectory(path)) {
+        LogFile::WriteLine("Current directory set successfully!");
+    }
+    else {
+        LogFile::Format("Couldn't set current directory: %d\n", GetLastError());
+    }
+
     InitDiscord();
     UpdateDiscord(g_mm2Info);
 }
