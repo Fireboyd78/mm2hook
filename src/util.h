@@ -201,6 +201,10 @@ inline bool file_exists(LPCSTR filename) {
     return false;
 }
 
+inline const char * bool_str(bool b) {
+    return (b) ? "true" : "false";
+}
+
 namespace variadic
 {
     template <unsigned long long...>
