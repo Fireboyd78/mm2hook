@@ -506,6 +506,7 @@ private:
         InstallHandler<mmGameHandler>("mmGame");
         InstallHandler<mmGameMusicDataHandler>("mmGameMusicData");
 
+        InstallHandler<vehCarHandler>("vehCarHandler");
         InstallHandler<vehCarAudioContainerHandler>("vehCarAudioContainer");
 
         InstallHandler<lvlHandler>("Propulator");
