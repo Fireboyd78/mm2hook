@@ -224,6 +224,11 @@ public:
         static INLINE_CONSTEXPR const TRet _ConstCall(int callback, const TThis *This, TArgs ...args) {
             return (This->*reinterpret_cast<VirtualCall<const TRet, const TThis, TArgs...> &>(callback))(args...);
         };
+
+        template<typename TRet, class TThis, typename ...TArgs>
+        static INLINE_CONSTEXPR const TRet _ThisCall(int callback, TThis *This, TArgs ...args) {
+            return (This->*reinterpret_cast<VirtualCall<TRet, TThis, TArgs...> &>(callback))(args...);
+        };
     public:
         template<typename TRet, class TThis, typename ...TArgs>
         static INLINE_CONSTEXPR TRet Call(const TThis &&This, TArgs ...args) {
@@ -238,7 +243,7 @@ public:
         // HACK: call from a pointer to a class...
         template<typename TRet, class TThis, typename ...TArgs>
         static INLINE_CONSTEXPR TRet ThisCall(TThis *This, TArgs ...args) {
-            return static_cast<MemberCall<TRet, TThis, TArgs...>>(reinterpret_cast<LPVOID>(address))(This, args...);
+            return _ThisCall<TRet>(address, This, args...);
         };
     };
 
