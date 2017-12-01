@@ -226,7 +226,7 @@ public:
         };
 
         template<typename TRet, class TThis, typename ...TArgs>
-        static INLINE_CONSTEXPR const TRet _ThisCall(int callback, TThis *This, TArgs ...args) {
+        static INLINE_CONSTEXPR TRet _ThisCall(int callback, TThis *This, TArgs ...args) {
             return (This->*reinterpret_cast<VirtualCall<TRet, TThis, TArgs...> &>(callback))(args...);
         };
     public:
