@@ -234,6 +234,12 @@ public:
         static INLINE_CONSTEXPR const TThis Call(const TThis *This, TArgs ...args) {
             return _ConstCall<TThis>(address, This, args...);
         };
+
+        // HACK: call from a pointer to a class...
+        template<typename TRet, class TThis, typename ...TArgs>
+        static INLINE_CONSTEXPR TRet ThisCall(TThis *This, TArgs ...args) {
+            return static_cast<MemberCall<TRet, TThis, TArgs...>>(reinterpret_cast<LPVOID>(address))(This, args...);
+        };
     };
 
     template <int address>
