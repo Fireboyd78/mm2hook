@@ -276,6 +276,12 @@ public:
             }
         );
 
+        InstallCallback("CheckGlobalMemory", "Disables check for available memory.",
+            &NullSub, {
+                cbHook<CALL>(0x401295),
+            }
+        );
+
         InstallCallback("ageDebug", "Verbose debug logger.",
             &ageDebug, {
                 cbHook<JMP>(0x402630),
@@ -527,6 +533,10 @@ private:
 
         InstallPatch("Fix crash for missing images", { 0xEB /* jnz -> jmp */ }, {
             0x4B329B, // gfxGetBitmap
+        });
+
+        InstallPatch("Disable lock check", { 0x65 /* jnz 40130D */ }, {
+            0x4012A7, // Main
         });
     }
 public:
