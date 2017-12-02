@@ -276,6 +276,12 @@ public:
             }
         );
 
+        InstallCallback("CheckGlobalMemory", "Disables check for available memory.",
+            &NullSub, {
+                cbHook<CALL>(0x401295),
+            }
+        );
+
         InstallCallback("ageDebug", "Verbose debug logger.",
             &ageDebug, {
                 cbHook<JMP>(0x402630),
@@ -528,6 +534,10 @@ private:
         InstallPatch("Fix crash for missing images", { 0xEB /* jnz -> jmp */ }, {
             0x4B329B, // gfxGetBitmap
         });
+
+        InstallPatch("Disable lock check", { 0x65 /* jnz 40130D */ }, {
+            0x4012A7, // Main
+        });
     }
 public:
     static void Initialize(int argc, char **argv) {
@@ -669,6 +679,39 @@ bool IsGameSupported(ageInfoLookup &gameInfo) {
     return false;
 }
 
+bool getPathSpec(char *path, char *dest, int destLen) {
+    char ch;
+    int idx = 0, len = 0;
+
+    if ((path != NULL) && (dest != NULL))
+    {
+        while ((ch = path[idx++]) != NULL) {
+            if (ch == '\\')
+                len = idx;
+        }
+
+        if (len < destLen) {
+            strncpy(dest, path, len);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static char mm2_path[MAX_PATH]{ NULL };
+
+void initPath(void) {
+    char dir[MAX_PATH]{ NULL };
+    auto len = GetModuleFileName(NULL, dir, MAX_PATH);
+
+    if (getPathSpec(dir, mm2_path, len)) {
+        SetCurrentDirectory(mm2_path);
+    } else {
+        GetCurrentDirectory(MAX_PATH, mm2_path);
+    }
+}
+
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved) {
 	switch (ul_reason_for_call)
 	{
@@ -676,9 +719,14 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
         {
             debug("Initializing MM2Hook...");
 
+            // setup the current directory
+            initPath();
+
             // Initialize the log file
             LogFile::Initialize("mm2hook.log", "--<< MM2Hook log file >>--\n");
             LogFile::WriteLine("Initializing...");
+
+            LogFile::Format("Working directory is '%s'\n", mm2_path);
 
             HMODULE hDIModule = NULL;
             ageInfoLookup gameInfo;
