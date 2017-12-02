@@ -669,6 +669,39 @@ bool IsGameSupported(ageInfoLookup &gameInfo) {
     return false;
 }
 
+bool getPathSpec(char *path, char *dest, int destLen) {
+    char ch;
+    int idx = 0, len = 0;
+
+    if ((path != NULL) && (dest != NULL))
+    {
+        while ((ch = path[idx++]) != NULL) {
+            if (ch == '\\')
+                len = idx;
+        }
+
+        if (len < destLen) {
+            strncpy(dest, path, len);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static char mm2_path[MAX_PATH]{ NULL };
+
+void initPath(void) {
+    char dir[MAX_PATH]{ NULL };
+    auto len = GetModuleFileName(NULL, dir, MAX_PATH);
+
+    if (getPathSpec(dir, mm2_path, len)) {
+        SetCurrentDirectory(mm2_path);
+    } else {
+        GetCurrentDirectory(MAX_PATH, mm2_path);
+    }
+}
+
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved) {
 	switch (ul_reason_for_call)
 	{
@@ -676,9 +709,14 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
         {
             debug("Initializing MM2Hook...");
 
+            // setup the current directory
+            initPath();
+
             // Initialize the log file
             LogFile::Initialize("mm2hook.log", "--<< MM2Hook log file >>--\n");
             LogFile::WriteLine("Initializing...");
+
+            LogFile::Format("Working directory is '%s'\n", mm2_path);
 
             HMODULE hDIModule = NULL;
             ageInfoLookup gameInfo;
