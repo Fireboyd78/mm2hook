@@ -29,6 +29,8 @@ public:
     void GameBeDone(int);
     int DetectHostMPLobby(char *, char *, int, MM2::NETSESSION_DESC *);
     int DetectJoinMPLobby(char *, GUID *, char *);
+    int DetectJoinMPLobbySession(void);
+
     void DetectDisconnectMPLobby(void);
     void DetectDisconnectMPGame(void);
     int RefreshNumPlayersLobby(void);

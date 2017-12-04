@@ -293,6 +293,29 @@ int discordHandler::DetectJoinMPLobby(char *a2, GUID *a3, char *a4) {
     return result;
 }
 
+int discordHandler::DetectJoinMPLobbySession(void) {
+    LogFile::WriteLine("Entered multiplayer lobby session");
+    g_mm2Info.inMultiplayer = true;
+
+    int result = NETMGR->JoinLobbySession();
+
+    DWORD dataSize = 0;
+
+    IDirectPlay4 *dplay = NETMGR->pDPlay;
+
+    dplay->GetSessionDesc(NULL, &dataSize); //Get the data size
+
+    dplay->GetSessionDesc(&data, &dataSize); //Populate our data buffer
+
+    auto desc = (DPSESSIONDESC2*)data;
+
+    g_mm2Info.lobbyMaxPlayers = desc->dwMaxPlayers;
+
+    UpdateDiscord(g_mm2Info);
+
+    return result;
+}
+
 void discordHandler::DetectDisconnectMPLobby(void) {
     LogFile::WriteLine("Exited multiplayer lobby");
     g_mm2Info.inMultiplayer = false;
@@ -337,13 +360,19 @@ void discordHandler::Install() {
             cbHook<CALL>(0x572782),     //asNetwork::JoinSession(int, char *)
         }
     );
+    InstallCallback("asNetwork::JoinLobbySession", "Update the multiplayer status to on when joining the lobby session.",
+        &DetectJoinMPLobbySession, {
+            cbHook<CALL>(0x409C6F),     //mmInterface::MessageCallback
+            cbHook<CALL>(0x410126),     //mmInterface::InitLobby
+        }
+    );
     InstallCallback("asNetwork::Disconnect", "Update the multiplayer status to off when exiting the lobby.",
         &DetectDisconnectMPLobby, {
             cbHook<CALL>(0x40D394),     //mmInterface::Switch
         }
     );
     InstallCallback("asNetwork::CloseSession", "Update the multiplayer status to off when exiting the current game.",
-        &DetectDisconnectMPLobby, {
+        &DetectDisconnectMPGame, {
             cbHook<CALL>(0x43B159),     //mmGameMulti::QuitNetwork
         }
     );
