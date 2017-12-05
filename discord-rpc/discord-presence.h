@@ -12,7 +12,7 @@ struct mm2RichPresenceInfo {
 
     int lobbyNumPlayers;
     int lobbyMaxPlayers;
-	const char *lobbyId;
+    const char *lobbyId;
 
     const char *city;
     const char *cityImageKey;
@@ -21,7 +21,7 @@ struct mm2RichPresenceInfo {
 
     const char *raceName;
 
-	void UpdatePresence(DiscordRichPresence &presence);
+    void UpdatePresence(DiscordRichPresence &presence);
 };
 
 static mm2RichPresenceInfo g_mm2Info;
@@ -38,6 +38,6 @@ public:
     void DetectDisconnectMPGame(void);
     int RefreshNumPlayersLobby(void);
 
-	static void Install(void);
+    static void Install(void);
     static void Release(void);
 };
