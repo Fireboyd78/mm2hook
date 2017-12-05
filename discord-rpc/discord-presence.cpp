@@ -146,32 +146,23 @@ char* getCityImageKey(mmCityInfo *cityInfo) {
     return "nocitydesc";
 }
 
-void UpdateDiscord(mm2RichPresenceInfo &mm2Info) {
-    LPCSTR state;
+void mm2RichPresenceInfo::UpdatePresence(DiscordRichPresence &presence) {
+	LPCSTR state;
+	char details[128]{ NULL };
 
-    LPCSTR partyID = NULL;
-    int partySize = 0;
-    int partyMax = 0;
-
-    int8_t instance = 0;
-
-    char stateBuf[256]{ NULL };
-    char details[256]{ NULL };
+	int8_t instance = 0;
 
     presence.largeImageKey = NULL;
     presence.largeImageText = NULL;
     presence.smallImageKey = NULL;
     presence.smallImageText = NULL;
 
-    if (mm2Info.inRace) {
+    if (inGame) {
         bool raceMode = isRaceMode();
         
-        if (mm2Info.inMultiplayer) {
+        if (inMultiplayer) {
             state = (raceMode) ? "Racing online" : "In multiplayer";
-
             instance = 0;
-            partySize = mm2Info.lobbyCurrentPlayers;
-            partyMax = mm2Info.lobbyMaxPlayers;
         }
         else {
             state = (raceMode) ? "In a race" : "In singleplayer";
@@ -186,30 +177,29 @@ void UpdateDiscord(mm2RichPresenceInfo &mm2Info) {
             case dgGameMode::Circuit:
             case dgGameMode::Blitz:
             case dgGameMode::CrashCourse:
-                sprintf(details, "%s: %s", gameModeNames[MMSTATE->GameMode], mm2Info.raceName);
+                sprintf(details, "%s: %s", gameModeNames[MMSTATE->GameMode], raceName);
                 break;
             case dgGameMode::CnR:
                 sprintf(details, "%s", gameModeNames[MMSTATE->GameMode]);
                 break;
         }
 
-        presence.largeImageText = mm2Info.city;
-        presence.largeImageKey = mm2Info.cityImageKey;
-        presence.smallImageText = mm2Info.vehicle;
-        presence.smallImageKey = mm2Info.vehicleImageKey;
+        presence.largeImageText = city;
+        presence.largeImageKey = cityImageKey;
+        presence.smallImageText = vehicle;
+        presence.smallImageKey = vehicleImageKey;
     } else {
-        if (mm2Info.inMultiplayer) {
+        if (inMultiplayer) {
             state = "In multiplayer";
-            sprintf(details, "In lobby");
+            strcpy(details, "In lobby");
             presence.largeImageKey = "mpmenu";
             presence.largeImageText = "Multiplayer lobby";
 
             instance = 0;
-            partySize = mm2Info.lobbyCurrentPlayers;
-            partyMax = mm2Info.lobbyMaxPlayers;
         }
         else {
             state = "In main menu";
+			strcpy(details, "");
             presence.largeImageKey = "menu";
             presence.largeImageText = "Main menu";
         }
@@ -220,12 +210,12 @@ void UpdateDiscord(mm2RichPresenceInfo &mm2Info) {
 
     //Multiplayer side, to implement
     presence.instance = instance;
-    presence.partyId = partyID;
-    presence.partyMax = partyMax;
-    presence.partySize = partySize;
+    presence.partyId = lobbyId;
+    presence.partyMax = lobbyMaxPlayers;
+    presence.partySize = lobbyNumPlayers;
 
     LogFile::WriteLine("[discord] Updating presence...");
-    Discord_UpdatePresence(&presence);
+	Discord_UpdatePresence(&presence);
 }
 
 int discordHandler::GameInit(void) {
@@ -236,13 +226,13 @@ int discordHandler::GameInit(void) {
     mmCityInfo * cityInfo = CityListPtr->GetCurrentCity();
     mmVehInfo * vehInfo = VehicleListPtr->GetVehicleInfo(MMSTATE->VehicleName);
 
-    g_mm2Info.inRace = true;
+    g_mm2Info.inGame = true;
     g_mm2Info.city = cityInfo->GetLocalisedName();
     g_mm2Info.cityImageKey = getCityImageKey(cityInfo);
     g_mm2Info.vehicle = vehInfo->GetDescription();
     g_mm2Info.vehicleImageKey = getCarImageKey(vehInfo);
     g_mm2Info.raceName = getRaceName(MMSTATE->RaceId);
-    UpdateDiscord(g_mm2Info);
+	g_mm2Info.UpdatePresence(presence);
 
     return 1;
 }
@@ -250,13 +240,13 @@ int discordHandler::GameInit(void) {
 void discordHandler::GameBeDone(int) {
     LogFile::WriteLine("[discord] GameBeDone called.");
 
-    g_mm2Info.inRace = false;
+    g_mm2Info.inGame = false;
     g_mm2Info.city = NULL;
     g_mm2Info.cityImageKey = NULL;
     g_mm2Info.vehicle = NULL;
     g_mm2Info.vehicleImageKey = NULL;
     g_mm2Info.raceName = NULL;
-    UpdateDiscord(g_mm2Info);
+	g_mm2Info.UpdatePresence(presence);
 }
 
 int discordHandler::DetectHostMPLobby(char *sessionName, char *sessionPassword, int sessionMaxPlayers, NETSESSION_DESC *sessionData) {
@@ -265,9 +255,9 @@ int discordHandler::DetectHostMPLobby(char *sessionName, char *sessionPassword, 
     if (result) {
         LogFile::WriteLine("Entered multiplayer lobby");
         g_mm2Info.inMultiplayer = true;
-        g_mm2Info.lobbyCurrentPlayers = 1;
+        g_mm2Info.lobbyNumPlayers = 1;
         g_mm2Info.lobbyMaxPlayers = sessionMaxPlayers;
-        UpdateDiscord(g_mm2Info);
+		g_mm2Info.UpdatePresence(presence);
     }
 
     return result;
@@ -293,8 +283,7 @@ int discordHandler::DetectJoinMPLobby(char *a2, GUID *a3, char *a4) {
         auto desc = (DPSESSIONDESC2*)data;
 
         g_mm2Info.lobbyMaxPlayers = desc->dwMaxPlayers;
-
-        UpdateDiscord(g_mm2Info);
+		g_mm2Info.UpdatePresence(presence);
     }
 
     return result;
@@ -318,8 +307,7 @@ int discordHandler::DetectJoinMPLobbySession(void) {
         auto desc = (DPSESSIONDESC2*)data;
 
         g_mm2Info.lobbyMaxPlayers = desc->dwMaxPlayers;
-
-        UpdateDiscord(g_mm2Info);
+		g_mm2Info.UpdatePresence(presence);
     }
 
     return result;
@@ -328,7 +316,7 @@ int discordHandler::DetectJoinMPLobbySession(void) {
 void discordHandler::DetectDisconnectMPLobby(void) {
     LogFile::WriteLine("Exited multiplayer lobby");
     g_mm2Info.inMultiplayer = false;
-    UpdateDiscord(g_mm2Info);
+	g_mm2Info.UpdatePresence(presence);
 
     NETMGR->Disconnect();
 }
@@ -336,15 +324,15 @@ void discordHandler::DetectDisconnectMPLobby(void) {
 void discordHandler::DetectDisconnectMPGame(void) {
     LogFile::WriteLine("Exited multiplayer game");
     g_mm2Info.inMultiplayer = false;
-    UpdateDiscord(g_mm2Info);
+	g_mm2Info.UpdatePresence(presence);
 
     NETMGR->CloseSession();
 }
 
 int discordHandler::RefreshNumPlayersLobby(void) {
-    g_mm2Info.lobbyCurrentPlayers = NETMGR->GetNumPlayers();
-    UpdateDiscord(g_mm2Info);
-    return g_mm2Info.lobbyCurrentPlayers;
+    g_mm2Info.lobbyNumPlayers = NETMGR->GetNumPlayers();
+	g_mm2Info.UpdatePresence(presence);
+    return g_mm2Info.lobbyNumPlayers;
 }
 
 void discordHandler::Install() {
@@ -392,7 +380,7 @@ void discordHandler::Install() {
     );
 
     InitDiscord();
-    UpdateDiscord(g_mm2Info);
+	g_mm2Info.UpdatePresence(presence);
 }
 
 void discordHandler::Release() {

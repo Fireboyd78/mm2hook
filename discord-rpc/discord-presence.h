@@ -7,11 +7,12 @@
 #include "discord-rpc.h"
 
 struct mm2RichPresenceInfo {
-    bool inRace;
+    bool inGame;
     bool inMultiplayer;
 
-    int lobbyCurrentPlayers;
+    int lobbyNumPlayers;
     int lobbyMaxPlayers;
+	const char *lobbyId;
 
     const char *city;
     const char *cityImageKey;
@@ -19,6 +20,8 @@ struct mm2RichPresenceInfo {
     const char *vehicleImageKey;
 
     const char *raceName;
+
+	void UpdatePresence(DiscordRichPresence &presence);
 };
 
 static mm2RichPresenceInfo g_mm2Info;
