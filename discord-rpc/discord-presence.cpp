@@ -199,7 +199,8 @@ void UpdateDiscord(mm2RichPresenceInfo &mm2Info) {
         presence.smallImageKey = mm2Info.vehicleImageKey;
     } else {
         if (mm2Info.inMultiplayer) {
-            state = "In multiplayer lobby";
+            state = "In multiplayer";
+            sprintf(details, "In lobby");
             presence.largeImageKey = "mpmenu";
             presence.largeImageText = "Multiplayer lobby";
 
@@ -259,36 +260,67 @@ void discordHandler::GameBeDone(int) {
 }
 
 int discordHandler::DetectHostMPLobby(char *sessionName, char *sessionPassword, int sessionMaxPlayers, NETSESSION_DESC *sessionData) {
-    LogFile::WriteLine("Entered multiplayer lobby");
-    g_mm2Info.inMultiplayer = true;
-    g_mm2Info.lobbyCurrentPlayers = 1;
-    g_mm2Info.lobbyMaxPlayers = sessionMaxPlayers;
-    UpdateDiscord(g_mm2Info);
+    int result = NETMGR->CreateSession(sessionName, sessionPassword, sessionMaxPlayers, sessionData);
 
-    return NETMGR->CreateSession(sessionName, sessionPassword, sessionMaxPlayers, sessionData);
+    if (result) {
+        LogFile::WriteLine("Entered multiplayer lobby");
+        g_mm2Info.inMultiplayer = true;
+        g_mm2Info.lobbyCurrentPlayers = 1;
+        g_mm2Info.lobbyMaxPlayers = sessionMaxPlayers;
+        UpdateDiscord(g_mm2Info);
+    }
+
+    return result;
 }
 
 byte data[sizeof(DPSESSIONDESC2)]{ NULL };
 
 int discordHandler::DetectJoinMPLobby(char *a2, GUID *a3, char *a4) {
-    LogFile::WriteLine("Entered multiplayer lobby");
-    g_mm2Info.inMultiplayer = true;
-
     int result = NETMGR->JoinSession(a2, a3, a4);
 
-    DWORD dataSize = 0;
+    if (result) {
+        LogFile::WriteLine("Entered multiplayer lobby");
+        g_mm2Info.inMultiplayer = true;
 
-    IDirectPlay4 *dplay = NETMGR->pDPlay;
+        DWORD dataSize = 0;
 
-    dplay->GetSessionDesc(NULL, &dataSize); //Get the data size
+        IDirectPlay4 *dplay = NETMGR->pDPlay;
 
-    dplay->GetSessionDesc(&data, &dataSize); //Populate our data buffer
+        dplay->GetSessionDesc(NULL, &dataSize); //Get the data size
 
-    auto desc = (DPSESSIONDESC2*)data;
+        dplay->GetSessionDesc(&data, &dataSize); //Populate our data buffer
 
-    g_mm2Info.lobbyMaxPlayers = desc->dwMaxPlayers;
+        auto desc = (DPSESSIONDESC2*)data;
 
-    UpdateDiscord(g_mm2Info);
+        g_mm2Info.lobbyMaxPlayers = desc->dwMaxPlayers;
+
+        UpdateDiscord(g_mm2Info);
+    }
+
+    return result;
+}
+
+int discordHandler::DetectJoinMPLobbySession(void) {
+    int result = NETMGR->JoinLobbySession();
+
+    if (result) {
+        LogFile::WriteLine("Entered multiplayer lobby session");
+        g_mm2Info.inMultiplayer = true;
+
+        DWORD dataSize = 0;
+
+        IDirectPlay4 *dplay = NETMGR->pDPlay;
+
+        dplay->GetSessionDesc(NULL, &dataSize); //Get the data size
+
+        dplay->GetSessionDesc(&data, &dataSize); //Populate our data buffer
+
+        auto desc = (DPSESSIONDESC2*)data;
+
+        g_mm2Info.lobbyMaxPlayers = desc->dwMaxPlayers;
+
+        UpdateDiscord(g_mm2Info);
+    }
 
     return result;
 }
@@ -337,13 +369,19 @@ void discordHandler::Install() {
             cbHook<CALL>(0x572782),     //asNetwork::JoinSession(int, char *)
         }
     );
+    InstallCallback("asNetwork::JoinLobbySession", "Update the multiplayer status to on when joining the lobby session.",
+        &DetectJoinMPLobbySession, {
+            cbHook<CALL>(0x409C6F),     //mmInterface::MessageCallback
+            cbHook<CALL>(0x410126),     //mmInterface::InitLobby
+        }
+    );
     InstallCallback("asNetwork::Disconnect", "Update the multiplayer status to off when exiting the lobby.",
         &DetectDisconnectMPLobby, {
             cbHook<CALL>(0x40D394),     //mmInterface::Switch
         }
     );
     InstallCallback("asNetwork::CloseSession", "Update the multiplayer status to off when exiting the current game.",
-        &DetectDisconnectMPLobby, {
+        &DetectDisconnectMPGame, {
             cbHook<CALL>(0x43B159),     //mmGameMulti::QuitNetwork
         }
     );
