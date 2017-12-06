@@ -2,6 +2,7 @@
 #include "mm2_common.h"
 #include "mm2_data.h"
 #include "mm2_game.h"
+#include "mm2_gfx.h"
 
 namespace MM2
 {
@@ -43,8 +44,74 @@ namespace MM2
         } _s;
         char buffer[36];
     };
-    
+
+    class Card2D : public asNode {
+    public:
+        Vector2 Position;
+        Vector2 Size;
+        uint8_t R;
+        uint8_t G;
+        uint8_t B;
+        uint8_t A;
+    };
+
+    class mmText {
+    public:
+        BYTE byte0;
+        BYTE byte1;
+    };
+
+    class mmTextData {
+    public:
+        Vector2 Pos;
+        uint32_t Flags;
+        HFONT Font;
+        char Text[256];
+    };
+
+    class mmTextNode : public asNode {
+        Vector2 Pos;
+        uint32_t EntryCount;
+        uint32_t MaxEntries;
+        uint32_t DrawBits;
+        mmText dword2C;
+        mmTextData *pTextEntries;
+        gfxBitmap *Bitmap;
+        BOOL bModified;
+        uint32_t dword3C;
+        uint32_t dword40;
+        uint8_t byte44;
+        uint32_t FGColor;
+        uint32_t BGColor;
+        uint32_t HiglightColor;
+    };
+
+    class mmToolTip : public asNode {
+        UIMenu *pParent;
+        mmTextNode *pText;
+        uint32_t dword20;
+        Vector2 Size;
+    };
+
     class uiWidget : public asNode {
+    public:
+        UIMenu *pParent;
+        Vector2 MinPos;
+        Vector2 MaxPos;
+        Vector2 LastMousePos;
+        uint32_t Selected;
+        uint32_t LastMouseAction;
+        uint32_t dword3C;
+        uint32_t WidgetID;
+        BOOL ReadOnly;
+        const char *pTooltipText;
+        uint32_t dword4C;
+        Vector2 Position;
+        Vector2 Size;
+        BOOL Enabled;
+        uint32_t dword64;
+        mmToolTip *pTooltip;
+
         virtual AGE_API void Disable(void)                  { ageHook::Thunk<0x4E7330>::Call<void>(this); }
         virtual AGE_API void Enable(void)                   { ageHook::Thunk<0x4E7340>::Call<void>(this); }
         virtual AGE_API void TurnOn(void)                   { ageHook::Thunk<0x4E7350>::Call<void>(this); }
@@ -62,6 +129,16 @@ namespace MM2
 
     class UIButton : public uiWidget {
     public:
+        uint8_t gap6C[16];
+        mmTextNode *pTextNode;
+        Card2D *pCard2D;
+        uint32_t *dword84;
+        uint32_t dword88;
+        uint32_t Type;
+        uint32_t TextIndex;
+        uint32_t Flags;
+        datCallback Callback;
+
         AGE_API void SetType(int type)                      { ageHook::Thunk<0x4ED140>::Call<void>(this, type); }
 
         /*
@@ -87,11 +164,19 @@ namespace MM2
     };
 
     class UIIcon : public uiWidget {
-
+        Vector2 Position;
+        gfxBitmap *pBitmap;
+        datCallback Callback;
     };
 
     class UILabel : public uiWidget {
     public:
+        mmTextNode *pTextNode;
+        HFONT hFont;
+        uint32_t Flags;
+        uint32_t State;
+        float ElapsedTime;
+
         AGE_API void SetText(char* text) {
             ageHook::Thunk<0x4ED3A0>::Call<void>(this, text);
         }
@@ -103,6 +188,34 @@ namespace MM2
 
     class UIMenu : public asNode {
     public:
+        uint32_t ActionSource;
+        uint32_t ActionState;
+        uint32_t dword20;
+        uint32_t MenuID;
+        uint32_t dword28;
+        uint32_t WidgetCount;
+        uint32_t dword30;
+        uiWidget **ppWidgets;
+        const char *Name;
+        uint32_t dword3C;
+        uint32_t dword40;
+        uint32_t dword44;
+        Vector2 Position;
+        Vector2 Scale;
+        uint32_t dword58;
+        float ScaleX;
+        float ScaleY;
+        uint32_t dword64;
+        uint32_t *pCurrentWidgetID;
+        uint32_t ActiveWidgetID;
+        uint32_t dword70;
+        uint32_t WidgetID;
+        uint32_t dword78;
+        uint32_t dword7C;
+        float dword80;
+        uint32_t dword84;
+        const char *Background;
+
         AGE_API UIButton * AddButton(int unk, LocString *name, float f1, float f2, float f3, float f4, int i1, int i2, MM2::datCallback callback, int i3) {
             return $::UIMenu::AddButton(this, unk, name, f1, f2, f3, f4, i1, i2, callback, i3);
         };
