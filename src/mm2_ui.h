@@ -103,8 +103,8 @@ namespace MM2
 
     class UIMenu : public asNode {
     public:
-        AGE_API void AddButton(int unk, char* name, float f1, float f2, float f3, float f4, int i1, int i2, MM2::datCallback callback, int i3) {
-            $::UIMenu::AddButton(this, unk, name, f1, f2, f3, f4, i1, i2, callback, i3);
+        AGE_API UIButton * AddButton(int unk, LocString *name, float f1, float f2, float f3, float f4, int i1, int i2, MM2::datCallback callback, int i3) {
+            return $::UIMenu::AddButton(this, unk, name, f1, f2, f3, f4, i1, i2, callback, i3);
         };
     };
 
