@@ -8,13 +8,20 @@ float stopwatch::ticksToMilliseconds = 0.0f;
 // Debugging utilities
 //
 
+void debug(LPCSTR str) {
+    OutputDebugString(str);
+    ConsoleLog::WriteLine(str);
+}
+
 void debugf(const char *format, ...) {
     char buf[255];
     va_list va;
     va_start(va, format);
     _vsnprintf(buf, sizeof(buf), format, va);
     va_end(va);
-    OutputDebugStringA(buf);
+    
+    OutputDebugString(buf);
+    ConsoleLog::Write(buf);
 }
 
 //

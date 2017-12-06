@@ -260,6 +260,9 @@
     <ClInclude Include="src\mm2_model.h">
       <Filter>Source Files\mm2</Filter>
     </ClInclude>
+    <ClInclude Include="src\console.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
@@ -438,6 +441,9 @@
     </ClCompile>
     <ClCompile Include="src\mm2_model.cpp">
       <Filter>Source Files\mm2</Filter>
+    </ClCompile>
+    <ClCompile Include="src\console.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

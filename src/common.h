@@ -24,6 +24,7 @@
 
 #include "util.h"
 #include "logfile.h"
+#include "console.h"
 
 #ifdef _LUA_EMBED
 // Lua 5.3.2 embedded

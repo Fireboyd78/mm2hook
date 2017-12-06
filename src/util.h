@@ -97,6 +97,10 @@
 #define BACKCOLOR_YELLOW            ( 14 << 4 )
 #define BACKCOLOR_WHITE             ( 15 << 4 )
 
+#define TEXTCOLOR_MASK              ( 0xF )
+#define BACKCOLOR_MASK              ( 0xF << 4 )
+#define FULLCOLOR_MASK              ( TEXTCOLOR_MASK | BACKCOLOR_MASK )
+
 //
 // Pointer templates
 //
@@ -171,10 +175,7 @@ constexpr inline void setPtr(const TC *p, int offset, TV value) {
 // Debugging utilities
 //
 
-inline void debug(LPCSTR lpOutputStr) {
-    OutputDebugStringA(lpOutputStr);
-};
-
+void debug(LPCSTR lpOutputStr);
 void debugf(const char *format, ...);
 
 //

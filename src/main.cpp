@@ -390,7 +390,7 @@ public:
             TEXTCOLOR_LIGHTRED, // quit/abort
         };
 
-        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+        HANDLE hConsole = ConsoleLog::GetOutputHandle();
 
         SetConsoleTextAttribute(hConsole, printer_types[level]);
         $DefaultPrinter(level, message, va_args);
@@ -547,11 +547,9 @@ public:
         // Initialize the Lua engine
         MM2Lua::Initialize();
 
-        LogFile::Write("Redirecting MM2 output...");
-
-        datOutput::sm_Stream = Stream::Create("mm2.log", &logFileMethods);
-
-        LogFile::WriteLine((datOutput::sm_Stream.ptr()) ? "Done!" : "FAIL!");
+        if (!datOutput::OpenLog("mm2.log", &logFileMethods)) {
+            LogFile::WriteLine("Failed to initialize MM2 log!");
+        }
 
         if (datArgParser::Get("age_debug") || datArgParser::Get("ageDebug"))
         {
@@ -560,6 +558,26 @@ public:
 
             ageLogFile = fopen("AGE.log", "w+");
         } else {
+            int logLevel = 0;
+
+            // limit the amount of logging if specified
+            // otherwise, everything will be captured
+            //   1 = Printf, Messagef, Displayf
+            //   2 = Warningf
+            //   3 = Errorf
+            if (datArgParser::Get("loglevel", 0, &logLevel) || datArgParser::Get("nolog")) {
+                int outputMask = 0;
+
+                if (logLevel >= 1)
+                    outputMask |= 2;
+                if (logLevel >= 2)
+                    outputMask |= 4;
+                if (logLevel >= 3)
+                    outputMask |= 8;
+
+                datOutput::SetOutputMask(outputMask);
+            }
+
             // these will output to the console and mm2.log if specified
 
             if (datArgParser::Get("gfxDebug"))
@@ -570,6 +588,10 @@ public:
                 joyDebug = 1;
             if (datArgParser::Get("assetDebug"))
                 assetDebug = 1;
+        }
+
+        if (datArgParser::Get("noconsole")) {
+            ConsoleLog::Close();
         }
     }
 
@@ -608,6 +630,8 @@ public:
 
             if (ageLogFile)
                 fclose(ageLogFile);
+
+            ConsoleLog::Close();
         } else {
             // GameLoop is restarting
             Reset(true);
@@ -717,6 +741,9 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 	{
         case DLL_PROCESS_ATTACH:
         {
+            ConsoleLog::Initialize();
+            ConsoleLog::SetTitle("MM2Hook Console");
+
             debug("Initializing MM2Hook...");
 
             // setup the current directory
@@ -724,8 +751,6 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 
             // Initialize the log file
             LogFile::Initialize("mm2hook.log", "--<< MM2Hook log file >>--\n");
-            LogFile::WriteLine("Initializing...");
-
             LogFile::Format("Working directory is '%s'\n", mm2_path);
 
             HMODULE hDIModule = NULL;

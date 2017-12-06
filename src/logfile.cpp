@@ -1,8 +1,12 @@
 #include "logfile.h"
+#include "console.h"
+
+/*
+    LogFileStream
+*/
 
 LogFileStream::LogFileStream(LPCSTR filename, bool append)
 {
-    debugf("LogFileStream::LogFileStream(\"%s\", %s)", filename, (append) ? "true" : "false");
     m_filename = filename;
     this->SetAppendMode(append);
 }
@@ -72,21 +76,12 @@ void LogFileStream::WriteLine(LPCSTR str)
     AppendLine();
 }
 
-HANDLE hConsole = NULL;
+/*
+    LogFile
+*/
+
 LogFileStream *g_logfile = NULL;
 char g_logfile_buffer[__LOGFMT_BUF_SIZE] = { NULL };
-
-void write_console(LPCSTR str, int length = 0) {
-    if (hConsole == NULL)
-        return;
-
-    DWORD count = 0;
-    
-    if (length == 0)
-        length = strlen(str);
-
-    WriteConsole(hConsole, str, length, &count, NULL);
-}
 
 void LogFile::Initialize(LPCSTR filename) {
     LogFile::Initialize(filename, NULL);
@@ -94,42 +89,28 @@ void LogFile::Initialize(LPCSTR filename) {
 
 void LogFile::Initialize(LPCSTR filename, LPCSTR title) {
     g_logfile = LogFileStream::Create(filename, title);
-    CONSOLE_SCREEN_BUFFER_INFO cInfo;
-    
-    AllocConsole();
-    hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-
-    GetConsoleScreenBufferInfo(hConsole, &cInfo);
-    cInfo.dwSize.Y = 2500;
-    SetConsoleScreenBufferSize(hConsole, cInfo.dwSize);
 };
 
 void LogFile::Close(void) {
     g_logfile->Flush(false);
     g_logfile->Close();
-
-    if (hConsole != NULL)
-        FreeConsole();
 };
 
 void LogFile::AppendLine(void) {
     g_logfile->AppendLine();
-
-    write_console("\n", 1);
+    ConsoleLog::AppendLine();
 };
 
 void LogFile::Write(LPCSTR str) {
     g_logfile->Write(str);
     g_logfile->Flush(false);
 
-    write_console(str);
+    ConsoleLog::Write(str);
 };
 
 void LogFile::WriteLine(LPCSTR str) {
     g_logfile->WriteLine(str);
-
-    write_console(str);
-    write_console("\n", 1);
+    ConsoleLog::WriteLine(str);
 };
 
 void LogFile::Format(LPCSTR format, ...) {
@@ -141,5 +122,5 @@ void LogFile::Format(LPCSTR format, ...) {
     g_logfile->Write(g_logfile_buffer);
     g_logfile->Flush(true);
 
-    write_console(g_logfile_buffer);
+    ConsoleLog::Write(g_logfile_buffer);
 };

@@ -1,5 +1,6 @@
 #pragma once
 #include "mm2_common.h"
+#include "mm2_stream.h"
 
 namespace MM2
 {
@@ -51,8 +52,8 @@ namespace MM2
         namespace datOutput
         {
             declhook(0x4C9530, _Func<void>, CloseLog);
-            declhook(0x4C9590, _Func<bool>, OpenLog);
-            declhook(0x4C95A0, _Func<void>, SetOutputMask);
+            declhook(0x4C95A0, _Func<bool>, OpenLog);
+            declhook(0x4C9590, _Func<void>, SetOutputMask);
         }
         namespace datParser
         {
@@ -238,6 +239,13 @@ namespace MM2
             return $::datOutput::OpenLog(filename);
         };
 
+        AGE_API static bool OpenLog(LPCSTR filename, const coreFileMethods *fileMethods) {
+            if (sm_Stream.ptr() != NULL)
+                return true;
+
+            return ((sm_Stream = Stream::Create(filename, fileMethods)) != NULL);
+        };
+
         AGE_API static void CloseLog(void) {
             $::datOutput::CloseLog();
         };
@@ -253,8 +261,6 @@ namespace MM2
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<datOutput>("datOutput")
-                .addStaticFunction("OpenLog", &OpenLog)
-                .addStaticFunction("CloseLog", &CloseLog)
                 .addStaticFunction("SetOutputMask", &SetOutputMask)
             .endClass();
         }
