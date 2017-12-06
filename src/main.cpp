@@ -269,6 +269,37 @@ public:
         return true;
     }
 
+    void AddPauseButtons(int state) {
+        auto menu = reinterpret_cast<UIMenu *>(this);
+
+        /* Instant Replay (broken?) */
+        setPtr<UIButton *>(menu, 0xBC, menu->AddButton(16,
+            AngelReadString(465),
+            0,
+            0.675f,
+            1.0f,
+            *getPtr<float>(menu, 0xA4),
+            *getPtr<int>(menu, 0xA0),
+            2,
+            datCallback::NullCallback,
+            0));
+
+        /* DEBUG */
+        //menu->AddButton(15,
+        //    AngelReadString(454),
+        //    0,
+        //    0.725f,
+        //    1.0f,
+        //    *getPtr<float>(menu, 0xA4),
+        //    *getPtr<int>(menu, 0xA0),
+        //    2,
+        //    datCallback::NullCallback,
+        //    0);
+
+        // UIMenu::SetBstate
+        ageHook::Thunk<0x4E0B20>::Call<void>(this, state);
+    }
+
     static void Install() {
         InstallCallback("CreateGameMutex", "Adds '-nomutex' argument to allow multiple game processes.",
             &CreateGameMutex, {
@@ -349,6 +380,10 @@ public:
         InstallCallback(&ParseStateArgs, {
             cbHook<CALL>(0x4013A4)
         }, "State pack argument parsing.");
+
+        InstallCallback(&AddPauseButtons, {
+            cbHook<CALL>(0x50A7D9),
+        }, "Add extra buttons to the pause menu.");
     }
 };
 
@@ -537,6 +572,10 @@ private:
 
         InstallPatch("Disable lock check", { 0x65 /* jnz 40130D */ }, {
             0x4012A7, // Main
+        });
+
+        InstallPatch("Add replay button to main menu", { 0x3C }, {
+            0x505EC3+2, // MainMenu::MainMenu(int)
         });
     }
 public:
