@@ -20,8 +20,8 @@
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <LinkIncremental>false</LinkIncremental>
-    <PlatformToolset Condition="'$(VisualStudioVersion)' >= '12.0'">v120</PlatformToolset>
-    <PlatformToolset Condition="'$(VisualStudioVersion)' >= '14.0'">v140</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)' &gt;= '12.0'">v120</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)' &gt;= '14.0'">v140</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
     <OutDir>bin\$(Configuration)\</OutDir>
     <IntDir>$(OutDir)\obj\loader\</IntDir>
@@ -121,11 +121,13 @@
   -->
   <ItemGroup>
     <ClInclude Include="src\common.h" />
+    <ClInclude Include="src\console.h" />
     <ClInclude Include="src\logfile.h" />
     <ClInclude Include="src\patch.h" />
     <ClInclude Include="src\util.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\console.cpp" />
     <ClCompile Include="src\logfile.cpp" />
     <ClCompile Include="src\patch.cpp" />
     <ClCompile Include="src\util.cpp" />
