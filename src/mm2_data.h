@@ -173,6 +173,8 @@ namespace MM2
         }
 
     public:
+        static ageHook::TypeProxy<datCallback> NullCallback;
+
         AGE_API datCallback()
             : _class(NULL)
             , _callback(NULL)
