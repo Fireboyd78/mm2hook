@@ -129,7 +129,7 @@ public:
         }
     }
 
-    static LPCSTR AngelReadString(UINT stringId) {
+    static LocString * AngelReadString(UINT stringId) {
         static const LPCSTR STRING_UNKNOWN = "?? lang:%d ??";
 
         static HMODULE h_MMLANG = NULL;
@@ -147,11 +147,11 @@ public:
 
         L.pop(1);
 
+        auto locStr = &string_buffer[(string_index++ & 0x7)];
+
         // not found in Lua, let's look in MMLANG.DLL
         if (str == NULL)
         {
-            auto locStr = (char *)&string_buffer[(string_index++ & 0x7)];
-
             // revert to MMLANG.DLL
             if (h_MMLANG == NULL)
             {
@@ -168,11 +168,11 @@ public:
                 // e.g. "?? lang:123 ??"
                 sprintf((char *)locStr, STRING_UNKNOWN, stringId);
             }
-
-            str = locStr;
+        } else {
+            strcpy(locStr->buffer, str);
         }
 
-        return str;
+        return locStr;
     }
 
     static BOOL __stdcall AutoDetectCallback(GUID *lpGUID,
