@@ -577,6 +577,10 @@ private:
         InstallPatch("Add replay button to main menu", { 0x3C }, {
             0x505EC3+2, // MainMenu::MainMenu(int)
         });
+
+        InstallPatch("Fixes being kicked in multiplayer when losing focus", { 0xB8, 0x00, 0x00, 0x00, 0x00, 0xC3 /* mov eax, 0 -> ret */ }, {
+            0x4390F0,   //mmGameMulti::LostCallback
+        });
     }
 public:
     static void Initialize(int argc, char **argv) {
