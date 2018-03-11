@@ -31,3 +31,19 @@ All contributions are welcomed, including ones that fix something as simple as a
  
 #### Coding Style
 Please use spaces instead of tabs, and try to keep your code consistent with the rest of the project.
+
+## Arguments
+
+mm2hook supports some custom parameters to enable or disable functions and patches. These are the most commonly used:
+
+* -nopause: Allows the game to keep running even when unfocused.
+* -width window_width: Sets the window width in pixels.
+* -height window_height: Sets the window height in pixels.
+* -sw: Forces the game to run in software mode.
+* -borderless: Sets the window to borderless mode.
+* -novsync: Disables vertical sync.
+* -nohwtnl: Disables hardware T&L.
+* -windowed: Forces the game to windowed mode.
+* -fullscreen: Forces the game to fullscreen mode.
+* -bitdepth bit_depth: Sets the bit depth in bits.
+* -heapsize heap_size: Sets the heap size (in megabytes).
