@@ -555,6 +555,8 @@ private:
         InstallHandler<vglHandler>("VGL drawing");
 
         InstallHandler<gfxImageHandler>("gfxImage");
+
+        InstallHandler<StreamHandler>("Stream");
     }
 
     static void InstallPatches() {

@@ -123,3 +123,10 @@ public:
 
     static void Install();
 };
+
+class StreamHandler {
+public:
+    static MM2::Stream * Open(const char *filename, bool readOnly);
+
+    static void Install();
+};
