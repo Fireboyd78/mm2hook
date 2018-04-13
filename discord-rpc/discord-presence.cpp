@@ -316,6 +316,8 @@ int discordHandler::DetectJoinMPLobbySession(void) {
 void discordHandler::DetectDisconnectMPLobby(void) {
     LogFile::WriteLine("Exited multiplayer lobby");
     g_mm2Info.inMultiplayer = false;
+    g_mm2Info.lobbyMaxPlayers = NULL;
+    g_mm2Info.lobbyNumPlayers = NULL;
     g_mm2Info.UpdatePresence(presence);
 
     NETMGR->Disconnect();
@@ -324,6 +326,8 @@ void discordHandler::DetectDisconnectMPLobby(void) {
 void discordHandler::DetectDisconnectMPGame(void) {
     LogFile::WriteLine("Exited multiplayer game");
     g_mm2Info.inMultiplayer = false;
+    g_mm2Info.lobbyMaxPlayers = NULL;
+    g_mm2Info.lobbyNumPlayers = NULL;
     g_mm2Info.UpdatePresence(presence);
 
     NETMGR->CloseSession();

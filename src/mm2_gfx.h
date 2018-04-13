@@ -123,6 +123,29 @@ namespace MM2
         };
     };
 
+    class gfxTexture;
+
+    class gfxTextureCacheEntry {
+    public:
+        gfxTexture *pTexture;
+        IDirectDrawSurface7 *pSurface;
+        uint32_t LastAccessTime;
+        gfxTextureCacheEntry *Next;
+    };
+
+    class gfxTextureCachePool {
+    public:
+        uint16_t Width;
+        uint16_t Height;
+        uint16_t MipMapCount;
+        uint16_t TextureCount;
+        uint16_t EntryCount;
+        uint16_t HasNoSurface;
+        gfxTextureCacheEntry *First;
+        gfxTextureCachePool *Next;
+        DDPIXELFORMAT PixelFormat;
+    };
+
     class gfxTexture {
     public:
         /*0x00*/uint VglBindIndex;
@@ -138,8 +161,8 @@ namespace MM2
         /*0x14*/IDirectDrawSurface7 *DirectDrawSurface;
         /*0x18*/IDirectDrawPalette *DirectDrawPalette;
 
-        /*0x1C*/void *CacheEntry;
-        /*0x20*/void *CachePool;
+        /*0x1C*/gfxTextureCacheEntry *CacheEntry;
+        /*0x20*/gfxTextureCachePool *CachePool;
 
         /*0x24*/uint RefCount;
 
@@ -148,13 +171,33 @@ namespace MM2
 
         /*0x30*/byte MaxLODCount;
         /*0x31*/byte LODCount;
-        
+
         static ageHook::Type<bool> sm_EnableSetLOD;
         static ageHook::Type<bool> sm_Allow32;
     };
 
     class gfxImage {
     public:
+        enum gfxImageFormat {
+            ARGB_8888 = 1,
+            RGB_0888  = 2,
+            ARGB_1555 = 3,
+            RGB_0555  = 4,
+            Palette8  = 5,
+            Palette4  = 6,
+        };
+
+        uint16_t Width;
+        uint16_t Height;
+        uint16_t Size;
+        uint8_t Type;
+        uint8_t PaletteType;
+        uint32_t TexEnv;
+        void *pImageData;
+        void *pPaletteData;
+        uint32_t RefCount;
+        gfxImage *Next;
+
         void Scale(int a1, int a2)                          { ageHook::Thunk<0x4AEDC0>::Call<void>(this, a1, a2); }
     };
 
@@ -169,12 +212,22 @@ namespace MM2
         ushort AdjunctCount;
         ushort TriCount;
         ushort *Indices;
-        uint unk_1C;
-        uint unk_20;
+        byte* unk_1C;
+        byte* unk_20;
         byte unk_24;
         uint unk_28;
     };
-    
+
+    class gfxBitmap {
+    public:
+        const char* Name;
+        uint16_t Width;
+        uint16_t Height;
+        IDirectDrawSurface7 *pSurface;
+        uint32_t RefCount;
+        gfxBitmap *Next;
+    };
+
     // yes, this is actually how it is in MM2
     // seems like Angel moved everything to gfxPacket
 
