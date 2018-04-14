@@ -2,6 +2,16 @@
 
 using namespace MM2;
 
+static init_handler g_bugfix_handlers[] = {
+    CreateHandler<aiPathHandler>("aiPath"),
+    CreateHandler<aiPedestrianHandler>("aiPedestrian"),
+    CreateHandler<aiPoliceForceHandler>("aiPoliceForce"),
+
+    CreateHandler<gfxImageHandler>("gfxImage"),
+
+    CreateHandler<vehCarHandler>("vehCar"),
+};
+
 int numPedUpdateAttempts = 0;
 
 /*

@@ -443,21 +443,6 @@ public:
     }
 };
 
-// make this clean up the stack since we'll be calling it a lot
-void __stdcall InstallHandler(LPCSTR name, void (*installHandler)(void)) {
-    LogFile::Format("Installing '%s' handler...\n", name);
-    installHandler();
-};
-
-/*
-    Assumes THandler is a class that implements a public,
-    static method called 'Install' with no return type.
-*/
-template <class THandler>
-inline void InstallHandler(LPCSTR name) {
-    InstallHandler(name, &THandler::Install);
-};
-
 class StackHandler {
 public:
     static void GetAddressName(char *buffer, LPCSTR, int address) {
@@ -506,57 +491,24 @@ class HookSystemFramework
 private:
     /*
         Installs all of the callbacks for MM2Hook.
-
-        The most important ones are initialized at the top,
-        but other than that there is no particular order.
     */
     static void InstallHandlers() {
         /*
-            Initialize the really important handlers
+            Initialize the important handlers first
         */
+
         InstallHandler<CallbackHandler>("Generic callbacks");
         InstallHandler<PrintHandler>("Print system");
         InstallHandler<TimeHandler>("Time manager");
         InstallHandler<StackHandler>("Stack information");
 
-        InstallHandler<gfxPipelineHandler>("gfxPipeline");
-        InstallHandler<memSafeHeapHandler>("memSafeHeap");
-        
-        InstallHandler<datCallbackExtensionHandler>("datCallback Extensions");
-
         InstallHandler<discordHandler>("Discord Rich Presence");
 
         /*
-            Initialize the rest of the handlers
-            Order doesn't really matter, just whatever looks neat
+            Now install everything else
         */
 
-        InstallHandler<aiPathHandler>("aiPath");
-        InstallHandler<aiPedestrianHandler>("aiPedestrian");
-
-        InstallHandler<aiPoliceForceHandler>("aiPoliceForce");
-
-        InstallHandler<asCullManagerHandler>("asCullManager");
-
-        InstallHandler<cityLevelHandler>("cityLevel");
-
-        InstallHandler<BridgeFerryHandler>("gizBridge/gizFerry");
-
-        InstallHandler<mmDashViewHandler>("mmDashView");
-        InstallHandler<mmDirSndHandler>("mmDirSnd");
-        InstallHandler<mmGameHandler>("mmGame");
-        InstallHandler<mmGameMusicDataHandler>("mmGameMusicData");
-
-        InstallHandler<vehCarHandler>("vehCarHandler");
-        InstallHandler<vehCarAudioContainerHandler>("vehCarAudioContainer");
-
-        InstallHandler<lvlHandler>("Propulator");
-        InstallHandler<sdlPage16Handler>("sdlPage16");
-        InstallHandler<vglHandler>("VGL drawing");
-
-        InstallHandler<gfxImageHandler>("gfxImage");
-
-        InstallHandler<StreamHandler>("Stream");
+        init_base::RunAll();
     }
 
     static void InstallPatches() {

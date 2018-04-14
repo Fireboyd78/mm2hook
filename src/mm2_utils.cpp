@@ -7,6 +7,24 @@ LPCSTR hook_types[hookType::COUNT] = {
     "push"
 };
 
+static init_base *g_initializers;
+
+void init_base::Register() {
+    this->next = g_initializers;
+    g_initializers = this;
+};
+
+void init_base::RunAll() {
+    for (auto func = g_initializers; func != nullptr; func = func->next) {
+        func->Run();
+    }
+};
+
+void __stdcall InstallHandler(LPCSTR name, InitFn installHandler) {
+    LogFile::Format("Installing '%s' handler...\n", name);
+    installHandler();
+};
+
 void InstallPatch(LPCSTR description,
                   std::initializer_list<unsigned char> bytes,
                   std::initializer_list<unsigned int> addresses)

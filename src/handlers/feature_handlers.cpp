@@ -3,6 +3,41 @@
 
 using namespace MM2;
 
+static init_handler g_feature_handlers[] = {
+    /*
+        Initialize the really important handlers
+    */
+
+    CreateHandler<gfxPipelineHandler>("gfxPipeline"),
+    CreateHandler<memSafeHeapHandler>("memSafeHeap"),
+
+    CreateHandler<datCallbackExtensionHandler>("datCallback Extensions"),
+
+    /*
+        Initialize the rest of the handlers
+        Order doesn't really matter, just whatever looks neat
+    */
+
+    CreateHandler<asCullManagerHandler>("asCullManager"),
+
+    CreateHandler<cityLevelHandler>("cityLevel"),
+
+    CreateHandler<BridgeFerryHandler>("gizBridge/gizFerry"),
+
+    CreateHandler<mmDashViewHandler>("mmDashView"),
+    CreateHandler<mmDirSndHandler>("mmDirSnd"),
+    CreateHandler<mmGameHandler>("mmGame"),
+    CreateHandler<mmGameMusicDataHandler>("mmGameMusicData"),
+
+    CreateHandler<vehCarAudioContainerHandler>("vehCarAudioContainer"),
+
+    CreateHandler<lvlHandler>("Propulator"),
+    CreateHandler<sdlPage16Handler>("sdlPage16"),
+    CreateHandler<vglHandler>("VGL drawing"),
+
+    CreateHandler<StreamHandler>("Stream"),
+};
+
 // ==========================
 // Pointer hooks
 // ==========================
