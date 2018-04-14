@@ -148,7 +148,7 @@ char* getCityImageKey(mmCityInfo *cityInfo) {
 
 void mm2RichPresenceInfo::UpdatePresence(DiscordRichPresence &presence) {
     LPCSTR state;
-    char details[128]{ NULL };
+    string_buf<128> details;
 
     int8_t instance = 0;
 
@@ -171,16 +171,16 @@ void mm2RichPresenceInfo::UpdatePresence(DiscordRichPresence &presence) {
         switch (MMSTATE->GameMode) {
             case dgGameMode::Cruise:
             case dgGameMode::CRoam:
-                sprintf(details, "Cruisin' around");
+                details.set("Cruisin' around");
                 break;
             case dgGameMode::Checkpoint:
             case dgGameMode::Circuit:
             case dgGameMode::Blitz:
             case dgGameMode::CrashCourse:
-                sprintf(details, "%s: %s", gameModeNames[MMSTATE->GameMode], raceName);
+                details.format("%s: %s", gameModeNames[MMSTATE->GameMode], raceName);
                 break;
             case dgGameMode::CnR:
-                sprintf(details, "%s", gameModeNames[MMSTATE->GameMode]);
+                details.format("%s", gameModeNames[MMSTATE->GameMode]);
                 break;
         }
 
@@ -191,7 +191,7 @@ void mm2RichPresenceInfo::UpdatePresence(DiscordRichPresence &presence) {
     } else {
         if (inMultiplayer) {
             state = "In multiplayer";
-            strcpy(details, "In lobby");
+            details.set("In lobby");
             presence.largeImageKey = "mpmenu";
             presence.largeImageText = "Multiplayer lobby";
 
@@ -199,7 +199,7 @@ void mm2RichPresenceInfo::UpdatePresence(DiscordRichPresence &presence) {
         }
         else {
             state = "In main menu";
-            strcpy(details, "");
+            details.set("");
             presence.largeImageKey = "menu";
             presence.largeImageText = "Main menu";
         }

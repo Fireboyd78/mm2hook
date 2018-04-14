@@ -29,8 +29,8 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<mmGameHandler>("mmGame"),
     CreateHandler<mmGameMusicDataHandler>("mmGameMusicData"),
 
-    CreateHandler<vehPoliceCarAudioHandler>("vehPoliceCarAudio"),
     CreateHandler<vehCarAudioContainerHandler>("vehCarAudioContainer"),
+    CreateHandler<vehPoliceCarAudioHandler>("vehPoliceCarAudio"),
 
     CreateHandler<lvlHandler>("Propulator"),
     CreateHandler<sdlPage16Handler>("sdlPage16"),
@@ -73,30 +73,6 @@ void asCullManagerHandler::Install() {
     InstallCallback("asCullManager::Init", "Increases max cullables.",
         &Init, {
             cbHook<CALL>(0x401D5C),
-        }
-    );
-}
-
-/*
-    vehPoliceCarAudioHandler
-*/
-
-void vehPoliceCarAudioHandler::InitSirenAudio(vehCarSim *a1, vehCarDamage *a2, char const *basename, char const *sirenCsvFile, bool a5) {
-    //check if custom siren exists
-    char buffer[80];
-    sprintf(buffer, "%s_siren", basename);
-
-    bool customSirenExists = datAssetManager::Exists("aud\\cardata\\player", buffer, "csv");
-    LPCSTR sirenCsv = customSirenExists ? buffer : sirenCsvFile;
-
-    //forward the call
-    ageHook::Thunk<0x4D46F0>::Call<void>(this, a1, a2, basename, sirenCsv, a5);
-}
-
-void vehPoliceCarAudioHandler::Install() {
-    InstallCallback("vehPoliceCarAudio::Init", "Allows vehicles to use their own custom sirens instead of default ones for each city.",
-        &InitSirenAudio, {
-            cbHook<CALL>(0x4D44A3),
         }
     );
 }
@@ -623,7 +599,10 @@ void gfxPipelineHandler::Install() {
     );
 }
 
-/*--sdlPage16Handler--*/
+/*
+    sdlPage16Handler
+*/
+
 // HACK HACK HACK!
 // Doesn't work well for subway stations :(
 bool insideTunnel = false;
@@ -679,13 +658,13 @@ void sdlPage16Handler::Install() {
         0x0F, 0xB7, 0x1F,                   // movzx ebx, word ptr [edi]
         0x83, 0xC7, 0x02,                   // add edi, 2
 
-                                            // subtype_not_zero:
-                                            0x89, 0x5D, 0xFC,                   // mov [ebp-04], ebx
-                                            0xC1, 0xE0, 0x08,                   // shl eax, 8
-                                            0x09, 0xD0,                         // or eax, edx
-                                            0x5B,                               // pop ebx
+        // subtype_not_zero:
+        0x89, 0x5D, 0xFC,                   // mov [ebp-04], ebx
+        0xC1, 0xE0, 0x08,                   // shl eax, 8
+        0x09, 0xD0,                         // or eax, edx
+        0x5B,                               // pop ebx
 
-                                            0x90, 0x90, 0x90, 0x90,             // nop out the rest
+        0x90, 0x90, 0x90, 0x90,             // nop out the rest
     }, {
         0x448371,
     });
@@ -859,9 +838,8 @@ void vglHandler::Install() {
 */
 
 bool mmGameMusicDataHandler::LoadAmbientSFX(LPCSTR name) {
-    char buffer[80];
-    sprintf(buffer, "%sambience", MMSTATE->CityName);
-
+    string_buf<80> buffer("%sambience", MMSTATE->CityName);
+    
     LPCSTR szAmbientSFX = (datAssetManager::Exists("aud\\dmusic\\csv_files", buffer, "csv")) ? buffer : "sfambience";
 
     LogFile::Format("AmbientSFX: %s\n", szAmbientSFX);
@@ -883,9 +861,8 @@ void mmGameMusicDataHandler::Install() {
 */
 
 void vehCarAudioContainerHandler::SetSirenCSVName(LPCSTR name) {
-    char buffer[80];
-    sprintf(buffer, "%spolicesiren", MMSTATE->CityName);
-
+    string_buf<80> buffer("%spolicesiren", MMSTATE->CityName);
+    
     LPCSTR szSirenName = (datAssetManager::Exists("aud\\cardata\\player", buffer, "csv")) ? buffer : "sfpolicesiren";
 
     LogFile::Format("SirenCSVName: %s\n", szSirenName);
@@ -902,7 +879,34 @@ void vehCarAudioContainerHandler::Install() {
     );
 }
 
-/*---datCallbackExtensionHandler---*/
+
+/*
+    vehPoliceCarAudioHandler
+*/
+
+void vehPoliceCarAudioHandler::InitSirenAudio(vehCarSim *a1, vehCarDamage *a2, LPCSTR basename, LPCSTR sirenCsvFile, bool a5) {
+    string_buf<80> buffer("%s_siren", basename);
+
+    // override the global city one if a custom siren exists
+    if (datAssetManager::Exists("aud\\cardata\\player", buffer, "csv"))
+        sirenCsvFile = buffer;
+
+    // vehPoliceCarAudio::Init
+    ageHook::Thunk<0x4D46F0>::Call<void>(this, a1, a2, basename, sirenCsvFile, a5);
+}
+
+void vehPoliceCarAudioHandler::Install() {
+    InstallCallback("vehPoliceCarAudio::Init", "Allows vehicles to use their own custom sirens instead of default ones for each city.",
+        &InitSirenAudio, {
+            cbHook<CALL>(0x4D44A3),
+        }
+    );
+}
+
+/*
+    datCallbackExtensionHandler
+*/
+
 void datCallbackExtensionHandler::Install() {
     InstallPatch("datCallback Fix 1", { 0x00, 0x00, 0x00, 0x40 }, { 0x4C7A5B + 2, 0x4C7AC8 + 2, 0x4C7B70 + 1, 0x4C7BA6 + 1 });
     InstallPatch("datCallback Fix 2", { 0x00, 0x00, 0x00, 0x80 }, { 0x4C7A90 + 2, 0x4C7AFB + 2, 0x4C7B7E + 1, 0x4C7BB4 + 1 });
@@ -1218,9 +1222,7 @@ Stream * StreamHandler::Open(const char *filename, bool readOnly)
 {
     const coreFileMethods *fileMethods = (readOnly) ? Stream::sm_DefaultOpenMethods : Stream::sm_DefaultCreateMethods;
 
-    char modFilename[MAX_PATH] { NULL };
-
-    sprintf(modFilename, ".\\mods\\%s", filename);
+    string_buf<MAX_PATH> modFilename(".\\mods\\%s", filename);
     
     if (file_exists(modFilename))
     {
