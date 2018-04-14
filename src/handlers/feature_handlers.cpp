@@ -29,6 +29,7 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<mmGameHandler>("mmGame"),
     CreateHandler<mmGameMusicDataHandler>("mmGameMusicData"),
 
+    CreateHandler<vehPoliceCarAudioHandler>("vehPoliceCarAudio"),
     CreateHandler<vehCarAudioContainerHandler>("vehCarAudioContainer"),
 
     CreateHandler<lvlHandler>("Propulator"),
@@ -72,6 +73,30 @@ void asCullManagerHandler::Install() {
     InstallCallback("asCullManager::Init", "Increases max cullables.",
         &Init, {
             cbHook<CALL>(0x401D5C),
+        }
+    );
+}
+
+/*
+    vehPoliceCarAudioHandler
+*/
+
+void vehPoliceCarAudioHandler::InitSirenAudio(vehCarSim *a1, vehCarDamage *a2, char const *basename, char const *sirenCsvFile, bool a5) {
+    //check if custom siren exists
+    char buffer[80];
+    sprintf(buffer, "%s_siren", basename);
+
+    bool customSirenExists = datAssetManager::Exists("aud\\cardata\\player", buffer, "csv");
+    LPCSTR sirenCsv = customSirenExists ? buffer : sirenCsvFile;
+
+    //forward the call
+    ageHook::Thunk<0x4D46F0>::Call<void>(this, a1, a2, basename, sirenCsv, a5);
+}
+
+void vehPoliceCarAudioHandler::Install() {
+    InstallCallback("vehPoliceCarAudio::Init", "Allows vehicles to use their own custom sirens instead of default ones for each city.",
+        &InitSirenAudio, {
+            cbHook<CALL>(0x4D44A3),
         }
     );
 }

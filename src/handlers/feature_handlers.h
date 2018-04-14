@@ -58,6 +58,12 @@ public:
     static void Install();
 };
 
+class vehPoliceCarAudioHandler {
+public:
+    void InitSirenAudio(MM2::vehCarSim *a1, MM2::vehCarDamage *a2, char const *basename, char const *sirenCsvFile, bool a5);
+    static void Install();
+};
+
 class datCallbackExtensionHandler {
 public:
     static void Install();
