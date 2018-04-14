@@ -23,6 +23,7 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<cityLevelHandler>("cityLevel"),
 
     CreateHandler<BridgeFerryHandler>("gizBridge/gizFerry"),
+    CreateHandler<gizParkedCarMgrHandler>("gizParkedCarMgr"),
 
     CreateHandler<mmDashViewHandler>("mmDashView"),
     CreateHandler<mmDirSndHandler>("mmDirSnd"),
@@ -1132,6 +1133,29 @@ void mmDirSndHandler::Install() {
     InstallCallback("mmDirSnd::Init", "Fixes no sound issue on startup.",
         &Init, {
             cbHook<CALL>(0x51941D),
+        }
+    );
+}
+
+/*
+    gizParkedCarMgrHandler
+*/
+
+ageHook::Type<int> gRandSeed(0x6A3AC0);
+void gizParkedCarMgrHandler::EnumeratePath(LPCSTR a1, const Matrix34* a2, bool a3) {
+    int oldRandomSeed = gRandSeed;
+    float rand = ageHook::StaticThunk<0x4BBE30>::Call<float>();
+
+    if (dgStatePack::Instance->TrafficDensity > rand) {
+        gRandSeed = oldRandomSeed;
+        ageHook::StaticThunk<0x579BD0>::Call<void>(a1, a2, a3); //gizParkedCarMgr_EnumeratePath
+    }
+}
+
+void gizParkedCarMgrHandler::Install() {
+    InstallCallback("gizParkedCarMgr::Init", "Scales parked cars with traffic density.",
+        &EnumeratePath, {
+            cbHook<PUSH>(0x579B80),
         }
     );
 }
