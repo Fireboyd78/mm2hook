@@ -1294,7 +1294,7 @@ static bool TryLoadTexVariant(const char *textureName, const char *variant, bool
     gfxImage *variantTex = DefaultLoadImage(textureVariant, mipmaps);
 
     if (variantTex != nullptr) {
-        Warningf("[LoadTextureVariant]: Using '%s' variant for texture '%s'", variant, textureName);
+        //Warningf("[LoadTextureVariant]: Using '%s' variant for texture '%s'", variant, textureName);
         *pgfxImage = variantTex;
 
         return true;
@@ -1302,6 +1302,8 @@ static bool TryLoadTexVariant(const char *textureName, const char *variant, bool
 
     return false;
 }
+
+static bool UseNightTexturesInEvening = true;
 
 struct variant_info {
     const char *suffix;
@@ -1327,8 +1329,13 @@ gfxImage * TextureVariantHandler::LoadTextureVariant(const char *textureName, bo
         int timeOfDay = dgStatePack::Instance->TimeOfDay;
         int weatherType = dgStatePack::Instance->WeatherType;
 
-        gfxImage *variantTex = nullptr;
+        bool useEveningHack = (UseNightTexturesInEvening && (timeOfDay == 2));
 
+        if (useEveningHack)
+            timeOfDay = 3;
+
+        gfxImage *variantTex = nullptr;
+        
         for (variant_info *variant = tex_variants; variant->suffix != nullptr; variant++)
         {
             if ((variant->timeOfDay == -1)
@@ -1359,7 +1366,12 @@ gfxImage * TextureVariantHandler::PrepareTextureVariant(const char *textureName,
     if (EnableTextureVariantHandler
         && AllowDesaturatedTextureVariants)
     {
-        if (dgStatePack::Instance->TimeOfDay == 3)
+        int timeOfDay = dgStatePack::Instance->TimeOfDay;
+
+        if (UseNightTexturesInEvening && (timeOfDay == 2))
+            timeOfDay = 3;
+
+        if (timeOfDay == 3)
         {
             for (gfxImage *image = result; image != nullptr; image = image->Next) {
                 // DesaturateTextureVariant
@@ -1390,6 +1402,40 @@ void TextureVariantHandler::Install()
             cbHook<CALL>(0x401599),
         }, "Installs new texture variant handler."
     );
+
+    if (!datArgParser::Get("noduskfix"))
+    {
+        LogFile::WriteLine("Installing evening patches...");
+
+        // aiTrafficLightInstance::DrawGlow
+        InstallPatch({ 1 }, {
+            0x53CABC + 3
+        });
+        
+        /*
+            mmGame::InitWeather patches
+        */
+
+        // minimum time of day for night checks
+        InstallPatch({ 2 }, {
+            0x41338E + 2,
+            0x4133BD + 2,
+        });
+
+        // jnz -> jb
+        InstallPatch({ 0x72 }, {
+            0x41339D,
+        });
+
+        // jz -> jge
+        InstallPatch({ 0x7D }, {
+            0x4133CA,
+        });
+    }
+    else
+    {
+        UseNightTexturesInEvening = false;
+    }
 }
 
 #ifndef FEATURES_DECLARED
