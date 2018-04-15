@@ -175,6 +175,10 @@ namespace MM2
     public:
         static ageHook::TypeProxy<datCallback> NullCallback;
 
+        inline unsigned int ptr() const {
+            return _callback & ~ParamCountFlags;
+        }
+
         AGE_API datCallback()
             : _class(NULL)
             , _callback(NULL)
