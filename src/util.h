@@ -254,19 +254,23 @@ struct string_buf {
 private:
     char buffer[_size] = { NULL };
 public:
-    string_buf() {}
+    constexpr string_buf() {}
 
-    string_buf(char (&buf)[_size])
+    constexpr string_buf(char (&buf)[_size])
         : buffer(buf) {}
 
     template <size_t size>
-    string_buf(char (&buf)[size])
+    constexpr string_buf(char (&buf)[size])
         : buffer(buf) {
         static_assert(size <= _size, "not enough space for string");
     }
 
+    constexpr string_buf(const char *str) {
+        set(str);
+    }
+
     template <typename ...TArgs>
-    string_buf(const char *fmt, TArgs ...args) {
+    constexpr string_buf(const char *fmt, TArgs ...args) {
         format(fmt, args...);
     }
 
