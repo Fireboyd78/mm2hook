@@ -10,6 +10,8 @@ using namespace MM2;
 // Game-related properties
 // ==========================
 
+static int cur_seed = 0;
+
 /* AGE Debugging */
 FILE *ageLogFile;
 
@@ -300,6 +302,18 @@ public:
         ageHook::Thunk<0x4E0B20>::Call<void>(this, state);
     }
 
+    void GenerateRandomSeed() {
+        cur_seed = stopwatch::ticks();
+    }
+
+    void ResetRandomSeed() {
+        // make sure the seed was generated at least one time
+        if (cur_seed == 0)
+            GenerateRandomSeed();
+
+        gRandSeed = cur_seed;
+    }
+
     static void Install() {
         InstallCallback("CreateGameMutex", "Adds '-nomutex' argument to allow multiple game processes.",
             &CreateGameMutex, {
@@ -376,7 +390,7 @@ public:
                 }, "Disables physics collision error debugging (use '-physDebug' to enable)."
             );
         }
-
+        
         InstallCallback(&ParseStateArgs, {
             cbHook<CALL>(0x4013A4)
         }, "State pack argument parsing.");
@@ -384,6 +398,34 @@ public:
         InstallCallback(&AddPauseButtons, {
             cbHook<CALL>(0x50A7D9),
         }, "Add extra buttons to the pause menu.");
+
+        if (datArgParser::Get("seed", 0, &cur_seed))
+        {
+            InstallCallback("ResetRandomSeed", "Resets the random seed to a user-specified one.",
+                &ResetRandomSeed, {
+                    cbHook<CALL>(0x4068F0), // mmReplayManager::ctor
+                    cbHook<CALL>(0x406993), // mmReplayManager::Reset
+                    cbHook<CALL>(0x444B79), // cityLevel::Load
+                    cbHook<CALL>(0x536A68), // aiMap::Reset
+                }
+            );
+        }
+        else if (datArgParser::Get("randy"))
+        {
+            InstallCallback("GenerateRandomSeed", "Generates a new random seed instead of resetting it to a fixed value.",
+                &GenerateRandomSeed, {
+                    cbHook<CALL>(0x4068F0), // mmReplayManager::ctor
+                    cbHook<CALL>(0x444B79), // cityLevel::Load
+                }
+            );
+
+            InstallCallback("ResetRandomSeed", "Resets the random seed to one we previously generated.",
+                &ResetRandomSeed, {
+                    cbHook<CALL>(0x406993), // mmReplayManager::Reset
+                    cbHook<CALL>(0x536A68), // aiMap::Reset
+                }
+            );
+        }
     }
 };
 
