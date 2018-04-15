@@ -152,3 +152,8 @@ public:
 
     static void Install();
 };
+
+class PUMainHandler {
+public:
+    static void Install();
+};
