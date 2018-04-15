@@ -38,6 +38,7 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<vglHandler>("VGL drawing"),
 
     CreateHandler<StreamHandler>("Stream"),
+    CreateHandler<TextureVariantHandler>("Texture variants"),
 };
 
 // ==========================
@@ -1273,6 +1274,121 @@ void StreamHandler::Install()
         &Open, {
             cbHook<JMP>(0x4C99C0), // Stream::Open(const char *, bool)
         }
+    );
+}
+
+/*
+    TextureVariantHandler
+*/
+
+static gfxImage * (*DefaultLoadImage)(const char *, bool);
+static gfxImage * (*DefaultPrepareImage)(const char *, bool);
+
+ageHook::Type<bool> EnableTextureVariantHandler(0x6276EC);
+ageHook::Type<bool> AllowDesaturatedTextureVariants(0x6276ED);
+
+static bool TryLoadTexVariant(const char *textureName, const char *variant, bool mipmaps, gfxImage **pgfxImage)
+{
+    string_buf<64> textureVariant("%s_%s", textureName, variant);
+
+    gfxImage *variantTex = DefaultLoadImage(textureVariant, mipmaps);
+
+    if (variantTex != nullptr) {
+        Warningf("[LoadTextureVariant]: Using '%s' variant for texture '%s'", variant, textureName);
+        *pgfxImage = variantTex;
+
+        return true;
+    }
+
+    return false;
+}
+
+struct variant_info {
+    const char *suffix;
+
+    int timeOfDay;
+    int weather;
+
+    bool canDesaturate;
+} tex_variants[] = {
+    /*
+        texture variants, sorted by priority
+    */
+    { "nifa",   3,  3, false }, // rainy night
+    { "fa",    -1,  3, true },  // rainy
+    { "ni",     3, -1, false }, // night
+    { NULL },
+};
+
+gfxImage * TextureVariantHandler::LoadTextureVariant(const char *textureName, bool mipmaps)
+{
+    if (EnableTextureVariantHandler)
+    {
+        int timeOfDay = dgStatePack::Instance->TimeOfDay;
+        int weatherType = dgStatePack::Instance->WeatherType;
+
+        gfxImage *variantTex = nullptr;
+
+        for (variant_info *variant = tex_variants; variant->suffix != nullptr; variant++)
+        {
+            if ((variant->timeOfDay == -1)
+                || (variant->timeOfDay == timeOfDay))
+            {
+                if ((variant->weather == -1)
+                    || (variant->weather == weatherType))
+                {
+                    AllowDesaturatedTextureVariants = variant->canDesaturate;
+
+                    if (TryLoadTexVariant(textureName, variant->suffix, mipmaps, &variantTex))
+                        return variantTex;
+                }
+            }
+        }
+
+        // desaturate for night-time if needed
+        AllowDesaturatedTextureVariants = true;
+    }
+
+    return DefaultLoadImage(textureName, mipmaps);
+}
+
+gfxImage * TextureVariantHandler::PrepareTextureVariant(const char *textureName, bool mipmaps)
+{
+    gfxImage *result = DefaultPrepareImage(textureName, mipmaps);
+
+    if (EnableTextureVariantHandler
+        && AllowDesaturatedTextureVariants)
+    {
+        if (dgStatePack::Instance->TimeOfDay == 3)
+        {
+            for (gfxImage *image = result; image != nullptr; image = image->Next) {
+                // DesaturateTextureVariant
+                ageHook::StaticThunk<0x442FB0>::Call<void>(image);
+            }
+        }
+    }
+
+    return result;
+}
+
+void TextureVariantHandler::InstallTextureVariantHandler()
+{
+    if (DefaultLoadImage == nullptr) {
+        DefaultLoadImage = gfxLoadImage;
+        gfxLoadImage = LoadTextureVariant;
+    }
+
+    if (DefaultPrepareImage == nullptr) {
+        DefaultPrepareImage = gfxPrepareImage;
+        gfxPrepareImage = PrepareTextureVariant;
+    }
+}
+
+void TextureVariantHandler::Install()
+{
+    InstallCallback(InstallTextureVariantHandler, {
+            cbHook<CALL>(0x401599),
+        }, "Installs new texture variant handler."
     );
 }
 

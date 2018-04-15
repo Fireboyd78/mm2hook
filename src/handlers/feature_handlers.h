@@ -142,3 +142,13 @@ public:
 
     static void Install();
 };
+
+class TextureVariantHandler {
+public:
+    static MM2::gfxImage * LoadTextureVariant(const char *textureName, bool mipmaps);
+    static MM2::gfxImage * PrepareTextureVariant(const char *textureName, bool mipmaps);
+
+    static void InstallTextureVariantHandler();
+
+    static void Install();
+};
