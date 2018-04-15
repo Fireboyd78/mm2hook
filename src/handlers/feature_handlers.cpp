@@ -1141,7 +1141,6 @@ void mmDirSndHandler::Install() {
     gizParkedCarMgrHandler
 */
 
-ageHook::Type<int> gRandSeed(0x6A3AC0);
 void gizParkedCarMgrHandler::EnumeratePath(LPCSTR a1, const Matrix34* a2, bool a3) {
     int oldRandomSeed = gRandSeed;
     float rand = ageHook::StaticThunk<0x4BBE30>::Call<float>();
