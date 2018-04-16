@@ -32,6 +32,10 @@ struct cbHook
     };
 };
 
+static bool VerboseInstallLogging = false;
+
+void Installf(LPCSTR format, ...);
+
 typedef void (*InitFn)();
 
 // make this clean up the stack since we'll be calling it a lot

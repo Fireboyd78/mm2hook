@@ -96,6 +96,10 @@ void LogFile::Close(void) {
     g_logfile->Close();
 };
 
+void LogFile::Flush(bool force) {
+    g_logfile->Flush(force);
+}
+
 void LogFile::AppendLine(void) {
     g_logfile->AppendLine();
     ConsoleLog::AppendLine();

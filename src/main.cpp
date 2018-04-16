@@ -180,6 +180,10 @@ public:
         return locStr;
     }
 
+    static void ComputeCpuSpeed() {
+        *mmCpuSpeed = 9000;
+    }
+
     static BOOL __stdcall AutoDetectCallback(GUID *lpGUID,
                                              LPSTR lpDriverDescription, LPSTR lpDriverName, LPVOID lpContext)
     {
@@ -191,6 +195,8 @@ public:
 
         if (lpDirectDrawCreateEx(lpGUID, (LPVOID*)&lpDD, IID_IDirectDraw7, nullptr) == DD_OK)
         {
+            Displayf("  Created device in %.4f ms", timer.elapsedMilliseconds());
+
             gfxInterface *gfxInterface = &gfxInterfaces[gfxInterfaceCount];
 
             strcpy (gfxInterface->Name, lpDriverDescription);
@@ -315,7 +321,7 @@ public:
         if (!datArgParser::Get("oldautodetect"))
         {
             InstallCallback("ComputeCpuSpeed", "Removes the CPU speed calculation for the old auto detect method and improves startup times.",
-                &ReturnNullOrZero, {
+                &ComputeCpuSpeed, {
                     cbHook<CALL>(0x401208),
                 }
             );
@@ -548,7 +554,16 @@ private:
     }
 public:
     static void Initialize(int argc, char **argv) {
+        if (datArgParser::Get("noconsole"))
+            ConsoleLog::Close();
+
+        if (datArgParser::Get("hookdbg"))
+            VerboseInstallLogging = true;
+
+        LogFile::WriteLine("Installing patches...");
         InstallPatches();
+
+        LogFile::WriteLine("Installing handlers...");
         InstallHandlers();
 
         // Initialize the Lua engine
@@ -595,10 +610,6 @@ public:
                 joyDebug = 1;
             if (datArgParser::Get("assetDebug"))
                 assetDebug = 1;
-        }
-
-        if (datArgParser::Get("noconsole")) {
-            ConsoleLog::Close();
         }
     }
 

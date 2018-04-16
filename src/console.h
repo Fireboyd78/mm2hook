@@ -9,6 +9,8 @@ class ConsoleLog {
 private:
     HANDLE hConsole;
     CONSOLE_SCREEN_BUFFER_INFO cInfo;
+
+    bool outputEnabled;
 protected:
     ConsoleLog();
     ~ConsoleLog();
@@ -19,6 +21,7 @@ public:
     static void Close();
     
     static void SetTitle(LPCSTR title);
+    static void SetOutputEnabled(bool enabled);
 
     static void AppendLine(void);
 

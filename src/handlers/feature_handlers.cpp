@@ -791,8 +791,8 @@ void vglHandler::Install() {
     auto_ptr vglBeginCB = &vglBeginShaded;
     auto_ptr vglEndCB = &vglEndShaded;
 
-    LogFile::Format(" - vglBeginCB: %08X\n", vglBeginCB);
-    LogFile::Format(" - vglEndCB: %08X\n", vglEndCB);
+    Installf(" - vglBeginCB: %08X\n", vglBeginCB);
+    Installf(" - vglEndCB: %08X\n", vglEndCB);
 
     // use a custom struct to make the process easier
     // this allows us to have an entry representing each "frame" (vglBegin/vglEnd)
@@ -833,7 +833,7 @@ void vglHandler::Install() {
         InstallCallback(vglBeginCB, { begin, CALL });
         InstallCallback(vglEndCB, { end,   CALL });
 
-        LogFile::Format("   - { vglBegin: %08X, vglEnd: %08X }\n", begin, end);
+        Installf("   - { vglBegin: %08X, vglEnd: %08X }\n", begin, end);
     }
 }
 

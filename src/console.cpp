@@ -9,7 +9,7 @@ ConsoleLog *cLog;
 int ConsoleLog::Write(LPCSTR str, int length) {
     DWORD count = 0;
 
-    if ((hConsole != NULL) && (length > 0))
+    if (outputEnabled && (hConsole != NULL) && (length > 0))
         WriteConsole(hConsole, str, length, &count, NULL);
 
     return count;
@@ -22,6 +22,8 @@ ConsoleLog::ConsoleLog() {
     GetConsoleScreenBufferInfo(hConsole, &cInfo);
     cInfo.dwSize.Y = 2500;
     SetConsoleScreenBufferSize(hConsole, cInfo.dwSize);
+
+    outputEnabled = true;
 }
 
 ConsoleLog::~ConsoleLog() {
@@ -49,6 +51,11 @@ void ConsoleLog::Close() {
 void ConsoleLog::SetTitle(LPCSTR title) {
     if (cLog != NULL)
         SetConsoleTitle(title);
+}
+
+void ConsoleLog::SetOutputEnabled(bool enabled) {
+    if (cLog != NULL)
+        cLog->outputEnabled = enabled;
 }
 
 void ConsoleLog::AppendLine(void) {
