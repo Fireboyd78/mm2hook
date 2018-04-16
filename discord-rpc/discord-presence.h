@@ -4,6 +4,8 @@
 #include "mm2.h"
 #include "mm2_network.h"
 
+#define DISCORD_DYNAMIC_LIB
+
 #include "discord-rpc.h"
 
 struct mm2RichPresenceInfo {

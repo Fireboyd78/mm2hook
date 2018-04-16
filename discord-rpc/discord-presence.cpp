@@ -6,6 +6,57 @@ static const char* APPLICATION_ID = "379767166267817984";
 
 static DiscordRichPresence presence;
 
+static HMODULE g_DiscordModule = nullptr;
+
+static decltype(Discord_Initialize) * _Discord_Initialize = nullptr;
+static decltype(Discord_Shutdown) * _Discord_Shutdown = nullptr;
+static decltype(Discord_UpdatePresence) * _Discord_UpdatePresence = nullptr;
+static decltype(Discord_RunCallbacks) * _Discord_RunCallbacks = nullptr;
+
+struct _discord_function {
+    void *proc;
+    const char *name;
+} g_DiscordFunctions[] = {
+    { &_Discord_Initialize, "Discord_Initialize" },
+    { &_Discord_Shutdown, "Discord_Shutdown" },
+    { &_Discord_UpdatePresence, "Discord_UpdatePresence" },
+    { &_Discord_RunCallbacks, "Discord_RunCallbacks" },
+    { NULL },
+};
+
+static bool LoadDiscordFunctions() {
+    for (_discord_function *func = g_DiscordFunctions; func->name != nullptr; func++) {
+        auto proc = GetProcAddress(g_DiscordModule, func->name);
+
+        if (proc == nullptr) {
+            Errorf("[discord] Failed to load '%s'!", func->name);
+            return false;
+        }
+
+        *reinterpret_cast<void **>(func->proc) = proc;
+    }
+    return true;
+}
+
+static bool LoadDiscordModule() {
+    g_DiscordModule = LoadLibraryA("discord-rpc.dll");
+
+    if (g_DiscordModule != nullptr)
+    {
+        // try loading the required functions
+        if (LoadDiscordFunctions())
+            return true;
+
+        // one or more required functions not found,
+        // so free the library since we won't need it
+        FreeLibrary(g_DiscordModule);
+        g_DiscordModule = nullptr;
+    }
+
+    // failed to load
+    return false;
+}
+
 void handleDiscordReady() {
     Warningf("Discord's ready...");
 }
@@ -42,7 +93,7 @@ void InitDiscord(void) {
     handlers.joinRequest = handleDiscordJoinRequest;
 
     LogFile::WriteLine("[discord] Initializing...");
-    Discord_Initialize(APPLICATION_ID, &handlers, 1, NULL);
+    _Discord_Initialize(APPLICATION_ID, &handlers, 1, NULL);
 }
 
 char * carImageKeys[20] = {
@@ -215,7 +266,7 @@ void mm2RichPresenceInfo::UpdatePresence(DiscordRichPresence &presence) {
     presence.partySize = lobbyNumPlayers;
 
     LogFile::WriteLine("[discord] Updating presence...");
-    Discord_UpdatePresence(&presence);
+    _Discord_UpdatePresence(&presence);
 }
 
 int discordHandler::GameInit(void) {
@@ -340,54 +391,67 @@ int discordHandler::RefreshNumPlayersLobby(void) {
 }
 
 void discordHandler::Install() {
-    InstallCallback("mmGame::Init", "Updates Discord Rich Presence when entering a race.",
-        &GameInit, {
-            cbHook<JMP>(0x433AA0),      //mmGameSingle::Init
-            cbHook<CALL>(0x438F81),     //mmGameMulti::Init
-        }
-    );
-    InstallCallback("mmGame::BeDone", "Updates Discord Rich Presence when exiting a race.",
-        &GameBeDone, {
-            cbHook<JMP>(0x414DF1),      //end of mmGame::BeDone
-        }
-    );
-    InstallCallback("asNetwork::CreateSession", "Update the multiplayer status to on when creating the lobby.",
-        &DetectHostMPLobby, {
-            cbHook<CALL>(0x4117C5),     //mmInterface::CreateSession
-        }
-    );
-    InstallCallback("asNetwork::JoinSession", "Update the multiplayer status to on when joining the lobby.",
-        &DetectJoinMPLobby, {
-            cbHook<CALL>(0x572782),     //asNetwork::JoinSession(int, char *)
-        }
-    );
-    InstallCallback("asNetwork::JoinLobbySession", "Update the multiplayer status to on when joining the lobby session.",
-        &DetectJoinMPLobbySession, {
-            cbHook<CALL>(0x409C6F),     //mmInterface::MessageCallback
-            cbHook<CALL>(0x410126),     //mmInterface::InitLobby
-        }
-    );
-    InstallCallback("asNetwork::Disconnect", "Update the multiplayer status to off when exiting the lobby.",
-        &DetectDisconnectMPLobby, {
-            cbHook<CALL>(0x40D394),     //mmInterface::Switch
-        }
-    );
-    InstallCallback("asNetwork::CloseSession", "Update the multiplayer status to off when exiting the current game.",
-        &DetectDisconnectMPGame, {
-            cbHook<CALL>(0x43B159),     //mmGameMulti::QuitNetwork
-        }
-    );
-    InstallCallback("asNetwork::GetNumPlayers", "Updates the number of players in a lobby",
-        &RefreshNumPlayersLobby, {
-            cbHook<CALL>(0x4111B1),     //mmInterface::RefreshPlayers
-        }
-    );
+    if (LoadDiscordModule())
+    {
+        InstallCallback("mmGame::Init", "Updates Discord Rich Presence when entering a race.",
+            &GameInit, {
+                cbHook<JMP>(0x433AA0),      //mmGameSingle::Init
+                cbHook<CALL>(0x438F81),     //mmGameMulti::Init
+            }
+        );
+        InstallCallback("mmGame::BeDone", "Updates Discord Rich Presence when exiting a race.",
+            &GameBeDone, {
+                cbHook<JMP>(0x414DF1),      //end of mmGame::BeDone
+            }
+        );
+        InstallCallback("asNetwork::CreateSession", "Update the multiplayer status to on when creating the lobby.",
+            &DetectHostMPLobby, {
+                cbHook<CALL>(0x4117C5),     //mmInterface::CreateSession
+            }
+        );
+        InstallCallback("asNetwork::JoinSession", "Update the multiplayer status to on when joining the lobby.",
+            &DetectJoinMPLobby, {
+                cbHook<CALL>(0x572782),     //asNetwork::JoinSession(int, char *)
+            }
+        );
+        InstallCallback("asNetwork::JoinLobbySession", "Update the multiplayer status to on when joining the lobby session.",
+            &DetectJoinMPLobbySession, {
+                cbHook<CALL>(0x409C6F),     //mmInterface::MessageCallback
+                cbHook<CALL>(0x410126),     //mmInterface::InitLobby
+            }
+        );
+        InstallCallback("asNetwork::Disconnect", "Update the multiplayer status to off when exiting the lobby.",
+            &DetectDisconnectMPLobby, {
+                cbHook<CALL>(0x40D394),     //mmInterface::Switch
+            }
+        );
+        InstallCallback("asNetwork::CloseSession", "Update the multiplayer status to off when exiting the current game.",
+            &DetectDisconnectMPGame, {
+                cbHook<CALL>(0x43B159),     //mmGameMulti::QuitNetwork
+            }
+        );
+        InstallCallback("asNetwork::GetNumPlayers", "Updates the number of players in a lobby",
+            &RefreshNumPlayersLobby, {
+                cbHook<CALL>(0x4111B1),     //mmInterface::RefreshPlayers
+            }
+        );
 
-    InitDiscord();
-    g_mm2Info.UpdatePresence(presence);
+        InitDiscord();
+        g_mm2Info.UpdatePresence(presence);
+    }
+    else
+    {
+        Warningf("**** Discord Rich Presence was NOT loaded! ****");
+    }
 }
 
 void discordHandler::Release() {
-    LogFile::WriteLine("[discord] Shutting down...");
-    Discord_Shutdown();
+    if (g_DiscordModule != nullptr)
+    {
+        LogFile::WriteLine("[discord] Shutting down...");
+        _Discord_Shutdown();
+
+        FreeLibrary(g_DiscordModule);
+        g_DiscordModule = nullptr;
+    }
 }
