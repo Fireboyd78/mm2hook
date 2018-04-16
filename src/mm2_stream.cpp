@@ -27,3 +27,10 @@ int MM2::fscanf(Stream * stream, char const * format, ...) {
 
     return result;
 }
+
+/*
+    Stream
+*/
+
+declfield(Stream::sm_DefaultOpenMethods)(0x5CED78);
+declfield(Stream::sm_DefaultCreateMethods)(0x5CED7C);

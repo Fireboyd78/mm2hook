@@ -32,6 +32,72 @@ struct cbHook
     };
 };
 
+static bool VerboseInstallLogging = false;
+
+void Installf(LPCSTR format, ...);
+
+typedef void (*InitFn)();
+
+// make this clean up the stack since we'll be calling it a lot
+void __stdcall InstallHandler(LPCSTR name, InitFn installHandler);
+
+/*
+    Assumes THandler is a class that implements a public,
+    static method called 'Install' with no return type.
+*/
+template <class THandler>
+inline void InstallHandler(LPCSTR name) {
+    InstallHandler(name, &THandler::Install);
+};
+
+class init_base {
+protected:
+    init_base *next;
+
+    void Register();
+public:
+    virtual ~init_base() = default;
+
+    init_base() {
+        Register();
+    }
+
+    virtual void Run() {
+        /* do nothing */
+    }
+
+    static void RunAll();
+};
+
+class init_func : public init_base {
+protected:
+    InitFn fnInit;
+public:
+    explicit init_func(InitFn fnInit)
+        : fnInit(fnInit), init_base() {}
+
+    void Run() override {
+        fnInit();
+    }
+};
+
+class init_handler : public init_func {
+protected:
+    const char *name;
+public:
+    explicit init_handler(const char *name, InitFn fnInit)
+        : name(name), init_func(fnInit) {}
+
+    void Run() override {
+        InstallHandler(name, fnInit);
+    }
+};
+
+template <typename THandler>
+static init_handler CreateHandler(const char *name) {
+    return init_handler(name, &THandler::Install);
+}
+
 void InstallPatch(LPCSTR description,
                   std::initializer_list<unsigned char> bytes,
                   std::initializer_list<unsigned int> addresses);

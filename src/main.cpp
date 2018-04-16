@@ -10,6 +10,8 @@ using namespace MM2;
 // Game-related properties
 // ==========================
 
+static int cur_seed = 0;
+
 /* AGE Debugging */
 FILE *ageLogFile;
 
@@ -46,7 +48,10 @@ public:
             char buf[4096] = { NULL };
             strncpy(buf, (LPCSTR)buffer, length);
 
-            reinterpret_cast<LogFileStream *>(handle)->Write(buf);
+            auto logFile = reinterpret_cast<LogFileStream *>(handle);
+
+            logFile->Write(buf);
+            logFile->Flush(false);
         }
         return length;
     }
@@ -175,6 +180,10 @@ public:
         return locStr;
     }
 
+    static void ComputeCpuSpeed() {
+        *mmCpuSpeed = 9000;
+    }
+
     static BOOL __stdcall AutoDetectCallback(GUID *lpGUID,
                                              LPSTR lpDriverDescription, LPSTR lpDriverName, LPVOID lpContext)
     {
@@ -186,6 +195,8 @@ public:
 
         if (lpDirectDrawCreateEx(lpGUID, (LPVOID*)&lpDD, IID_IDirectDraw7, nullptr) == DD_OK)
         {
+            Displayf("  Created device in %.4f ms", timer.elapsedMilliseconds());
+
             gfxInterface *gfxInterface = &gfxInterfaces[gfxInterfaceCount];
 
             strcpy (gfxInterface->Name, lpDriverDescription);
@@ -269,35 +280,16 @@ public:
         return true;
     }
 
-    void AddPauseButtons(int state) {
-        auto menu = reinterpret_cast<UIMenu *>(this);
+    void GenerateRandomSeed() {
+        cur_seed = stopwatch::ticks();
+    }
 
-        /* Instant Replay (broken?) */
-        setPtr<UIButton *>(menu, 0xBC, menu->AddButton(16,
-            AngelReadString(465),
-            0,
-            0.675f,
-            1.0f,
-            *getPtr<float>(menu, 0xA4),
-            *getPtr<int>(menu, 0xA0),
-            2,
-            datCallback::NullCallback,
-            0));
+    void ResetRandomSeed() {
+        // make sure the seed was generated at least one time
+        if (cur_seed == 0)
+            GenerateRandomSeed();
 
-        /* DEBUG */
-        //menu->AddButton(15,
-        //    AngelReadString(454),
-        //    0,
-        //    0.725f,
-        //    1.0f,
-        //    *getPtr<float>(menu, 0xA4),
-        //    *getPtr<int>(menu, 0xA0),
-        //    2,
-        //    datCallback::NullCallback,
-        //    0);
-
-        // UIMenu::SetBstate
-        ageHook::Thunk<0x4E0B20>::Call<void>(this, state);
+        gRandSeed = cur_seed;
     }
 
     static void Install() {
@@ -329,7 +321,7 @@ public:
         if (!datArgParser::Get("oldautodetect"))
         {
             InstallCallback("ComputeCpuSpeed", "Removes the CPU speed calculation for the old auto detect method and improves startup times.",
-                &ReturnNullOrZero, {
+                &ComputeCpuSpeed, {
                     cbHook<CALL>(0x401208),
                 }
             );
@@ -376,14 +368,38 @@ public:
                 }, "Disables physics collision error debugging (use '-physDebug' to enable)."
             );
         }
-
+        
         InstallCallback(&ParseStateArgs, {
             cbHook<CALL>(0x4013A4)
         }, "State pack argument parsing.");
 
-        InstallCallback(&AddPauseButtons, {
-            cbHook<CALL>(0x50A7D9),
-        }, "Add extra buttons to the pause menu.");
+        if (datArgParser::Get("seed", 0, &cur_seed))
+        {
+            InstallCallback("ResetRandomSeed", "Resets the random seed to a user-specified one.",
+                &ResetRandomSeed, {
+                    cbHook<CALL>(0x4068F0), // mmReplayManager::ctor
+                    cbHook<CALL>(0x406993), // mmReplayManager::Reset
+                    cbHook<CALL>(0x444B79), // cityLevel::Load
+                    cbHook<CALL>(0x536A68), // aiMap::Reset
+                }
+            );
+        }
+        else if (datArgParser::Get("randy"))
+        {
+            InstallCallback("GenerateRandomSeed", "Generates a new random seed instead of resetting it to a fixed value.",
+                &GenerateRandomSeed, {
+                    cbHook<CALL>(0x4068F0), // mmReplayManager::ctor
+                    cbHook<CALL>(0x444B79), // cityLevel::Load
+                }
+            );
+
+            InstallCallback("ResetRandomSeed", "Resets the random seed to one we previously generated.",
+                &ResetRandomSeed, {
+                    cbHook<CALL>(0x406993), // mmReplayManager::Reset
+                    cbHook<CALL>(0x536A68), // aiMap::Reset
+                }
+            );
+        }
     }
 };
 
@@ -443,21 +459,6 @@ public:
     }
 };
 
-// make this clean up the stack since we'll be calling it a lot
-void __stdcall InstallHandler(LPCSTR name, void (*installHandler)(void)) {
-    LogFile::Format("Installing '%s' handler...\n", name);
-    installHandler();
-};
-
-/*
-    Assumes THandler is a class that implements a public,
-    static method called 'Install' with no return type.
-*/
-template <class THandler>
-inline void InstallHandler(LPCSTR name) {
-    InstallHandler(name, &THandler::Install);
-};
-
 class StackHandler {
 public:
     static void GetAddressName(char *buffer, LPCSTR, int address) {
@@ -506,55 +507,24 @@ class HookSystemFramework
 private:
     /*
         Installs all of the callbacks for MM2Hook.
-
-        The most important ones are initialized at the top,
-        but other than that there is no particular order.
     */
     static void InstallHandlers() {
         /*
-            Initialize the really important handlers
+            Initialize the important handlers first
         */
+
         InstallHandler<CallbackHandler>("Generic callbacks");
         InstallHandler<PrintHandler>("Print system");
         InstallHandler<TimeHandler>("Time manager");
         InstallHandler<StackHandler>("Stack information");
 
-        InstallHandler<gfxPipelineHandler>("gfxPipeline");
-        InstallHandler<memSafeHeapHandler>("memSafeHeap");
-        
-        InstallHandler<datCallbackExtensionHandler>("datCallback Extensions");
-
         InstallHandler<discordHandler>("Discord Rich Presence");
 
         /*
-            Initialize the rest of the handlers
-            Order doesn't really matter, just whatever looks neat
+            Now install everything else
         */
 
-        InstallHandler<aiPathHandler>("aiPath");
-        InstallHandler<aiPedestrianHandler>("aiPedestrian");
-
-        InstallHandler<aiPoliceForceHandler>("aiPoliceForce");
-
-        InstallHandler<asCullManagerHandler>("asCullManager");
-
-        InstallHandler<cityLevelHandler>("cityLevel");
-
-        InstallHandler<BridgeFerryHandler>("gizBridge/gizFerry");
-
-        InstallHandler<mmDashViewHandler>("mmDashView");
-        InstallHandler<mmDirSndHandler>("mmDirSnd");
-        InstallHandler<mmGameHandler>("mmGame");
-        InstallHandler<mmGameMusicDataHandler>("mmGameMusicData");
-
-        InstallHandler<vehCarHandler>("vehCarHandler");
-        InstallHandler<vehCarAudioContainerHandler>("vehCarAudioContainer");
-
-        InstallHandler<lvlHandler>("Propulator");
-        InstallHandler<sdlPage16Handler>("sdlPage16");
-        InstallHandler<vglHandler>("VGL drawing");
-
-        InstallHandler<gfxImageHandler>("gfxImage");
+        init_base::RunAll();
     }
 
     static void InstallPatches() {
@@ -584,7 +554,16 @@ private:
     }
 public:
     static void Initialize(int argc, char **argv) {
+        if (datArgParser::Get("noconsole"))
+            ConsoleLog::Close();
+
+        if (datArgParser::Get("hookdbg"))
+            VerboseInstallLogging = true;
+
+        LogFile::WriteLine("Installing patches...");
         InstallPatches();
+
+        LogFile::WriteLine("Installing handlers...");
         InstallHandlers();
 
         // Initialize the Lua engine
@@ -632,10 +611,6 @@ public:
             if (datArgParser::Get("assetDebug"))
                 assetDebug = 1;
         }
-
-        if (datArgParser::Get("noconsole")) {
-            ConsoleLog::Close();
-        }
     }
 
     static void Reset(bool restarting) {
@@ -648,44 +623,49 @@ public:
         MM2Lua::Reset();
     }
 
-    static void Start() {
-        if (!MMSTATE->Shutdown)
-        {
-            // GameLoop was restarted
-            Reset(false);
-        } else {
-            LogFile::WriteLine("WTF: Hook startup request received, but the game is closing!");
-        }
+    // TODO: fix this horrible logic
+    static void Update(bool parsedStateArgs) {
+        Reset(false);
+
+        // GameLoop
+        ageHook::StaticThunk<0x401A00>::Call<void>(parsedStateArgs);
+
+        Reset(true);
     }
 
-    static void Stop() {
-        if (MMSTATE->Shutdown)
-        {
-            LogFile::WriteLine("Hook shutdown request received.");
+    static void Shutdown() {
+        LogFile::WriteLine("Hook shutdown request received.");
 
-            discordHandler::Release();
+        discordHandler::Release();
 
-            LogFile::Close();
-            L.close(); // release Lua
+        // gfxPipeline::EndGfx2D
+        ageHook::StaticThunk<0x4AAA10>::Call<void>();
 
-            // close datOutput log
-            datOutput::CloseLog();
+        // we can now safely close everything else
+        LogFile::Close();
+        L.close(); // release Lua
 
-            if (ageLogFile)
-                fclose(ageLogFile);
+        // close datOutput log
+        datOutput::CloseLog();
 
-            ConsoleLog::Close();
-        } else {
-            // GameLoop is restarting
-            Reset(true);
-        }
+        if (ageLogFile)
+            fclose(ageLogFile);
+
+        ConsoleLog::Close();
     }
 
     static void Install() {
         LogFile::WriteLine("Installing framework...");
 
-        __VtResumeSampling = &Start;
-        __VtPauseSampling = &Stop;
+        InstallCallback(
+            &Update, {
+                cbHook<CALL>(0x401989), // MainPhase
+            }, "GameLoop hook" );
+
+        InstallCallback(
+            &Shutdown, {
+                cbHook<CALL>(0x40161B) // Main
+            }, "Shutdown hook");
 
         /*
             We'll hook into ArchInit (an empty function),

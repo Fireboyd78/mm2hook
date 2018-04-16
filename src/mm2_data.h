@@ -175,6 +175,10 @@ namespace MM2
     public:
         static ageHook::TypeProxy<datCallback> NullCallback;
 
+        inline unsigned int ptr() const {
+            return _callback & ~ParamCountFlags;
+        }
+
         AGE_API datCallback()
             : _class(NULL)
             , _callback(NULL)
@@ -242,9 +246,6 @@ namespace MM2
         };
 
         AGE_API static bool OpenLog(LPCSTR filename, const coreFileMethods *fileMethods) {
-            if (sm_Stream.ptr() != NULL)
-                return true;
-
             return ((sm_Stream = Stream::Create(filename, fileMethods)) != NULL);
         };
 

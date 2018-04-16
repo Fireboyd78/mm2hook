@@ -58,6 +58,18 @@ public:
     static void Install();
 };
 
+class vehPoliceCarAudioHandler {
+public:
+    void InitSirenAudio(MM2::vehCarSim *a1, MM2::vehCarDamage *a2, LPCSTR basename, LPCSTR sirenCsvFile, bool a5);
+    static void Install();
+};
+
+class gizParkedCarMgrHandler {
+public:
+    static void EnumeratePath(LPCSTR a1, const MM2::Matrix34* a2, bool a3);
+    static void Install();
+};
+
 class datCallbackExtensionHandler {
 public:
     static void Install();
@@ -121,5 +133,27 @@ class mmDashViewHandler {
 public:
     void UpdateCS();
 
+    static void Install();
+};
+
+class StreamHandler {
+public:
+    static MM2::Stream * Open(const char *filename, bool readOnly);
+
+    static void Install();
+};
+
+class TextureVariantHandler {
+public:
+    static MM2::gfxImage * LoadTextureVariant(const char *textureName, bool mipmaps);
+    static MM2::gfxImage * PrepareTextureVariant(const char *textureName, bool mipmaps);
+
+    static void InstallTextureVariantHandler();
+
+    static void Install();
+};
+
+class PUMainHandler {
+public:
     static void Install();
 };

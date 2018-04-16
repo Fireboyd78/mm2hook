@@ -34,11 +34,14 @@ namespace MM2
 
     class Stream {
     public:
+        static ageHook::Type<coreFileMethods *> sm_DefaultOpenMethods;
+        static ageHook::Type<coreFileMethods *> sm_DefaultCreateMethods;
+
         AGE_API static void     DumpOpenFiles   (void)                              { return ageHook::StaticThunk<0x4C9970>::Call<void>(); };
 
-        AGE_API static Stream*  Open            (LPCSTR filename, bool isZipFile)   { return ageHook::StaticThunk<0x4C99C0>::Call<Stream *>(filename, isZipFile); };
-        AGE_API static Stream*  Open            (LPCSTR filename, const coreFileMethods *fileMethods, bool isZipFile)
-                                                                                    { return ageHook::StaticThunk<0x4C9A40>::Call<Stream *>(filename, fileMethods, isZipFile); };
+        AGE_API static Stream*  Open            (LPCSTR filename, bool readOnly)    { return ageHook::StaticThunk<0x4C99C0>::Call<Stream *>(filename, readOnly); };
+        AGE_API static Stream*  Open            (LPCSTR filename, const coreFileMethods *fileMethods, bool readOnly)
+                                                                                    { return ageHook::StaticThunk<0x4C9A40>::Call<Stream *>(filename, fileMethods, readOnly); };
 
         AGE_API static Stream*  Create          (LPCSTR filename)                   { return ageHook::StaticThunk<0x4C9A00>::Call<Stream *>(filename); };
         AGE_API static Stream*  Create          (LPCSTR filename, const coreFileMethods *fileMethods)

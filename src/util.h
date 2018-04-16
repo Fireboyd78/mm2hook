@@ -249,6 +249,96 @@ struct handler_t {
     }
 };
 
+template <size_t _size = 0>
+struct string_buf {
+private:
+    char buffer[_size] = { NULL };
+public:
+    constexpr string_buf() {}
+
+    constexpr string_buf(char (&buf)[_size])
+        : buffer(buf) {}
+
+    template <size_t size>
+    constexpr string_buf(char (&buf)[size])
+        : buffer(buf) {
+        static_assert(size <= _size, "not enough space for string");
+    }
+
+    constexpr string_buf(const char *str) {
+        set(str);
+    }
+
+    template <typename ...TArgs>
+    constexpr string_buf(const char *fmt, TArgs ...args) {
+        format(fmt, args...);
+    }
+
+    constexpr char * operator &() const {
+        return &buffer;
+    }
+
+    constexpr char * operator[](int index) const {
+        return &buffer[index];
+    }
+
+    constexpr operator char *() const {
+        return buffer;
+    }
+
+    constexpr operator const char *() const {
+        return buffer;
+    }
+
+    constexpr size_t size() const {
+        return _size;
+    }
+
+    inline void clear() {
+        buffer[0] = NULL;
+    }
+
+    inline void reset() {
+        // reset the entire buffer
+        memset(buffer, NULL, _size);
+    }
+
+    inline const char *get() const {
+        return buffer;
+    }
+
+    inline void set(const char *str) {
+        strcpy_s(buffer, str);
+    }
+
+    template <typename ...TArgs>
+    inline size_t format(const char *fmt, TArgs ...args) {
+        return sprintf_s(buffer, fmt, args...);
+    }
+
+    inline void append(char c) {
+        size_t idx = strlen(buffer);
+        
+        if (idx < _size)
+            buffer[idx] = c;
+    }
+
+    inline void append(const char *str) {
+        size_t idx = strlen(buffer);
+        size_t max = (_size - idx);
+
+        strncpy(&buffer[idx], str, max);
+    }
+
+    template <typename ...TArgs>
+    inline void append(const char *fmt, TArgs ...args) {
+        size_t idx = strlen(buffer);
+        size_t max = (_size - idx);
+
+        snprintf(&buffer[idx], max, fmt, args...);
+    }
+};
+
 struct stopwatch {
 private:
     static float ticksToSeconds;

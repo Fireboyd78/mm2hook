@@ -3,6 +3,46 @@
 
 using namespace MM2;
 
+static init_handler g_feature_handlers[] = {
+    /*
+        Initialize the really important handlers
+    */
+
+    CreateHandler<gfxPipelineHandler>("gfxPipeline"),
+    CreateHandler<memSafeHeapHandler>("memSafeHeap"),
+
+    CreateHandler<datCallbackExtensionHandler>("datCallback Extensions"),
+
+    /*
+        Initialize the rest of the handlers
+        Order doesn't really matter, just whatever looks neat
+    */
+
+    CreateHandler<asCullManagerHandler>("asCullManager"),
+
+    CreateHandler<cityLevelHandler>("cityLevel"),
+
+    CreateHandler<BridgeFerryHandler>("gizBridge/gizFerry"),
+    CreateHandler<gizParkedCarMgrHandler>("gizParkedCarMgr"),
+
+    CreateHandler<mmDashViewHandler>("mmDashView"),
+    CreateHandler<mmDirSndHandler>("mmDirSnd"),
+    CreateHandler<mmGameHandler>("mmGame"),
+    CreateHandler<mmGameMusicDataHandler>("mmGameMusicData"),
+
+    CreateHandler<vehCarAudioContainerHandler>("vehCarAudioContainer"),
+    CreateHandler<vehPoliceCarAudioHandler>("vehPoliceCarAudio"),
+
+    CreateHandler<lvlHandler>("Propulator"),
+    CreateHandler<sdlPage16Handler>("sdlPage16"),
+    CreateHandler<vglHandler>("VGL drawing"),
+
+    CreateHandler<StreamHandler>("Stream"),
+    CreateHandler<TextureVariantHandler>("Texture variants"),
+
+    CreateHandler<PUMainHandler>("PUMain"),
+};
+
 // ==========================
 // Pointer hooks
 // ==========================
@@ -563,7 +603,10 @@ void gfxPipelineHandler::Install() {
     );
 }
 
-/*--sdlPage16Handler--*/
+/*
+    sdlPage16Handler
+*/
+
 // HACK HACK HACK!
 // Doesn't work well for subway stations :(
 bool insideTunnel = false;
@@ -619,13 +662,13 @@ void sdlPage16Handler::Install() {
         0x0F, 0xB7, 0x1F,                   // movzx ebx, word ptr [edi]
         0x83, 0xC7, 0x02,                   // add edi, 2
 
-                                            // subtype_not_zero:
-                                            0x89, 0x5D, 0xFC,                   // mov [ebp-04], ebx
-                                            0xC1, 0xE0, 0x08,                   // shl eax, 8
-                                            0x09, 0xD0,                         // or eax, edx
-                                            0x5B,                               // pop ebx
+        // subtype_not_zero:
+        0x89, 0x5D, 0xFC,                   // mov [ebp-04], ebx
+        0xC1, 0xE0, 0x08,                   // shl eax, 8
+        0x09, 0xD0,                         // or eax, edx
+        0x5B,                               // pop ebx
 
-                                            0x90, 0x90, 0x90, 0x90,             // nop out the rest
+        0x90, 0x90, 0x90, 0x90,             // nop out the rest
     }, {
         0x448371,
     });
@@ -748,8 +791,8 @@ void vglHandler::Install() {
     auto_ptr vglBeginCB = &vglBeginShaded;
     auto_ptr vglEndCB = &vglEndShaded;
 
-    LogFile::Format(" - vglBeginCB: %08X\n", vglBeginCB);
-    LogFile::Format(" - vglEndCB: %08X\n", vglEndCB);
+    Installf(" - vglBeginCB: %08X\n", vglBeginCB);
+    Installf(" - vglEndCB: %08X\n", vglEndCB);
 
     // use a custom struct to make the process easier
     // this allows us to have an entry representing each "frame" (vglBegin/vglEnd)
@@ -790,7 +833,7 @@ void vglHandler::Install() {
         InstallCallback(vglBeginCB, { begin, CALL });
         InstallCallback(vglEndCB, { end,   CALL });
 
-        LogFile::Format("   - { vglBegin: %08X, vglEnd: %08X }\n", begin, end);
+        Installf("   - { vglBegin: %08X, vglEnd: %08X }\n", begin, end);
     }
 }
 
@@ -799,9 +842,8 @@ void vglHandler::Install() {
 */
 
 bool mmGameMusicDataHandler::LoadAmbientSFX(LPCSTR name) {
-    char buffer[80];
-    sprintf(buffer, "%sambience", MMSTATE->CityName);
-
+    string_buf<80> buffer("%sambience", MMSTATE->CityName);
+    
     LPCSTR szAmbientSFX = (datAssetManager::Exists("aud\\dmusic\\csv_files", buffer, "csv")) ? buffer : "sfambience";
 
     LogFile::Format("AmbientSFX: %s\n", szAmbientSFX);
@@ -823,9 +865,8 @@ void mmGameMusicDataHandler::Install() {
 */
 
 void vehCarAudioContainerHandler::SetSirenCSVName(LPCSTR name) {
-    char buffer[80];
-    sprintf(buffer, "%spolicesiren", MMSTATE->CityName);
-
+    string_buf<80> buffer("%spolicesiren", MMSTATE->CityName);
+    
     LPCSTR szSirenName = (datAssetManager::Exists("aud\\cardata\\player", buffer, "csv")) ? buffer : "sfpolicesiren";
 
     LogFile::Format("SirenCSVName: %s\n", szSirenName);
@@ -842,7 +883,34 @@ void vehCarAudioContainerHandler::Install() {
     );
 }
 
-/*---datCallbackExtensionHandler---*/
+
+/*
+    vehPoliceCarAudioHandler
+*/
+
+void vehPoliceCarAudioHandler::InitSirenAudio(vehCarSim *a1, vehCarDamage *a2, LPCSTR basename, LPCSTR sirenCsvFile, bool a5) {
+    string_buf<80> buffer("%s_siren", basename);
+
+    // override the global city one if a custom siren exists
+    if (datAssetManager::Exists("aud\\cardata\\player", buffer, "csv"))
+        sirenCsvFile = buffer;
+
+    // vehPoliceCarAudio::Init
+    ageHook::Thunk<0x4D46F0>::Call<void>(this, a1, a2, basename, sirenCsvFile, a5);
+}
+
+void vehPoliceCarAudioHandler::Install() {
+    InstallCallback("vehPoliceCarAudio::Init", "Allows vehicles to use their own custom sirens instead of default ones for each city.",
+        &InitSirenAudio, {
+            cbHook<CALL>(0x4D44A3),
+        }
+    );
+}
+
+/*
+    datCallbackExtensionHandler
+*/
+
 void datCallbackExtensionHandler::Install() {
     InstallPatch("datCallback Fix 1", { 0x00, 0x00, 0x00, 0x40 }, { 0x4C7A5B + 2, 0x4C7AC8 + 2, 0x4C7B70 + 1, 0x4C7BA6 + 1 });
     InstallPatch("datCallback Fix 2", { 0x00, 0x00, 0x00, 0x80 }, { 0x4C7A90 + 2, 0x4C7AFB + 2, 0x4C7B7E + 1, 0x4C7BB4 + 1 });
@@ -1073,6 +1141,28 @@ void mmDirSndHandler::Install() {
 }
 
 /*
+    gizParkedCarMgrHandler
+*/
+
+void gizParkedCarMgrHandler::EnumeratePath(LPCSTR a1, const Matrix34* a2, bool a3) {
+    int oldRandomSeed = gRandSeed;
+    float rand = ageHook::StaticThunk<0x4BBE30>::Call<float>();
+
+    if (dgStatePack::Instance->TrafficDensity > rand) {
+        gRandSeed = oldRandomSeed;
+        ageHook::StaticThunk<0x579BD0>::Call<void>(a1, a2, a3); //gizParkedCarMgr_EnumeratePath
+    }
+}
+
+void gizParkedCarMgrHandler::Install() {
+    InstallCallback("gizParkedCarMgr::Init", "Scales parked cars with traffic density.",
+        &EnumeratePath, {
+            cbHook<PUSH>(0x579B80),
+        }
+    );
+}
+
+/*
     BridgeFerryHandler
 */
 /*
@@ -1114,6 +1204,9 @@ void BridgeFerryHandler::Install() {
     });
 }
 
+/*
+    mmDashViewHandler
+*/
 
 static Matrix34 sm_DashOffset;
 void mmDashViewHandler::UpdateCS() {
@@ -1143,6 +1236,281 @@ void mmDashViewHandler::Install() {
     InstallCallback("mmDashView::Update", "Experimental testing.",
         &UpdateCS, {
             cbHook<CALL>(0x430F87), // replaces call to asLinearCS::Update
+        }
+    );
+}
+
+/*
+    StreamHandler
+*/
+
+Stream * StreamHandler::Open(const char *filename, bool readOnly)
+{
+    const coreFileMethods *fileMethods = (readOnly) ? Stream::sm_DefaultOpenMethods : Stream::sm_DefaultCreateMethods;
+
+    string_buf<MAX_PATH> modFilename(".\\mods\\%s", filename);
+    
+    if (file_exists(modFilename))
+    {
+        LogFile::Format("[StreamHandler::Open]: Using '%s' file from mods directory (readOnly=%s)\n", filename, bool_str(readOnly));
+
+        // don't let the name fool you, it's just non-zip file methods ;)
+        fileMethods = Stream::sm_DefaultCreateMethods;
+        
+        // override filename with new path
+        filename = modFilename;
+    }
+
+    int handle = fileMethods->open(filename, readOnly);
+
+    if (handle == -1)
+        return nullptr;
+
+    // Stream::AllocStream
+    return ageHook::StaticThunk<0x4C98D0>::Call<Stream *>(filename, handle, fileMethods);
+}
+
+void StreamHandler::Install()
+{
+    InstallCallback("Stream::Open", "Allows for files to be overridden using a mods folder.",
+        &Open, {
+            cbHook<JMP>(0x4C99C0), // Stream::Open(const char *, bool)
+        }
+    );
+}
+
+/*
+    TextureVariantHandler
+*/
+
+static gfxImage * (*DefaultLoadImage)(const char *, bool);
+static gfxImage * (*DefaultPrepareImage)(const char *, bool);
+
+ageHook::Type<bool> EnableTextureVariantHandler(0x6276EC);
+ageHook::Type<bool> AllowDesaturatedTextureVariants(0x6276ED);
+
+static bool TryLoadTexVariant(const char *textureName, const char *variant, bool mipmaps, gfxImage **pgfxImage)
+{
+    string_buf<64> textureVariant("%s_%s", textureName, variant);
+
+    gfxImage *variantTex = DefaultLoadImage(textureVariant, mipmaps);
+
+    if (variantTex != nullptr) {
+        //Warningf("[LoadTextureVariant]: Using '%s' variant for texture '%s'", variant, textureName);
+        *pgfxImage = variantTex;
+
+        return true;
+    }
+
+    return false;
+}
+
+static bool UseNightTexturesInEvening = true;
+
+struct variant_info {
+    const char *suffix;
+
+    int timeOfDay;
+    int weather;
+
+    bool canDesaturate;
+} tex_variants[] = {
+    /*
+        texture variants, sorted by priority
+    */
+    { "nifa",   3,  3, false }, // rainy night
+    { "fa",    -1,  3, true },  // rainy
+    { "ni",     3, -1, false }, // night
+    { NULL },
+};
+
+gfxImage * TextureVariantHandler::LoadTextureVariant(const char *textureName, bool mipmaps)
+{
+    if (EnableTextureVariantHandler)
+    {
+        int timeOfDay = dgStatePack::Instance->TimeOfDay;
+        int weatherType = dgStatePack::Instance->WeatherType;
+
+        bool useEveningHack = (UseNightTexturesInEvening && (timeOfDay == 2));
+
+        if (useEveningHack)
+            timeOfDay = 3;
+
+        gfxImage *variantTex = nullptr;
+        
+        for (variant_info *variant = tex_variants; variant->suffix != nullptr; variant++)
+        {
+            if ((variant->timeOfDay == -1)
+                || (variant->timeOfDay == timeOfDay))
+            {
+                if ((variant->weather == -1)
+                    || (variant->weather == weatherType))
+                {
+                    AllowDesaturatedTextureVariants = variant->canDesaturate;
+
+                    if (TryLoadTexVariant(textureName, variant->suffix, mipmaps, &variantTex))
+                        return variantTex;
+                }
+            }
+        }
+
+        // desaturate for night-time if needed
+        AllowDesaturatedTextureVariants = true;
+    }
+
+    return DefaultLoadImage(textureName, mipmaps);
+}
+
+gfxImage * TextureVariantHandler::PrepareTextureVariant(const char *textureName, bool mipmaps)
+{
+    gfxImage *result = DefaultPrepareImage(textureName, mipmaps);
+
+    if (EnableTextureVariantHandler
+        && AllowDesaturatedTextureVariants)
+    {
+        int timeOfDay = dgStatePack::Instance->TimeOfDay;
+
+        if (UseNightTexturesInEvening && (timeOfDay == 2))
+            timeOfDay = 3;
+
+        if (timeOfDay == 3)
+        {
+            for (gfxImage *image = result; image != nullptr; image = image->Next) {
+                // DesaturateTextureVariant
+                ageHook::StaticThunk<0x442FB0>::Call<void>(image);
+            }
+        }
+    }
+
+    return result;
+}
+
+void TextureVariantHandler::InstallTextureVariantHandler()
+{
+    if (DefaultLoadImage == nullptr) {
+        DefaultLoadImage = gfxLoadImage;
+        gfxLoadImage = LoadTextureVariant;
+    }
+
+    if (DefaultPrepareImage == nullptr) {
+        DefaultPrepareImage = gfxPrepareImage;
+        gfxPrepareImage = PrepareTextureVariant;
+    }
+}
+
+void TextureVariantHandler::Install()
+{
+    InstallCallback(InstallTextureVariantHandler, {
+            cbHook<CALL>(0x401599),
+        }, "Installs new texture variant handler."
+    );
+
+    if (!datArgParser::Get("noduskfix"))
+    {
+        LogFile::WriteLine("Installing evening patches...");
+
+        // aiTrafficLightInstance::DrawGlow
+        InstallPatch({ 1 }, {
+            0x53CABC + 3
+        });
+        
+        /*
+            mmGame::InitWeather patches
+        */
+
+        // minimum time of day for night checks
+        InstallPatch({ 2 }, {
+            0x41338E + 2,
+            0x4133BD + 2,
+        });
+
+        // jnz -> jb
+        InstallPatch({ 0x72 }, {
+            0x41339D,
+        });
+
+        // jz -> jge
+        InstallPatch({ 0x7D }, {
+            0x4133CA,
+        });
+    }
+    else
+    {
+        UseNightTexturesInEvening = false;
+    }
+}
+
+/*
+    PUMainHandler
+*/
+
+static float PauseMenuAdjustment = 0.0f;
+static float ReplayButtonOffsetY = 0.0f;
+
+class PUMenuHook : public UIMenu {
+public:
+    UIButton * AddPauseButton(int id, LocString *text, float offsetX, float offsetY, float width, float height, int a7, int a8, datCallback cb, int a10) {
+        offsetY += PauseMenuAdjustment;
+
+        Warningf("**** PUMenuHook::AddPauseButton(%d, \"%s\", %.2f, %.2f, %.2f, %.2f, %d, %d, <callback:%08X>, %d) ****",
+            id, text, offsetX, offsetY, width, height, a7, a8, cb.ptr(), a10);
+
+        UIButton *result = this->AddButton(id, text, offsetX, offsetY, width, height, a7, a8, cb, a10);
+
+        // 'Restart Race'
+        if (id == 10) {
+            // adding it here causes crashes,
+            // so just reserve space for it and save its position
+            PauseMenuAdjustment = 0.12f;
+            ReplayButtonOffsetY = offsetY;
+        }
+        // 'Exit to Windows'
+        else if (id == 14)
+        {
+            // our custom method keeps spacing consistent (no need to adjust offsets)
+            UIButton *rplButton = this->AddPauseButton(
+                16,
+                (LocString *)AngelReadString(465),
+                offsetX,
+                ReplayButtonOffsetY,
+                width,
+                height,
+                a7,
+                a8,
+                datCallback::NullCallback,
+                0);
+
+            // set the data
+            setPtr(this, 0xBC, rplButton);
+
+            if (datArgParser::Get("pudebug"))
+            {
+                // add 'DEBUG' button
+                this->AddPauseButton(
+                    15,
+                    (LocString *)AngelReadString(454),
+                    offsetX,
+                    offsetY + 0.00425f,
+                    width,
+                    height,
+                    a7,
+                    2,
+                    datCallback::NullCallback,
+                    0);
+            }
+        }
+
+        return result;
+    }
+};
+
+void PUMainHandler::Install() {
+    InstallCallback("PUMain::ctor", "Overrides button placement for the pause menu.",
+        &PUMenuHook::AddPauseButton, {
+            cbHook<CALL>(0x50A6AE),
+            cbHook<CALL>(0x50A712),
+            cbHook<CALL>(0x50A776),
+            cbHook<CALL>(0x50A7D0),
         }
     );
 }

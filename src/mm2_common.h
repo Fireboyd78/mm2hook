@@ -387,6 +387,8 @@ namespace MM2 {
     declhook(0x683104, _Type<int>, gfxDebug);
     declhook(0x6B4C24, _Type<int>, audDebug);
 
+    declhook(0x6A3AC0, _Type<int>, gRandSeed);
+
     template<>
     void luaAddModule<module_common>(LuaState L) {
         typedef void(__cdecl *printer_type)(LPCSTR);

@@ -43,3 +43,9 @@ public:
 
     static void Install(void);
 };
+
+class mmSpeedIndicatorHandler
+{
+public:
+    static void Install();
+};
