@@ -609,44 +609,49 @@ public:
         MM2Lua::Reset();
     }
 
-    static void Start() {
-        if (!MMSTATE->Shutdown)
-        {
-            // GameLoop was restarted
-            Reset(false);
-        } else {
-            LogFile::WriteLine("WTF: Hook startup request received, but the game is closing!");
-        }
+    // TODO: fix this horrible logic
+    static void Update(bool parsedStateArgs) {
+        Reset(false);
+
+        // GameLoop
+        ageHook::StaticThunk<0x401A00>::Call<void>(parsedStateArgs);
+
+        Reset(true);
     }
 
-    static void Stop() {
-        if (MMSTATE->Shutdown)
-        {
-            LogFile::WriteLine("Hook shutdown request received.");
+    static void Shutdown() {
+        LogFile::WriteLine("Hook shutdown request received.");
 
-            discordHandler::Release();
+        discordHandler::Release();
 
-            LogFile::Close();
-            L.close(); // release Lua
+        // gfxPipeline::EndGfx2D
+        ageHook::StaticThunk<0x4AAA10>::Call<void>();
 
-            // close datOutput log
-            datOutput::CloseLog();
+        // we can now safely close everything else
+        LogFile::Close();
+        L.close(); // release Lua
 
-            if (ageLogFile)
-                fclose(ageLogFile);
+        // close datOutput log
+        datOutput::CloseLog();
 
-            ConsoleLog::Close();
-        } else {
-            // GameLoop is restarting
-            Reset(true);
-        }
+        if (ageLogFile)
+            fclose(ageLogFile);
+
+        ConsoleLog::Close();
     }
 
     static void Install() {
         LogFile::WriteLine("Installing framework...");
 
-        __VtResumeSampling = &Start;
-        __VtPauseSampling = &Stop;
+        InstallCallback(
+            &Update, {
+                cbHook<CALL>(0x401989), // MainPhase
+            }, "GameLoop hook" );
+
+        InstallCallback(
+            &Shutdown, {
+                cbHook<CALL>(0x40161B) // Main
+            }, "Shutdown hook");
 
         /*
             We'll hook into ArchInit (an empty function),
