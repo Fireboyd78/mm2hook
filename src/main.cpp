@@ -48,7 +48,10 @@ public:
             char buf[4096] = { NULL };
             strncpy(buf, (LPCSTR)buffer, length);
 
-            reinterpret_cast<LogFileStream *>(handle)->Write(buf);
+            auto logFile = reinterpret_cast<LogFileStream *>(handle);
+
+            logFile->Write(buf);
+            logFile->Flush(false);
         }
         return length;
     }

@@ -246,9 +246,6 @@ namespace MM2
         };
 
         AGE_API static bool OpenLog(LPCSTR filename, const coreFileMethods *fileMethods) {
-            if (sm_Stream.ptr() != NULL)
-                return true;
-
             return ((sm_Stream = Stream::Create(filename, fileMethods)) != NULL);
         };
 
