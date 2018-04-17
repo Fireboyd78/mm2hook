@@ -233,7 +233,80 @@ namespace MM2
 
     class gfxPacketList : public gfxPacket {};
 
-    declhook(0x004B30F0, _Func<gfxTexture *>, $gfxGetTexture);
+    class gfxRenderStateData {
+        /*
+            Don't edit this unless you know what you're doing!
+        */
+    public:
+        bool Clipping;
+        bool Lighting;
+
+        byte SrcBlend;              /* D3DBLEND */
+        byte DestBlend;             /* D3DBLEND */
+        byte VertexBlend;           /* D3DVERTEXBLENDFLAGS */
+
+        int TextureArg;             /* D3DTA_* member */
+        int BlendSet;               /* gfxBlendSet */
+
+        float FogStart;             /* D3DRENDERSTATE_FOGSTART */
+        float FogEnd;               /* D3DRENDERSTATE_FOGEND */
+
+        byte ZEnable;               /* D3DZBUFFERTYPE */
+        byte ShadeMode;             /* D3DSHADEMODE */
+        bool ZWriteEnable;
+        byte CullMode;              /* D3DCULL */
+        byte ZFunc;                 /* D3DCMPFUNC */
+        byte AlphaRef;              /* 0x0 - 0xFF */
+        byte AlphaFunc;             /* D3DCMPFUNC */
+        bool DitherEnable;
+        bool AlphaEnable;           /* ALPHABLENDENABLE and ALPHATESTENABLE */
+        bool TexturePerspective;
+        byte FillMode;              /* D3DSHADEMODE */
+        byte ZBias;                 /* 0 - 16 */
+        byte AntiAlias;             /* D3DANTIALIASMODE */
+        byte FogVertexMode;         /* D3DFOGMODE */
+
+        byte AddrU[2];              /* D3DTSS_ADDRESSU States */
+        byte AddrV[2];              /* D3DTSS_ADDRESSV States */
+        
+        int unk_2C;                 /* unused */
+        
+        ColorARGB Ambient;
+
+        ColorARGB FogColor;
+        float FogDensity;
+
+        byte ColorOp1;
+        byte ColorOp2;              /* educated guess -- unused */
+
+        bool SpecularEnable;
+        bool FogEnable;
+        bool NormalizeNormals;
+        bool RangeFogEnable;
+
+        gfxTexture *Texture[2];
+        gfxMaterial *Material;
+    };
+
+    class gfxRenderState {
+    public:
+        gfxRenderStateData Data;
+        gfxMaterial Material;
+
+        static ageHook::TypeProxy<Matrix44> sm_Camera;
+        static ageHook::TypeProxy<Matrix44> sm_World;
+
+        static ageHook::TypeProxy<Matrix44> sm_Composite;
+        static ageHook::TypeProxy<Matrix44> sm_FullComposite;
+
+        static ageHook::TypeProxy<Matrix44> sm_View;
+        static ageHook::TypeProxy<Matrix44> sm_Modelview;
+
+        // educated guess -- applied to view?
+        static ageHook::TypeProxy<Matrix44> sm_Transform;
+    };
+
+    declhook(0x4B30F0, _Func<gfxTexture *>, $gfxGetTexture);
 
     declhook(0x4ABE00, _Func<bool>, $gfxAutoDetect);
     declhook(0x4A8CE0, _Func<void>, $gfxPipeline_SetRes);
@@ -307,8 +380,14 @@ namespace MM2
     declhook(0x6830EC, _Type<int>, window_X);
     declhook(0x683110, _Type<int>, window_Y);
 
+    declhook(0x6854A0, _TypeProxy<gfxRenderStateData>, LASTRSTATE);
+    declhook(0x6856A0, _TypeProxy<gfxRenderState>, RSTATE);
+
     template<>
     void luaAddModule<module_gfx>(LuaState L) {
 
     }
+
+    ASSERT_SIZEOF(gfxRenderStateData, 0x50);
+    ASSERT_SIZEOF(gfxRenderState, 0x98);
 }
