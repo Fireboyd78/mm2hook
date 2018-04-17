@@ -1498,6 +1498,9 @@ public:
                     datCallback::NullCallback,
                     0);
             }
+
+            // reset the adjustment value
+            PauseMenuAdjustment = 0.0f;
         }
 
         return result;
