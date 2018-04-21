@@ -22,6 +22,7 @@
     <LinkIncremental>false</LinkIncremental>
     <PlatformToolset Condition="'$(VisualStudioVersion)' &gt;= '12.0'">v120</PlatformToolset>
     <PlatformToolset Condition="'$(VisualStudioVersion)' &gt;= '14.0'">v140</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)' &gt;= '15.0'">v141</PlatformToolset>
     <CharacterSet>NotSet</CharacterSet>
     <OutDir>bin\$(Configuration)\</OutDir>
     <IntDir>$(OutDir)\obj\loader\</IntDir>
