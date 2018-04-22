@@ -49,6 +49,7 @@
     <DebugMacro Condition="'$(Configuration)' == 'Debug'">_DEBUG</DebugMacro>
     <Win32Macros>WIN32;WIN32_LEAN_AND_MEAN;_WINDOWS;$(DebugMacro);_USRDLL</Win32Macros>
   </PropertyGroup>
+  <Import Project="$(SolutionName).User.props" Condition="Exists('$(SolutionName).User.props')" />
   <!--
     Default compilation settings
   -->

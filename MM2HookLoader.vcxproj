@@ -46,6 +46,7 @@
     <SourcePath>$(VC_SourcePath);src</SourcePath>
     <ASMOutputPath>$(OutDir)asm\</ASMOutputPath>
   </PropertyGroup>
+  <Import Project="$(SolutionName).User.props" Condition="Exists('$(SolutionName).User.props')" />
   <ItemDefinitionGroup>
     <ClCompile>
       <CompileAs>Default</CompileAs>
