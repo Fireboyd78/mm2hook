@@ -107,73 +107,118 @@ using VirtualCall = TRet(TThis::*)(TArgs...);
 
 class ageHook {
 public:
-    template <typename TType>
+    /*
+        Hook template for value types
+    */
+    template <typename TType, bool is_value = !std::is_pointer<TType>::value>
     class Type {
     protected:
         TType *lpValue;
     public:
         constexpr Type(int address) : lpValue(reinterpret_cast<TType *>(address)) {};
         
-        // gets the lvalue reference of the current value
-        inline TType& get() const {
-            return *lpValue;
-        }
+        inline TType & get() const                          { return *lpValue; }
+        inline void set(TType value)                        { *lpValue = value; }
 
-        // sets the current value
-        inline void set(TType value) {
-            *lpValue = value;
-        }
-
-        // gets the pointer to the current value
-        inline TType* ptr() const {
-            return lpValue;
-        }
+        inline TType * ptr() const                          { return lpValue; }
 
         /*
-            TType*->TMember - Pointer to struct of TType
+            Operators
         */
-        inline TType& operator->() const {
-            return *lpValue;
-        };
+
+        inline TType * operator->() const                   { return lpValue; };
+        inline TType * operator&() const                    { return lpValue; };
+        inline TType & operator*() const                    { return *lpValue; };
+        inline TType * operator[](int index) const          { return &lpValue[index]; }
+        inline TType & operator=(TType value)               { return (*lpValue = value); }
+
+        inline operator TType &() const                     { return *lpValue; }
 
         /*
-            &TType - Instance of TType
+            Comparison operators
         */
-        inline TType* operator&() const {
-            return lpValue;
-        };
+
+        inline bool operator==(const TType &rhs) const      { return *lpValue == rhs; }
+        inline bool operator!=(const TType &rhs) const      { return *lpValue != rhs; }
 
         /*
-            *TType - Pointer to TType
+            Value-type operators
         */
-        inline TType& operator*() const {
-            return *lpValue;
-        };
+
+        inline bool operator<(const TType &rhs) const       { return *lpValue < rhs; }
+        inline bool operator>(const TType &rhs) const       { return *lpValue > rhs; }
+        inline bool operator<=(const TType &rhs) const      { return *lpValue <= rhs; }
+        inline bool operator>=(const TType &rhs) const      { return *lpValue >= rhs; }
+        
+        inline TType & operator+() const                    { return +(*lpValue); }
+        inline TType & operator-() const                    { return -(*lpValue); }
+        inline TType & operator~() const                    { return ~(*lpValue); }
+        
+        inline TType & operator+(const TType &rhs) const    { return *lpValue + rhs; }
+        inline TType & operator-(const TType &rhs) const    { return *lpValue - rhs; }
+        inline TType & operator*(const TType &rhs) const    { return *lpValue * rhs; }
+        inline TType & operator/(const TType &rhs) const    { return *lpValue / rhs; }
+        inline TType & operator%(const TType &rhs) const    { return *lpValue % rhs; }
+        inline TType & operator&(const TType &rhs) const    { return *lpValue & rhs; }
+        inline TType & operator|(const TType &rhs) const    { return *lpValue | rhs; }
+        inline TType & operator^(const TType &rhs) const    { return *lpValue ^ rhs; }
+        inline TType & operator<<(const TType &rhs) const   { return *lpValue << rhs; }
+        inline TType & operator>>(const TType &rhs) const   { return *lpValue >> rhs; }
+        
+        inline TType & operator+=(const TType &rhs)         { return (*lpValue += rhs); }
+        inline TType & operator-=(const TType &rhs)         { return (*lpValue -= rhs); }
+        inline TType & operator*=(const TType &rhs)         { return (*lpValue *= rhs); }
+        inline TType & operator/=(const TType &rhs)         { return (*lpValue /= rhs); }
+        inline TType & operator%=(const TType &rhs)         { return (*lpValue %= rhs); }
+        inline TType & operator&=(const TType &rhs)         { return (*lpValue &= rhs); }
+        inline TType & operator|=(const TType &rhs)         { return (*lpValue |= rhs); }
+        inline TType & operator^=(const TType &rhs)         { return (*lpValue ^= rhs); }
+        inline TType & operator<<=(const TType &rhs)        { return (*lpValue <<= rhs); }
+        inline TType & operator>>=(const TType &rhs)        { return (*lpValue >>= rhs); }
+    };
+
+    /*
+        Hook template for pointer types
+    */
+    template <typename TType>
+    class Type<TType, false> {
+    protected:
+        TType *lpValue;
+    public:
+        constexpr Type(int address) : lpValue(reinterpret_cast<TType *>(address)) {};
+
+        inline TType & get() const                          { return *lpValue; }
+        inline void set(TType value)                        { *lpValue = value; }
+
+        inline TType * ptr() const                          { return lpValue; }
 
         /*
-            TType&(this) - Convert this to TType reference
+            Operators
         */
-        inline operator TType&() const {
-            return *lpValue;
-        }
+
+        inline TType & operator->() const                   { return *lpValue; };
+        inline TType * operator&() const                    { return lpValue; };
+        inline TType & operator*() const                    { return *lpValue; };
+        inline TType operator[](int index) const            { return lpValue[index]; }
+        inline TType & operator=(TType value)               { return (*lpValue = value); }
+
+        inline operator TType &() const                     { return *lpValue; }
 
         /*
-            TType[0] - Pointer is TType array
+            Comparison operators
         */
-        inline TType& operator[](int index) const {
-            return lpValue[index];
-        }
 
-        /*
-            this() - TType is function pointer
-        */
+        inline bool operator==(const TType &rhs) const      { return *lpValue == rhs; }
+        inline bool operator!=(const TType &rhs) const      { return *lpValue != rhs; }
+        
+        inline bool operator==(const std::nullptr_t &rhs) const
+                                                            { return *lpValue == nullptr; }
+        inline bool operator!=(const std::nullptr_t &rhs) const
+                                                            { return *lpValue != nullptr; }
+
         template <typename... TArgs>
         inline auto operator()(TArgs... args) {
             return (*lpValue)(args...);
-        }
-
-        inline TType& operator=(TType value) {
-            return (*lpValue = value);
         }
     };
 

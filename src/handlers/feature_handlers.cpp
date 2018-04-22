@@ -251,7 +251,7 @@ void cityLevelHandler::Install() {
 */
 
 void gfxPipelineHandler::gfxApplySettings(void) {
-    auto gfxInterface = &gfxInterfaces[gfxInterfaceChoice];
+    gfxInterface *gfxInterface = gfxInterfaces[gfxInterfaceChoice];
 
     auto deviceType = gfxInterface->DeviceType;
 

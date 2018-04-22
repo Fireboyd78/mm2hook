@@ -197,7 +197,7 @@ public:
         {
             Displayf("  Created device in %.4f ms", timer.elapsedMilliseconds());
 
-            gfxInterface *gfxInterface = &gfxInterfaces[gfxInterfaceCount];
+            gfxInterface *gfxInterface = gfxInterfaces[gfxInterfaceCount];
 
             strcpy (gfxInterface->Name, lpDriverDescription);
 
