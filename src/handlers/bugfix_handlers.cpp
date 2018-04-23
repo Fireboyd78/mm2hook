@@ -9,6 +9,8 @@ static init_handler g_bugfix_handlers[] = {
 
     CreateHandler<gfxImageHandler>("gfxImage"),
 
+    CreateHandler<mmBillInstanceHandler>("mmBillInstance"),
+
     CreateHandler<vehCarHandler>("vehCar"),
     CreateHandler<mmSpeedIndicatorHandler>("mmSpeedIndicator"),
 };
@@ -171,6 +173,22 @@ void vehCarHandler::Install(void) {
             }
         );
     }
+}
+
+/*
+    mmBillInstanceHandler
+*/
+
+void mmBillInstanceHandler::Scale(float x, float y, float z) {
+    ageHook::Thunk<0x4BE560>::Call<void>(this, x, y, -z);
+}
+
+void mmBillInstanceHandler::Install() {
+    InstallCallback("mmBillInstance::Draw", "Fix inverted checkpoints",
+        &Scale, {
+            cbHook<CALL>(0x43F952), // mmBillInstance::Draw
+        }
+    );
 }
 
 /*

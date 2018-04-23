@@ -44,6 +44,13 @@ public:
     static void Install(void);
 };
 
+class mmBillInstanceHandler
+{
+public:
+    void Scale(float x, float y, float z);
+    static void Install();
+};
+
 class mmSpeedIndicatorHandler
 {
 public:
