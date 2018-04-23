@@ -34,6 +34,11 @@ public:
     static void Install();
 };
 
+class vehCarModelHandler {
+public:
+    static void Install();
+};
+
 class vehCarHandler : handler_t {
 public:
     void InitCar(LPCSTR vehName, int a2, int a3, bool a4, bool a5);

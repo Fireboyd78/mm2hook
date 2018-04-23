@@ -12,6 +12,7 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<mmBillInstanceHandler>("mmBillInstance"),
 
     CreateHandler<vehCarHandler>("vehCar"),
+    CreateHandler<vehCarModelHandler>("vehCarModelHandler"),
     CreateHandler<mmSpeedIndicatorHandler>("mmSpeedIndicator"),
 
     CreateHandler<cityLevelBugfixHandler>("cityLevelBugfixHandler")
@@ -176,6 +177,18 @@ void vehCarHandler::Install(void) {
         );
     }
 }
+
+/*
+    vehCarModelHandler
+*/
+
+//Fixes gizmo models in cars by initializing 64 variant slots instead of 10
+void vehCarModelHandler::Install() {
+    InstallPatch({ 0x40 }, {
+        0x4CD39E,
+    });
+}
+
 
 /*
     mmBillInstanceHandler
