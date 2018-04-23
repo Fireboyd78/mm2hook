@@ -13,6 +13,8 @@ static init_handler g_bugfix_handlers[] = {
 
     CreateHandler<vehCarHandler>("vehCar"),
     CreateHandler<mmSpeedIndicatorHandler>("mmSpeedIndicator"),
+
+    CreateHandler<cityLevelBugfixHandler>("cityLevelBugfixHandler")
 };
 
 int numPedUpdateAttempts = 0;
@@ -219,4 +221,31 @@ void mmSpeedIndicatorHandler::Install() {
     InstallPatch({ 0x8B, 0x88 }, {
         0x43F33F,
     });
+}
+
+/*
+    cityLevelBugfixHandler
+*/
+
+ageHook::Type<bool> sm_EnablePVS(0x62B070);
+
+Stream* cityLevelBugfixHandler::OpenPvsStream(const char * folder, const char * file, const char * extension, bool a4, bool a5) {
+    //open stream
+    auto stream = ageHook::StaticThunk<0x4C58C0>::Call<Stream*>(folder, file, extension, a4, a5);
+    
+    //stream will be NULL if the PVS doesn't exist
+    if (!stream) {
+        sm_EnablePVS = false;
+    }
+
+    //return original stream
+    return stream;
+}
+
+void cityLevelBugfixHandler::Install() {
+    InstallCallback("cityLevel::Load", "Disables PVS when it doesn't exist.",
+        &OpenPvsStream, {
+            cbHook<CALL>(0x4440E8), // cityLevel::Load
+        }
+    );
 }
