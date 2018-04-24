@@ -14,12 +14,15 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<mmInterfaceHandler>("mmInterface"),
 
     CreateHandler<vehCarHandler>("vehCar"),
+    CreateHandler<vehCarAudioContainerBugfixHandler>("vehCarAudio bugfixes"),
     CreateHandler<vehCarModelHandler>("vehCarModelHandler"),
     CreateHandler<mmSpeedIndicatorHandler>("mmSpeedIndicator"),
 
     CreateHandler<lvlSkyHandler>("lvlSkyHandler"),
 
-    CreateHandler<cityLevelBugfixHandler>("cityLevelBugfixHandler")
+    CreateHandler<cityLevelBugfixHandler>("cityLevelBugfixHandler"),
+
+    CreateHandler<BugfixPatchHandler>("Bugfix patches"),
 };
 
 int numPedUpdateAttempts = 0;
@@ -183,6 +186,44 @@ void vehCarHandler::Install(void) {
 }
 
 /*
+    vehCarAudioContainerBugfixHandler
+*/
+
+void vehCarAudioContainerBugfixHandler::StartSiren() {
+    auto policeAudio = get<vehCarAudioContainer>()->GetPoliceCarAudioPtr();
+
+    if (policeAudio != nullptr) {
+        // vehPoliceCarAudio::StartSiren
+        ageHook::Thunk<0x4D4B20>::ThisCall<void>(policeAudio, 0);
+    }
+}
+
+void vehCarAudioContainerBugfixHandler::StopSiren() {
+    auto policeAudio = get<vehCarAudioContainer>()->GetPoliceCarAudioPtr();
+
+    if (policeAudio != nullptr) {
+        // vehPoliceCarAudio::StopSiren
+        ageHook::Thunk<0x4D4C20>::ThisCall<void>(policeAudio);
+    }
+}
+
+void vehCarAudioContainerBugfixHandler::Install() {
+    InstallCallback("vehCarAudioContainer::StartSiren", "Fixes a crash caused by activating sirens on a vehicle with missing audio." ,
+        &StartSiren, {
+            cbHook<CALL>(0x4145FB), // mmGame::UpdateHorn
+            cbHook<CALL>(0x43D533), // mmNetObject::PositionUpdate
+        }
+    );
+
+    InstallCallback("vehCarAudioContainer::StopSiren", "Fixes a crash caused by deactivating sirens on a vehicle with missing audio." ,
+        &StopSiren, {
+            cbHook<CALL>(0x41460C), // mmGame::UpdateHorn
+            cbHook<CALL>(0x43D562), // mmNetObject::PositionUpdate
+        }
+    );
+}
+
+/*
     vehCarModelHandler
 */
 
@@ -301,5 +342,27 @@ void lvlSkyHandler::Install() {
     //and the game will crash without a .sky file when atetmpting to call it
     InstallPatch({ 0xEB, 0x0F }, {
         0x465226,
+    });
+}
+
+/*
+    BugfixPatchHandler
+*/
+
+void BugfixPatchHandler::Install() {
+    InstallPatch("Fixes a bug where the HUD becomes permanently disabled after switching from a POV cam.", {
+        0xEB, 0x3A, // jmp short loc_414959
+        0x90,       // nop
+    }, {
+        0x41491D,   // mmGame::UpdateGameInput
+    });
+
+    InstallPatch("Fixes a bug where an access violation may occur during Cops 'n Robbers gameplay.", {
+        0x51,       // push ecx
+        0x89, 0xE0, // mov eax, esp
+        0xDB, 0x00, // fild [eax]
+        0x90, 0x90, // nop(2)
+    }, {
+        0x424982,   // mmMultiCR::ImpactCallback
     });
 }

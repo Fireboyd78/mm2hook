@@ -298,6 +298,10 @@ namespace MM2
         AGE_API static void SetSirenCSVName(LPCSTR name) {
             ageHook::StaticThunk<0x4D0C80>::Call<void>(name);
         };
+
+        AGE_API vehPoliceCarAudio * GetPoliceCarAudioPtr() {
+            return ageHook::Thunk<0x4D1790>::Call<vehPoliceCarAudio *>(this);
+        };
     };
 
     class vehPoliceCarAudio {
