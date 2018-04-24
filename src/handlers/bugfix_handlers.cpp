@@ -280,7 +280,7 @@ void mmInterfaceHandler::PlayerResolveCars() {
     //null out currentPlayerVehicle if this vehicle is missing
     //the code after PlayerResolveCars in PlayerSetState will then reset to vpbug
     if (!datAssetManager::Exists("tune", currentPlayerVehicle, "info")) {
-        currentPlayerVehicle.get()[0] = NULL;
+        currentPlayerVehicle[0] = NULL;
     }
 }
 

@@ -107,11 +107,14 @@ using VirtualCall = TRet(TThis::*)(TArgs...);
 
 class ageHook {
 public:
+    template <typename TType, bool is_pointer = std::is_pointer<TType>::value, bool is_array = std::is_array<TType>::value>
+    class Type {};
+
     /*
         Hook template for value types
     */
-    template <typename TType, bool is_value = !std::is_pointer<TType>::value>
-    class Type {
+    template <typename TType>
+    class Type<TType, false, false> {
     protected:
         TType *lpValue;
     public:
@@ -181,7 +184,7 @@ public:
         Hook template for pointer types
     */
     template <typename TType>
-    class Type<TType, false> {
+    class Type<TType, true, false> {
     protected:
         TType *lpValue;
     public:
@@ -220,6 +223,53 @@ public:
         inline auto operator()(TArgs... args) {
             return (*lpValue)(args...);
         }
+    };
+
+    /*
+        Hook template for array types
+    */
+    template <typename TArray>
+    class Type<TArray, false, true> {
+        /*
+            we need all this spaghett to resolve the actual array type
+            because the fucking template isn't smart enough to do so
+        */
+
+        template <typename _T, int N>
+        static constexpr _T _type(_T(*ary)[N]);
+
+        template <typename _T, int N>
+        static constexpr int _count(_T(*ary)[N]) {
+            return N;
+        };
+
+        using type = decltype(_type((TArray *)nullptr));
+
+        template <typename TRet, typename ...TArgs>
+        using rtype = TRet;
+    protected:
+        using TValue = rtype<type>;
+
+        TValue *lpValue;
+    public:
+        constexpr Type(int address) : lpValue(reinterpret_cast<TValue *>(address)) {};
+
+        inline int count() const {
+            return _count((TArray *)nullptr);
+        }
+
+        inline TValue * ptr() const                         { return lpValue; }
+        inline TValue * ptr(int index) const                { return lpValue + index; }
+
+        /*
+            Operators
+        */
+
+        inline TValue * operator&() const                   { return lpValue; };
+        inline TValue & operator[](int index) const         { return lpValue[index]; }
+
+        template <typename TType>
+        inline operator TType *() const                    { return reinterpret_cast<TType *>(lpValue); }
     };
 
     template <typename TType>

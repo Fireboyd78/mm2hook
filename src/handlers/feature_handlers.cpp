@@ -145,7 +145,7 @@ void cityLevelHandler::PostUpdate() {
 
     // update our shaded lighting
     // TODO: fix lighting quality not being taken into account (harder than it sounds)
-    auto timeWeather = *$::timeWeathers + timeOfDay;
+    auto timeWeather = $::timeWeathers.ptr(timeOfDay);
 
     vglKeyColor = addPitch(&timeWeather->KeyColor, timeWeather->KeyPitch);
     vglFill1Color = addPitch(&timeWeather->Fill1Color, timeWeather->Fill1Pitch);
