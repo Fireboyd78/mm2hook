@@ -17,6 +17,8 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<vehCarModelHandler>("vehCarModelHandler"),
     CreateHandler<mmSpeedIndicatorHandler>("mmSpeedIndicator"),
 
+    CreateHandler<lvlSkyHandler>("lvlSkyHandler"),
+
     CreateHandler<cityLevelBugfixHandler>("cityLevelBugfixHandler")
 };
 
@@ -288,4 +290,16 @@ void mmInterfaceHandler::Install() {
             cbHook<CALL>(0x040E256),
         }
     );
+}
+
+/*
+    lvlSkyHandler
+*/
+
+void lvlSkyHandler::Install() {
+    //Overwrite SetMIPMapEnv call since it does nothing
+    //and the game will crash without a .sky file when atetmpting to call it
+    InstallPatch({ 0xEB, 0x0F }, {
+        0x465226,
+    });
 }

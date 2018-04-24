@@ -74,3 +74,8 @@ public:
     void PlayerResolveCars();
     static void Install();
 };
+
+class lvlSkyHandler {
+public:
+    static void Install();
+};
