@@ -150,31 +150,31 @@ public:
         inline bool operator<=(const TType &rhs) const      { return *lpValue <= rhs; }
         inline bool operator>=(const TType &rhs) const      { return *lpValue >= rhs; }
         
-        inline TType & operator+() const                    { return +(*lpValue); }
-        inline TType & operator-() const                    { return -(*lpValue); }
-        inline TType & operator~() const                    { return ~(*lpValue); }
+        inline TType operator+() const                      { return +(*lpValue); }
+        inline TType operator-() const                      { return -(*lpValue); }
+        inline TType operator~() const                      { return ~(*lpValue); }
         
-        inline TType & operator+(const TType &rhs) const    { return *lpValue + rhs; }
-        inline TType & operator-(const TType &rhs) const    { return *lpValue - rhs; }
-        inline TType & operator*(const TType &rhs) const    { return *lpValue * rhs; }
-        inline TType & operator/(const TType &rhs) const    { return *lpValue / rhs; }
-        inline TType & operator%(const TType &rhs) const    { return *lpValue % rhs; }
-        inline TType & operator&(const TType &rhs) const    { return *lpValue & rhs; }
-        inline TType & operator|(const TType &rhs) const    { return *lpValue | rhs; }
-        inline TType & operator^(const TType &rhs) const    { return *lpValue ^ rhs; }
-        inline TType & operator<<(const TType &rhs) const   { return *lpValue << rhs; }
-        inline TType & operator>>(const TType &rhs) const   { return *lpValue >> rhs; }
+        inline TType operator+(const TType &rhs) const      { return *lpValue + rhs; }
+        inline TType operator-(const TType &rhs) const      { return *lpValue - rhs; }
+        inline TType operator*(const TType &rhs) const      { return *lpValue * rhs; }
+        inline TType operator/(const TType &rhs) const      { return *lpValue / rhs; }
+        inline TType operator%(const TType &rhs) const      { return *lpValue % rhs; }
+        inline TType operator&(const TType &rhs) const      { return *lpValue & rhs; }
+        inline TType operator|(const TType &rhs) const      { return *lpValue | rhs; }
+        inline TType operator^(const TType &rhs) const      { return *lpValue ^ rhs; }
+        inline TType operator<<(const TType &rhs) const     { return *lpValue << rhs; }
+        inline TType operator>>(const TType &rhs) const     { return *lpValue >> rhs; }
         
-        inline TType & operator+=(const TType &rhs)         { return (*lpValue += rhs); }
-        inline TType & operator-=(const TType &rhs)         { return (*lpValue -= rhs); }
-        inline TType & operator*=(const TType &rhs)         { return (*lpValue *= rhs); }
-        inline TType & operator/=(const TType &rhs)         { return (*lpValue /= rhs); }
-        inline TType & operator%=(const TType &rhs)         { return (*lpValue %= rhs); }
-        inline TType & operator&=(const TType &rhs)         { return (*lpValue &= rhs); }
-        inline TType & operator|=(const TType &rhs)         { return (*lpValue |= rhs); }
-        inline TType & operator^=(const TType &rhs)         { return (*lpValue ^= rhs); }
-        inline TType & operator<<=(const TType &rhs)        { return (*lpValue <<= rhs); }
-        inline TType & operator>>=(const TType &rhs)        { return (*lpValue >>= rhs); }
+        inline TType operator+=(const TType &rhs)           { return (*lpValue += rhs); }
+        inline TType operator-=(const TType &rhs)           { return (*lpValue -= rhs); }
+        inline TType operator*=(const TType &rhs)           { return (*lpValue *= rhs); }
+        inline TType operator/=(const TType &rhs)           { return (*lpValue /= rhs); }
+        inline TType operator%=(const TType &rhs)           { return (*lpValue %= rhs); }
+        inline TType operator&=(const TType &rhs)           { return (*lpValue &= rhs); }
+        inline TType operator|=(const TType &rhs)           { return (*lpValue |= rhs); }
+        inline TType operator^=(const TType &rhs)           { return (*lpValue ^= rhs); }
+        inline TType operator<<=(const TType &rhs)          { return (*lpValue <<= rhs); }
+        inline TType operator>>=(const TType &rhs)          { return (*lpValue >>= rhs); }
     };
 
     /*
