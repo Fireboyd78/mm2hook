@@ -11,6 +11,8 @@ static init_handler g_bugfix_handlers[] = {
 
     CreateHandler<mmBillInstanceHandler>("mmBillInstance"),
 
+    CreateHandler<mmInterfaceHandler>("mmInterface"),
+
     CreateHandler<vehCarHandler>("vehCar"),
     CreateHandler<vehCarModelHandler>("vehCarModelHandler"),
     CreateHandler<mmSpeedIndicatorHandler>("mmSpeedIndicator"),
@@ -259,6 +261,31 @@ void cityLevelBugfixHandler::Install() {
     InstallCallback("cityLevel::Load", "Disables PVS when it doesn't exist.",
         &OpenPvsStream, {
             cbHook<CALL>(0x4440E8), // cityLevel::Load
+        }
+    );
+}
+
+/*
+    mmInterfaceHandler
+*/
+
+ageHook::Type<char[80]> currentPlayerVehicle (0x6B1B28);
+
+void mmInterfaceHandler::PlayerResolveCars() {
+    //call original
+    ageHook::Thunk<0x40FE20>::Call<void>(this);
+
+    //null out currentPlayerVehicle if this vehicle is missing
+    //the code after PlayerResolveCars in PlayerSetState will then reset to vpbug
+    if (!datAssetManager::Exists("tune", currentPlayerVehicle, "info")) {
+        currentPlayerVehicle.get()[0] = NULL;
+    }
+}
+
+void mmInterfaceHandler::Install() {
+    InstallCallback("mmInterface::PlayerSetState", "Fixes game crashes in the vehicle select menu when the selected vehicle is missing.",
+        &PlayerResolveCars, {
+            cbHook<CALL>(0x040E256),
         }
     );
 }
