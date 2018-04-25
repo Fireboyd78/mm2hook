@@ -26,11 +26,11 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<BugfixPatchHandler>("Bugfix patches"),
 };
 
-int numPedUpdateAttempts = 0;
-
 /*
     aiPathHandler
 */
+
+int numPedUpdateAttempts = 0;
 
 void aiPathHandler::UpdatePedestrians(void) {
     numPedUpdateAttempts = 0;
@@ -49,14 +49,18 @@ void aiPathHandler::Install() {
     aiPedestrianHandler
 */
 
+int numPedMaxUpdates = 256;
+
 void aiPedestrianHandler::Update(void) {
-    if (numPedUpdateAttempts < 256) {
+    if (numPedUpdateAttempts < numPedMaxUpdates) {
         ++numPedUpdateAttempts;
         $::aiPedestrian::Update(this);
     }
 }
 
 void aiPedestrianHandler::Install() {
+    HookConfig::GetProperty("MaxPedUpdateAttempts", numPedMaxUpdates);
+
     InstallCallback("aiPedestrian::Update", "Limits the number of update attempts for a pedestrian.",
         &Update, {
             cbHook<CALL>(0x544191), // aiPath::UpdatePedestrians
@@ -76,9 +80,14 @@ void aiPoliceForceHandler::Reset(void) {
     $::aiPoliceForce::Reset(this);
 }
 
-BOOL aiPoliceForceHandler::IsPerpDrivingMadly(vehCar *perpCar) {
-    const float speedLimit = 90.0f;
+float defaultSpeedLimit = 90.0f;
 
+float getSpeedLimit(vehCar *car) {
+    // TODO: figure out what road the car is on and retrieve speed limit
+    return defaultSpeedLimit;
+}
+
+BOOL aiPoliceForceHandler::IsPerpDrivingMadly(vehCar *perpCar) {
     if (ageHook::Thunk<0x53E2A0>::Call<BOOL>(this, perpCar)) {
         char *vehName = perpCar->getCarDamage()->GetName(); // we can't use vehCarSim because the game forces vpcop to vpmustang99...
 
@@ -86,6 +95,7 @@ BOOL aiPoliceForceHandler::IsPerpDrivingMadly(vehCar *perpCar) {
         if (!ageHook::StaticThunk<0x4D1A70>::Call<bool>(vehName))
         {
             float speed = perpCar->getCarSim()->getSpeed() * 2.2360249f;
+            float speedLimit = getSpeedLimit(perpCar);
 
             if (speed > speedLimit) {
                 LogFile::Format("PERP DETECTED!!! He's doing %.4f over the speed limit (%.4f)!\n", (speed - speedLimit), speedLimit);
@@ -110,12 +120,16 @@ void aiPoliceForceHandler::Install() {
         }
     );
 
-    // obviously doesn't belong in aiPoliceForceHandler, should either move it or make this a generic "PoliceHandler"
-    InstallCallback("aiPoliceOfficer::DetectPerpetrator", "Experimenting with making cops a little smarter about chasing people.",
-        &IsPerpDrivingMadly, {
-            cbHook<CALL>(0x53E057), // aiPoliceOfficer::Fov
-        }
-    );
+    if (HookConfig::IsFlagEnabled("PoliceAcademyFunding")) {
+        HookConfig::GetProperty("DefaultSpeedLimit", defaultSpeedLimit);
+
+        // obviously doesn't belong in aiPoliceForceHandler, should either move it or make this a generic "PoliceHandler"
+        InstallCallback("aiPoliceOfficer::DetectPerpetrator", "Experimenting with making cops a little smarter about chasing people.",
+            &IsPerpDrivingMadly, {
+                cbHook<CALL>(0x53E057), // aiPoliceOfficer::Fov
+            }
+        );
+    }
 }
 
 /*
@@ -160,8 +174,10 @@ const phBound * vehCarHandler::GetModelBound(int a1) {
     return result;
 }
 
+static ConfigProperty cfgVehicleDebug("VehicleDebug", "vehicleDebug");
+
 void vehCarHandler::Install(void) {
-    if (datArgParser::Get("vehicleDebug")) {
+    if (cfgVehicleDebug.Get()) {
         InstallCallback("vehCar::Init", "Enables debugging for vehicle initialization.",
             &InitCar, {
                 cbHook<CALL>(0x55942D), // aiVehiclePhysics::Init
@@ -228,9 +244,15 @@ void vehCarAudioContainerBugfixHandler::Install() {
     vehCarModelHandler
 */
 
+int maxVehiclePaintjobs = 64;
+
+static ConfigProperty cfgMaxVehiclePaintjobs("MaxVehiclePaintjobs");
+
 //Fixes gizmo models in cars by initializing 64 variant slots instead of 10
 void vehCarModelHandler::Install() {
-    InstallPatch({ 0x40 }, {
+    cfgMaxVehiclePaintjobs.Get(maxVehiclePaintjobs);
+
+    InstallPatch({ (byte)maxVehiclePaintjobs }, {
         0x4CD39E,
     });
 }
@@ -269,17 +291,20 @@ int __fastcall Float2Long(int fValueNotAnInt) {
 }
 
 void mmSpeedIndicatorHandler::Install() {
-    InstallCallback("mmSpeedIndicator::Draw", "Fixes graphical UI errors that occur when a vehicle travels too fast.",
-        &Float2Long, {
-            cbHook<CALL>(0x43F345),
-        }
-    );
+    if (HookConfig::IsFlagEnabled("SpeedoUpperLimit"))
+    {
+        InstallCallback("mmSpeedIndicator::Draw", "Fixes graphical UI errors that occur when a vehicle travels too fast.",
+            &Float2Long, {
+                cbHook<CALL>(0x43F345),
+            }
+        );
 
-    // change 'fld (...)' to 'mov ecx, (...)'
-    // this way we can pass it to Float2Long
-    InstallPatch({ 0x8B, 0x88 }, {
-        0x43F33F,
-    });
+        // change 'fld (...)' to 'mov ecx, (...)'
+        // this way we can pass it to Float2Long
+        InstallPatch({ 0x8B, 0x88 }, {
+            0x43F33F,
+        });
+    }
 }
 
 /*

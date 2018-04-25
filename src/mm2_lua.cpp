@@ -6,6 +6,7 @@ using namespace MM2;
 
 extern LuaState L;
 
+bool bEnableLua = true;
 bool isMainLuaLoaded = false;
 
 void mm2L_error(LPCSTR message)
@@ -152,19 +153,23 @@ bool MM2Lua::IsLoaded()
 }
 
 void MM2Lua::Initialize() {
-    if (isMainLuaLoaded)
-        mm2L_error("Tried to initialize the Lua engine twice!");
+    HookConfig::GetProperty("EnableLua", bEnableLua);
 
-    LogFile::WriteLine("Initializing Lua...");
+    if (bEnableLua) {
+        if (isMainLuaLoaded)
+            mm2L_error("Tried to initialize the Lua engine twice!");
 
-    L = LuaState::newState();
+        LogFile::WriteLine("Initializing Lua...");
 
-    L.openLibs();
-    L.require("MM2", luaopen_MM2);
-    L.pop();
+        L = LuaState::newState();
 
-    LogFile::WriteLine("Loading main script...");
-    LoadMainScript();
+        L.openLibs();
+        L.require("MM2", luaopen_MM2);
+        L.pop();
+
+        LogFile::WriteLine("Loading main script...");
+        LoadMainScript();
+    }
 }
 
 void MM2Lua::Reset()
@@ -207,6 +212,8 @@ void MM2Lua::OnShutdown()
     L.getGlobal("shutdown");
     if (L.pcall(0, 0, 0) != LUA_OK)
         mm2L_error(L.toString(-1));
+
+    L.close();
 }
 
 void MM2Lua::OnKeyPress(DWORD vKey)

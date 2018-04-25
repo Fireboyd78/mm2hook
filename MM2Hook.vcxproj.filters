@@ -263,7 +263,9 @@
     <ClInclude Include="src\console.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\settings.h" />
+    <ClInclude Include="src\settings.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
@@ -483,5 +485,8 @@
     <ClCompile Include="src\logfile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="mm2hook.ini" />
   </ItemGroup>
 </Project>

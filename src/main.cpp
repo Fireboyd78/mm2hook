@@ -6,6 +6,25 @@
 
 using namespace MM2;
 
+static ConfigProperty cfgDisableMutex       ("DisableMutex", "nomutex");
+static ConfigProperty cfgUseOldAutoDetect   ("UseOldAutoDetect", "oldautodetect");
+
+static ConfigProperty cfgRandomSeed         ("RandomSeed", "seed");
+
+static ConfigProperty cfgInstallLogging     ("InstallLogging", "hookdbg");
+
+static ConfigProperty cfgDebugLog           ("DebugLog", "log");
+static ConfigProperty cfgDebugLogLevel      ("DebugLogLevel", "loglevel");
+
+static ConfigProperty cfgAGEDebug           ("AGEDebug", "ageDebug");
+
+static ConfigProperty cfgGfxDebug           ("GfxDebug", "gfxDebug");
+static ConfigProperty cfgAudioDebug         ("AudioDebug", "audDebug");
+static ConfigProperty cfgJoystickDebug      ("JoystickDebug", "joyDebug");
+static ConfigProperty cfgAssetDebug         ("AssetDebug", "assetDebug");
+
+static ConfigProperty cfgPhysicsDebug       ("PhysicsDebug", "physDebug");
+
 // ==========================
 // Game-related properties
 // ==========================
@@ -104,7 +123,7 @@ public:
     }
 
     static void CreateGameMutex(LPCSTR lpName) {
-        if (datArgParser::Get("nomutex")) {
+        if (cfgDisableMutex.Get()) {
             LogFile::WriteLine("Game mutex disabled.");
         } else {
             $CreateGameMutex(lpName);
@@ -144,13 +163,16 @@ public:
 
         LPCSTR str = NULL;
 
-        L.getGlobal("GetLocaleString");
-        L.push(stringId);
+        if (MM2Lua::IsLoaded())
+        {
+            L.getGlobal("GetLocaleString");
+            L.push(stringId);
 
-        if ((L.pcall(1, 1, 0) == LUA_OK) && !L.isNil(-1))
-            str = L.toString(-1);
+            if ((L.pcall(1, 1, 0) == LUA_OK) && !L.isNil(-1))
+                str = L.toString(-1);
 
-        L.pop(1);
+            L.pop(1);
+        }
 
         auto locStr = &string_buffer[(string_index++ & 0x7)];
 
@@ -318,7 +340,7 @@ public:
             }
         );
 
-        if (!datArgParser::Get("oldautodetect"))
+        if (!cfgUseOldAutoDetect.Get())
         {
             InstallCallback("ComputeCpuSpeed", "Removes the CPU speed calculation for the old auto detect method and improves startup times.",
                 &ComputeCpuSpeed, {
@@ -360,7 +382,7 @@ public:
         );
 
         // don't print certain errors unless specified
-        if (!datArgParser::Get("physDebug")) {
+        if (!cfgPhysicsDebug.Get()) {
             InstallCallback(&NullSub, {
                     cbHook<CALL>(0x469A20), // ; 'CollideInstances: Attempting to collide instances without bounds'
                     cbHook<CALL>(0x4692C5), // ; 'dgPhysManager::CollideProbe : instance has no bound'
@@ -373,7 +395,8 @@ public:
             cbHook<CALL>(0x4013A4)
         }, "State pack argument parsing.");
 
-        if (datArgParser::Get("seed", 0, &cur_seed))
+        if (cfgRandomSeed.Get(cur_seed)
+            && (cur_seed > 0))
         {
             InstallCallback("ResetRandomSeed", "Resets the random seed to a user-specified one.",
                 &ResetRandomSeed, {
@@ -384,7 +407,8 @@ public:
                 }
             );
         }
-        else if (datArgParser::Get("randy"))
+        else if ((cur_seed == -1)
+            || datArgParser::Get("randy"))
         {
             InstallCallback("GenerateRandomSeed", "Generates a new random seed instead of resetting it to a fixed value.",
                 &GenerateRandomSeed, {
@@ -532,9 +556,11 @@ private:
             0x55100B,
         });
 
-        InstallPatch("Use all parked cars", { 4 }, {
-            0x579BE1,
-        });
+        if (HookConfig::IsFlagEnabled("TrafficUseAllPaintjobs")) {
+            InstallPatch("Use all parked cars", { 4 }, {
+                0x579BE1,
+            });
+        }
 
         InstallPatch("Fix crash for missing images", { 0xEB /* jnz -> jmp */ }, {
             0x4B329B, // gfxGetBitmap
@@ -544,9 +570,11 @@ private:
             0x4012A7, // Main
         });
 
-        InstallPatch("Add replay button to main menu", { 0x3C }, {
-            0x505EC3+2, // MainMenu::MainMenu(int)
-        });
+        if (HookConfig::IsFlagEnabled("InstantReplay")) {
+            InstallPatch("Add replay button to main menu", { 0x3C }, {
+                0x505EC3 + 2, // MainMenu::MainMenu(int)
+            });
+        }
 
         InstallPatch("Fixes being kicked in multiplayer when losing focus", { 0xB8, 0x00, 0x00, 0x00, 0x00, 0xC3 /* mov eax, 0 -> ret */ }, {
             0x4390F0,   //mmGameMulti::LostCallback
@@ -554,11 +582,7 @@ private:
     }
 public:
     static void Initialize(int argc, char **argv) {
-        if (datArgParser::Get("noconsole"))
-            ConsoleLog::Close();
-
-        if (datArgParser::Get("hookdbg"))
-            VerboseInstallLogging = true;
+        cfgInstallLogging.Get(VerboseInstallLogging);
 
         LogFile::WriteLine("Installing patches...");
         InstallPatches();
@@ -569,47 +593,49 @@ public:
         // Initialize the Lua engine
         MM2Lua::Initialize();
 
-        if (!datOutput::OpenLog("mm2.log", &logFileMethods)) {
-            LogFile::WriteLine("Failed to initialize MM2 log!");
-        }
+        bool debugLog = true;
+        cfgDebugLog.Get(debugLog);
 
-        if (datArgParser::Get("age_debug") || datArgParser::Get("ageDebug"))
-        {
-            // AGE.log is a catch-all debug log
-            // it will output _all_ debug to a file
+        if (datArgParser::Get("nolog"))
+            debugLog = false;
 
-            ageLogFile = fopen("AGE.log", "w+");
-        } else {
+        if (debugLog) {
+            if (!datOutput::OpenLog("mm2.log", &logFileMethods))
+                LogFile::WriteLine("Failed to initialize MM2 log!");
+
             int logLevel = 0;
+            cfgDebugLogLevel.Get(logLevel);
 
             // limit the amount of logging if specified
             // otherwise, everything will be captured
             //   1 = Printf, Messagef, Displayf
             //   2 = Warningf
             //   3 = Errorf
-            if (datArgParser::Get("loglevel", 0, &logLevel) || datArgParser::Get("nolog")) {
-                int outputMask = 0;
+            int outputMask = 0;
 
-                if (logLevel >= 1)
-                    outputMask |= 2;
-                if (logLevel >= 2)
-                    outputMask |= 4;
-                if (logLevel >= 3)
-                    outputMask |= 8;
+            if (logLevel >= 1)
+                outputMask |= 2;
+            if (logLevel >= 2)
+                outputMask |= 4;
+            if (logLevel >= 3)
+                outputMask |= 8;
 
-                datOutput::SetOutputMask(outputMask);
-            }
+            datOutput::SetOutputMask(outputMask);
+        }
 
+        if (cfgAGEDebug.Get() || datArgParser::Get("age_debug"))
+        {
+            // AGE.log is a catch-all debug log
+            // it will output _all_ debug to a file
+
+            ageLogFile = fopen("AGE.log", "w+");
+        } else {
             // these will output to the console and mm2.log if specified
 
-            if (datArgParser::Get("gfxDebug"))
-                gfxDebug = 1;
-            if (datArgParser::Get("audDebug"))
-                audDebug = 1;
-            if (datArgParser::Get("joyDebug"))
-                joyDebug = 1;
-            if (datArgParser::Get("assetDebug"))
-                assetDebug = 1;
+            cfgGfxDebug.Get(gfxDebug);
+            cfgAudioDebug.Get(audDebug);
+            cfgJoystickDebug.Get(joyDebug);
+            cfgAssetDebug.Get(assetDebug);
         }
     }
 
@@ -642,16 +668,19 @@ public:
         ageHook::StaticThunk<0x4AAA10>::Call<void>();
 
         // we can now safely close everything else
-        LogFile::Close();
-        L.close(); // release Lua
+        MM2Lua::OnShutdown(); // release Lua
 
-        // close datOutput log
-        datOutput::CloseLog();
+        // close this stuff as late as possible
+        atexit([](){
+            // close datOutput log
+            datOutput::CloseLog();
 
-        if (ageLogFile)
-            fclose(ageLogFile);
+            if (ageLogFile)
+                fclose(ageLogFile);
 
-        ConsoleLog::Close();
+            ConsoleLog::Close();
+            LogFile::Close();
+        });
     }
 
     static void Install() {
@@ -764,9 +793,6 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 	{
         case DLL_PROCESS_ATTACH:
         {
-            ConsoleLog::Initialize();
-            ConsoleLog::SetTitle("MM2Hook Console");
-
             debug("Initializing MM2Hook...");
 
             // setup the current directory
@@ -774,9 +800,17 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 
             // Initialize the log file
             LogFile::Initialize("mm2hook.log", "--<< MM2Hook log file >>--\n");
+
+            bool configLoaded = HookConfig::Initialize("mm2hook.ini");
+
+            if (HookConfig::IsFlagEnabled("ShowConsole")) {
+                ConsoleLog::Initialize();
+                ConsoleLog::SetTitle("MM2Hook Console");
+            }
+
             LogFile::Format("Working directory is '%s'\n", mm2_path);
 
-            if (HookConfig::Initialize("mm2hook.ini")) {
+            if (configLoaded) {
                 LogFile::WriteLine("Configuration file loaded successfully.");
             } else {
                 LogFile::WriteLine("No configuration file was found.");

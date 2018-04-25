@@ -292,6 +292,11 @@
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="mm2hook.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
   <Target Name="FixupIncludes" BeforeTargets="ResolveReferences">
@@ -351,9 +356,10 @@
   <!-- Move compiled files to MM2 directory (if applicable) -->
   <Target Name="CopyDInputFiles" AfterTargets="MakeDInputDLL" Condition="'$(MM2Directory)' != ''">
     <ItemGroup>
-      <DITargetFiles Include="$(DITargetDir)*.*" />
+      <TargetFiles Include="$(DITargetDir)*.*" />
+      <TargetFiles Include="$(TargetDir)mm2hook.ini" />
     </ItemGroup>
-    <Copy SourceFiles="@(DITargetFiles)" DestinationFiles="@(DITargetFiles->'$(MM2Directory)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(TargetFiles)" DestinationFiles="@(TargetFiles->'$(MM2Directory)%(Filename)%(Extension)')" />
     <Message Text="Sucessfully copied files to Midtown Madness 2 directory ($(MM2Directory))" Importance="High" />
   </Target>
 </Project>

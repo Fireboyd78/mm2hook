@@ -65,12 +65,12 @@ ageHook::Type<int> vehCar_bHeadlights       ( 0x627518 );
 */
 
 void asCullManagerHandler::Init(int maxCullables, int maxCullables2D) {
-    maxCullables = 1024;
-    maxCullables2D = 256;
+    HookConfig::GetProperty("MaxCullables", maxCullables);
+    HookConfig::GetProperty("MaxCullables2D", maxCullables2D);
 
-    LogFile::Format("[asCullManager::Init]: Increased Max Cullables to %d, %d\n", maxCullables, maxCullables2D);
+    LogFile::Format("[asCullManager::Init]: Max Cullables = %d, %d\n", maxCullables, maxCullables2D);
 
-    ageHook::Thunk<0x4A1290>::Call<void>(this, maxCullables, maxCullables2D); //TODO : move to class
+    ageHook::Thunk<0x4A1290>::Call<void>(this, maxCullables, maxCullables2D);
 }
 
 void asCullManagerHandler::Install() {
@@ -263,8 +263,11 @@ void gfxPipelineHandler::gfxApplySettings(void) {
 
 bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
 {
-    // Inform Lua of any changes beforehand
-    MM2Lua::OnKeyPress(vKey);
+    if (MM2Lua::IsLoaded())
+    {
+        // Inform Lua of any changes beforehand
+        MM2Lua::OnKeyPress(vKey);
+    }
 
     switch (vKey) {
         // '~'
@@ -847,10 +850,12 @@ void vglHandler::Install() {
     mmGameMusicDataHandler
 */
 
+char defaultCityAmbienceFile[64] = "sfambience";
+
 bool mmGameMusicDataHandler::LoadAmbientSFX(LPCSTR name) {
     string_buf<80> buffer("%sambience", MMSTATE->CityName);
     
-    LPCSTR szAmbientSFX = (datAssetManager::Exists("aud\\dmusic\\csv_files", buffer, "csv")) ? buffer : "sfambience";
+    LPCSTR szAmbientSFX = (datAssetManager::Exists("aud\\dmusic\\csv_files", buffer, "csv")) ? buffer : defaultCityAmbienceFile;
 
     LogFile::Format("AmbientSFX: %s\n", szAmbientSFX);
 
@@ -858,6 +863,8 @@ bool mmGameMusicDataHandler::LoadAmbientSFX(LPCSTR name) {
 }
 
 void mmGameMusicDataHandler::Install() {
+    HookConfig::GetProperty("DefaultCityAmbienceFile", defaultCityAmbienceFile);
+
     InstallCallback("mmGameMusicData::LoadAmbientSFX", "Allows for custom ambient effects in addon cities.",
         &LoadAmbientSFX, {
             cbHook<CALL>(0x433F93),
@@ -870,10 +877,12 @@ void mmGameMusicDataHandler::Install() {
     vehCarAudioContainerHandler
 */
 
+char defaultCitySirenFile[64] = "sfpolicesiren";
+
 void vehCarAudioContainerHandler::SetSirenCSVName(LPCSTR name) {
     string_buf<80> buffer("%spolicesiren", MMSTATE->CityName);
     
-    LPCSTR szSirenName = (datAssetManager::Exists("aud\\cardata\\player", buffer, "csv")) ? buffer : "sfpolicesiren";
+    LPCSTR szSirenName = (datAssetManager::Exists("aud\\cardata\\player", buffer, "csv")) ? buffer : defaultCitySirenFile;
 
     LogFile::Format("SirenCSVName: %s\n", szSirenName);
 
@@ -881,6 +890,8 @@ void vehCarAudioContainerHandler::SetSirenCSVName(LPCSTR name) {
 }
 
 void vehCarAudioContainerHandler::Install() {
+    HookConfig::GetProperty("DefaultCitySirenFile", defaultCitySirenFile);
+
     InstallCallback("vehCarAudioContainer::SetSirenCSVName", "Allows for custom sirens in addon cities.",
         &SetSirenCSVName, {
             cbHook<CALL>(0x412783),
@@ -936,6 +947,8 @@ int lvl_aiRoom = 0;
 int lvl_aiRoomId = 0;
 
 bool bRoadDebug = false;
+
+static ConfigProperty cfgRoadDebug("RoadDebug", "roadDebug");
 
 // generic handler for propulation stuff
 void lvlHandler::SetAIRoad(const lvlSDL *lvlSDL, int road, bool p3) {
@@ -996,7 +1009,7 @@ void lvlHandler::InvalidCommand(int cmd, void *attrPtr, void *roadPtr) {
 };
 
 void lvlHandler::Install() {
-    bRoadDebug = datArgParser::Get("roadDebug");
+    cfgRoadDebug.Get(bRoadDebug);
 
     InstallCallback("lvlAiMap::SetRoad", "Allows for more detailed information when propulating roads.",
         &SetAIRoad, {
@@ -1055,9 +1068,9 @@ void lvlHandler::Install() {
 
 int g_heapSize = 128;
 
-void memSafeHeapHandler::Init(void *memAllocator, unsigned int heapSize, bool p3, bool p4, bool checkAlloc) {
-    datArgParser::Get("heapsize", 0, &g_heapSize);
+static ConfigProperty cfgHeapSize("HeapSize", "heapsize");
 
+void memSafeHeapHandler::Init(void *memAllocator, unsigned int heapSize, bool p3, bool p4, bool checkAlloc) {
     // fast way of expanding to the proper size
     // same as ((g_heapSize * 1024) * 1024)
     heapSize = (g_heapSize << 20);
@@ -1067,6 +1080,8 @@ void memSafeHeapHandler::Init(void *memAllocator, unsigned int heapSize, bool p3
 }
 
 void memSafeHeapHandler::Install() {
+    cfgHeapSize.Get(g_heapSize);
+
     InstallCallback("memSafeHeap::Init", "Adds '-heapsize' parameter that takes a size in megabytes. Defaults to 128MB.",
         &Init, {
             cbHook<CALL>(0x4015DD),
@@ -1080,7 +1095,8 @@ void memSafeHeapHandler::Install() {
 
 void mmGameHandler::SendChatMessage(char *message) {
     if (g_bConsoleOpen) {
-        MM2Lua::SendCommand(message);
+        if (MM2Lua::IsLoaded())
+            MM2Lua::SendCommand(message);
 
         // return normal chatbox behavior
         g_bConsoleOpen = false;
@@ -1161,11 +1177,13 @@ void gizParkedCarMgrHandler::EnumeratePath(LPCSTR a1, const Matrix34* a2, bool a
 }
 
 void gizParkedCarMgrHandler::Install() {
-    InstallCallback("gizParkedCarMgr::Init", "Scales parked cars with traffic density.",
-        &EnumeratePath, {
-            cbHook<PUSH>(0x579B80),
-        }
-    );
+    if (HookConfig::IsFlagEnabled("DynamicParkedCarDensity")) {
+        InstallCallback("gizParkedCarMgr::Init", "Scales parked cars with traffic density.",
+            &EnumeratePath, {
+                cbHook<PUSH>(0x579B80),
+            }
+        );
+    }
 }
 
 /*
@@ -1278,11 +1296,13 @@ Stream * StreamHandler::Open(const char *filename, bool readOnly)
 
 void StreamHandler::Install()
 {
-    InstallCallback("Stream::Open", "Allows for files to be overridden using a mods folder.",
-        &Open, {
-            cbHook<JMP>(0x4C99C0), // Stream::Open(const char *, bool)
-        }
-    );
+    if (HookConfig::IsFlagEnabled("UseModsFolder")) {
+        InstallCallback("Stream::Open", "Allows for files to be overridden using a mods folder.",
+            &Open, {
+                cbHook<JMP>(0x4C99C0), // Stream::Open(const char *, bool)
+            }
+        );
+    }
 }
 
 /*
@@ -1411,7 +1431,9 @@ void TextureVariantHandler::Install()
         }, "Installs new texture variant handler."
     );
 
-    if (!datArgParser::Get("noduskfix"))
+    HookConfig::GetProperty("NightTexturesInEvening", UseNightTexturesInEvening);
+
+    if (UseNightTexturesInEvening)
     {
         LogFile::WriteLine("Installing evening patches...");
 
@@ -1439,10 +1461,6 @@ void TextureVariantHandler::Install()
         InstallPatch({ 0x7D }, {
             0x4133CA,
         });
-    }
-    else
-    {
-        UseNightTexturesInEvening = false;
     }
 }
 
@@ -1514,14 +1532,16 @@ public:
 };
 
 void PUMainHandler::Install() {
-    InstallCallback("PUMain::ctor", "Overrides button placement for the pause menu.",
-        &PUMenuHook::AddPauseButton, {
-            cbHook<CALL>(0x50A6AE),
-            cbHook<CALL>(0x50A712),
-            cbHook<CALL>(0x50A776),
-            cbHook<CALL>(0x50A7D0),
-        }
-    );
+    if (HookConfig::IsFlagEnabled("InstantReplay")) {
+        InstallCallback("PUMain::ctor", "Overrides button placement for the pause menu.",
+            &PUMenuHook::AddPauseButton, {
+                cbHook<CALL>(0x50A6AE),
+                cbHook<CALL>(0x50A712),
+                cbHook<CALL>(0x50A776),
+                cbHook<CALL>(0x50A7D0),
+            }
+        );
+    }
 }
 
 #ifndef FEATURES_DECLARED

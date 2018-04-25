@@ -390,8 +390,14 @@ int discordHandler::RefreshNumPlayersLobby(void) {
     return g_mm2Info.lobbyNumPlayers;
 }
 
+bool useRichPresence = false;
+
 void discordHandler::Install() {
-    if (LoadDiscordModule())
+    HookConfig::GetProperty("UseRichPresence", useRichPresence);
+
+    bool discordLoaded = (useRichPresence && LoadDiscordModule());
+
+    if (discordLoaded)
     {
         InstallCallback("mmGame::Init", "Updates Discord Rich Presence when entering a race.",
             &GameInit, {
@@ -438,8 +444,10 @@ void discordHandler::Install() {
 
         InitDiscord();
         g_mm2Info.UpdatePresence(presence);
+
+        LogFile::WriteLine("[discord] Rich Presence initialized successfully.");
     }
-    else
+    else if (useRichPresence)
     {
         Warningf("**** Discord Rich Presence was NOT loaded! ****");
     }
