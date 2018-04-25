@@ -71,3 +71,18 @@ public:
     }
 };
 
+class ConfigProperty {
+private:
+    const char *name;
+    const char *arg;
+public:
+    explicit ConfigProperty(const char *propName);
+    explicit ConfigProperty(const char *propName, const char *argName);
+
+    bool Get();
+    bool Get(char *value);
+    bool Get(bool &value);
+    bool Get(int &value);
+    bool Get(float &value);
+};
+

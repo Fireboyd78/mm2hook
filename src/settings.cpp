@@ -1,7 +1,12 @@
 #include "settings.h"
 
+// datArgParser
+#include "mm2_data.h"
+
 #include <map>
 #include <unordered_map>
+
+using namespace MM2;
 
 /*
     line_reader
@@ -301,4 +306,53 @@ bool HookConfig::GetProperty(const char *key, float &value) {
     }
 
     return false;
+}
+
+/*
+    ConfigProperty
+*/
+
+ConfigProperty::ConfigProperty(const char * propName)
+    : name(propName), arg(nullptr) {}
+
+ConfigProperty::ConfigProperty(const char * propName, const char * argName)
+    : name(propName), arg(argName) {}
+
+bool ConfigProperty::Get() {
+    if (arg != nullptr && datArgParser::Get(arg))
+        return true;
+
+    return HookConfig::IsFlagEnabled(name);
+}
+
+bool ConfigProperty::Get(char *value) {
+    if (arg != nullptr && datArgParser::Get(arg, 0, reinterpret_cast<const char **>(value)))
+        return true;
+
+    return HookConfig::GetProperty(name, value);
+}
+
+bool ConfigProperty::Get(bool &value) {
+    int result = 0;
+
+    if (Get(result)) {
+        value = (result != 0);
+        return true;
+    }
+
+    return false;
+}
+
+bool ConfigProperty::Get(int &value) {
+    if (arg != nullptr && datArgParser::Get(name, 0, &value))
+        return true;
+
+    return HookConfig::GetProperty(name, value);
+}
+
+bool ConfigProperty::Get(float &value) {
+    if (arg != nullptr && datArgParser::Get(name, 0, &value))
+        return true;
+
+    return HookConfig::GetProperty(name, value);
 }
