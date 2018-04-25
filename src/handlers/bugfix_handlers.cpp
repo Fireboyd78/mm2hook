@@ -17,6 +17,7 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<vehCarAudioContainerBugfixHandler>("vehCarAudio bugfixes"),
     CreateHandler<vehCarModelHandler>("vehCarModelHandler"),
     CreateHandler<mmSpeedIndicatorHandler>("mmSpeedIndicator"),
+    CreateHandler<mmHudMapHandler>("mmHudMapHandler"),
 
     CreateHandler<lvlSkyHandler>("lvlSkyHandler"),
 
@@ -365,4 +366,42 @@ void BugfixPatchHandler::Install() {
     }, {
         0x424982,   // mmMultiCR::ImpactCallback
     });
+}
+
+/*
+    mmHudMapHandler
+*/
+
+bool mmHudMapHandler::CanActivateMap() {
+    return *getPtr<byte>(this, 0x3D) != 1;   
+}
+
+void mmHudMapHandler::Activate() {
+    if (!CanActivateMap())
+        return;
+
+    //forward to mmHudMap::Activate
+    ageHook::Thunk<0x42EEE0>::Call<void>(this);
+}
+
+void mmHudMapHandler::SetMapMode(int mode) {
+    if (!CanActivateMap())
+        return;
+
+    //forward to mmHudMap::SetMapMode
+    ageHook::Thunk<0x42EF30>::Call<void>(this, mode);
+}
+
+void mmHudMapHandler::Install() {
+    InstallCallback("mmHudMap::Activate", "Fixes crashes when attempting to activate a nonexistant hudmap.",
+        &Activate, {
+            cbHook<CALL>(0x42A306), // mmPopup::DisablePU
+        }
+    );
+    InstallCallback("mmHudMap::SetMapMode", "Fixes crashes when attempting to activate a nonexistant hudmap.",
+        &SetMapMode, {
+            cbHook<CALL>(0x42EE98), // mmHudMap::Reset
+            cbHook<CALL>(0x43204E), // mmViewMgr::SetViewSetting
+        }
+    );
 }

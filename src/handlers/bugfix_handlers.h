@@ -92,3 +92,11 @@ class BugfixPatchHandler {
 public:
     static void Install();
 };
+
+class mmHudMapHandler {
+public:
+    bool CanActivateMap();
+    void Activate();
+    void SetMapMode(int mode);
+    static void Install();
+};
