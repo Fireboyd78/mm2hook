@@ -297,6 +297,12 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
             // toggle vehicle headlights
             //vehCar_bHeadlights = !vehCar_bHeadlights;
         } return true;
+
+        case VK_F8: {
+            if (HookConfig::Read()) {
+                LogFile::WriteLine("Configuration settings reloaded successfully.");
+            }
+        } return true;
     }
 
     return false;

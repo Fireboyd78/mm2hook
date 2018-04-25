@@ -263,6 +263,7 @@
     <ClInclude Include="src\console.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\settings.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
@@ -443,6 +444,9 @@
       <Filter>Source Files\mm2</Filter>
     </ClCompile>
     <ClCompile Include="src\console.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\settings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

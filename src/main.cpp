@@ -776,6 +776,12 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
             LogFile::Initialize("mm2hook.log", "--<< MM2Hook log file >>--\n");
             LogFile::Format("Working directory is '%s'\n", mm2_path);
 
+            if (HookConfig::Initialize("mm2hook.ini")) {
+                LogFile::WriteLine("Configuration file loaded successfully.");
+            } else {
+                LogFile::WriteLine("No configuration file was found.");
+            }
+
             HMODULE hDIModule = NULL;
             ageInfoLookup gameInfo;
 
