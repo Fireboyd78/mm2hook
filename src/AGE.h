@@ -269,7 +269,7 @@ public:
         inline TValue & operator[](int index) const         { return lpValue[index]; }
 
         template <typename TType>
-        inline operator TType *() const                    { return reinterpret_cast<TType *>(lpValue); }
+        inline operator TType *() const                     { return reinterpret_cast<TType *>(lpValue); }
     };
 
     template <typename TType>
