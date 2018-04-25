@@ -114,7 +114,7 @@ static bool isLoaded;
 static std::map<std::string, std::string> properties;
 
 bool skip_comments(std::string &line) {
-    return (line[0] != '#');
+    return (line[0] != '#' && line[0] != ';');
 }
 
 int skip_whitespace(std::string &line, int start, int end) {
@@ -135,7 +135,7 @@ int skip_whitespace(std::string &line, int start, int end) {
 std::string read_token(std::string &line, int start, int end) {
     // trim trailing whitespace
     while (end > start) {
-        char c = line[end];
+        char c = line[end - 1]; // check the previous character
 
         if (c != '\t' && c != ' ')
             break;
