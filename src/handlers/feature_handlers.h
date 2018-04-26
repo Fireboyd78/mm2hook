@@ -131,7 +131,11 @@ public:
 
 class mmDashViewHandler {
 public:
+    static float TachMinLimit;
+    
     void UpdateCS();
+    void RadialGaugeInit(int a1, int a2, float vx, float vy, float vz, float const* a4, float const* a5, float a6);
+    void FileIO(MM2::datParser* parser);
 
     static void Install();
 };

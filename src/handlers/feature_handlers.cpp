@@ -1255,6 +1255,22 @@ void mmDashViewHandler::UpdateCS() {
     ageHook::Thunk<0x4A3370>::Call<void>(this); //TODO: move to own class
 }
 
+void mmDashViewHandler::FileIO(datParser* parser) {
+    //call original FileIO
+    ageHook::Thunk<0x4315D0>::Call<void>(this, parser);
+
+    //add missing things
+    parser->AddValue("MaxSpeed", getPtr<float>(this, 0x5D0), 1);
+    parser->AddValue("MaxRPM", getPtr<float>(this, 0x5D4), 1);
+}
+
+//removes the 750rpm offset of tachometers
+//this will allow them to display their true RPM instead
+float mmDashViewHandler::TachMinLimit = 0.f;
+void mmDashViewHandler::RadialGaugeInit(int a1, int a2, float vx, float vy, float vz, float const* minLimit, float const* maxLimit, float a6) {
+    ageHook::Thunk<0x43E7A0>::Call<void>(this, a1, a2, vx, vy, vz, &mmDashViewHandler::TachMinLimit, maxLimit, a6);
+}
+
 void mmDashViewHandler::Install() {
     // dashboard testing
     InstallCallback("mmDashView::Update", "Experimental testing.",
@@ -1262,6 +1278,17 @@ void mmDashViewHandler::Install() {
             cbHook<CALL>(0x430F87), // replaces call to asLinearCS::Update
         }
     );
+
+    // rv6 stuff
+    InstallCallback("mmDashView::Init", "Show true RPM on tachometer.",
+        &RadialGaugeInit, {
+            cbHook<CALL>(0x4309BE) ,
+        }
+    );
+
+    InstallVTableHook("mmDashView::FileIO", &FileIO, {
+        0x5B0D90
+    });
 }
 
 /*
