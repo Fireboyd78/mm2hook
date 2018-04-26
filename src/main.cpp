@@ -556,7 +556,7 @@ private:
             0x55100B,
         });
 
-        if (HookConfig::IsFlagEnabled("TrafficUseAllPaintjobs")) {
+        if (HookConfig::IsFlagEnabled("UseAllParkedCars")) {
             InstallPatch("Use all parked cars", { 4 }, {
                 0x579BE1,
             });
