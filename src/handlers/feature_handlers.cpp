@@ -850,7 +850,7 @@ void vglHandler::Install() {
     mmGameMusicDataHandler
 */
 
-char defaultCityAmbienceFile[64] = "sfambience";
+char defaultCityAmbienceFile[64] = "londonambience";
 
 bool mmGameMusicDataHandler::LoadAmbientSFX(LPCSTR name) {
     string_buf<80> buffer("%sambience", MMSTATE->CityName);
