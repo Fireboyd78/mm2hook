@@ -100,3 +100,14 @@ public:
     void SetMapMode(int mode);
     static void Install();
 };
+
+class mmPopupHandler {
+public:
+    static void Install();
+};
+
+class mmMultiCRHandler {
+public:
+    bool LoadMusic(char* a1, char* a2);
+    static void Install();
+};

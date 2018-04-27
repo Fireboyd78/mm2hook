@@ -12,6 +12,7 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<mmBillInstanceHandler>("mmBillInstance"),
 
     CreateHandler<mmInterfaceHandler>("mmInterface"),
+    CreateHandler<mmPopupHandler>("mmPopupHandler"),
 
     CreateHandler<vehCarHandler>("vehCar"),
     CreateHandler<vehCarAudioContainerBugfixHandler>("vehCarAudio bugfixes"),
@@ -22,6 +23,8 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<lvlSkyHandler>("lvlSkyHandler"),
 
     CreateHandler<cityLevelBugfixHandler>("cityLevelBugfixHandler"),
+
+    CreateHandler<mmMultiCRHandler>("mmMultiCRHandler"),
 
     CreateHandler<BugfixPatchHandler>("Bugfix patches"),
 };
@@ -429,4 +432,39 @@ void mmHudMapHandler::Install() {
             cbHook<CALL>(0x43204E), // mmViewMgr::SetViewSetting
         }
     );
+}
+
+/*
+    mmPopupHandler
+*/
+
+// Fixes chat music presisting after the chat box is closed
+void mmPopupHandler::Install() {
+    if (HookConfig::IsFlagEnabled("ChatMusicFix")) {
+        InstallPatch({ 0x01 }, {
+            0x42B558+1,
+            0x42B537+1,
+        });
+    }
+}
+
+/*
+    mmMultiCRHandler
+*/
+
+bool mmMultiCRHandler::LoadMusic(char* a1, char* a2) {
+    return ageHook::Thunk<0x433F40>::Call<bool>(this, "singlerace", a2);
+}
+
+void mmMultiCRHandler::Install() {
+    InstallCallback("mmMultiCR::Init", "Fixes results screen crash due to incorrect music.",
+        &LoadMusic, {
+            cbHook<CALL>(0x4239CB),
+        }
+    );
+
+    //changes VTable for music data from roam to race
+    InstallPatch({ 0x10, 0x06, 0x5B}, {
+        0x423715 + 6,
+    });
 }
