@@ -27,6 +27,9 @@
 // short-hand for NOINLINE
 #define NO_INL                  NOINLINE
 
+#define DONOTCALL               = delete
+#define FORWARD_THUNK           {}
+
 // hooked __thiscall functions require a 'this' pointer parameter
 #define _THIS                   void *This
 #define _THIS_                  _THIS,

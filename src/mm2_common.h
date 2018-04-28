@@ -19,6 +19,8 @@ Multiple declarations will cause compiler errors!
 
 #define declfield(t) decltype(t) t
 
+#define VIRTUAL_THUNK(addr, rtype, ...) { return ageHook::Thunk<addr>::Call<rtype> WRAP(this, __VA_ARGS__); }
+
 //
 // MM2 uses DirectX 7
 //
