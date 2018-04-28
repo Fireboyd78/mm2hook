@@ -37,9 +37,6 @@ void luaAddModule_Vector(lua_State *L)
 
 void luaSetGlobals()
 {
-    if (!isMainLuaLoaded)
-        return;
-
     LogFile::Write("Updating Lua globals...");
 
     mmGameManager *gameMgr = mmGameManager::Instance;
@@ -147,9 +144,14 @@ void ReloadScript()
     }
 }
 
+bool MM2Lua::IsEnabled()
+{
+    return bEnableLua;
+}
+
 bool MM2Lua::IsLoaded()
 {
-    return isMainLuaLoaded;
+    return bEnableLua && isMainLuaLoaded;
 }
 
 void MM2Lua::Initialize() {
@@ -174,16 +176,12 @@ void MM2Lua::Initialize() {
 
 void MM2Lua::Reset()
 {
-    if (!isMainLuaLoaded)
-        return;
-
     luaSetGlobals();
 }
 
 void MM2Lua::OnTick()
 {
-    if (isMainLuaLoaded)
-    {
+    if (isMainLuaLoaded) {
         // don't do any errors since this is called EVERY tick
         // testing should be done in the lua script (if needed)
         L.getGlobal("tick");
@@ -196,22 +194,20 @@ void MM2Lua::OnTick()
 
 void MM2Lua::OnRestart()
 {
-    if (!isMainLuaLoaded)
-        return;
-
-    L.getGlobal("restart");
-    if (L.pcall(0, 0, 0) != LUA_OK)
-        mm2L_error(L.toString(-1));
+    if (isMainLuaLoaded) {
+        L.getGlobal("restart");
+        if (L.pcall(0, 0, 0) != LUA_OK)
+            mm2L_error(L.toString(-1));
+    }
 }
 
 void MM2Lua::OnShutdown()
 {
-    if (!isMainLuaLoaded)
-        return;
-
-    L.getGlobal("shutdown");
-    if (L.pcall(0, 0, 0) != LUA_OK)
-        mm2L_error(L.toString(-1));
+    if (isMainLuaLoaded) {
+        L.getGlobal("shutdown");
+        if (L.pcall(0, 0, 0) != LUA_OK)
+            mm2L_error(L.toString(-1));
+    }
 
     L.close();
 }

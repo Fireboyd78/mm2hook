@@ -3,6 +3,7 @@
 
 namespace MM2Lua
 {
+    bool IsEnabled();
     bool IsLoaded();
 
     void Initialize();

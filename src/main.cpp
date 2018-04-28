@@ -434,7 +434,8 @@ public:
     }
 
     static void Update(void) {
-        MM2Lua::OnTick();
+        if (MM2Lua::IsEnabled())
+            MM2Lua::OnTick();
 
         // pass control back to MM2
         datTimeManager::Update();
@@ -643,10 +644,12 @@ public:
         LogFile::Write("Hook reset request received: ");
         LogFile::WriteLine((restarting) ? "leaving GameLoop" : "entering GameLoop");
 
-        if (restarting)
-            MM2Lua::OnRestart();
+        if (MM2Lua::IsEnabled()) {
+            if (restarting)
+                MM2Lua::OnRestart();
 
-        MM2Lua::Reset();
+            MM2Lua::Reset();
+        }
     }
 
     // TODO: fix this horrible logic
@@ -668,7 +671,8 @@ public:
         ageHook::StaticThunk<0x4AAA10>::Call<void>();
 
         // we can now safely close everything else
-        MM2Lua::OnShutdown(); // release Lua
+        if (MM2Lua::IsEnabled())
+            MM2Lua::OnShutdown(); // release Lua
 
         // close this stuff as late as possible
         atexit([](){
