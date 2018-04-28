@@ -20,7 +20,6 @@ namespace MM2
     class aiIntersection;
     class aiPath;
     class aiPedestrian;
-    class aiPedestrianInstance;
     class aiPoliceForce;
     class aiPoliceOfficer;
     class aiRaceData;
@@ -165,14 +164,6 @@ namespace MM2
         aiPath(const aiPath &&)                             DONOTCALL;
     };
 
-    class aiPedestrianInstance : public lvlInstance {
-    private:
-        byte _buffer[0x14];
-    public:
-        aiPedestrianInstance(void)                          DONOTCALL;
-        aiPedestrianInstance(const aiPedestrianInstance &&) DONOTCALL;
-    };
-    
     class aiPoliceForce {
     private:
         byte _buffer[0x3C];
@@ -521,7 +512,6 @@ namespace MM2
     ASSERT_SIZEOF(aiIntersection, 0x2C);
     ASSERT_SIZEOF(aiMap, 0x1CC);
     ASSERT_SIZEOF(aiPath, 0x164);
-    ASSERT_SIZEOF(aiPedestrianInstance, 0x3C);
     ASSERT_SIZEOF(aiPoliceOfficer, 0x9870);
     ASSERT_SIZEOF(aiRaceData, 0xC8);
     ASSERT_SIZEOF(aiSubway, 0x14C);

@@ -153,7 +153,12 @@ namespace MM2
     };
 
     class aiPedestrianInstance : public lvlInstance {
+    private:
+        byte _buffer[0x14];
     public:
+        aiPedestrianInstance(void)                          DONOTCALL;
+        aiPedestrianInstance(const aiPedestrianInstance &&) DONOTCALL;
+
         /*
             lvlInstance virtuals
         */
@@ -173,4 +178,5 @@ namespace MM2
     }
 
     ASSERT_SIZEOF(lvlInstance, 0x28);
+    ASSERT_SIZEOF(aiPedestrianInstance, 0x3C);
 }
