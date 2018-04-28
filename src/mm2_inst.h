@@ -24,6 +24,8 @@ namespace MM2
 
     class lvlInstance
     {
+    private:
+        byte _buffer[0x24];
     protected:
         static AGE_API int GetGeomSet(char const * a1, char const * a2, int a3)
                                                             { return ageHook::StaticThunk<0x4632C0>::Call<int>(a1, a2, a3); }
@@ -169,4 +171,6 @@ namespace MM2
     void luaAddModule<module_inst>(LuaState L) {
         luaBind<lvlInstance>(L);
     }
+
+    ASSERT_SIZEOF(lvlInstance, 0x28);
 }
