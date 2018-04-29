@@ -343,12 +343,12 @@ public:
 };
 
 struct stopwatch {
-private:
-    static float ticksToSeconds;
-    static float ticksToMilliseconds;
 public:
     unsigned int startTime;
     unsigned int endTime;
+
+    static float ticksToSeconds;
+    static float ticksToMilliseconds;
     
     static unsigned int ticks() {
         LARGE_INTEGER perf;
