@@ -7,6 +7,8 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<aiPedestrianHandler>("aiPedestrian"),
     CreateHandler<aiPoliceForceHandler>("aiPoliceForce"),
 
+    CreateHandler<audSoundHeapHandler>("audSoundHeap"),
+
     CreateHandler<gfxImageHandler>("gfxImage"),
 
     CreateHandler<mmBillInstanceHandler>("mmBillInstance"),
@@ -501,6 +503,60 @@ void mmMultiCRHandler::Install() {
     InstallPatch({ 0x10, 0x06, 0x5B}, {
         0x423715 + 6,
     });
+}
+
+/*
+    audSoundHeapHandler
+*/
+
+bool bAudioHeapLogging = false;
+
+void * audSoundHeapHandler::CreateNodeList(void *heap, int a2, int a3) {
+    if (bAudioHeapLogging)
+        LogFile::Printf(1, "[audSoundHeap::CreateNodeList]: Creating node list (%d, %d)", a2, a3);
+
+    return ageHook::Thunk<0x5A5EB0>::Call<void *>(this, heap, a2, a3);
+}
+
+void * audSoundHeapHandler::ReserveBuffer(int size) {
+    if (bAudioHeapLogging)
+        LogFile::Printf(1, "[audSoundHeap::ReserveBuffer]: Reserving %d audio nodes\n", size);
+    
+    // audSoundHeap::ReserveBuffer
+    return ageHook::Thunk<0x5A5F90>::Call<void *>(this, size);
+}
+
+void audSoundHeapHandler::Install() {
+    if (HookConfig::IsFlagEnabled("AudioHeapPatch")) {
+        HookConfig::GetProperty("AudioHeapLogging", bAudioHeapLogging);
+
+        InstallCallback("audSoundHeap::CreateNodeList", "Allows for control over audio heap allocations.",
+            &CreateNodeList, {
+                cbHook<CALL>(0x5A0E43),
+                cbHook<CALL>(0x5A0E7E),
+                cbHook<CALL>(0x5A0EB2),
+                cbHook<CALL>(0x5A0EF6),
+                cbHook<CALL>(0x5A0F26),
+                cbHook<CALL>(0x5A1013),
+            }
+        );
+
+        InstallCallback("audSoundHeap::ReserveBuffer", "Allows for control over audio heap allocations.",
+            &ReserveBuffer, {
+                cbHook<CALL>(0x5A0D98),
+                cbHook<CALL>(0x5A5EFA),
+            }
+        );
+
+        int audHeapSize = 32;
+
+        HookConfig::GetProperty("AudioHeapSize", audHeapSize);
+
+        LogFile::Printf(0, "Increasing audio heap size to %dMB", audHeapSize);
+
+        auto ptr = reinterpret_cast<void *>(0x51938D + 1);
+        mem::write(ptr, (int)(audHeapSize * 1000000));
+    }
 }
 
 /*
