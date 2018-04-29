@@ -15,6 +15,22 @@ int ConsoleLog::Write(LPCSTR str, int length) {
     return count;
 }
 
+int ConsoleLog::Print(int level, LPCSTR str, int length) {
+    static short PrintColors[5] = {
+        TEXTCOLOR_LIGHTGRAY,    // print
+        TEXTCOLOR_DARKGRAY,     // debug
+        TEXTCOLOR_YELLOW,       // warning
+        TEXTCOLOR_LIGHTRED,     // error
+        TEXTCOLOR_LIGHTRED,     // fatal error
+    };
+
+    SetConsoleTextAttribute(hConsole, PrintColors[level]);
+    int result = Write(str, length);
+    SetConsoleTextAttribute(hConsole, TEXTCOLOR_LIGHTGRAY);
+
+    return result;
+}
+
 ConsoleLog::ConsoleLog() {
     AllocConsole();
     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -74,14 +90,32 @@ void ConsoleLog::WriteLine(LPCSTR str) {
 }
 
 void ConsoleLog::Format(LPCSTR format, ...) {
-    char buffer[1024]{ NULL };
+    char buffer[4096]{ NULL };
 
     va_list va;
     va_start(va, format);
-    vsprintf(buffer, format, va);
+    vsprintf_s(buffer, format, va);
     va_end(va);
 
     Write(buffer);
+}
+
+void ConsoleLog::Print(int level, LPCSTR str) {
+    if (cLog != NULL) {
+        cLog->Print(level, str, strlen(str));
+        cLog->AppendLine();
+    }
+}
+
+void ConsoleLog::Printf(int level, LPCSTR format, ...) {
+    char buffer[4096]{ NULL };
+
+    va_list va;
+    va_start(va, format);
+    vsprintf_s(buffer, format, va);
+    va_end(va);
+
+    Print(level, buffer);
 }
 
 HANDLE ConsoleLog::GetOutputHandle() {

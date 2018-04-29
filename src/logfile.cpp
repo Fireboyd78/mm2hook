@@ -62,6 +62,18 @@ void LogFileStream::AppendLine(void)
     Flush(true);
 }
 
+void LogFileStream::Format(LPCSTR format, ...)
+{
+    char buffer[__LOGFMT_BUF_SIZE] { NULL };
+    
+    va_list va;
+    va_start(va, format);
+    vsprintf_s(buffer, format, va);
+    va_end(va);
+
+    Write(buffer);
+}
+
 void LogFileStream::Write(LPCSTR str)
 {
     int strLen = strlen(str);
@@ -128,3 +140,31 @@ void LogFile::Format(LPCSTR format, ...) {
 
     ConsoleLog::Write(g_logfile_buffer);
 };
+
+void LogFile::Print(int level, LPCSTR str) {
+    static char * Prefixes[5] = {
+        "",                 // print
+        "",                 // debug
+        "Warning: ",        // warning
+        "Error: ",          // error
+        "FATAL ERROR: ",    // fatal error
+    };
+    
+    sprintf_s(g_logfile_buffer, "%s%s", Prefixes[level], str);
+
+    g_logfile->WriteLine(g_logfile_buffer);
+    g_logfile->Flush(true);
+
+    ConsoleLog::Print(level, g_logfile_buffer);
+}
+
+void LogFile::Printf(int level, LPCSTR format, ...) {
+    char buffer[__LOGFMT_BUF_SIZE] { NULL };
+
+    va_list va;
+    va_start(va, format);
+    vsprintf_s(buffer, format, va);
+    va_end(va);
+
+    Print(level, buffer);
+}

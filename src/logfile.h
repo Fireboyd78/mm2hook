@@ -5,7 +5,7 @@
 // Log file functions
 //
 
-#define __LOGFMT_BUF_SIZE 1024
+#define __LOGFMT_BUF_SIZE 4096
 
 class LogFileStream {
 protected:
@@ -26,16 +26,10 @@ public:
 
     void AppendLine(void);
 
+    void Format(LPCSTR format, ...);
+
     void Write(LPCSTR str);
     void WriteLine(LPCSTR str);
-
-    template <typename ...TArgs>
-    __inline void Format(LPCSTR format, TArgs ...args) {
-        char buf[__LOGFMT_BUF_SIZE];
-        sprintf_s(buf, sizeof(buf), format, args...);
-        
-        Write(buf);
-    };
 };
 
 namespace LogFile {
@@ -49,6 +43,9 @@ namespace LogFile {
 
     void Write(LPCSTR str);
     void WriteLine(LPCSTR str);
+
+    void Print(int level, LPCSTR str);
+    void Printf(int level, LPCSTR format, ...);
 
     void Format(LPCSTR format, ...);
 };
