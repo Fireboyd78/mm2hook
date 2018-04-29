@@ -602,6 +602,13 @@ public:
         if (datArgParser::Get("nolog"))
             debugLog = false;
 
+        // limit the amount of logging if specified
+        // otherwise, everything will be captured
+        //   1 = Printf, Messagef, Displayf
+        //   2 = Warningf
+        //   3 = Errorf
+        int outputMask = 0;
+
         if (debugLog) {
             if (!datOutput::OpenLog("mm2.log", &logFileMethods))
                 LogFile::WriteLine("Failed to initialize MM2 log!");
@@ -609,22 +616,15 @@ public:
             int logLevel = 0;
             cfgDebugLogLevel.Get(logLevel);
 
-            // limit the amount of logging if specified
-            // otherwise, everything will be captured
-            //   1 = Printf, Messagef, Displayf
-            //   2 = Warningf
-            //   3 = Errorf
-            int outputMask = 0;
-
             if (logLevel >= 1)
                 outputMask |= 2;
             if (logLevel >= 2)
                 outputMask |= 4;
             if (logLevel >= 3)
                 outputMask |= 8;
-
-            datOutput::SetOutputMask(outputMask);
         }
+
+        datOutput::SetOutputMask(outputMask);
 
         if (cfgAGEDebug.Get() || datArgParser::Get("age_debug"))
         {
