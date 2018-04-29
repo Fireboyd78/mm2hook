@@ -454,35 +454,83 @@ public:
 
 class PrintHandler {
 public:
-    static void PrintString(LPCSTR message) {
-        $DefaultPrintString(message);
+    static void FatalError(LPCSTR message) {
+        // TODO: implement fatal message handler?
     }
 
-    static void Print(int level, LPCSTR message, va_list va_args) {
-        static short printer_types[] = {
-            TEXTCOLOR_DARKGRAY, // print
-            TEXTCOLOR_DARKGRAY, // message
-            TEXTCOLOR_DARKGRAY, // display
-            TEXTCOLOR_YELLOW, // warning
-            TEXTCOLOR_LIGHTRED, // error
-            TEXTCOLOR_LIGHTRED, // quit/abort
+    static void Print(int level, const char *format, va_list args)
+    {
+        static char * Prefixes[6] = {
+            "",                 // print
+            "",                 // message
+            "",                 // display
+            "Warning: ",        // warning
+            "Error: ",          // error
+            "Fatal Error: ",    // quit/abort
         };
 
-        HANDLE hConsole = ConsoleLog::GetOutputHandle();
+        static char * Suffixes[6] = {
+            "",                 // print
+            "\n",               // message
+            "\n",               // display
+            "\n",               // warning
+            "\n",               // error
+            "\n",               // quit/abort
+        };
 
-        SetConsoleTextAttribute(hConsole, printer_types[level]);
-        $DefaultPrinter(level, message, va_args);
-        SetConsoleTextAttribute(hConsole, TEXTCOLOR_LIGHTGRAY);
-    }
+        static char FormatBuffer[4096] { NULL };
+        static char PrintBuffer[4096] { NULL };
 
-    static void FatalError() {
-        // do something?
+        vsprintf_s(FormatBuffer, format, args);
+
+        bool showPopupError = datOutput::ShowPopupErrors && (level == 4);
+        bool showPopupQuit = datOutput::ShowPopupQuits && (level == 5);
+
+        if (showPopupError || showPopupQuit)
+        {
+            datOutput::CallBeforeMsgBoxFunction();
+
+            MessageBoxA(NULL, FormatBuffer, Prefixes[level], MB_ICONERROR);
+            
+            if (level == 4)
+                datOutput::CallAfterMsgBoxFunction();
+        }
+
+        sprintf_s(PrintBuffer, "%s%s%s", Prefixes[level], FormatBuffer, Suffixes[level]);
+
+        if (datOutput::sm_Stream)
+        {
+            fprintf(datOutput::sm_Stream, "%s", PrintBuffer);
+            datOutput::sm_Stream->Flush();
+        }
+
+        OutputDebugStringA(PrintBuffer);
+
+        if (bShowConsole) {
+            static short printer_types[] = {
+                TEXTCOLOR_DARKGRAY, // print
+                TEXTCOLOR_DARKGRAY, // message
+                TEXTCOLOR_DARKGRAY, // display
+                TEXTCOLOR_YELLOW, // warning
+                TEXTCOLOR_LIGHTRED, // error
+                TEXTCOLOR_LIGHTRED, // quit/abort
+            };
+
+            HANDLE hConsole = ConsoleLog::GetOutputHandle();
+
+            SetConsoleTextAttribute(hConsole, printer_types[level]);
+            ConsoleLog::Write(PrintBuffer);
+            SetConsoleTextAttribute(hConsole, TEXTCOLOR_LIGHTGRAY);
+        }
+
+        if (level == 5)
+            FatalError(FormatBuffer);
+
+        datOutput::OutputSent = 1;
     }
 
     static void Install() {
         Printer = &Print;
-        StringPrinter = &PrintString;
-        FatalErrorHandler = &FatalError;
     }
 };
 
