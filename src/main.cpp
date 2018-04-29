@@ -29,6 +29,8 @@ static ConfigProperty cfgPhysicsDebug       ("PhysicsDebug", "physDebug");
 // Game-related properties
 // ==========================
 
+static bool bShowConsole = true;
+
 static int cur_seed = 0;
 
 /* AGE Debugging */
@@ -37,7 +39,7 @@ FILE *ageLogFile;
 // ==========================
 // Pointer hooks
 // ==========================
-ageHook::Type<asNode> ROOT                              ( 0x661738 );
+ageHook::Type<asNode> ROOT                              = 0x661738;
 
 /*
     ===========================================================================
@@ -807,7 +809,9 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 
             bool configLoaded = HookConfig::Initialize("mm2hook.ini");
 
-            if (HookConfig::IsFlagEnabled("ShowConsole")) {
+            bShowConsole = HookConfig::IsFlagEnabled("ShowConsole");
+
+            if (bShowConsole) {
                 ConsoleLog::Initialize();
                 ConsoleLog::SetTitle("MM2Hook Console");
             }
