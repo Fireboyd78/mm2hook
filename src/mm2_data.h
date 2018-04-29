@@ -49,12 +49,6 @@ namespace MM2
 
             declhook(0x4C7B50, _MemberFunc<void>, Call);
         }
-        namespace datOutput
-        {
-            declhook(0x4C9530, _Func<void>, CloseLog);
-            declhook(0x4C95A0, _Func<bool>, OpenLog);
-            declhook(0x4C9590, _Func<void>, SetOutputMask);
-        }
         namespace datParser
         {
             declhook(0x4A78E0, _MemberFunc<void>, $$ctor);
@@ -241,8 +235,13 @@ namespace MM2
     public:
         static ageHook::Type<Stream *> sm_Stream;
 
+        static ageHook::Type<bool> ShowPopupErrors;
+        static ageHook::Type<bool> ShowPopupQuits;
+
+        static ageHook::Type<bool> OutputSent;
+
         AGE_API static bool OpenLog(LPCSTR filename) {
-            return $::datOutput::OpenLog(filename);
+            return ageHook::StaticThunk<0x4C95A0>::Call<bool>(filename);
         };
 
         AGE_API static bool OpenLog(LPCSTR filename, const coreFileMethods *fileMethods) {
@@ -250,16 +249,27 @@ namespace MM2
         };
 
         AGE_API static void CloseLog(void) {
-            $::datOutput::CloseLog();
+            ageHook::StaticThunk<0x4C9530>::Call<void>();
         };
 
-        /* TODO: Add these?
-        static void SetBeforeMsgBoxFunction(void(__cdecl *lpFunc)(void));
-        static void SetAfterMsgBoxFunction(void(__cdecl *lpFunc)(void));
-        */
+        AGE_API static void CallBeforeMsgBoxFunction(void) {
+            ageHook::StaticThunk<0x4C9570>::Call<void>();
+        }
 
+        AGE_API static void CallAfterMsgBoxFunction(void) {
+            ageHook::StaticThunk<0x4C9580>::Call<void>();
+        }
+
+        AGE_API static void SetBeforeMsgBoxFunction(void (*lpFunc)(void)) {
+            ageHook::StaticThunk<0x4C9550>::Call<void>(lpFunc);
+        }
+
+        AGE_API static void SetAfterMsgBoxFunction(void (*lpFunc)(void)) {
+            ageHook::StaticThunk<0x4C9560>::Call<void>(lpFunc);
+        }
+        
         AGE_API static void SetOutputMask(UINT mask) {
-            $::datOutput::SetOutputMask(mask);
+            ageHook::StaticThunk<0x4C9590>::Call<void>(mask);
         };
 
         static void BindLua(LuaState L) {
