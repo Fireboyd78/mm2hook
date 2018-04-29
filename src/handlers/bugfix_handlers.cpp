@@ -87,8 +87,40 @@ void aiPoliceForceHandler::Reset(void) {
 
 float defaultSpeedLimit = 90.0f;
 
+aiVehicle * findVehicle(vehCar *car) {
+    auto AIMAP = &aiMap::Instance;
+
+    // check players
+    for (int i = 0; i < 4; i++) {
+        auto player = &AIMAP->players[i];
+
+        if (player->getCar() == car)
+            return player;
+    }
+
+    // check opponents
+    for (int i = 0; i < AIMAP->numOpponents; i++) {
+        auto opponent = AIMAP->opponents[i];
+
+        if (opponent->getCar() == car)
+            return opponent;
+    }
+
+    // not found :(
+    return nullptr;
+}
+
 float getSpeedLimit(vehCar *car) {
+    auto AIMAP = &aiMap::Instance;
+    auto veh = findVehicle(car);
+
     // TODO: figure out what road the car is on and retrieve speed limit
+    if (veh != nullptr) {
+        auto roadId = veh->CurrentRoadId();
+
+        //LogFile::Format("PLAYER IS ON ROAD %d\n", roadId);
+    }
+
     return defaultSpeedLimit;
 }
 
