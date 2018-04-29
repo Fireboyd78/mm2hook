@@ -27,6 +27,8 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<mmMultiCRHandler>("mmMultiCRHandler"),
 
     CreateHandler<BugfixPatchHandler>("Bugfix patches"),
+
+    CreateHandler<pedAnimationInstanceHandler>("pedAnimationInstance"),
 };
 
 /*
@@ -467,4 +469,31 @@ void mmMultiCRHandler::Install() {
     InstallPatch({ 0x10, 0x06, 0x5B}, {
         0x423715 + 6,
     });
+}
+
+/*
+    pedAnimationInstanceHandler
+*/
+
+ageHook::Type<float> FrameFraction      = 0x6B4724;
+ageHook::Type<int> FrameDelta           = 0x6B4720;
+
+static float pedAnimFrameRate   = 30.0f;
+static float pedAnimFPS         = (1000.0f / pedAnimFrameRate);
+
+void pedAnimationInstanceHandler::PreUpdate(float seconds) {
+    FrameFraction -= (seconds * -pedAnimFPS);
+
+    float delta = floor(FrameFraction);
+
+    FrameDelta = (int)delta;
+    FrameFraction -= delta;
+}
+
+void pedAnimationInstanceHandler::Install() {
+    InstallCallback("pedAnimationInstance::PreUpdate", "Allows for more precise control over pedestrian animations.",
+        &PreUpdate, {
+            cbHook<CALL>(0x54BF6A),
+        }
+    );
 }

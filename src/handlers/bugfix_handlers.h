@@ -111,3 +111,10 @@ public:
     bool LoadMusic(char* a1, char* a2);
     static void Install();
 };
+
+class pedAnimationInstanceHandler {
+public:
+    void PreUpdate(float seconds);
+
+    static void Install();
+};
