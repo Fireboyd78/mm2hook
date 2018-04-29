@@ -275,9 +275,15 @@ namespace MM2
     class aiVehiclePlayer : public aiVehicle {
     private:
         byte _buffer[0x2C];
+    protected:
+        static ageHook::Field<0x14, class vehCar *> _vehCar;
     public:
         aiVehiclePlayer(void)                               DONOTCALL;
         aiVehiclePlayer(const aiVehiclePlayer &&)           DONOTCALL;
+
+        inline class vehCar * getCar() {
+            return _vehCar.get(this);
+        }
 
         void Position(Vector3 &a1) override                 FORWARD_THUNK;
         float Speed(void) override                          FORWARD_THUNK;
@@ -301,9 +307,15 @@ namespace MM2
     class aiVehiclePhysics : public aiVehicle {
     private:
         byte _buffer[0x976C];
+    protected:
+        static ageHook::Field<0x10, vehCar> _vehCar;
     public:
         aiVehiclePhysics(void)                              DONOTCALL;
         aiVehiclePhysics(const aiVehiclePhysics &&)         DONOTCALL;
+
+        inline vehCar * getCar() const {
+            return _vehCar.ptr(this);
+        }
 
         void Position(Vector3 &a1) override                 FORWARD_THUNK;
         float Speed(void) override                          FORWARD_THUNK;
