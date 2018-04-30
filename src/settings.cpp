@@ -318,15 +318,19 @@ ConfigProperty::ConfigProperty(const char * propName)
 ConfigProperty::ConfigProperty(const char * propName, const char * argName)
     : name(propName), arg(argName) {}
 
+bool ConfigProperty::CanCheckArg() {
+    return ((arg != nullptr) && (datArgParser::Argc > 0));
+}
+
 bool ConfigProperty::Get() {
-    if (arg != nullptr && datArgParser::Get(arg))
+    if (CanCheckArg() && datArgParser::Get(arg))
         return true;
 
     return HookConfig::IsFlagEnabled(name);
 }
 
 bool ConfigProperty::Get(char *value) {
-    if (arg != nullptr && datArgParser::Get(arg, 0, reinterpret_cast<const char **>(value)))
+    if (CanCheckArg() && datArgParser::Get(arg, 0, reinterpret_cast<const char **>(value)))
         return true;
 
     return HookConfig::GetProperty(name, value);
@@ -344,14 +348,14 @@ bool ConfigProperty::Get(bool &value) {
 }
 
 bool ConfigProperty::Get(int &value) {
-    if (arg != nullptr && datArgParser::Get(name, 0, &value))
+    if (CanCheckArg() && datArgParser::Get(name, 0, &value))
         return true;
 
     return HookConfig::GetProperty(name, value);
 }
 
 bool ConfigProperty::Get(float &value) {
-    if (arg != nullptr && datArgParser::Get(name, 0, &value))
+    if (CanCheckArg() && datArgParser::Get(name, 0, &value))
         return true;
 
     return HookConfig::GetProperty(name, value);
