@@ -5,6 +5,8 @@
     LogFileStream
 */
 
+static char g_LogBuffer[8192] { NULL };
+
 LogFileStream::LogFileStream(LPCSTR filename, bool append)
 {
     m_filename = filename;
@@ -21,6 +23,8 @@ void LogFileStream::SetAppendMode(bool append)
 {
     if ((m_file = fopen(m_filename, (append) ? "a+" : "w")) == NULL) {
         debug((append) ? "Failed to open the log file!" : "Failed to create the log file!");
+    } else {
+        setvbuf(m_file, g_LogBuffer, _IOFBF, sizeof(g_LogBuffer));
     }
 }
 
