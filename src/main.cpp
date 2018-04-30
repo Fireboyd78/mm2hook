@@ -1,37 +1,35 @@
+#include "main.h"
+
 #include "handlers\bugfix_handlers.h"
 #include "handlers\feature_handlers.h"
-#include "main.h"
 
 #include <discord-presence.h>
 
 using namespace MM2;
 
-static ConfigProperty cfgDisableMutex       ("DisableMutex", "nomutex");
-static ConfigProperty cfgUseOldAutoDetect   ("UseOldAutoDetect", "oldautodetect");
+static ConfigValue<int> cfgRandomSeed           ("RandomSeed",          "seed",             0);
+static ConfigValue<int> cfgHeapSize             ("HeapSize",            "heapsize",         128);
+static ConfigValue<bool> cfgUseOldAutoDetect    ("UseOldAutoDetect",    "oldautodetect",    false);
+static ConfigValue<bool> cfgDisableMutex        ("DisableMutex",        "nomutex",          false);
 
-static ConfigProperty cfgRandomSeed         ("RandomSeed", "seed");
+static ConfigValue<bool> cfgShowConsole         ("ShowConsole",                             true);
 
-static ConfigProperty cfgInstallLogging     ("InstallLogging", "hookdbg");
+static ConfigValue<bool> cfgDebugLog            ("DebugLog",            "log",              true);
+static ConfigValue<int> cfgDebugLogLevel        ("DebugLogLevel",       "loglevel",         3);
+static ConfigValue<bool> cfgAGEDebug            ("AGEDebug",            "ageDebug",         false);
 
-static ConfigProperty cfgDebugLog           ("DebugLog", "log");
-static ConfigProperty cfgDebugLogLevel      ("DebugLogLevel", "loglevel");
-
-static ConfigProperty cfgAGEDebug           ("AGEDebug", "ageDebug");
-
-static ConfigProperty cfgGfxDebug           ("GfxDebug", "gfxDebug");
-static ConfigProperty cfgAudioDebug         ("AudioDebug", "audDebug");
-static ConfigProperty cfgJoystickDebug      ("JoystickDebug", "joyDebug");
-static ConfigProperty cfgAssetDebug         ("AssetDebug", "assetDebug");
-
-static ConfigProperty cfgPhysicsDebug       ("PhysicsDebug", "physDebug");
+// use BOOL so we can set the corresponding values directly
+static ConfigValue<BOOL> cfgGfxDebug            ("GfxDebug",            "gfxDebug",         FALSE);
+static ConfigValue<BOOL> cfgAudioDebug          ("AudioDebug",          "audDebug",         FALSE);
+static ConfigValue<BOOL> cfgJoystickDebug       ("JoystickDebug",       "joyDebug",         FALSE);
+static ConfigValue<BOOL> cfgAssetDebug          ("AssetDebug",          "assetDebug",       FALSE);
+static ConfigValue<bool> cfgPhysicsDebug        ("PhysicsDebug",        "physDebug",        false);
 
 // ==========================
 // Game-related properties
 // ==========================
 
-static bool bShowConsole = true;
-
-static int cur_seed = 0;
+static int RandomSeed = 0;
 
 /* AGE Debugging */
 FILE *ageLogFile;
@@ -125,7 +123,7 @@ public:
     }
 
     static void CreateGameMutex(LPCSTR lpName) {
-        if (cfgDisableMutex.Get()) {
+        if (cfgDisableMutex) {
             LogFile::WriteLine("Game mutex disabled.");
         } else {
             $CreateGameMutex(lpName);
@@ -305,15 +303,15 @@ public:
     }
 
     void GenerateRandomSeed() {
-        cur_seed = stopwatch::ticks();
+        RandomSeed = stopwatch::ticks();
     }
 
     void ResetRandomSeed() {
         // make sure the seed was generated at least one time
-        if (cur_seed == 0)
+        if (RandomSeed == 0)
             GenerateRandomSeed();
 
-        gRandSeed = cur_seed;
+        gRandSeed = RandomSeed;
     }
 
     static void Install() {
@@ -342,7 +340,7 @@ public:
             }
         );
 
-        if (!cfgUseOldAutoDetect.Get())
+        if (!cfgUseOldAutoDetect)
         {
             InstallCallback("ComputeCpuSpeed", "Removes the CPU speed calculation for the old auto detect method and improves startup times.",
                 &ComputeCpuSpeed, {
@@ -384,7 +382,7 @@ public:
         );
 
         // don't print certain errors unless specified
-        if (!cfgPhysicsDebug.Get()) {
+        if (!cfgPhysicsDebug) {
             InstallCallback(&NullSub, {
                     cbHook<CALL>(0x469A20), // ; 'CollideInstances: Attempting to collide instances without bounds'
                     cbHook<CALL>(0x4692C5), // ; 'dgPhysManager::CollideProbe : instance has no bound'
@@ -397,8 +395,8 @@ public:
             cbHook<CALL>(0x4013A4)
         }, "State pack argument parsing.");
 
-        if (cfgRandomSeed.Get(cur_seed)
-            && (cur_seed > 0))
+        if (cfgRandomSeed.Get(RandomSeed)
+            && (RandomSeed > 0))
         {
             InstallCallback("ResetRandomSeed", "Resets the random seed to a user-specified one.",
                 &ResetRandomSeed, {
@@ -409,7 +407,7 @@ public:
                 }
             );
         }
-        else if ((cur_seed == -1)
+        else if ((RandomSeed == -1)
             || datArgParser::Get("randy"))
         {
             InstallCallback("GenerateRandomSeed", "Generates a new random seed instead of resetting it to a fixed value.",
@@ -506,7 +504,7 @@ public:
 
         OutputDebugStringA(PrintBuffer);
 
-        if (bShowConsole) {
+        if (cfgShowConsole) {
             static short printer_types[] = {
                 TEXTCOLOR_DARKGRAY, // print
                 TEXTCOLOR_DARKGRAY, // message
@@ -607,7 +605,7 @@ private:
             0x55100B,
         });
 
-        if (HookConfig::IsFlagEnabled("UseAllParkedCars")) {
+        if (cfgUseAllParkedCars) {
             InstallPatch("Use all parked cars", { 4 }, {
                 0x579BE1,
             });
@@ -621,7 +619,7 @@ private:
             0x4012A7, // Main
         });
 
-        if (HookConfig::IsFlagEnabled("InstantReplay")) {
+        if (cfgInstantReplay) {
             InstallPatch("Add replay button to main menu", { 0x3C }, {
                 0x505EC3 + 2, // MainMenu::MainMenu(int)
             });
@@ -633,8 +631,6 @@ private:
     }
 public:
     static void Initialize(int argc, char **argv) {
-        cfgInstallLogging.Get(VerboseInstallLogging);
-
         LogFile::WriteLine("Installing patches...");
         InstallPatches();
 
@@ -644,12 +640,6 @@ public:
         // Initialize the Lua engine
         MM2Lua::Initialize();
 
-        bool debugLog = true;
-        cfgDebugLog.Get(debugLog);
-
-        if (datArgParser::Get("nolog"))
-            debugLog = false;
-
         // limit the amount of logging if specified
         // otherwise, everything will be captured
         //   1 = Printf, Messagef, Displayf
@@ -657,12 +647,11 @@ public:
         //   3 = Errorf
         int outputMask = 0;
 
-        if (debugLog) {
+        if (cfgDebugLog && !datArgParser::Get("nolog")) {
             if (!datOutput::OpenLog("mm2.log", &logFileMethods))
-                LogFile::WriteLine("Failed to initialize MM2 log!");
+                LogFile::Print(2, "Failed to initialize MM2 log!");
 
-            int logLevel = 0;
-            cfgDebugLogLevel.Get(logLevel);
+            int logLevel = cfgDebugLogLevel;
 
             if (logLevel >= 1)
                 outputMask |= 2;
@@ -674,7 +663,7 @@ public:
 
         datOutput::SetOutputMask(outputMask);
 
-        if (cfgAGEDebug.Get() || datArgParser::Get("age_debug"))
+        if (cfgAGEDebug || datArgParser::Get("age_debug"))
         {
             // AGE.log is a catch-all debug log
             // it will output _all_ debug to a file
@@ -683,10 +672,10 @@ public:
         } else {
             // these will output to the console and mm2.log if specified
 
-            cfgGfxDebug.Get(gfxDebug);
-            cfgAudioDebug.Get(audDebug);
-            cfgJoystickDebug.Get(joyDebug);
-            cfgAssetDebug.Get(assetDebug);
+            gfxDebug = cfgGfxDebug;
+            audDebug = cfgAudioDebug;
+            joyDebug = cfgJoystickDebug;
+            assetDebug = cfgAssetDebug;
         }
     }
 
@@ -857,9 +846,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 
             bool configLoaded = HookConfig::Initialize("mm2hook.ini");
 
-            bShowConsole = HookConfig::IsFlagEnabled("ShowConsole");
-
-            if (bShowConsole) {
+            if (cfgShowConsole) {
                 ConsoleLog::Initialize();
                 ConsoleLog::SetTitle("MM2Hook Console");
             }

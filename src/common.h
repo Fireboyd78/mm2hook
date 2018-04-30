@@ -22,10 +22,11 @@
 #undef GetClassName
 #endif
 
+#include "settings.h"
+
 #include "util.h"
 #include "logfile.h"
 #include "console.h"
-#include "settings.h"
 
 #ifdef _LUA_EMBED
 // Lua 5.3.2 embedded

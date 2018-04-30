@@ -56,18 +56,16 @@ void aiPathHandler::Install() {
     aiPedestrianHandler
 */
 
-int numPedMaxUpdates = 256;
+static ConfigValue<int> cfgMaxPedUpdateAttempts("MaxPedUpdateAttempts", 256);
 
 void aiPedestrianHandler::Update(void) {
-    if (numPedUpdateAttempts < numPedMaxUpdates) {
+    if (numPedUpdateAttempts < cfgMaxPedUpdateAttempts) {
         ++numPedUpdateAttempts;
         $::aiPedestrian::Update(this);
     }
 }
 
 void aiPedestrianHandler::Install() {
-    HookConfig::GetProperty("MaxPedUpdateAttempts", numPedMaxUpdates);
-
     InstallCallback("aiPedestrian::Update", "Limits the number of update attempts for a pedestrian.",
         &Update, {
             cbHook<CALL>(0x544191), // aiPath::UpdatePedestrians
@@ -79,6 +77,9 @@ void aiPedestrianHandler::Install() {
     aiPoliceForceHandler
 */
 
+static ConfigValue<bool> cfgPoliceAcademyFunding    ("PoliceAcademyFunding",    true);
+static ConfigValue<float> cfgDefaultSpeedLimit      ("DefaultSpeedLimit",       90.0f);
+
 void aiPoliceForceHandler::Reset(void) {
     // reset number of cops pursuing player
     // fixes incorrect music bug
@@ -86,8 +87,6 @@ void aiPoliceForceHandler::Reset(void) {
 
     $::aiPoliceForce::Reset(this);
 }
-
-float defaultSpeedLimit = 90.0f;
 
 aiVehicle * findVehicle(vehCar *car) {
     auto AIMAP = &aiMap::Instance;
@@ -123,7 +122,7 @@ float getSpeedLimit(vehCar *car) {
         //LogFile::Format("PLAYER IS ON ROAD %d\n", roadId);
     }
 
-    return defaultSpeedLimit;
+    return cfgDefaultSpeedLimit;
 }
 
 BOOL aiPoliceForceHandler::IsPerpDrivingMadly(vehCar *perpCar) {
@@ -159,9 +158,7 @@ void aiPoliceForceHandler::Install() {
         }
     );
 
-    if (HookConfig::IsFlagEnabled("PoliceAcademyFunding")) {
-        HookConfig::GetProperty("DefaultSpeedLimit", defaultSpeedLimit);
-
+    if (cfgPoliceAcademyFunding) {
         // obviously doesn't belong in aiPoliceForceHandler, should either move it or make this a generic "PoliceHandler"
         InstallCallback("aiPoliceOfficer::DetectPerpetrator", "Experimenting with making cops a little smarter about chasing people.",
             &IsPerpDrivingMadly, {
@@ -194,6 +191,8 @@ void gfxImageHandler::Install() {
     vehCarHandler
 */
 
+static ConfigValue<bool> cfgVehicleDebug("VehicleDebug", "vehicleDebug", false);
+
 void vehCarHandler::InitCar(LPCSTR vehName, int a2, int a3, bool a4, bool a5) {
     Displayf("Initializing vehicle (\"%s\", %d, %d, %s, %s)", vehName, a2, a3, bool_str(a4), bool_str(a5));
     get<vehCar>()->Init(vehName, a2, a3, a4, a5);
@@ -213,10 +212,8 @@ const phBound * vehCarHandler::GetModelBound(int a1) {
     return result;
 }
 
-static ConfigProperty cfgVehicleDebug("VehicleDebug", "vehicleDebug");
-
 void vehCarHandler::Install(void) {
-    if (cfgVehicleDebug.Get()) {
+    if (cfgVehicleDebug) {
         InstallCallback("vehCar::Init", "Enables debugging for vehicle initialization.",
             &InitCar, {
                 cbHook<CALL>(0x55942D), // aiVehiclePhysics::Init
@@ -283,15 +280,11 @@ void vehCarAudioContainerBugfixHandler::Install() {
     vehCarModelHandler
 */
 
-int maxVehiclePaintjobs = 64;
-
-static ConfigProperty cfgMaxVehiclePaintjobs("MaxVehiclePaintjobs");
+static ConfigValue<int> cfgMaxVehiclePaintjobs("MaxVehiclePaintjobs", 64);
 
 //Fixes gizmo models in cars by initializing 64 variant slots instead of 10
 void vehCarModelHandler::Install() {
-    cfgMaxVehiclePaintjobs.Get(maxVehiclePaintjobs);
-
-    InstallPatch({ (byte)maxVehiclePaintjobs }, {
+    InstallPatch({ (byte)cfgMaxVehiclePaintjobs }, {
         0x4CD39E,
     });
 }
@@ -317,6 +310,8 @@ void mmBillInstanceHandler::Install() {
     mmSpeedIndicator
 */
 
+static ConfigValue<bool> cfgSpeedoUseUpperLimit("SpeedoUseUpperLimit", true);
+
 // due to _ftol's non-standard calling convention (and because we patched the call),
 // we have to make the compiler think there's an int in ECX (for __fastcall)
 // otherwise, it'll try popping a float from the stack :/
@@ -330,7 +325,7 @@ int __fastcall Float2Long(int fValueNotAnInt) {
 }
 
 void mmSpeedIndicatorHandler::Install() {
-    if (HookConfig::IsFlagEnabled("SpeedoUpperLimit"))
+    if (cfgSpeedoUseUpperLimit)
     {
         InstallCallback("mmSpeedIndicator::Draw", "Fixes graphical UI errors that occur when a vehicle travels too fast.",
             &Float2Long, {
@@ -474,9 +469,11 @@ void mmHudMapHandler::Install() {
     mmPopupHandler
 */
 
+static ConfigValue<bool> cfgChatMusicFix("ChatMusicFix", true);
+
 // Fixes chat music presisting after the chat box is closed
 void mmPopupHandler::Install() {
-    if (HookConfig::IsFlagEnabled("ChatMusicFix")) {
+    if (cfgChatMusicFix) {
         InstallPatch({ 0x01 }, {
             0x42B558+1,
             0x42B537+1,
@@ -509,17 +506,17 @@ void mmMultiCRHandler::Install() {
     audSoundHeapHandler
 */
 
-bool bAudioHeapLogging = false;
+static ConfigValue<bool> cfgAudioHeapLogging("AudioHeapLogging", true);
 
 void * audSoundHeapHandler::CreateNodeList(void *heap, int a2, int a3) {
-    if (bAudioHeapLogging)
+    if (cfgAudioHeapLogging)
         LogFile::Printf(1, "[audSoundHeap::CreateNodeList]: Creating node list (%d, %d)", a2, a3);
 
     return ageHook::Thunk<0x5A5EB0>::Call<void *>(this, heap, a2, a3);
 }
 
 void * audSoundHeapHandler::ReserveBuffer(int size) {
-    if (bAudioHeapLogging)
+    if (cfgAudioHeapLogging)
         LogFile::Printf(1, "[audSoundHeap::ReserveBuffer]: Reserving %d audio nodes\n", size);
     
     // audSoundHeap::ReserveBuffer
@@ -528,8 +525,6 @@ void * audSoundHeapHandler::ReserveBuffer(int size) {
 
 void audSoundHeapHandler::Install() {
     if (HookConfig::IsFlagEnabled("AudioHeapPatch")) {
-        HookConfig::GetProperty("AudioHeapLogging", bAudioHeapLogging);
-
         InstallCallback("audSoundHeap::CreateNodeList", "Allows for control over audio heap allocations.",
             &CreateNodeList, {
                 cbHook<CALL>(0x5A0E43),
@@ -548,9 +543,7 @@ void audSoundHeapHandler::Install() {
             }
         );
 
-        int audHeapSize = 32;
-
-        HookConfig::GetProperty("AudioHeapSize", audHeapSize);
+        int audHeapSize = HookConfig::GetProperty("AudioHeapSize", 32);
 
         LogFile::Printf(0, "Increasing audio heap size to %dMB", audHeapSize);
 

@@ -22,6 +22,8 @@ void init_base::RunAll() {
 
 extern LogFileStream *g_logfile;
 
+static ConfigValue<bool> cfgInstallLogging("InstallLogging", "hookdbg", false);
+
 void Installf(LPCSTR format, ...) {
     char buffer[1024];
 
@@ -33,7 +35,7 @@ void Installf(LPCSTR format, ...) {
     g_logfile->Write(buffer);
     g_logfile->Flush(true);
 
-    if (VerboseInstallLogging)
+    if (cfgInstallLogging)
         ConsoleLog::Write(buffer);
 }
 

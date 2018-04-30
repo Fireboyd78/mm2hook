@@ -6,7 +6,6 @@ using namespace MM2;
 
 extern LuaState L;
 
-bool bEnableLua = true;
 bool isMainLuaLoaded = false;
 
 void mm2L_error(LPCSTR message)
@@ -146,18 +145,16 @@ void ReloadScript()
 
 bool MM2Lua::IsEnabled()
 {
-    return bEnableLua;
+    return cfgEnableLua;
 }
 
 bool MM2Lua::IsLoaded()
 {
-    return bEnableLua && isMainLuaLoaded;
+    return cfgEnableLua && isMainLuaLoaded;
 }
 
 void MM2Lua::Initialize() {
-    HookConfig::GetProperty("EnableLua", bEnableLua);
-
-    if (bEnableLua) {
+    if (cfgEnableLua) {
         if (isMainLuaLoaded)
             mm2L_error("Tried to initialize the Lua engine twice!");
 

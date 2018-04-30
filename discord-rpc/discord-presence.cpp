@@ -390,12 +390,8 @@ int discordHandler::RefreshNumPlayersLobby(void) {
     return g_mm2Info.lobbyNumPlayers;
 }
 
-bool useRichPresence = false;
-
 void discordHandler::Install() {
-    HookConfig::GetProperty("UseRichPresence", useRichPresence);
-
-    bool discordLoaded = (useRichPresence && LoadDiscordModule());
+    bool discordLoaded = (cfgUseRichPresence && LoadDiscordModule());
 
     if (discordLoaded)
     {
@@ -447,7 +443,7 @@ void discordHandler::Install() {
 
         LogFile::WriteLine("[discord] Rich Presence initialized successfully.");
     }
-    else if (useRichPresence)
+    else if (cfgUseRichPresence)
     {
         Warningf("**** Discord Rich Presence was NOT loaded! ****");
     }

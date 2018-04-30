@@ -64,9 +64,12 @@ ageHook::Type<int> vehCar_bHeadlights       ( 0x627518 );
     asCullManagerHandler
 */
 
+static ConfigValue<int> cfgMaxCullables     ("MaxCullables",            1024);
+static ConfigValue<int> cfgMaxCullables2D   ("MaxCullables2D",          256);
+
 void asCullManagerHandler::Init(int maxCullables, int maxCullables2D) {
-    HookConfig::GetProperty("MaxCullables", maxCullables);
-    HookConfig::GetProperty("MaxCullables2D", maxCullables2D);
+    maxCullables = cfgMaxCullables;
+    maxCullables2D = cfgMaxCullables2D;
 
     LogFile::Format("[asCullManager::Init]: Max Cullables = %d, %d\n", maxCullables, maxCullables2D);
 
@@ -1166,6 +1169,8 @@ void mmDirSndHandler::Install() {
     gizParkedCarMgrHandler
 */
 
+static ConfigValue<bool> cfgDynamicParkedCarDensity("DynamicParkedCarDensity", true);
+
 void gizParkedCarMgrHandler::EnumeratePath(LPCSTR a1, const Matrix34* a2, bool a3) {
     int oldRandomSeed = gRandSeed;
     float rand = ageHook::StaticThunk<0x4BBE30>::Call<float>();
@@ -1177,7 +1182,7 @@ void gizParkedCarMgrHandler::EnumeratePath(LPCSTR a1, const Matrix34* a2, bool a
 }
 
 void gizParkedCarMgrHandler::Install() {
-    if (HookConfig::IsFlagEnabled("DynamicParkedCarDensity")) {
+    if (cfgDynamicParkedCarDensity) {
         InstallCallback("gizParkedCarMgr::Init", "Scales parked cars with traffic density.",
             &EnumeratePath, {
                 cbHook<PUSH>(0x579B80),
@@ -1282,6 +1287,8 @@ void mmDashViewHandler::Install() {
     StreamHandler
 */
 
+static ConfigValue<bool> cfgUseModsFolder("UseModsFolder", true);
+
 Stream * StreamHandler::Open(const char *filename, bool readOnly)
 {
     const coreFileMethods *fileMethods = (readOnly) ? Stream::sm_DefaultOpenMethods : Stream::sm_DefaultCreateMethods;
@@ -1310,7 +1317,7 @@ Stream * StreamHandler::Open(const char *filename, bool readOnly)
 
 void StreamHandler::Install()
 {
-    if (HookConfig::IsFlagEnabled("UseModsFolder")) {
+    if (cfgUseModsFolder) {
         InstallCallback("Stream::Open", "Allows for files to be overridden using a mods folder.",
             &Open, {
                 cbHook<JMP>(0x4C99C0), // Stream::Open(const char *, bool)
@@ -1546,7 +1553,7 @@ public:
 };
 
 void PUMainHandler::Install() {
-    if (HookConfig::IsFlagEnabled("InstantReplay")) {
+    if (cfgInstantReplay) {
         InstallCallback("PUMain::ctor", "Overrides button placement for the pause menu.",
             &PUMenuHook::AddPauseButton, {
                 cbHook<CALL>(0x50A6AE),

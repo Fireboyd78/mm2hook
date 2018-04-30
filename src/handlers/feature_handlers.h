@@ -5,6 +5,9 @@
 
 static bool g_bConsoleOpen;
 
+static ConfigValue<bool> cfgInstantReplay       ("InstantReplay",           true);
+static ConfigValue<bool> cfgUseAllParkedCars    ("UseAllParkedCars",        true);
+
 class asCullManagerHandler {
 public:
     void Init(int maxCullables, int maxCullables2D);

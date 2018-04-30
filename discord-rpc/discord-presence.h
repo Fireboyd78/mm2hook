@@ -8,6 +8,8 @@
 
 #include "discord-rpc.h"
 
+static ConfigValue<bool> cfgUseRichPresence     ("UseRichPresence", true);
+
 struct mm2RichPresenceInfo {
     bool inGame;
     bool inMultiplayer;
