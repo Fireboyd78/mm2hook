@@ -61,6 +61,32 @@ public:
     static bool GetProperty(const char *key, int &value);
     static bool GetProperty(const char *key, float &value);
 
+    template <typename TType>
+    static TType GetProperty(const char *key, TType defaultValue = default(TType)) {
+        bool (*getter)(const char *, TType &) = GetProperty;
+
+        TType result = defaultValue;
+
+        return getter(key, result),
+            result;
+    }
+
+    template <>
+    static char * GetProperty<char *>(const char *key, char *defaultValue) {
+        char *result = defaultValue;
+        char buffer[MAX_PATH] { NULL };
+
+        if (GetProperty(key, buffer)) {
+            int len = strlen(buffer);
+
+            // allocate a new string buffer
+            result = new char[len] { NULL };
+            strncpy(result, buffer, len);
+        }
+
+        return result;
+    }
+
     // is flag property present and enabled?
     // e.g. 'UseHackyOverride=1'
     static bool IsFlagEnabled(const char *key) {
@@ -75,6 +101,8 @@ class ConfigProperty {
 private:
     const char *name;
     const char *arg;
+
+    inline bool CanCheckArg();
 public:
     explicit ConfigProperty(const char *propName);
     explicit ConfigProperty(const char *propName, const char *argName);
@@ -86,3 +114,52 @@ public:
     bool Get(float &value);
 };
 
+template <typename TType>
+class ConfigValue : protected ConfigProperty {
+private:
+    TType value = default(TType);
+    bool parsed = false;
+
+    void CheckValue() {
+        // parse once
+        if (!parsed) {
+            ConfigProperty::Get(value);
+            parsed = true;
+        }
+    }
+public:
+    explicit ConfigValue(const char *propName)
+        : ConfigProperty(propName) { }
+    explicit ConfigValue(const char *propName, const char *argName)
+        : ConfigProperty(propName, argName) { }
+
+    explicit ConfigValue(const char *propName, TType defaultValue)
+        : ConfigProperty(propName), value(defaultValue) { }
+    explicit ConfigValue(const char *propName, const char *argName, TType defaultValue)
+        : ConfigProperty(propName, argName), value(defaultValue) { }
+
+    inline bool Get(TType &value) {
+        return ConfigProperty::Get(value);
+    }
+
+    inline TType & Get() {
+        return CheckValue(),
+            value;
+    }
+
+    inline operator ConfigValue<TType> &()          = delete;
+    inline operator ConfigValue<TType> &() const    = delete;
+
+    inline operator TType &() {
+        return CheckValue(),
+            value;
+    }
+
+    inline bool operator==(const TType &rhs) const  { return value == rhs; }
+    inline bool operator!=(const TType &rhs) const  { return value != rhs; }
+};
+
+template <>
+class ConfigValue<char *> : protected ConfigProperty {
+    static_assert(true, "ConfigValue for strings not implemented yet");
+};
