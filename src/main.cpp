@@ -629,7 +629,7 @@ private:
             0x4390F0,   //mmGameMulti::LostCallback
         });
 
-        InstallPatch({ 0x4F, 0x47, 0x4F }, {
+        InstallPatch({ 0x4F, 0x77, 0x4F }, {
             0x5DBE71,
             0x5DBE81,
         });
