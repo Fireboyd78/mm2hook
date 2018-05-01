@@ -25,13 +25,13 @@ namespace mem
     }
 
     template <typename T>
-    inline T read(void *lpAddress) {
+    inline T read(auto_ptr address) {
         DWORD dwOldProtect;
 
-        if (VirtualProtect(lpAddress, sizeof(T), PAGE_EXECUTE_READ, &dwOldProtect))
+        if (VirtualProtect(address, sizeof(T), PAGE_EXECUTE_READ, &dwOldProtect))
         {
-            T value = *reinterpret_cast<T *>(lpAddress);
-            VirtualProtect(lpAddress, sizeof(T), dwOldProtect, &dwOldProtect);
+            T value = *(T *)address;
+            VirtualProtect(address, sizeof(T), dwOldProtect, &dwOldProtect);
 
             return value;
         }
@@ -40,7 +40,7 @@ namespace mem
     }
 
     template <typename ...TArgs>
-    inline bool write(void *lpAddress, TArgs ...args)
+    inline bool write(auto_ptr address, TArgs ...args)
     {
         static_assert(sizeof...(args) > 0,
                       "No arguments provided");
@@ -52,9 +52,9 @@ namespace mem
 
         DWORD dwOldProtect;
 
-        if (VirtualProtect(lpAddress, totalSize, PAGE_EXECUTE_READWRITE, &dwOldProtect))
+        if (VirtualProtect(address, totalSize, PAGE_EXECUTE_READWRITE, &dwOldProtect))
         {
-            void *lpDst = lpAddress;
+            void *lpDst = address;
 
             using variadic_unpacker_t = int[];
 
@@ -66,7 +66,7 @@ namespace mem
                 0)...
             };
 
-            VirtualProtect(lpAddress, totalSize, dwOldProtect, &dwOldProtect);
+            VirtualProtect(address, totalSize, dwOldProtect, &dwOldProtect);
 
             return true;
         }
