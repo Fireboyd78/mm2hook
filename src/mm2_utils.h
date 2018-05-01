@@ -116,6 +116,10 @@ inline void InstallCallback(LPCSTR name, auto_ptr lpAddr, std::initializer_list<
     InstallCallback(name, NULL, lpAddr, callbacks);
 }
 
+inline void InstallCallback(auto_ptr lpAddr, LPCSTR description, std::initializer_list<cbInfo> callbacks) {
+    InstallCallback(NULL, description, lpAddr, callbacks);
+}
+
 inline void InstallCallback(auto_ptr lpAddr, std::initializer_list<cbInfo> callbacks, LPCSTR description) {
     InstallCallback(NULL, description, lpAddr, callbacks);
 }
