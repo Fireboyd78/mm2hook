@@ -114,6 +114,13 @@ public:
 
 class audManagerHandler {
 public:
+    void Init(int, int, int, char *, short, short);
+    
+    void AssignCDVolume(float value);
+    void SetupCDAudio(float);
+
+    void SetMixerVolume(float value);
+
     static void Install();
 };
 
