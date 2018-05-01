@@ -112,11 +112,8 @@ public:
     static void Install();
 };
 
-class audSoundHeapHandler {
+class audManagerHandler {
 public:
-    void * CreateNodeList(void *heap, int a2, int a3);
-    void * ReserveBuffer(int size);
-
     static void Install();
 };
 

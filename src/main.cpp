@@ -628,6 +628,11 @@ private:
         InstallPatch("Fixes being kicked in multiplayer when losing focus", { 0xB8, 0x00, 0x00, 0x00, 0x00, 0xC3 /* mov eax, 0 -> ret */ }, {
             0x4390F0,   //mmGameMulti::LostCallback
         });
+
+        InstallPatch({ 0x4F, 0x47, 0x4F }, {
+            0x5DBE71,
+            0x5DBE81,
+        });
     }
 public:
     static void Initialize(int argc, char **argv) {

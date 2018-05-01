@@ -7,7 +7,7 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<aiPedestrianHandler>("aiPedestrian"),
     CreateHandler<aiPoliceForceHandler>("aiPoliceForce"),
 
-    CreateHandler<audSoundHeapHandler>("audSoundHeap"),
+    CreateHandler<audManagerHandler>("audManager"),
 
     CreateHandler<gfxImageHandler>("gfxImage"),
 
@@ -503,53 +503,18 @@ void mmMultiCRHandler::Install() {
 }
 
 /*
-    audSoundHeapHandler
+    audManagerHandler
 */
 
-static ConfigValue<bool> cfgAudioHeapLogging("AudioHeapLogging", true);
+void audManagerHandler::Install() {
+    int audHeapSize = HookConfig::GetProperty("AudioHeapSize", 32);
+    int audMaxSounds = HookConfig::GetProperty("AudioMaxSounds", 800);
 
-void * audSoundHeapHandler::CreateNodeList(void *heap, int a2, int a3) {
-    if (cfgAudioHeapLogging)
-        LogFile::Printf(1, "[audSoundHeap::CreateNodeList]: Creating node list (%d, %d)", a2, a3);
+    LogFile::Printf(1, "Audio heap size: %dMB", audHeapSize);
+    LogFile::Printf(1, "Audio max sounds: %d", audMaxSounds);
 
-    return ageHook::Thunk<0x5A5EB0>::Call<void *>(this, heap, a2, a3);
-}
-
-void * audSoundHeapHandler::ReserveBuffer(int size) {
-    if (cfgAudioHeapLogging)
-        LogFile::Printf(1, "[audSoundHeap::ReserveBuffer]: Reserving %d audio nodes\n", size);
-    
-    // audSoundHeap::ReserveBuffer
-    return ageHook::Thunk<0x5A5F90>::Call<void *>(this, size);
-}
-
-void audSoundHeapHandler::Install() {
-    if (HookConfig::IsFlagEnabled("AudioHeapPatch")) {
-        InstallCallback("audSoundHeap::CreateNodeList", "Allows for control over audio heap allocations.",
-            &CreateNodeList, {
-                cbHook<CALL>(0x5A0E43),
-                cbHook<CALL>(0x5A0E7E),
-                cbHook<CALL>(0x5A0EB2),
-                cbHook<CALL>(0x5A0EF6),
-                cbHook<CALL>(0x5A0F26),
-                cbHook<CALL>(0x5A1013),
-            }
-        );
-
-        InstallCallback("audSoundHeap::ReserveBuffer", "Allows for control over audio heap allocations.",
-            &ReserveBuffer, {
-                cbHook<CALL>(0x5A0D98),
-                cbHook<CALL>(0x5A5EFA),
-            }
-        );
-
-        int audHeapSize = HookConfig::GetProperty("AudioHeapSize", 32);
-
-        LogFile::Printf(0, "Increasing audio heap size to %dMB", audHeapSize);
-
-        auto ptr = reinterpret_cast<void *>(0x51938D + 1);
-        mem::write(ptr, (int)(audHeapSize * 1000000));
-    }
+    mem::write(0x51938D + 1, (int)(audHeapSize * 1000000));
+    mem::write(0x401F16 + 1, audMaxSounds);
 }
 
 /*
