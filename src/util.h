@@ -122,6 +122,11 @@ struct auto_ptr
     constexpr auto_ptr(DWORD ptr)
         : dwHandler(ptr) {};
 
+    template <typename T>
+    constexpr operator T *() const {
+        return reinterpret_cast<T *>(lpHandler);
+    };
+
     constexpr operator LPVOID() const {
         return lpHandler;
     };
