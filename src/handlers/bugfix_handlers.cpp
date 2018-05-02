@@ -635,14 +635,14 @@ void audManagerHandler::Install() {
     LogFile::Printf(1, "Audio heap size: %dMB", audHeapSize);
 
     mem::write(0x51938D + 1, (int)(audHeapSize * 1000000));
-    
-#ifdef USE_MIXER_STUFF
+
     InstallCallback("AudManager::Init", "Allows the mixer control to be initialized along with the audio manager.",
         &Init, {
             cbHook<CALL>(0x401F1B),
         }
     );
 
+#ifdef USE_MIXER_STUFF
     InstallCallback("AudManager::AssignCDVolume", "Properly sets mixer volume when changing CD volume.",
         &AssignCDVolume, {
             cbHook<CALL>(0x401F81), // InitAudioManager
