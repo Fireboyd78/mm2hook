@@ -23,6 +23,8 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<cityLevelHandler>("cityLevel"),
 
     CreateHandler<BridgeFerryHandler>("gizBridge/gizFerry"),
+
+    CreateHandler<gizFerryHandler>("gizFerry"),
     CreateHandler<gizParkedCarMgrHandler>("gizParkedCarMgr"),
 
     CreateHandler<mmDashViewHandler>("mmDashView"),
@@ -1163,6 +1165,25 @@ void mmDirSndHandler::Install() {
             cbHook<CALL>(0x51941D),
         }
     );
+}
+
+/*
+    gizFerryHandler
+*/
+
+void gizFerryHandler::SetSpeed(float value) {
+    value *= cfgFerrySpeedMultiplier;
+
+    ageHook::Thunk<0x579520>::Call<void>(this, value);
+}
+
+void gizFerryHandler::Install() {
+    InstallCallback("gizFerry:SetSpeed", "Allows a speed modifier to be applied to ferry speeds.",
+        &SetSpeed, {
+            cbHook<CALL>(0x579951), // gizFerryMgr::ApplyTuning
+        }
+    );
+
 }
 
 /*

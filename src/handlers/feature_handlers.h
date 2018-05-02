@@ -5,9 +5,10 @@
 
 static bool g_bConsoleOpen;
 
-static ConfigValue<bool> cfgInstantReplay       ("InstantReplay",           true);
-static ConfigValue<bool> cfgUseAllParkedCars    ("UseAllParkedCars",        true);
-static ConfigValue<bool> cfgUseAllTrafficColors ("UseAllTrafficColors",     true);
+static ConfigValue<bool> cfgInstantReplay           ("InstantReplay",           true);
+static ConfigValue<bool> cfgUseAllParkedCars        ("UseAllParkedCars",        true);
+static ConfigValue<bool> cfgUseAllTrafficColors     ("UseAllTrafficColors",     true);
+static ConfigValue<float> cfgFerrySpeedMultiplier   ("FerrySpeedMultiplier",    2.5f);
 
 class asCullManagerHandler {
 public:
@@ -65,6 +66,13 @@ public:
 class vehPoliceCarAudioHandler {
 public:
     void InitSirenAudio(MM2::vehCarSim *a1, MM2::vehCarDamage *a2, LPCSTR basename, LPCSTR sirenCsvFile, bool a5);
+    static void Install();
+};
+
+class gizFerryHandler {
+public:
+    void SetSpeed(float value);
+
     static void Install();
 };
 
