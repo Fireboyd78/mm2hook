@@ -573,6 +573,7 @@ void audManagerHandler::Init(int maxSounds, int a2, int a3, char *a4, short a5, 
 
     LogFile::Printf(1, "[audManagerHandler::Init]: %d max sounds", maxSounds);
 
+#ifdef USE_MIXER_STUFF
     // mixer already initialized?
     if (*getPtr<void *>(this, 0x34) == nullptr) {
         LogFile::Printf(1, "[audManagerHandler::Init]: Creating mixer...");
@@ -581,33 +582,50 @@ void audManagerHandler::Init(int maxSounds, int a2, int a3, char *a4, short a5, 
 
         setPtr<MixerCTL *>(this, 0x34, mixer);
     }
+#endif
 
     ageHook::Thunk<0x519350>::Call<void>(this, maxSounds, a2, a3, a4, a5, a6);
 }
 
 void audManagerHandler::AssignCDVolume(float value) {
     // update mixer volume first
-    SetMixerVolume(value);
+    SetMixerCDVolume(value);
+
+    // to prevent CD volume acting as a "master volume" slider...
+    // I have no idea why this is needed :/
+    SetMixerWaveVolume(MMSTATE->SoundFXVolume);
     
     // AudManager::AssignCDVolume
     ageHook::Thunk<0x519A30>::Call<void>(this, value);
 }
 
 void audManagerHandler::SetupCDAudio(float balance) {
-    SetMixerVolume(MMSTATE->MusicVolume);
+    SetMixerCDVolume(MMSTATE->MusicVolume);
+    SetMixerWaveVolume(MMSTATE->SoundFXVolume);
 
     // AudManager::AssignCDBalance
     ageHook::Thunk<0x519880>::Call<void>(this, balance);
 }
 
-void audManagerHandler::SetMixerVolume(float value) {
+void audManagerHandler::SetMixerCDVolume(float value) {
     auto mixer = *getPtr<void *>(this, 0x34);
 
     if (mixer != nullptr) {
-        LogFile::Printf(1, "[audManagerHandler::SetMixerVolume]: Setting mixer volume to %.2f", value);
+        LogFile::Printf(1, "[audManagerHandler::SetMixerVolume]: Setting mixer CD volume to %.2f", value);
 
         // MixerCTL::AssignCDVolume
         ageHook::Thunk<0x51C330>::Call<void>((MixerCTL *)mixer, value);
+    }
+}
+
+void audManagerHandler::SetMixerWaveVolume(float value) {
+    auto mixer = *getPtr<void *>(this, 0x34);
+
+    if (mixer != nullptr) {
+        LogFile::Printf(1, "[audManagerHandler::SetMixerVolume]: Setting mixer sound volume to %.2f", value);
+
+        // MixerCTL::AssignWaveVolume
+        ageHook::Thunk<0x51C310>::Call<void>((MixerCTL *)mixer, value);
     }
 }
 
@@ -618,6 +636,7 @@ void audManagerHandler::Install() {
 
     mem::write(0x51938D + 1, (int)(audHeapSize * 1000000));
     
+#ifdef USE_MIXER_STUFF
     InstallCallback("AudManager::Init", "Allows the mixer control to be initialized along with the audio manager.",
         &Init, {
             cbHook<CALL>(0x401F1B),
@@ -631,10 +650,18 @@ void audManagerHandler::Install() {
         }
     );
 
+    InstallCallback("AudManager::AssignWaveVolume", "Properly sets mixer volume when changing sound volume.",
+        &AssignCDVolume, {
+            cbHook<CALL>(0x401F71), // InitAudioManager
+            cbHook<CALL>(0x50C8FC), // PUAudioOptions::SetWaveVolume
+        }
+    );
+
     InstallCallback(&SetupCDAudio, "Allows the mixer volume to be updated when loading player config.", {
             cbHook<CALL>(0x525DC6), // mmPlayerConfig::SetAudio
         }
     );
+#endif
 }
 
 /*

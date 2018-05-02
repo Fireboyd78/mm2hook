@@ -119,7 +119,8 @@ public:
     void AssignCDVolume(float value);
     void SetupCDAudio(float);
 
-    void SetMixerVolume(float value);
+    void SetMixerCDVolume(float value);
+    void SetMixerWaveVolume(float value);
 
     static void Install();
 };
