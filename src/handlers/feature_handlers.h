@@ -7,6 +7,7 @@ static bool g_bConsoleOpen;
 
 static ConfigValue<bool> cfgInstantReplay       ("InstantReplay",           true);
 static ConfigValue<bool> cfgUseAllParkedCars    ("UseAllParkedCars",        true);
+static ConfigValue<bool> cfgUseAllTrafficColors ("UseAllTrafficColors",     true);
 
 class asCullManagerHandler {
 public:

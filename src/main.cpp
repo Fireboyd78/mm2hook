@@ -633,6 +633,12 @@ private:
             0x5DBE71,
             0x5DBE81,
         });
+
+        if (cfgUseAllTrafficColors) {
+            InstallPatch("Allows traffic to use all color variants.", { 0x90 }, {
+                0x55213F,
+            });
+        }
     }
 public:
     static void Initialize(int argc, char **argv) {
