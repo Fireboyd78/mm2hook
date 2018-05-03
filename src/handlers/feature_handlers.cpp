@@ -1259,26 +1259,46 @@ void BridgeFerryHandler::Install() {
 */
 
 static Matrix34 sm_DashOffset;
+
+static ConfigValue<bool> cfgEnableHeadBobbing       ("EnableHeadBobbing",       true);
+
+static ConfigValue<float> cfgHeadBobOffsetScaleY    ("HeadBobOffsetScaleY",     0.0125f);
+static ConfigValue<float> cfgHeadBobOffsetScaleZ    ("HeadBobOffsetScaleZ",     0.0125f);
+
+static ConfigValue<float> cfgHeadBobSteeringScale   ("HeadBobSteeringScale",    0.001875f);
+
+static ConfigValue<float> cfgHeadBobVelocityScaleY  ("HeadBobVelocityScaleY",   0.00075f);
+static ConfigValue<float> cfgHeadBobVelocityScaleZ  ("HeadBobVelocityScaleZ",   0.00725f);
+
+static ConfigValue<float> cfgHeadBobMultiplierY     ("HeadBobMultiplierY",      1.0f);
+static ConfigValue<float> cfgHeadBobMultiplierZ     ("HeadBobMultiplierZ",      1.0f);
+
 void mmDashViewHandler::UpdateCS() {
     auto dashCam = getPtr<Matrix34>(this, 0x18);
+    auto player = *getPtr<mmPlayer *>(this, 0x80);
 
-    // apply an offset (mainly doing this from CheatEngine, etc.)
-    dashCam->m11 += sm_DashOffset.m11;
-    dashCam->m12 += sm_DashOffset.m12;
-    dashCam->m13 += sm_DashOffset.m13;
-    dashCam->m14 += sm_DashOffset.m14;
+    auto car = player->getCar();
+    auto carModel = car->getModel();
 
-    dashCam->m21 += sm_DashOffset.m21;
-    dashCam->m22 += sm_DashOffset.m22;
-    dashCam->m23 += sm_DashOffset.m23;
-    dashCam->m24 += sm_DashOffset.m24;
+    sm_DashOffset = carModel->GetMatrix(sm_DashOffset);
 
-    dashCam->m31 += sm_DashOffset.m31;
-    dashCam->m32 += sm_DashOffset.m32;
-    dashCam->m33 += sm_DashOffset.m33;
-    dashCam->m34 += sm_DashOffset.m34;
+    auto steering = *getPtr<float>(player, 0x2264);
+    auto wheelFact = *getPtr<float>(this, 0x400);
 
-    ageHook::Thunk<0x4A3370>::Call<void>(this); //TODO: move to own class
+    auto bodyRoll = -(steering * wheelFact) * cfgHeadBobSteeringScale;
+
+    auto velocity = carModel->GetVelocity();
+
+    auto velY = bodyRoll + (velocity->Y * cfgHeadBobVelocityScaleY);
+    auto velZ = (velocity->Z - (velocity->Y + velocity->X)) * -cfgHeadBobVelocityScaleZ;
+
+    auto headBobY = ((sm_DashOffset.m33 - dashCam->m33) * -cfgHeadBobOffsetScaleY) + velY;
+    auto headBobZ = ((sm_DashOffset.m34 - dashCam->m34) * -cfgHeadBobOffsetScaleZ) * velZ;
+
+    dashCam->m33 += (headBobY * cfgHeadBobMultiplierY);
+    dashCam->m34 += (headBobZ * cfgHeadBobMultiplierZ);
+
+    ageHook::Thunk<0x4A3370>::Call<void>(this);
 }
 
 void mmDashViewHandler::FileIO(datParser* parser) {
@@ -1291,12 +1311,13 @@ void mmDashViewHandler::FileIO(datParser* parser) {
 }
 
 void mmDashViewHandler::Install() {
-    // dashboard testing
-    InstallCallback("mmDashView::Update", "Experimental testing.",
-        &UpdateCS, {
-            cbHook<CALL>(0x430F87), // replaces call to asLinearCS::Update
-        }
-    );
+    if (cfgEnableHeadBobbing) {
+        InstallCallback("mmDashView::Update", "Allows for a custom implementation of head-bobbing in dashboards.",
+            &UpdateCS, {
+                cbHook<CALL>(0x430F87), // replaces call to asLinearCS::Update
+            }
+        );
+    }
 
     // rv6 stuff
     InstallVTableHook("mmDashView::FileIO", &FileIO, {
