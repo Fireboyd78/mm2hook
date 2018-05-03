@@ -8,6 +8,7 @@ static bool g_bConsoleOpen;
 static ConfigValue<bool> cfgInstantReplay           ("InstantReplay",           true);
 static ConfigValue<bool> cfgUseAllParkedCars        ("UseAllParkedCars",        true);
 static ConfigValue<bool> cfgUseAllTrafficColors     ("UseAllTrafficColors",     true);
+static ConfigValue<bool> cfgAmbientSoundsWithMusic  ("AmbientSoundsWithMusic",  true);
 static ConfigValue<float> cfgFerrySpeedMultiplier   ("FerrySpeedMultiplier",    2.5f);
 
 class asCullManagerHandler {
@@ -169,6 +170,11 @@ public:
 };
 
 class PUMainHandler {
+public:
+    static void Install();
+};
+
+class mmPlayerHandler {
 public:
     static void Install();
 };

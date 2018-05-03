@@ -29,6 +29,7 @@ static init_handler g_feature_handlers[] = {
 
     CreateHandler<mmDashViewHandler>("mmDashView"),
     CreateHandler<mmDirSndHandler>("mmDirSnd"),
+    CreateHandler<mmPlayerHandler>("mmPlayer"),
     CreateHandler<mmGameHandler>("mmGame"),
     CreateHandler<mmGameMusicDataHandler>("mmGameMusicData"),
 
@@ -1604,6 +1605,18 @@ void PUMainHandler::Install() {
                 cbHook<CALL>(0x50A7D0),
             }
         );
+    }
+}
+
+/*
+    mmPlayerHandler
+*/
+
+void mmPlayerHandler::Install() {
+    if (cfgAmbientSoundsWithMusic) {
+        InstallPatch("Enables positional ambient sounds with music.", { 0x90, 0x90 }, {
+            0x404044,
+        });
     }
 }
 
