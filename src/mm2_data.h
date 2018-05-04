@@ -360,7 +360,7 @@ namespace MM2
         };
 
         void AddToken(LPCSTR name, char *tokenPtr, int tokenLength) {
-            auto record = AddRecord(0, name, tokenPtr);
+            auto &record = AddRecord(0, name, tokenPtr);
 
             // MM2 doesn't have a way of adding this kind of record
             // so we need to manually set it here
