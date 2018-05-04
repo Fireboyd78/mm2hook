@@ -1261,18 +1261,21 @@ void BridgeFerryHandler::Install() {
 
 static Matrix34 sm_DashOffset;
 
-static ConfigValue<bool> cfgEnableHeadBobbing       ("EnableHeadBobbing",       true);
+static ConfigValue<bool> cfgEnableHeadBobbing       ("EnableHeadBobbing",           true);
 
-static ConfigValue<float> cfgHeadBobOffsetScaleY    ("HeadBobOffsetScaleY",     0.0125f);
-static ConfigValue<float> cfgHeadBobOffsetScaleZ    ("HeadBobOffsetScaleZ",     0.0125f);
+static ConfigValue<float> cfgHeadBobOffsetScaleY    ("HeadBobOffsetScaleY",         0.0125f);
+static ConfigValue<float> cfgHeadBobOffsetScaleZ    ("HeadBobOffsetScaleZ",         0.0125f);
 
-static ConfigValue<float> cfgHeadBobSteeringScale   ("HeadBobSteeringScale",    0.001875f);
+static ConfigValue<float> cfgHeadBobSteeringFactor  ("HeadBobSteeringFactor",       0.001875f);
 
-static ConfigValue<float> cfgHeadBobVelocityScaleY  ("HeadBobVelocityScaleY",   0.00075f);
-static ConfigValue<float> cfgHeadBobVelocityScaleZ  ("HeadBobVelocityScaleZ",   0.00725f);
+static ConfigValue<float> cfgHeadBobSteeringSpeedFactor
+                                                    ("HeadBobSteeringSpeedFactor",  1.125f);
 
-static ConfigValue<float> cfgHeadBobMultiplierY     ("HeadBobMultiplierY",      1.0f);
-static ConfigValue<float> cfgHeadBobMultiplierZ     ("HeadBobMultiplierZ",      1.0f);
+static ConfigValue<float> cfgHeadBobVelocityScaleY  ("HeadBobVelocityScaleY",       0.00075f);
+static ConfigValue<float> cfgHeadBobVelocityScaleZ  ("HeadBobVelocityScaleZ",       0.00725f);
+
+static ConfigValue<float> cfgHeadBobMultiplierY     ("HeadBobMultiplierY",          1.0f);
+static ConfigValue<float> cfgHeadBobMultiplierZ     ("HeadBobMultiplierZ",          1.0f);
 
 void mmDashViewHandler::UpdateCS() {
     auto dashCam = getPtr<Matrix34>(this, 0x18);
@@ -1286,14 +1289,14 @@ void mmDashViewHandler::UpdateCS() {
     auto steering = *getPtr<float>(player, 0x2264);
     auto wheelFact = *getPtr<float>(this, 0x400);
 
-    auto bodyRoll = -(steering * wheelFact) * cfgHeadBobSteeringScale;
-
     auto velocity = carModel->GetVelocity();
 
-    auto velY = bodyRoll + (velocity->Y * cfgHeadBobVelocityScaleY);
+    auto velY = (velocity->Y * cfgHeadBobVelocityScaleY);
     auto velZ = (velocity->Z - (velocity->Y + velocity->X)) * -cfgHeadBobVelocityScaleZ;
 
-    auto headBobY = ((sm_DashOffset.m33 - dashCam->m33) * -cfgHeadBobOffsetScaleY) + velY;
+    auto bodyRoll = -(steering * wheelFact) * (cfgHeadBobSteeringFactor * (cfgHeadBobSteeringSpeedFactor * velZ));
+
+    auto headBobY = ((sm_DashOffset.m33 - dashCam->m33) * -cfgHeadBobOffsetScaleY) + velY + bodyRoll;
     auto headBobZ = ((sm_DashOffset.m34 - dashCam->m34) * -cfgHeadBobOffsetScaleZ) * velZ;
 
     dashCam->m33 += (headBobY * cfgHeadBobMultiplierY);
