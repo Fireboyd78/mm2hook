@@ -201,6 +201,13 @@ void cityLevelHandler::SetObjectDetail(int lod) {
         { 600.0f, 300.0f, 175.0f, 90.0f }, // Very high (NEW)
     };
 
+    if (lod == 3) {
+        HookConfig::GetProperty("UltraLOD_NoDrawThreshold", lodLevels[lod][0]);
+        HookConfig::GetProperty("UltraLOD_VeryLowThreshold", lodLevels[lod][1]);
+        HookConfig::GetProperty("UltraLOD_LowThreshold", lodLevels[lod][2]);
+        HookConfig::GetProperty("UltraLOD_MediumThreshold", lodLevels[lod][3]);
+    }
+
     // Using temporary variables so we don't need to constantly access pointers
 
     float objNoDrawThresh = lodLevels[lod][0]; // VL: <VLowThresh> - <NoDrawThresh>
