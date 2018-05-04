@@ -27,6 +27,15 @@ public:
     static void Install();
 };
 
+class cityTimeWeatherLightingHandler {
+public:
+    static void LoadCityTimeWeatherLighting();
+
+    void FileIO(MM2::datParser &parser);
+
+    static void Install();
+};
+
 class gfxPipelineHandler {
 public:
     static bool HandleKeyPress(DWORD vKey);

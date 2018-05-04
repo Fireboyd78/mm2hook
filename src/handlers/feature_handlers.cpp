@@ -21,6 +21,7 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<asCullManagerHandler>("asCullManager"),
 
     CreateHandler<cityLevelHandler>("cityLevel"),
+    CreateHandler<cityTimeWeatherLightingHandler>("cityTimeWeatherLighting"),
 
     CreateHandler<BridgeFerryHandler>("gizBridge/gizFerry"),
 
@@ -257,6 +258,184 @@ void cityLevelHandler::Install() {
             cbHook<JMP>(0x4452D0), // jump to PostUpdate at the very end
         }
     );
+}
+
+/*
+    cityTimeWeatherLightingHandler
+*/
+
+const int NUM_TIMEWEATHERS = 16;
+
+struct TimeWeatherInfo {
+    cityTimeWeatherLighting *data;
+
+    bool ShowHeadlights;
+    bool ShowLightGlows;
+    
+    float FlatColorIntensity;
+    float WeatherFriction;
+
+    char ReflectionMap[32];
+    char ShadowMap[32];
+    char GlowName[32];
+
+    void Update() {
+        data->ComputeAmbientLightLevels();
+    }
+
+    void FileIO(datParser &parser) {
+        parser.AddValue("Headlights", &ShowHeadlights);
+        parser.AddValue("LightGlows", &ShowLightGlows);
+        
+        parser.AddValue("FlatColorIntensity", &FlatColorIntensity);
+        parser.AddValue("WeatherFriction", &WeatherFriction);
+
+        parser.AddString("ReflectionMap", &ReflectionMap);
+        parser.AddString("ShadowMap", &ShadowMap);
+
+        parser.AddString("GlowName", &GlowName);
+    }
+
+    void SetDefaults(dgStatePack *statePack, int index) {
+        data = &$::timeWeathers[index];
+
+        ShowHeadlights = (statePack->TimeOfDay >= 2 || statePack->WeatherType == 2);
+        ShowLightGlows = (statePack->TimeOfDay == 3);
+
+        FlatColorIntensity = (statePack->TimeOfDay == 3) ? 0.5f : 1.0f;
+        WeatherFriction = (statePack->WeatherType == 3) ? 0.75f : 0.8f;
+
+        strcpy_s(ReflectionMap, "refl_dc");
+        strcpy_s(ShadowMap, (statePack->TimeOfDay == 3) ? "shadmap_nite" : "shadmap_day");
+        strcpy_s(GlowName, (statePack->TimeOfDay == 3) ? "s_yel_glow" : "");
+    }
+
+    void Apply() {
+        static ageHook::Type<gfxTexture *> g_GlowTexture    = 0x62767C;
+        static ageHook::Type<gfxTexture *> g_ReflectionMap  = 0x628914;
+
+        static ageHook::Type<float> g_FlatColorIntensity    = 0x5C9DA0;
+        static ageHook::Type<float> g_WeatherFriction       = 0x5CF6B8;
+
+        aiMap::Instance->drawHeadlights = ShowHeadlights;
+        vehCar_bHeadlights = ShowHeadlights;
+
+        g_FlatColorIntensity = FlatColorIntensity;
+        g_WeatherFriction = WeatherFriction;
+
+        if (MMSTATE->WeatherType == 3) {
+            // jump to the part of mmGame::InitWeather that sets up birth rules
+            ageHook::StaticThunk<0x4133D6>::Call<void>();
+        }
+
+        if (!useSoftware)
+            g_ReflectionMap = $gfxGetTexture(ReflectionMap);
+
+        if (ShowLightGlows)
+            g_GlowTexture = $gfxGetTexture(GlowName);
+
+        vglSetCloudMap(ShadowMap);
+    }
+};
+
+static TimeWeatherInfo g_TimeWeathers[NUM_TIMEWEATHERS];
+static TimeWeatherInfo *TimeWeather = nullptr;
+
+static ageHook::Type<int> TimeWeatherIdx = 0x62B068;
+
+// handled by TextureVariantHandler
+static bool UseNightTexturesInEvening = true;
+
+// cannot be 'bool' or else EAX will be corrupted!
+BOOL CanDrawNightTrafficGlows() {
+    if (TimeWeather != nullptr)
+        return TimeWeather->ShowLightGlows;
+
+    return (dgStatePack::Instance->TimeOfDay >= (UseNightTexturesInEvening) ? 1 : 2);
+}
+
+void InitTimeWeathers() {
+    TimeWeatherInfo *timeWeather = g_TimeWeathers;
+    dgStatePack *statePack = dgStatePack::Instance;
+
+    for (int i = 0; i < NUM_TIMEWEATHERS; i++) {
+        timeWeather->SetDefaults(statePack, i);
+        timeWeather++;
+    }
+
+    // reset for the iterator
+    TimeWeather = nullptr;
+}
+
+void NextTimeWeather(char *buffer, const char *format, int idx) {
+    sprintf(buffer, format, idx);
+
+    if (TimeWeather != nullptr)
+        TimeWeather->Update();
+
+    // set the next TimeWeather for FileIO to reference
+    TimeWeather = &g_TimeWeathers[idx];
+}
+
+void cityTimeWeatherLightingHandler::LoadCityTimeWeatherLighting() {
+    InitTimeWeathers();
+
+    // LoadCityTimeWeatherLighting
+    ageHook::StaticThunk<0x443530>::Call<void>();
+
+    TimeWeather = &g_TimeWeathers[TimeWeatherIdx];
+    TimeWeather->Apply();
+}
+
+void cityTimeWeatherLightingHandler::FileIO(datParser &parser) {
+    // cityTimeWeatherLighting::FileIO
+    ageHook::Thunk<0x443440>::Call<void>(this, &parser);
+
+    // apply to the active TimeWeatherInfo
+    if (TimeWeather != nullptr)
+        TimeWeather->FileIO(parser);
+}
+
+void cityTimeWeatherLightingHandler::Install() {
+    InstallCallback("LoadCityTimeWeatherLighting", "Allows for more control over city lighting initialization.",
+        &LoadCityTimeWeatherLighting, {
+            cbHook<CALL>(0x44425B), // cityLevel::Load
+        }
+    );
+
+    InstallPatch({
+        0xEB, 0x50, // jmp 444241
+        0x90,       // nop
+    }, {
+        0x4441EF, // cityLevel::Load
+    });
+
+    InstallPatch("aiTrafficLightInstance::DrawGlow code injection", {
+        0xE8, 0xCD, 0xCD, 0xCD, 0xCD,   // call <DEADCODE>
+        0x90, 0x90,                     // nop(2)
+        
+        0x0F, 0xBF, 0x4E, 0x3C,         // movsx ecx, word ptr [esi+3Ch]
+    }, {
+        0x53CABC, // aiTrafficLightInstance::DrawGlow
+    });
+
+    InstallCallback(&CanDrawNightTrafficGlows, {
+        cbHook<CALL>(0x53CABC),
+    }, "aiTrafficLightInstance::DrawGlow code implementation");
+    
+    /*
+        LoadCityTimeWeatherLighting hooks
+    */
+
+    // use 'sprintf' like an iterator ;)
+    InstallCallback(&NextTimeWeather, {
+        cbHook<CALL>(0x443564),
+    }, "Custom iterator in LoadCityTimeWeatherLighting.");
+    
+    // inject our custom properties into the .lt file parser
+    InstallCallback(&FileIO, {
+        cbHook<CALL>(0x443584),
+    }, "Custom FileIO for cityTimeWeatherLighting.");
 }
 
 /*
@@ -1405,8 +1584,6 @@ static bool TryLoadTexVariant(const char *textureName, const char *variant, bool
     return false;
 }
 
-static bool UseNightTexturesInEvening = true;
-
 struct variant_info {
     const char *suffix;
 
@@ -1507,35 +1684,37 @@ void TextureVariantHandler::Install()
 
     HookConfig::GetProperty("NightTexturesInEvening", UseNightTexturesInEvening);
 
-    if (UseNightTexturesInEvening)
-    {
-        LogFile::WriteLine("Installing evening patches...");
-
-        // aiTrafficLightInstance::DrawGlow
-        InstallPatch({ 1 }, {
-            0x53CABC + 3
-        });
-        
-        /*
-            mmGame::InitWeather patches
-        */
-
-        // minimum time of day for night checks
-        InstallPatch({ 2 }, {
-            0x41338E + 2,
-            0x4133BD + 2,
-        });
-
-        // jnz -> jb
-        InstallPatch({ 0x72 }, {
-            0x41339D,
-        });
-
-        // jz -> jge
-        InstallPatch({ 0x7D }, {
-            0x4133CA,
-        });
-    }
+    // handled by cityTimeWeatherLightingHandler
+    // leaving this here in case something goes wrong
+    //--if (UseNightTexturesInEvening)
+    //--{
+    //--    LogFile::WriteLine("Installing evening patches...");
+    //--
+    //--    // aiTrafficLightInstance::DrawGlow
+    //--    InstallPatch({ 1 }, {
+    //--        0x53CABC + 3
+    //--    });
+    //--    
+    //--    /*
+    //--        mmGame::InitWeather patches
+    //--    */
+    //--
+    //--    // minimum time of day for night checks
+    //--    InstallPatch({ 2 }, {
+    //--        0x41338E + 2,
+    //--        0x4133BD + 2,
+    //--    });
+    //--
+    //--    // jnz -> jb
+    //--    InstallPatch({ 0x72 }, {
+    //--        0x41339D,
+    //--    });
+    //--
+    //--    // jz -> jge
+    //--    InstallPatch({ 0x7D }, {
+    //--        0x4133CA,
+    //--    });
+    //--}
 }
 
 /*
