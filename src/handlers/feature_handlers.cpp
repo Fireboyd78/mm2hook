@@ -198,7 +198,7 @@ void cityLevelHandler::SetObjectDetail(int lod) {
         { 250.0f, 175.0f,  90.0f, 30.0f }, // Low       (Default: Medium)
         { 300.0f, 200.0f, 100.0f, 40.0f }, // Medium    (Default: High)
         { 300.0f, 200.0f, 130.0f, 70.0f }, // High      (Default: Very High)
-        { 600.0f, 300.0f, 175.0f, 90.0f }, // Very high (NEW)
+        { 5000.0f, 200.0f, 150.0f, 100.0f }, // Very high (NEW)
     };
 
     if (lod == 3) {
