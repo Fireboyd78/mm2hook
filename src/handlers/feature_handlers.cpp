@@ -303,17 +303,17 @@ struct TimeWeatherInfo {
         ShowLightGlows = (statePack->TimeOfDay == 3);
 
         FlatColorIntensity = (statePack->TimeOfDay == 3) ? 0.5f : 1.0f;
-        WeatherFriction = (statePack->WeatherType == 3) ? 0.75f : 0.8f;
+
+        WeatherFriction = (statePack->WeatherType == 3) 
+                            ? ((statePack->TimeOfDay == 3) ? 0.75f : 0.8f)
+                            : 1.0f;
 
         strcpy_s(ReflectionMap, "refl_dc");
         strcpy_s(ShadowMap, (statePack->TimeOfDay == 3) ? "shadmap_nite" : "shadmap_day");
-        strcpy_s(GlowName, (statePack->TimeOfDay == 3) ? "s_yel_glow" : "");
+        strcpy_s(GlowName, "s_yel_glow");
     }
 
-    void Apply() {
-        static ageHook::Type<gfxTexture *> g_GlowTexture    = 0x62767C;
-        static ageHook::Type<gfxTexture *> g_ReflectionMap  = 0x628914;
-
+    void InitWeather() {
         static ageHook::Type<float> g_FlatColorIntensity    = 0x5C9DA0;
         static ageHook::Type<float> g_WeatherFriction       = 0x5CF6B8;
 
@@ -327,6 +327,11 @@ struct TimeWeatherInfo {
             // jump to the part of mmGame::InitWeather that sets up birth rules
             ageHook::StaticThunk<0x4133D6>::Call<void>();
         }
+    }
+
+    void InitEnvironment() {
+        static ageHook::Type<gfxTexture *> g_GlowTexture    = 0x62767C;
+        static ageHook::Type<gfxTexture *> g_ReflectionMap  = 0x628914;
 
         if (!useSoftware)
             g_ReflectionMap = $gfxGetTexture(ReflectionMap);
@@ -351,7 +356,7 @@ BOOL CanDrawNightTrafficGlows() {
     if (TimeWeather != nullptr)
         return TimeWeather->ShowLightGlows;
 
-    return (dgStatePack::Instance->TimeOfDay >= (UseNightTexturesInEvening) ? 1 : 2);
+    return (dgStatePack::Instance->TimeOfDay >= ((UseNightTexturesInEvening) ? 1 : 2));
 }
 
 void InitTimeWeathers() {
@@ -384,7 +389,7 @@ void cityTimeWeatherLightingHandler::LoadCityTimeWeatherLighting() {
     ageHook::StaticThunk<0x443530>::Call<void>();
 
     TimeWeather = &g_TimeWeathers[TimeWeatherIdx];
-    TimeWeather->Apply();
+    TimeWeather->InitEnvironment();
 }
 
 void cityTimeWeatherLightingHandler::FileIO(datParser &parser) {
@@ -1301,9 +1306,12 @@ void mmGameHandler::SendChatMessage(char *message) {
 ageHook::Type<float> wheelFriction(0x5CF6B8);
 
 void mmGameHandler::InitWeather(void) {
-    // reset the wheel friction in case it got changed
-    wheelFriction = 1.0f;
-    get<mmGame>()->InitWeather();
+    if (TimeWeather != nullptr) {
+        TimeWeather->InitWeather();
+    } else {
+        Warningf("Couldn't initialize weather using TimeWeather, loading defaults...");
+        get<mmGame>()->InitWeather();
+    }
 }
 
 void mmGameHandler::Install() {
@@ -1319,7 +1327,7 @@ void mmGameHandler::Install() {
         }
     );
 
-    InstallCallback("mmGame::InitWeather", "Fixes a bug where the rainy weather effects do not get reset.",
+    InstallCallback("mmGame::InitWeather", "Allows for more control over weather initialization.",
         &InitWeather, {
             cbHook<CALL>(0x4131C0), // mmGame::Init
         }
