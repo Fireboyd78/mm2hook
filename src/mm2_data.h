@@ -368,6 +368,11 @@ namespace MM2
             record.dataLength = tokenLength;
         };
 
+        template <int N>
+        inline void AddString(LPCSTR name, char (*tokenPtr)[N]) {
+            AddToken(name, tokenPtr[0], N);
+        }
+
         /*
             Support for adding arrays of values
         */

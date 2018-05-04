@@ -72,6 +72,10 @@ namespace MM2
         /*0x44*/int AmbientLevel1;
 
         /*0x48*/int Ambient; // looks like the alpha is ignored
+
+        void ComputeAmbientLightLevels() {
+            ageHook::Thunk<0x443300>::Call<void>(this);
+        }
     };
 
     typename typedef void(*SDLIteratorCB)(const void *, int, int, int, const ushort *, void *);
