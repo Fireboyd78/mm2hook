@@ -62,7 +62,7 @@ public:
     static bool GetProperty(const char *key, float &value);
 
     template <typename TType>
-    static TType GetProperty(const char *key, TType defaultValue = default(TType)) {
+    static TType GetProperty(const char *key, TType defaultValue = TType()) {
         bool (*getter)(const char *, TType &) = GetProperty;
 
         TType result = defaultValue;
@@ -117,7 +117,7 @@ public:
 template <typename TType>
 class ConfigValue : protected ConfigProperty {
 private:
-    TType value = default(TType);
+    TType value = TType();
     bool parsed = false;
 
     void CheckValue() {
