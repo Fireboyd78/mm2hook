@@ -266,6 +266,13 @@ void cityLevelHandler::Install() {
 
 const int NUM_TIMEWEATHERS = 16;
 
+// handled by TextureVariantHandler
+static bool UseNightTexturesInEvening = true;
+
+bool CanUseNightEffects() {
+    return (dgStatePack::Instance->TimeOfDay >= ((UseNightTexturesInEvening) ? 1 : 2));
+}
+
 struct TimeWeatherInfo {
     cityTimeWeatherLighting *data;
 
@@ -300,9 +307,9 @@ struct TimeWeatherInfo {
         data = &$::timeWeathers[index];
 
         ShowHeadlights = (statePack->TimeOfDay >= 2 || statePack->WeatherType == 2);
-        ShowLightGlows = (statePack->TimeOfDay == 3);
+        ShowLightGlows = CanUseNightEffects();
 
-        FlatColorIntensity = (statePack->TimeOfDay == 3) ? 0.5f : 1.0f;
+        FlatColorIntensity = (CanUseNightEffects()) ? 0.5f : 1.0f;
 
         WeatherFriction = (statePack->WeatherType == 3) 
                             ? ((statePack->TimeOfDay == 3) ? 0.75f : 0.8f)
@@ -346,15 +353,12 @@ static TimeWeatherInfo *TimeWeather = nullptr;
 
 static ageHook::Type<int> TimeWeatherIdx = 0x62B068;
 
-// handled by TextureVariantHandler
-static bool UseNightTexturesInEvening = true;
-
 // cannot be 'bool' or else EAX will be corrupted!
 BOOL CanDrawNightTrafficGlows() {
     if (TimeWeather != nullptr)
         return TimeWeather->ShowLightGlows;
 
-    return (dgStatePack::Instance->TimeOfDay >= ((UseNightTexturesInEvening) ? 1 : 2));
+    return CanUseNightEffects();
 }
 
 void InitTimeWeathers() {
