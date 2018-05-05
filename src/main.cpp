@@ -643,6 +643,17 @@ private:
         InstallPatch("Fixes AI shadows not being drawn sometimes.", { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }, {
             0x552CD5, // aiVehicleInstance::DrawShadow
         });
+
+        InstallPatch("Fixes the rear-view mirror state not being updated.", {
+            0x31, 0xC9,                         // xor ecx, ecx
+            0xF6, 0x40, 0x10, 0x01,             // test byte ptr [eax+10h], 1
+            0x0F, 0x94, 0xC1,                   // setz cl
+            0x89, 0x48, 0x10,                   // mov [eax+10h], ecx
+            0x88, 0x0D, 0x80, 0x19, 0x6B, 0x00, // mov showMirror, cl
+            0x90, 0x90, 0x90, 0x90, 0x90,       // nop(5)
+        }, {
+            0x431FF6,
+        });
     }
 public:
     static void Initialize(int argc, char **argv) {
