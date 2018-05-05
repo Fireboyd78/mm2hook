@@ -270,7 +270,9 @@ const int NUM_TIMEWEATHERS = 16;
 static bool UseNightTexturesInEvening = true;
 
 bool CanUseNightEffects() {
-    return (dgStatePack::Instance->TimeOfDay >= ((UseNightTexturesInEvening) ? 1 : 2));
+    int timeOfDay = dgStatePack::Instance->TimeOfDay;
+
+    return (timeOfDay == 3) || (UseNightTexturesInEvening && (timeOfDay == 2));
 }
 
 struct TimeWeatherInfo {
@@ -358,7 +360,7 @@ BOOL CanDrawNightTrafficGlows() {
     if (TimeWeather != nullptr)
         return TimeWeather->ShowLightGlows;
 
-    return CanUseNightEffects();
+    return (dgStatePack::Instance->TimeOfDay >= 2);
 }
 
 void InitTimeWeathers() {
