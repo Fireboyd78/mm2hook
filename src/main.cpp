@@ -639,6 +639,10 @@ private:
                 0x55213F,
             });
         }
+
+        InstallPatch("Fixes AI shadows not being drawn sometimes.", { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }, {
+            0x552CD5, // aiVehicleInstance::DrawShadow
+        });
     }
 public:
     static void Initialize(int argc, char **argv) {
