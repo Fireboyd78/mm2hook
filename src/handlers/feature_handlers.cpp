@@ -313,7 +313,10 @@ struct TimeWeatherInfo {
         strcpy_s(GlowName, "s_yel_glow");
     }
 
-    void InitWeather() {
+    void Apply() {
+        static ageHook::Type<gfxTexture *> g_GlowTexture    = 0x62767C;
+        static ageHook::Type<gfxTexture *> g_ReflectionMap  = 0x628914;
+
         static ageHook::Type<float> g_FlatColorIntensity    = 0x5C9DA0;
         static ageHook::Type<float> g_WeatherFriction       = 0x5CF6B8;
 
@@ -327,11 +330,6 @@ struct TimeWeatherInfo {
             // jump to the part of mmGame::InitWeather that sets up birth rules
             ageHook::StaticThunk<0x4133D6>::Call<void>();
         }
-    }
-
-    void InitEnvironment() {
-        static ageHook::Type<gfxTexture *> g_GlowTexture    = 0x62767C;
-        static ageHook::Type<gfxTexture *> g_ReflectionMap  = 0x628914;
 
         if (!useSoftware)
             g_ReflectionMap = $gfxGetTexture(ReflectionMap);
@@ -389,7 +387,7 @@ void cityTimeWeatherLightingHandler::LoadCityTimeWeatherLighting() {
     ageHook::StaticThunk<0x443530>::Call<void>();
 
     TimeWeather = &g_TimeWeathers[TimeWeatherIdx];
-    TimeWeather->InitEnvironment();
+    TimeWeather->Apply();
 }
 
 void cityTimeWeatherLightingHandler::FileIO(datParser &parser) {
@@ -1306,9 +1304,8 @@ void mmGameHandler::SendChatMessage(char *message) {
 ageHook::Type<float> wheelFriction(0x5CF6B8);
 
 void mmGameHandler::InitWeather(void) {
-    if (TimeWeather != nullptr) {
-        TimeWeather->InitWeather();
-    } else {
+    // should've already been initialized, but juuuust in case...
+    if (TimeWeather == nullptr) {
         Warningf("Couldn't initialize weather using TimeWeather, loading defaults...");
         get<mmGame>()->InitWeather();
     }
