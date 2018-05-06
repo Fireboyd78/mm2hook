@@ -36,7 +36,7 @@ void Installf(LPCSTR format, ...) {
     g_logfile->Flush(true);
 
     if (cfgInstallLogging)
-        ConsoleLog::Write(buffer);
+        ConsoleLog::Print(1, buffer);
 }
 
 void __stdcall InstallHandler(LPCSTR name, InitFn installHandler) {
