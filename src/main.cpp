@@ -532,14 +532,62 @@ public:
     }
 };
 
+static volatile struct {
+    HINSTANCE instance;
+
+    intptr_t begin;
+    intptr_t end;
+
+    size_t size;
+} meminfo = { nullptr };
+
+static bool InitModuleInfo(HINSTANCE instance) {
+    intptr_t base = reinterpret_cast<intptr_t>(instance);
+
+    PIMAGE_DOS_HEADER dosHeader = reinterpret_cast<PIMAGE_DOS_HEADER>(base);
+
+    if (dosHeader->e_magic != IMAGE_DOS_SIGNATURE)
+        return false;
+
+    PIMAGE_NT_HEADERS peHeader = reinterpret_cast<PIMAGE_NT_HEADERS>(base + dosHeader->e_lfanew);
+
+    if (peHeader->Signature != IMAGE_NT_SIGNATURE)
+        return false;
+
+    meminfo.instance = instance;
+
+    meminfo.begin = base;
+    meminfo.end = base + (peHeader->OptionalHeader.BaseOfCode + peHeader->OptionalHeader.SizeOfCode);
+    meminfo.size = peHeader->OptionalHeader.SizeOfImage;
+
+    LogFile::Printf(1, "module info:");
+    LogFile::Printf(1, " begin: %08X", meminfo.begin);
+    LogFile::Printf(1, " end: %08X", meminfo.end);
+    LogFile::Printf(1, " size: %08X", meminfo.size);
+
+    return true;
+}
+
 class StackHandler {
 public:
     static void GetAddressName(char *buffer, LPCSTR, int address) {
-        /*
-            TODO: Retrieve symbols from MM2Hook?
-        */
+        bool unknown = true;
 
-        sprintf(buffer, "%08x (Unknown)", address);
+        if (meminfo.instance != nullptr) {
+            /*
+                TODO: Retrieve actual symbols from MM2Hook
+            */
+            if ((address >= meminfo.begin) && (address <= meminfo.end)) {
+                intptr_t relAddr = (address - meminfo.begin);
+
+                sprintf(buffer, "%08x (MM2Hook+%x)", address, relAddr);
+
+                unknown = false;
+            }
+        }
+
+        if (unknown)
+            sprintf(buffer, "%08x (Unknown)", address);
     }
 
     static void GetAddressName(char *buffer, LPCSTR, int address, char *fnSymbol, int offset) {
@@ -876,6 +924,9 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
                 ConsoleLog::Initialize();
                 ConsoleLog::SetTitle("MM2Hook Console");
             }
+
+            if (!InitModuleInfo(hModule))
+                LogFile::Printf(3, "Couldn't initialize module info!");
 
             LogFile::Format("Working directory is '%s'\n", mm2_path);
 
