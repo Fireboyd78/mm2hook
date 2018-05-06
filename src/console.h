@@ -6,17 +6,9 @@
 //
 
 class ConsoleLog {
-private:
-    HANDLE hConsole;
-    CONSOLE_SCREEN_BUFFER_INFO cInfo;
-
-    bool outputEnabled;
 protected:
-    ConsoleLog();
-    ~ConsoleLog();
-
-    int Write(LPCSTR str, int length);
-    int Print(int level, LPCSTR str, int length);
+    static int Write(LPCSTR str, int length);
+    static int Print(int level, LPCSTR str, int length);
 public:
     static void Initialize();
     static void Close();

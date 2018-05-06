@@ -4,12 +4,17 @@
     ConsoleLog
 */
 
-ConsoleLog *cLog;
+static HANDLE hConsole;
+static CONSOLE_SCREEN_BUFFER_INFO cInfo;
+
+static bool bShowOutput;
+
+static char g_Buffer[4096] { NULL };
 
 int ConsoleLog::Write(LPCSTR str, int length) {
     DWORD count = 0;
 
-    if (outputEnabled && (hConsole != NULL) && (length > 0))
+    if (bShowOutput && (hConsole != nullptr) && (length > 0))
         WriteConsole(hConsole, str, length, &count, NULL);
 
     return count;
@@ -31,57 +36,46 @@ int ConsoleLog::Print(int level, LPCSTR str, int length) {
     return result;
 }
 
-ConsoleLog::ConsoleLog() {
-    AllocConsole();
-    hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-
-    GetConsoleScreenBufferInfo(hConsole, &cInfo);
-    cInfo.dwSize.Y = 2500;
-    SetConsoleScreenBufferSize(hConsole, cInfo.dwSize);
-
-    outputEnabled = true;
-}
-
-ConsoleLog::~ConsoleLog() {
-    if (hConsole != NULL) {
-        FreeConsole();
-        hConsole = NULL;
-    }
-}
-
 void ConsoleLog::Initialize() {
-    if (cLog != NULL) {
+    if (hConsole != NULL) {
         debug("Tried to allocate more than one console!");
     } else {
-        cLog = new ConsoleLog();
+        AllocConsole();
+        hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+        GetConsoleScreenBufferInfo(hConsole, &cInfo);
+        cInfo.dwSize.Y = 2500;
+        SetConsoleScreenBufferSize(hConsole, cInfo.dwSize);
+
+        bShowOutput = true;
     }
 }
 
 void ConsoleLog::Close() {
-    if (cLog != NULL) {
-        cLog->~ConsoleLog();
-        cLog = NULL;
+    if (hConsole != nullptr) {
+        FreeConsole();
+        hConsole = nullptr;
     }
 }
 
 void ConsoleLog::SetTitle(LPCSTR title) {
-    if (cLog != NULL)
+    if (hConsole != nullptr)
         SetConsoleTitle(title);
 }
 
 void ConsoleLog::SetOutputEnabled(bool enabled) {
-    if (cLog != NULL)
-        cLog->outputEnabled = enabled;
+    if (hConsole != nullptr)
+        bShowOutput = enabled;
 }
 
 void ConsoleLog::AppendLine(void) {
-    if (cLog != NULL)
-        cLog->Write("\n", 1);
+    if (hConsole != nullptr)
+        Write("\n", 1);
 }
 
 void ConsoleLog::Write(LPCSTR str) {
-    if (cLog != NULL)
-        cLog->Write(str, strlen(str));
+    if (hConsole != nullptr)
+        Write(str, strlen(str));
 }
 
 void ConsoleLog::WriteLine(LPCSTR str) {
@@ -90,34 +84,30 @@ void ConsoleLog::WriteLine(LPCSTR str) {
 }
 
 void ConsoleLog::Format(LPCSTR format, ...) {
-    char buffer[4096]{ NULL };
-
     va_list va;
     va_start(va, format);
-    vsprintf_s(buffer, format, va);
+    vsprintf_s(g_Buffer, format, va);
     va_end(va);
 
-    Write(buffer);
+    Write(g_Buffer);
 }
 
 void ConsoleLog::Print(int level, LPCSTR str) {
-    if (cLog != NULL) {
-        cLog->Print(level, str, strlen(str));
-        cLog->AppendLine();
+    if (hConsole != nullptr) {
+        Print(level, str, strlen(str));
+        AppendLine();
     }
 }
 
 void ConsoleLog::Printf(int level, LPCSTR format, ...) {
-    char buffer[4096]{ NULL };
-
     va_list va;
     va_start(va, format);
-    vsprintf_s(buffer, format, va);
+    vsprintf_s(g_Buffer, format, va);
     va_end(va);
 
-    Print(level, buffer);
+    Print(level, g_Buffer);
 }
 
 HANDLE ConsoleLog::GetOutputHandle() {
-    return (cLog != NULL) ? cLog->hConsole : GetStdHandle(STD_OUTPUT_HANDLE);
+    return (hConsole != nullptr) ? hConsole : GetStdHandle(STD_OUTPUT_HANDLE);
 }
