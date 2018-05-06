@@ -32,7 +32,8 @@ static ConfigValue<bool> cfgPhysicsDebug        ("PhysicsDebug",        "physDeb
 static int RandomSeed = 0;
 
 /* AGE Debugging */
-FILE *ageLogFile;
+FILE *ageLogFile = nullptr;
+bool bAgeDebug = false;
 
 // ==========================
 // Pointer hooks
@@ -133,7 +134,7 @@ public:
     static void ageDebug(int debug, const char* format, ...) {
         va_list va;
 
-        if (ageLogFile)
+        if (bAgeDebug)
         {
             // print to AGE.log if user specified -ageDebug
 
@@ -743,6 +744,7 @@ public:
             // it will output _all_ debug to a file
 
             ageLogFile = fopen("AGE.log", "w+");
+            bAgeDebug = true;
         } else {
             // these will output to the console and mm2.log if specified
 
