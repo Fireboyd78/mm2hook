@@ -304,6 +304,9 @@ void mmBillInstanceHandler::Install() {
             cbHook<CALL>(0x43F952), // mmBillInstance::Draw
         }
     );
+
+    Installf("Installing fix for vertical billboarding of CnR checkpoints...");
+    mem::nop(0x43F8FD, (6 * 3)); // 6 fld/fstp instructions (size: 3)
 }
 
 /*

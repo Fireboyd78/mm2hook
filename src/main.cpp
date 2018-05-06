@@ -705,9 +705,6 @@ private:
         }, {
             0x431FF6,
         });
-
-        Installf("Installing fix for vertical billboarding of CnR checkpoints...");
-        mem::nop(0x43F8FD, (6 * 3)); // 6 fld/fstp instructions (size: 3)
     }
 public:
     static void Initialize(int argc, char **argv) {
