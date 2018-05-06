@@ -5,6 +5,8 @@ static ConfigValue<bool> cfgEnableLua   ("EnableLua", true);
 
 namespace MM2Lua
 {
+    LuaState * GetState();
+
     bool IsEnabled();
     bool IsLoaded();
 

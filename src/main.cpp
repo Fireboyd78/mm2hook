@@ -166,13 +166,15 @@ public:
 
         if (MM2Lua::IsLoaded())
         {
-            L.getGlobal("GetLocaleString");
-            L.push(stringId);
+            auto L = MM2Lua::GetState();
 
-            if ((L.pcall(1, 1, 0) == LUA_OK) && !L.isNil(-1))
-                str = L.toString(-1);
+            L->getGlobal("GetLocaleString");
+            L->push(stringId);
 
-            L.pop(1);
+            if ((L->pcall(1, 1, 0) == LUA_OK) && !L->isNil(-1))
+                str = L->toString(-1);
+
+            L->pop(1);
         }
 
         auto locStr = &string_buffer[(string_index++ & 0x7)];

@@ -4,7 +4,7 @@
 using namespace LuaIntf;
 using namespace MM2;
 
-extern LuaState L;
+LuaState L;
 
 bool isMainLuaLoaded = false;
 
@@ -141,6 +141,10 @@ void ReloadScript()
     {
         LogFile::WriteLine("Lua script reloaded.\n");
     }
+}
+
+LuaState * MM2Lua::GetState() {
+    return &L;
 }
 
 bool MM2Lua::IsEnabled()

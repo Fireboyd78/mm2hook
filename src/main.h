@@ -19,4 +19,3 @@ STDAPI DirectInputCreate_Impl(HINSTANCE hinst, DWORD dwVersion, LPVOID *ppDI, LP
 }
 
 CMidtownMadness2 *pMM2;
-LuaState L;
