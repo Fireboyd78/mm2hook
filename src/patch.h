@@ -73,4 +73,25 @@ namespace mem
 
         return false;
     }
+
+    inline bool nop(auto_ptr address, int count = 1)
+    {
+        constexpr int OP_NOP = 0x90;
+
+        DWORD dwOldProtect;
+
+        if (VirtualProtect(address, count, PAGE_EXECUTE_READWRITE, &dwOldProtect))
+        {
+            uint8_t *lpDst = address;
+
+            for (int i = 0; i < count; i++)
+                lpDst[i] = OP_NOP;
+
+            VirtualProtect(address, count, dwOldProtect, &dwOldProtect);
+
+            return true;
+        }
+
+        return false;
+    }
 }
