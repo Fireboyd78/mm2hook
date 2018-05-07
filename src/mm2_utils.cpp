@@ -32,15 +32,14 @@ void Installf(LPCSTR format, ...) {
     vsprintf(buffer, format, va);
     va_end(va);
 
-    g_logfile->Write(buffer);
-    g_logfile->Flush(true);
+    g_logfile->WriteLine(buffer);
 
     if (cfgInstallLogging)
         ConsoleLog::Print(1, buffer);
 }
 
 void __stdcall InstallHandler(LPCSTR name, InitFn installHandler) {
-    Installf("Installing '%s' handler...\n", name);
+    Installf("Installing '%s' handler...", name);
     installHandler();
 };
 
@@ -51,14 +50,14 @@ void InstallPatch(LPCSTR description,
     const auto begin = bytes.begin();
     const auto size = bytes.size();
 
-    Installf(" - Installing patch [%08X : %08X]:\n", begin, size);
+    Installf(" - Installing patch [%08X : %08X]:", begin, size);
 
     if (description != NULL)
-        Installf(" - Description: %s\n", description);
+        Installf(" - Description: %s", description);
 
     for (auto addr : addresses)
     {
-        Installf("   => %08X\n", addr);
+        Installf("   => %08X", addr);
 
         mem::copy(LPVOID(addr), begin, size);
     }
@@ -106,30 +105,30 @@ void InstallCallback(LPCSTR name,
 {
     if (name != NULL)
     {
-        Installf(" - Installing callback [%08X] for '%s':\n", lpAddr, name);
+        Installf(" - Installing callback [%08X] for '%s':", lpAddr, name);
     }
     else
     {
-        Installf(" - Installing callback [%08X]:\n", lpAddr);
+        Installf(" - Installing callback [%08X]:", lpAddr);
     }
 
     if (description != NULL)
-        Installf(" - Description: %s\n", description);
+        Installf(" - Description: %s", description);
 
     for (auto cb : callbacks)
     {
-        Installf("   => [%s] %08X\n", hook_types[cb.type], cb.addr);
+        Installf("   => [%s] %08X", hook_types[cb.type], cb.addr);
 
         InstallCallback(lpAddr, cb);
     }
 }
 
 void InstallVTableHook(LPCSTR name, auto_ptr lpAddr, std::initializer_list<unsigned int> addresses) {
-    Installf(" - Installing V-Table hook [%08X]: '%s'...\n", lpAddr, name);
+    Installf(" - Installing V-Table hook [%08X]: '%s'...", lpAddr, name);
 
     for (auto addr : addresses)
     {
-        Installf("   => %08X\n", addr, lpAddr);
+        Installf("   => %08X", addr, lpAddr);
 
         mem::write<unsigned int>(LPVOID(addr), lpAddr);
     }
