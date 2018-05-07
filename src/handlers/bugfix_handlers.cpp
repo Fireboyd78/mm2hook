@@ -78,7 +78,8 @@ void aiPedestrianHandler::Install() {
 */
 
 static ConfigValue<bool> cfgPoliceAcademyFunding    ("PoliceAcademyFunding",    true);
-static ConfigValue<float> cfgDefaultSpeedLimit      ("DefaultSpeedLimit",       90.0f);
+static ConfigValue<float> cfgDefaultSpeedLimit      ("DefaultSpeedLimit",       12.25f);
+static ConfigValue<float> cfgSpeedLimitTolerance    ("SpeedLimitTolerance",     1.125f);
 
 void aiPoliceForceHandler::Reset(void) {
     // reset number of cops pursuing player
@@ -115,11 +116,11 @@ float getSpeedLimit(vehCar *car) {
     auto AIMAP = &aiMap::Instance;
     auto veh = findVehicle(car);
 
-    // TODO: figure out what road the car is on and retrieve speed limit
     if (veh != nullptr) {
         auto roadId = veh->CurrentRoadId();
+        auto path = AIMAP->paths[roadId];
 
-        //LogFile::Format("PLAYER IS ON ROAD %d\n", roadId);
+        return *getPtr<float>(path, 0x18);
     }
 
     return cfgDefaultSpeedLimit;
@@ -132,18 +133,18 @@ BOOL aiPoliceForceHandler::IsPerpDrivingMadly(vehCar *perpCar) {
         // ignore perp if they're a cop
         if (!ageHook::StaticThunk<0x4D1A70>::Call<bool>(vehName))
         {
-            float speed = perpCar->getCarSim()->getSpeed() * 2.2360249f;
-            float speedLimit = getSpeedLimit(perpCar);
+            float speed = perpCar->getCarSim()->getSpeed();
+            float speedLimit = getSpeedLimit(perpCar) * 2.857142857142857f;
 
-            if (speed > speedLimit) {
-                LogFile::Format("PERP DETECTED!!! He's doing %.4f over the speed limit (%.4f)!\n", (speed - speedLimit), speedLimit);
+            if (speed > (speedLimit * cfgSpeedLimitTolerance)) {
+                LogFile::Printf(1, "PERP DETECTED!!! He's doing %.4f over the speed limit (~%.4fmph)!\n", (speed - speedLimit), speedLimit);
                 return TRUE;
             }
         }
     }
     
     if (ageHook::Thunk<0x53E390>::Call<BOOL>(this, perpCar)) {
-        LogFile::WriteLine("OFFICER INVOLVED COLLISION WITH PERP!");
+        LogFile::Printf(1, "OFFICER INVOLVED COLLISION WITH PERP!");
         return TRUE;
     }
 
