@@ -59,6 +59,13 @@ public:
     static void Install();
 };
 
+class Aud3DObjectManagerHandler {
+public:
+    void InitAmbObjContainer(LPCSTR name);
+
+    static void Install();
+};
+
 class mmGameMusicDataHandler {
 public:
     bool LoadAmbientSFX(LPCSTR name);
