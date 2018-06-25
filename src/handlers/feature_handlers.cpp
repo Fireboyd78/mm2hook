@@ -1828,38 +1828,53 @@ void mmPlayerHandler::Zoink() {
     //find the closest perimeter point and room
     auto AIMAP = &aiMap::Instance;
     
+    //tell the player "That didn't happen!"
+    player->getHUD()->SetMessage(AngelReadString(29), 4, 0);
+
+    //if the aimap doesn't exist, reset back to spawn
+    if (AIMAP == NULL) {
+        car->Reset();
+        return;
+    }
+
+    //search for an intersection to teleport to
     float shortestDistance = 99999;
     int closestIntersection = -1;
 
-    if (AIMAP != NULL) {
-        for (int is = 0; is < AIMAP->numIntersections; is++) {
-            auto intersection = AIMAP->intersections[is];
+    for (int is = 0; is < AIMAP->numIntersections; is++) {
+        auto intersection = AIMAP->intersections[is];
             
-            //avoid dummy intersections
-            if (intersection->pathCount == 0)
-                continue;
+        //avoid dummy intersections
+        if (intersection->pathCount == 0)
+            continue;
 
-            float pDist = intersection->center.Dist(carPos);
-            if (pDist < shortestDistance) {
-                shortestDistance = pDist;
-                closestIntersection = is;
-            }
+        float pDist = intersection->center.Dist(carPos);
+        if (pDist < shortestDistance) {
+            shortestDistance = pDist;
+            closestIntersection = is;
         }
     }
-
-    //tell the player "That didn't happen!"
-    player->getHUD()->SetMessage(AngelReadString(29), 4, 0);
-    
-    auto carsim = car->getCarSim();
     
     //move player to the closest intersection if we can
-    //TODO: reset the reset pos afterwards
+    auto carsim = car->getCarSim();
     if (closestIntersection >= 0) {
+        auto oldResetPos = Vector3(carsim->getResetPosition());
+
+        //set to closest intersection
         carsim->SetResetPos(&AIMAP->intersections[closestIntersection]->center);
+
+        //reset vehicle
+        car->Reset();
+
+        //set back
+        carsim->SetResetPos(&oldResetPos);
+    }
+    else {
+        //reset vehicle to original spawn
+        //no intersection found to teleport to
+        car->Reset();
     }
 
-    car->Reset();
-    
 }
 
 void mmPlayerHandler::Update() {

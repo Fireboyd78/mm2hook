@@ -155,11 +155,16 @@ namespace MM2
     class vehCarSim : public asNode {
     protected:
         ageHook::Field<0x24C, float> _speed;
+        ageHook::Field<0x210, const Vector3> _resetPosition;
         //ageHook::Field<0x25C, vehEngine *> _engine;
     public:
         inline float getSpeed(void) {
             return _speed.get(this);
         };
+
+        inline const Vector3 getResetPosition(void) {
+            return _resetPosition.get(this);
+        }
 
         AGE_API vehCarSim()                                 { ageHook::Thunk<0x4CB660>::Call<void>(this); }
         AGE_API ~vehCarSim()                                { ageHook::Thunk<0x4CB8E0>::Call<void>(this); }
