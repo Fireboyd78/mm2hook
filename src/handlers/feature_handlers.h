@@ -20,7 +20,7 @@ public:
 
 class cityLevelHandler {
 public:
-    void DrawRooms(const LPVOID viewport, unsigned int p2, LPVOID roomRecs, int numRooms);
+    void DrawRooms(const MM2::gfxViewport* viewport, unsigned int p2, LPVOID roomRecs, int numRooms);
     void PostUpdate();
     void SetObjectDetail(int lod);
 

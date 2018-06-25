@@ -139,12 +139,13 @@ ColorARGB vglResultColor;
 int city_numRooms = 0;
 int city_currentRoom = 0;
 
-void cityLevelHandler::DrawRooms(const LPVOID viewport, unsigned int p2, LPVOID roomRecs, int numRooms)
+void cityLevelHandler::DrawRooms(const gfxViewport* viewport, unsigned int p2, LPVOID roomRecs, int numRooms)
 {
     city_numRooms = numRooms;
     city_currentRoom = 0;
 
-    $::cityLevel::DrawRooms(this, viewport, p2, roomRecs, numRooms);
+    auto level = reinterpret_cast<cityLevel*>(this);
+    level->DrawRooms(viewport, p2, roomRecs, numRooms);
 }
 
 // jumped to at the end of cityLevel::Update

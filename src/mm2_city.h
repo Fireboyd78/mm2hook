@@ -12,16 +12,12 @@ namespace MM2
     // External declarations
     extern class gfxTexture;
     extern class Stream;
+    extern class lvlLevel;
 
     namespace $
     {
         declhook(0x6299A8, _Type<cityTimeWeatherLighting[16]>, timeWeathers);
 
-        namespace cityLevel
-        {
-            declhook(0x445820, _Func<void>::ThisCall, DrawRooms);
-            declhook(0x443E50, _Func<void>::ThisCall, SetObjectDetail);
-        }
         namespace sdlCommon
         {
             declhook(0x45CBC0, _Func<bool>, BACKFACE);
@@ -50,6 +46,25 @@ namespace MM2
             declhook(0x45BF90, _Func<MM2::sdlPage16 *>, LoadBinary);
         }
     }
+
+    class cityLevel : public lvlLevel {
+    public:
+        int FindRoomId(const Vector3* position, int a2) {
+            return ageHook::Thunk<0x446A60>::Call<int>(this, position, a2);
+        }
+
+        int GetRoomPerimeter(int room, const Vector3* output, int outputLength) {
+            return ageHook::Thunk<0x446FA0>::Call<int>(this, room, output, outputLength);
+        }
+
+        void SetObjectDetail(int a1) {
+            ageHook::Thunk<0x443E50>::Call<void>(this, a1);
+        }
+
+        void DrawRooms(const MM2::gfxViewport* a1, unsigned int a2, const void* a3, int a4) {
+            ageHook::Thunk<0x445820>::Call<void>(this, a1, a2, a3, a4);
+        }
+    };
 
     class cityTimeWeatherLighting {
     public:
