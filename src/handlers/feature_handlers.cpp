@@ -1826,49 +1826,45 @@ void mmPlayerHandler::Zoink() {
     auto carPos = car->getModel()->GetPosition();
     
     //find the closest perimeter point and room
+    auto AIMAP = &aiMap::Instance;
+    
     float shortestDistance = 99999;
-    int shortestRoom = -1;
+    int closestIntersection = -1;
 
-    for (int rid = 1; rid < sdlCommon::sm_RoomCount; rid++) {
-        int count = city->GetRoomPerimeter(rid, perimList, 64);
-        for (int i = 0; i < count; i++) {
-            float pDist = perimList[i].Dist(carPos);
+    if (AIMAP != NULL) {
+        for (int is = 0; is < AIMAP->numIntersections; is++) {
+            auto intersection = AIMAP->intersections[is];
+
+            float pDist = intersection->center.Dist(carPos);
             if (pDist < shortestDistance) {
                 shortestDistance = pDist;
-                shortestRoom = rid;
+                closestIntersection = is;
             }
         }
     }
 
-    if (shortestRoom < 0) {
-        Warningf("No suitable teleport room found!");
-        return;
-    }
-   
-    //find center point, and reset
-    Warningf("Teleporting back");
+    //tell the player "That didn't happen!"
     player->getHUD()->SetMessage(AngelReadString(29), 4, 0);
-
-    Vector3 roomSum = Vector3(0, 0, 0);
-    int count = city->GetRoomPerimeter(shortestRoom, perimList, 64);
-    for (int i = 0; i < count; i++) {
-        roomSum += perimList[i];
-    }
-    Vector3 roomCenter = Vector3(roomSum.X / count, (roomSum.Y / count) + 8, roomSum.Z / count);
-
+    
     auto carsim = car->getCarSim();
-    carsim->SetResetPos(&roomCenter);
+    
+    //move player to the closest intersection if we can
+    //TODO: reset the reset pos afterwards
+    if (closestIntersection >= 0) {
+        carsim->SetResetPos(&AIMAP->intersections[closestIntersection]->center);
+    }
+
     car->Reset();
     
 }
 
 void mmPlayerHandler::Update() {
     auto player = reinterpret_cast<mmPlayer*>(this);
+    auto car = player->getCar();
 
     //check if we're out of the level
-    auto car = player->getCar();
-    int carRoom = car->GetInst()->getRoomId();
-    if (carRoom == 0) {
+    int playerRoom = car->GetInst()->getRoomId();
+    if (playerRoom == 0) {
         Zoink();
     }
 
