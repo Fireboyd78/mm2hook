@@ -1815,7 +1815,10 @@ void PUMainHandler::Install() {
 /*
     mmPlayerHandler
 */
-Vector3 perimList[64];
+static ConfigValue<bool> cfgEnableOutOfMapFix("OutOfMapFix", true);
+static ConfigValue<bool> cfgEnableWaterSplashSound("WaterSplashSound", true);
+bool enableOutOfMapFixCached = true;
+bool enableWaterSplashSoundCached = true;
 
 void mmPlayerHandler::Zoink() {
     Warningf("Player is out of the world, teleporting!");
@@ -1894,8 +1897,11 @@ bool prevSplashState = false;
 void mmPlayerHandler::Splash() {
     auto player = reinterpret_cast<mmPlayer*>(this);
     auto car = player->getCar();
+    float vehicleMph = car->getModel()->GetVelocity()->Mag() * 2.23694;
+    
+    //trigger ColliderId 22 with velocity of vehicleMph
     auto impactAud = car->getAudio()->GetAudImpactPtr();
-    impactAud->Play(999.f, 22);
+    impactAud->Play(vehicleMph, 22);
 }
 
 void mmPlayerHandler::Update() {
@@ -1904,26 +1910,33 @@ void mmPlayerHandler::Update() {
 
     //check if we're out of the level
     int playerRoom = car->GetInst()->getRoomId();
-    if (playerRoom == 0) {
+    if (playerRoom == 0 && enableOutOfMapFixCached) {
         Zoink();
     }
 
     //play splash sound if we just hit the water
-    bool splashState = car->getSplash()->isActive();
-    if (splashState && splashState != prevSplashState) {
-        Splash();
+    if (enableWaterSplashSoundCached) {
+        bool splashState = car->getSplash()->isActive();
+        if (splashState && splashState != prevSplashState) {
+            Splash();
+        }
+        prevSplashState = splashState;
     }
-    prevSplashState = splashState;
 
     //call original
     ageHook::Thunk<0x405760>::Call<void>(this);
 }
 
 void mmPlayerHandler::Install() {
-    InstallVTableHook("mmPlayer::Update",
-        &Update, {
-            0x5B03BC
-    });
+    enableOutOfMapFixCached = cfgEnableOutOfMapFix.Get();
+    enableWaterSplashSoundCached = cfgEnableWaterSplashSound.Get();
+
+    if (enableOutOfMapFixCached || enableWaterSplashSoundCached) {
+        InstallVTableHook("mmPlayer::Update",
+            &Update, {
+                0x5B03BC
+            });
+    }
 
     if (cfgAmbientSoundsWithMusic) {
         InstallPatch("Enables positional ambient sounds with music.", { 0x90, 0x90 }, {
