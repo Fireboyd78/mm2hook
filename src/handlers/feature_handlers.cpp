@@ -1821,17 +1821,14 @@ void mmPlayerHandler::Zoink() {
 
     //get required vars
     auto player = reinterpret_cast<mmPlayer*>(this);
-    auto city = reinterpret_cast<cityLevel*>(&lvlLevel::Singleton);
     auto car = player->getCar();
     auto carPos = car->getModel()->GetPosition();
-    
-    //find the closest perimeter point and room
-    auto AIMAP = &aiMap::Instance;
-    
-    //tell the player "That didn't happen!"
+   
+    // tell the player "That didn't happen!"
     player->getHUD()->SetMessage(AngelReadString(29), 4, 0);
 
-    //if the aimap doesn't exist, reset back to spawn
+    // if the aimap doesn't exist, reset back to spawn
+    auto AIMAP = &aiMap::Instance;
     if (AIMAP == NULL) {
         car->Reset();
         return;
@@ -1844,10 +1841,24 @@ void mmPlayerHandler::Zoink() {
     for (int is = 0; is < AIMAP->numIntersections; is++) {
         auto intersection = AIMAP->intersections[is];
             
-        //avoid dummy intersections
+        // avoid dummy intersections and freeways
         if (intersection->pathCount == 0)
             continue;
 
+        bool isFreeway = false;
+        for (int i = 0; i < intersection->pathCount; i++) {
+            auto path = intersection->paths[i];
+            ushort pathFlags = *getPtr<ushort>(path, 12);
+
+            if (pathFlags & 4) {
+                isFreeway = true;
+            }
+        }
+
+        if (isFreeway)
+            continue;
+
+        // this is a valid intersection
         float pDist = intersection->center.Dist(carPos);
         if (pDist < shortestDistance) {
             shortestDistance = pDist;
@@ -1855,23 +1866,24 @@ void mmPlayerHandler::Zoink() {
         }
     }
     
-    //move player to the closest intersection if we can
+    // move player to the closest intersection if we can
     auto carsim = car->getCarSim();
     if (closestIntersection >= 0) {
         auto oldResetPos = Vector3(carsim->getResetPosition());
 
-        //set to closest intersection
+        // set to closest intersection
         carsim->SetResetPos(&AIMAP->intersections[closestIntersection]->center);
 
-        //reset vehicle
+        // reset vehicle
         car->Reset();
 
-        //set back
+        // set back
         carsim->SetResetPos(&oldResetPos);
     }
-    else {
-        //reset vehicle to original spawn
-        //no intersection found to teleport to
+    else 
+    {
+        // reset vehicle to original spawn
+        // no intersection found to teleport to
         car->Reset();
     }
 
