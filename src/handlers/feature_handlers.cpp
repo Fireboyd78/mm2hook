@@ -1834,6 +1834,10 @@ void mmPlayerHandler::Zoink() {
     if (AIMAP != NULL) {
         for (int is = 0; is < AIMAP->numIntersections; is++) {
             auto intersection = AIMAP->intersections[is];
+            
+            //avoid dummy intersections
+            if (intersection->pathCount == 0)
+                continue;
 
             float pDist = intersection->center.Dist(carPos);
             if (pDist < shortestDistance) {
