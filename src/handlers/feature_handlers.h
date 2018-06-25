@@ -187,3 +187,9 @@ class mmPlayerHandler {
 public:
     static void Install();
 };
+
+class mmCityListHandler {
+public:
+    void Load(char* cinfoName);
+    static void Install();
+};

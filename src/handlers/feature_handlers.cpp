@@ -44,6 +44,8 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<StreamHandler>("Stream"),
     CreateHandler<TextureVariantHandler>("Texture variants"),
 
+    CreateHandler<mmCityListHandler>("mmCityList"),
+
     CreateHandler<PUMainHandler>("PUMain"),
 };
 
@@ -1818,6 +1820,23 @@ void mmPlayerHandler::Install() {
             0x404044,
         });
     }
+}
+
+/*
+    mmCityListHandler
+*/
+
+void mmCityListHandler::Load(char* cinfoName) {
+    CityListPtr->Load("sf.cinfo");
+    CityListPtr->Load("london.cinfo");
+}
+
+void mmCityListHandler::Install() {
+    InstallCallback("mmCityList::LoadAll", "Makes London the 2nd city in the list.",
+        &mmCityListHandler::Load, {
+            cbHook<CALL>(0x5244FE),
+        }
+    );
 }
 
 #ifndef FEATURES_DECLARED

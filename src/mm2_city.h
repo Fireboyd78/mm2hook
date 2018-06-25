@@ -256,6 +256,7 @@ namespace MM2
             POP_VTABLE();
         }
 
+        AGE_API void Load(char* cinfoName)                  { ageHook::Thunk<0x524330>::Call<void>(this, cinfoName); }
         AGE_API int GetCityID(char *city)                   { return ageHook::Thunk<0x524270>::Call<int>(this, city); }
 
         AGE_API mmCityInfo * GetCityInfo(int city)          { return ageHook::Thunk<0x5241F0>::Call<mmCityInfo *>(this, city); }
