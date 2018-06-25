@@ -397,6 +397,22 @@ namespace MM2
                 .addVariableRef("x", &Vector3::X)
                 .addVariableRef("y", &Vector3::Y)
                 .addVariableRef("z", &Vector3::Z)
+                .addFunction("Mag", &Mag)
+                .addFunction("Mag2", &Mag2)
+                .addFunction("InvMag", &InvMag)
+                .addFunction("RotateX", &RotateX)
+                .addFunction("RotateY", &RotateY)
+                .addFunction("RotateZ", &RotateZ)
+                .addFunction("RotateAboutAxis", &RotateAboutAxis)
+                .addFunction("Lerp", &Lerp)
+                .addFunction("Dist", &Dist)
+                .addFunction("Angle", &Angle)
+                .addFunction("FastAngle", &FastAngle)
+                .addFunction("FlatDist", &FlatDist)
+                .addFunction("Approach", &Approach)
+                .addFunction("Negate", &Negate)                
+                    
+                    
             .endClass();
         }
     };
