@@ -1813,8 +1813,74 @@ void PUMainHandler::Install() {
 /*
     mmPlayerHandler
 */
+Vector3 perimList[64];
+
+void mmPlayerHandler::Zoink() {
+    Warningf("Player is out of the world, teleporting!");
+
+    //get required vars
+    auto player = reinterpret_cast<mmPlayer*>(this);
+    auto city = reinterpret_cast<cityLevel*>(&lvlLevel::Singleton);
+    auto car = player->getCar();
+    auto carPos = car->getModel()->GetPosition();
+    
+    //find the closest perimeter point and room
+    float shortestDistance = 99999;
+    int shortestRoom = -1;
+
+    for (int rid = 1; rid < sdlCommon::sm_RoomCount; rid++) {
+        int count = city->GetRoomPerimeter(rid, perimList, 64);
+        for (int i = 0; i < count; i++) {
+            float pDist = perimList[i].Dist(carPos);
+            if (pDist < shortestDistance) {
+                shortestDistance = pDist;
+                shortestRoom = rid;
+            }
+        }
+    }
+
+    if (shortestRoom < 0) {
+        Warningf("No suitable teleport room found!");
+        return;
+    }
+   
+    //find center point, and reset
+    Warningf("Teleporting back");
+    player->getHUD()->SetMessage(AngelReadString(29), 4, 0);
+
+    Vector3 roomSum = Vector3(0, 0, 0);
+    int count = city->GetRoomPerimeter(shortestRoom, perimList, 64);
+    for (int i = 0; i < count; i++) {
+        roomSum += perimList[i];
+    }
+    Vector3 roomCenter = Vector3(roomSum.X / count, (roomSum.Y / count) + 8, roomSum.Z / count);
+
+    auto carsim = car->getCarSim();
+    carsim->SetResetPos(&roomCenter);
+    car->Reset();
+    
+}
+
+void mmPlayerHandler::Update() {
+    auto player = reinterpret_cast<mmPlayer*>(this);
+
+    //check if we're out of the level
+    auto car = player->getCar();
+    int carRoom = car->GetInst()->getRoomId();
+    if (carRoom == 0) {
+        Zoink();
+    }
+
+    //call original
+    ageHook::Thunk<0x405760>::Call<void>(this);
+}
 
 void mmPlayerHandler::Install() {
+    InstallVTableHook("mmPlayer::Update",
+        &Update, {
+            0x5B03BC
+    });
+
     if (cfgAmbientSoundsWithMusic) {
         InstallPatch("Enables positional ambient sounds with music.", { 0x90, 0x90 }, {
             0x404044,

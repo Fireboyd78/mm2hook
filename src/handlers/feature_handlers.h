@@ -185,6 +185,8 @@ public:
 
 class mmPlayerHandler {
 public:
+    void Zoink();
+    void Update();
     static void Install();
 };
 
