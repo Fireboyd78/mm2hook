@@ -1,5 +1,6 @@
 #pragma once
 #include "mm2_common.h"
+#include "mm2_level.h"
 
 namespace MM2
 {
@@ -97,6 +98,7 @@ namespace MM2
 
     class sdlCommon {
     public:
+        static ageHook::Type<int> sm_RoomCount;
         static ageHook::Type<Vector3> sm_CamPos;
         static ageHook::Type<uint> sm_LightTable;
 
