@@ -27,11 +27,18 @@ namespace MM2
     private:
         byte _buffer[0x24];
     protected:
+        ageHook::Field<0x06, int> _room;
+
         static AGE_API int GetGeomSet(char const * a1, char const * a2, int a3)
                                                             { return ageHook::StaticThunk<0x4632C0>::Call<int>(a1, a2, a3); }
         static AGE_API void CreateTempBounds()              { ageHook::StaticThunk<0x464680>::Call<void>(); }
         static AGE_API void DeleteTempBounds()              { ageHook::StaticThunk<0x4647E0>::Call<void>(); }
     public:
+        
+        inline short getRoomId(void) const {
+            return _room.get(this);
+        }
+
         static AGE_API void ResetInstanceHeap()             { ageHook::StaticThunk<0x4631A0>::Call<void>(); }
         static AGE_API void ResetAll()                      { ageHook::StaticThunk<0x4631E0>::Call<void>(); }
         static AGE_API void SetShadowBillboardMtx(Matrix44 & a1)
@@ -103,6 +110,10 @@ namespace MM2
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<lvlInstance>("lvlInstance")
+                //fields
+                .addPropertyReadOnly("CurrentRoom", &getRoomId)
+
+                //statics
                 .addStaticFunction("ResetInstanceHeap", &ResetInstanceHeap)
                 .addStaticFunction("ResetAll", &ResetAll)
                 .addStaticFunction("SetShadowBillboardMtx", &SetShadowBillboardMtx)
@@ -177,6 +188,6 @@ namespace MM2
         luaBind<lvlInstance>(L);
     }
 
-    ASSERT_SIZEOF(lvlInstance, 0x28);
-    ASSERT_SIZEOF(aiPedestrianInstance, 0x3C);
+    //ASSERT_SIZEOF(lvlInstance, 0x28);
+    //ASSERT_SIZEOF(aiPedestrianInstance, 0x3C);
 }

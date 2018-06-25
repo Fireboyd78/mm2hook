@@ -134,8 +134,11 @@ namespace MM2
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<vehCarModel>("vehCarModel")
-                .addFunction("getGenBreakableMgr", &getGenBreakableMgr)
-                .addFunction("getMechBreakableMgr", &getMechBreakableMgr)
+                //properties
+                .addPropertyReadOnly("Breakables", &getGenBreakableMgr)
+                .addPropertyReadOnly("WheelBreakables", &getMechBreakableMgr)
+
+                //functions
                 .addFunction("GetPosition", &GetPosition)
                 .addFunction("Reset", &Reset)
                 .addFunction("BreakElectrics", &BreakElectrics)
@@ -255,6 +258,7 @@ namespace MM2
             return _model.get(this);
         }
 
+        AGE_API void Reset()                                { ageHook::Thunk<0x42C330>::Call<void>(this); }
 
         AGE_API void ClearDamage()                          { ageHook::Thunk<0x42C450>::Call<void>(this); }
         AGE_API bool IsPlayer()                             { return ageHook::Thunk<0x42C890>::Call<bool>(this); }
@@ -278,9 +282,12 @@ namespace MM2
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<vehCar>("vehCar")
                 .addConstructor(LUA_ARGS(bool))
-                .addFunction("getCarDamage", &getCarDamage)
-                .addFunction("getCarSim", &getCarSim)
-                .addFunction("getModel", &getModel)
+                //properties
+                .addPropertyReadOnly("vehCarDamage", &getCarDamage)
+                .addPropertyReadOnly("vehCarSim", &getCarSim)
+                .addPropertyReadOnly("vehCarModel", &getModel)
+                
+                //functions
                 .addFunction("Init", &Init)
                 .addFunction("InitAudio", &InitAudio)
                 .addFunction("GetInst", &GetInst)

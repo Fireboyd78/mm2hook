@@ -87,8 +87,9 @@ namespace MM2
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<mmGame>("mmGame")
-                .addFunction("getPlayer", &getPlayer)
-                .addFunction("getPopup", &getPopup)
+                //properties
+                .addPropertyReadOnly("Player", &getPlayer)
+                .addPropertyReadOnly("Popup", &getPopup)
             .endClass();
         }
     };
@@ -128,8 +129,11 @@ namespace MM2
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<mmGameManager>("mmGameManager")
+                //properties
+                .addPropertyReadOnly("Game", &getGame)
+                
+                //statics
                 .addStaticFunction("Instance", [] {return (mmGameManager *)Instance; })
-                .addFunction("getGame", &getGame)
             .endClass();
         }
     };
@@ -234,9 +238,12 @@ namespace MM2
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<mmPlayer>("mmPlayer")
-                .addFunction("getCar", &getCar)
-                .addFunction("getHUD", &getHUD)
-                .addFunction("getHudmap", &getHudmap)
+                //properties
+                .addPropertyReadOnly("Car", &getCar)
+                .addPropertyReadOnly("HUD", &getHUD)
+                .addPropertyReadOnly("Hudmap", &getHudmap)
+                
+                //functions
                 .addFunction("EnableRegen", &EnableRegen)
                 .addFunction("FilterSteering", &FilterSteering)
                 .addFunction("IsMaxDamaged", &IsMaxDamaged)
