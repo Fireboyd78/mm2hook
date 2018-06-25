@@ -18,6 +18,7 @@ namespace MM2
     class aiCTFRacer;
     class aiRaceData;
     class aiIntersection;
+    class aiObstacle;
     class aiPath;
     class aiPedestrian;
     class aiPoliceForce;
@@ -148,9 +149,23 @@ namespace MM2
         virtual ~aiCityData(void)                           DONOTCALL;
     }; 
 
-    class aiIntersection {
+    class aiTrafficLightSet {
     private:
-        byte _buffer[0x2C];
+        byte _buffer[0x34];
+    };
+
+    class aiIntersection {
+    public:
+        aiPath * *paths;
+        int16_t pathCount;
+        aiVehicle *prevVeh;
+        aiVehicle *nextVeh;
+        uint16_t roomId;
+        uint16_t id;
+        Vector3 center;
+        aiTrafficLightSet *trafficLights;
+        aiObstacle *vehicles;
+        aiObstacle *bangers;
     public:
         aiIntersection(void)                                DONOTCALL;
         aiIntersection(const aiIntersection &&)             DONOTCALL;
