@@ -266,7 +266,7 @@ namespace MM2
         void DrawId(void) override                          FORWARD_THUNK;
 
         virtual void Impact(int a1)                         FORWARD_THUNK;
-        virtual class AudImpact * GetAudImpactPtr(void)     FORWARD_THUNK;
+        virtual AudImpact * GetAudImpactPtr(void)     FORWARD_THUNK;
         virtual void PlayHorn(float a1, float a2)           FORWARD_THUNK;
         virtual void StopVoice(void)                        FORWARD_THUNK;
     };

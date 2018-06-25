@@ -237,6 +237,13 @@ namespace MM2
         };
     };
 
+    class AudImpact {
+    public:
+        AGE_API void Play(float a1, int a2) {
+            ageHook::Thunk<0x511860>::Call<void>(this, a1, a2);
+        }
+    };
+
     template<>
     void luaAddModule<module_audio>(LuaState L) {
 

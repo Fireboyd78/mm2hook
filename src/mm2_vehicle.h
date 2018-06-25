@@ -1,4 +1,5 @@
 #pragma once
+#include "mm2_audio.h"
 #include "mm2_common.h"
 #include "mm2_inst.h"
 #include "mm2_game.h"
@@ -240,12 +241,27 @@ namespace MM2
         byte _buffer[0x3A4];
     };
     
+    class vehSplash : public asNode {
+    public:
+        AGE_API vehSplash() { ageHook::Thunk<0x4D6A00>::Call<void>(this); }
+        AGE_API ~vehSplash() { ageHook::Thunk<0x4D6F30>::Call<void>(this); }
+
+        /*
+            asNode virtuals
+        */
+
+        AGE_API void Update() override { ageHook::Thunk<0x4D6BF0>::Call<void>(this); }
+        AGE_API void Reset() override { ageHook::Thunk<0x4D6A70>::Call<void>(this); }
+    };
+
     class vehCar : public dgPhysEntity {
         // vehCarSim: 0xB8 (size: ~0x1560)
     protected:
         ageHook::Field<0xC0, vehCarDamage *> _damage;
         ageHook::Field<0xB8, vehCarSim *> _sim;
         ageHook::Field<0xBC, vehCarModel *> _model;
+        ageHook::Field<0xE0, vehSplash *> _splash;
+        ageHook::Field<0x254, vehCarAudioContainer *> _audio;
     public:
         AGE_API vehCar(BOOL a1)                             { ageHook::Thunk<0x42BAB0>::Call<void>(this, a1); }
         AGE_API ~vehCar()                                   { ageHook::Thunk<0x42BCC0>::Call<void>(this); }
@@ -261,6 +277,14 @@ namespace MM2
 
         inline vehCarModel* getModel(void) const {
             return _model.get(this);
+        }
+
+        inline vehSplash* getSplash(void) const {
+            return _splash.get(this);
+        }
+
+        inline vehCarAudioContainer* getAudio(void) const {
+            return _audio.get(this);
         }
 
         AGE_API void Reset()                                { ageHook::Thunk<0x42C330>::Call<void>(this); }
@@ -291,10 +315,13 @@ namespace MM2
                 .addPropertyReadOnly("vehCarDamage", &getCarDamage)
                 .addPropertyReadOnly("vehCarSim", &getCarSim)
                 .addPropertyReadOnly("vehCarModel", &getModel)
-                
+                .addPropertyReadOnly("vehSplash", &getSplash)
+                .addPropertyReadOnly("Audio", &getAudio)
+
                 //functions
                 .addFunction("Init", &Init)
                 .addFunction("InitAudio", &InitAudio)
+                .addFunction("Reset", &Reset)
                 .addFunction("GetInst", &GetInst)
                 .addFunction("ClearDamage", &ClearDamage)
                 .addFunction("SetDrivable", &SetDrivable, LUA_ARGS(bool,bool))
@@ -311,8 +338,16 @@ namespace MM2
             ageHook::StaticThunk<0x4D0C80>::Call<void>(name);
         };
 
+        AGE_API void Set3D(bool a1) {
+            ageHook::Thunk<0x4D1840>::Call<void>(this, a1);
+        }
+
         AGE_API vehPoliceCarAudio * GetPoliceCarAudioPtr() {
             return ageHook::Thunk<0x4D1790>::Call<vehPoliceCarAudio *>(this);
+        };
+
+        AGE_API AudImpact * GetAudImpactPtr() {
+            return ageHook::Thunk<0x4D1730>::Call<AudImpact *>(this);
         };
     };
 

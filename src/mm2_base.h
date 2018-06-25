@@ -55,6 +55,10 @@ namespace MM2
             POP_VTABLE();
         };
 
+        inline bool isActive(void) const {
+            return (flags & 1);
+        };
+
         AGE_API char * GetName() const {
             return (name) ? name : "";
         };

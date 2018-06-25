@@ -1307,6 +1307,7 @@ void mmGameHandler::SendChatMessage(char *message) {
     }
     else {
         LogFile::Format("Got chat message: %s\n", message);
+        MM2Lua::OnChatMessage(message);
     }
 }
 
@@ -1825,7 +1826,7 @@ void mmPlayerHandler::Zoink() {
     auto carPos = car->getModel()->GetPosition();
    
     // tell the player "That didn't happen!"
-    player->getHUD()->SetMessage(AngelReadString(29), 4, 0);
+    player->getHUD()->SetMessage(AngelReadString(29), 3.f, 0);
 
     // if the aimap doesn't exist, reset back to spawn
     auto AIMAP = &aiMap::Instance;
@@ -1889,6 +1890,14 @@ void mmPlayerHandler::Zoink() {
 
 }
 
+bool prevSplashState = false;
+void mmPlayerHandler::Splash() {
+    auto player = reinterpret_cast<mmPlayer*>(this);
+    auto car = player->getCar();
+    auto impactAud = car->getAudio()->GetAudImpactPtr();
+    impactAud->Play(999.f, 22);
+}
+
 void mmPlayerHandler::Update() {
     auto player = reinterpret_cast<mmPlayer*>(this);
     auto car = player->getCar();
@@ -1898,6 +1907,13 @@ void mmPlayerHandler::Update() {
     if (playerRoom == 0) {
         Zoink();
     }
+
+    //play splash sound if we just hit the water
+    bool splashState = car->getSplash()->isActive();
+    if (splashState && splashState != prevSplashState) {
+        Splash();
+    }
+    prevSplashState = splashState;
 
     //call original
     ageHook::Thunk<0x405760>::Call<void>(this);
