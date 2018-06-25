@@ -180,6 +180,12 @@ void MM2Lua::Reset()
     luaSetGlobals();
 }
 
+void MM2Lua::OnChatMessage(char* message) {
+    LuaRef func(L, "onChatMessage");
+    if (func != NULL)
+        func.call(message);
+}
+
 void MM2Lua::OnTick()
 {
     if (isMainLuaLoaded) {

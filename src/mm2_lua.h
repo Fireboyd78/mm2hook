@@ -13,6 +13,9 @@ namespace MM2Lua
     void Initialize();
     void Reset();
 
+    //events
+    void OnChatMessage(char* message);
+
     void OnTick();
     void OnRestart();
     void OnShutdown();
