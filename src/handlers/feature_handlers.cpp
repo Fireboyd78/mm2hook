@@ -307,9 +307,9 @@ struct TimeWeatherInfo {
         data = &$::timeWeathers[index];
 
         ShowHeadlights = (statePack->TimeOfDay >= 2 || statePack->WeatherType == 2);
-        ShowLightGlows = timeOfDay == 3;
+        ShowLightGlows = statePack->TimeOfDay == 3;
 
-        FlatColorIntensity = (timeOfDay == 3) ? 0.5f : 1.0f;
+        FlatColorIntensity = (statePack->TimeOfDay == 3) ? 0.5f : 1.0f;
 
         WeatherFriction = (statePack->WeatherType == 3) 
                             ? ((statePack->TimeOfDay == 3) ? 0.75f : 0.8f)
@@ -795,12 +795,6 @@ void gfxPipelineHandler::Install() {
     InstallCallback("gfxApplySettings", "Custom implementation allowing for more control of the graphical settings.",
         &gfxApplySettings, {
             cbHook<JMP>(0x4AC870),
-        }
-    );
-
-    InstallCallback("gfxSetTexReduceSize", "Allows for unlimited texture sizes when texture quality is Very High.",
-        &gfxSetTexReduceSize, {
-            cbHook<JMP>(0x4B3020),
         }
     );
 
@@ -1647,7 +1641,7 @@ void TextureVariantHandler::InitVariantData(int hookedSize) {
 
     //load file
     int fileId = (dgStatePack::Instance->TimeOfDay * 4) + dgStatePack::Instance->WeatherType;
-    string_buf<16> buffer("lt%02d", fileId);
+    string_buf<16> buffer("td%02d", fileId);
     LPCSTR ltExtension = buffer;
 
     Warningf("Loading lighting file %s", ltExtension);
@@ -1660,21 +1654,23 @@ void TextureVariantHandler::InitVariantData(int hookedSize) {
     auto tVarVec = split(tVarStd, "|");
     auto tLumVec = split(tLumStd, "|");
 
-    if (tVarVec.size() != tLumVec.size()) {
-        Errorf("Cannot initialize custom texture variants. Luminances.size != Suffixes.size");
-    }
-    else {
+    if(tVarVec.size() > 0) {
         for (int i = 0; i < tVarVec.size(); i++) {
-            auto suffix = tVarVec[i];
-            auto canDesat = tLumVec[i];
-
             auto vInfo = variant_info();
-            
+
+            auto suffix = tVarVec[i];
             auto suffix_copy = new char[suffix.length() + 1];
             memcpy(suffix_copy, suffix.c_str(), suffix.length() + 1);
             vInfo.suffix = suffix_copy;
 
-            vInfo.canDesaturate = atof(canDesat.c_str()) < 0.5;
+            //the luminence array may be a different size or missing altogether
+            if (i < tLumVec.size()) {
+                auto canDesat = tLumVec[i];
+                vInfo.canDesaturate = atof(canDesat.c_str()) < 0.5;
+            }
+            else {
+                vInfo.canDesaturate = false;
+            }
 
             Warningf("Pushing a new variant with suffix %s and desaturate %s", vInfo.suffix, vInfo.canDesaturate ? "true" : "false");
             variant_infos.push_back(vInfo);
@@ -1696,7 +1692,7 @@ void TextureVariantHandler::InitVariantData(int hookedSize) {
     }
 
     //call original (shrink textures, which we hooked)
-    ageHook::StaticThunk<0x4B3020>::Call<void>(hookedSize);
+    gfxPipelineHandler::gfxSetTexReduceSize(hookedSize);
 }
 
 static void Desaturate(gfxImage* result) {
