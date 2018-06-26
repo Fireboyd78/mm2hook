@@ -65,11 +65,6 @@ namespace MM2
             declhook(0x4A7C00, _MemberFunc<bool>, Save$2);
             declhook(0x4A7C50, _MemberFunc<bool>, Save$3);
         }
-        namespace datTimeManager
-        {
-            declhook(0x4C6300, _Func<void>, Reset);
-            declhook(0x4C6340, _Func<void>, Update);
-        }
     }
 
     class datArgParser {
@@ -430,12 +425,14 @@ namespace MM2
 
     class datTimeManager {
     public:
+        static ageHook::Type<float> Seconds;
+
         AGE_API static void Reset(void) {
-            $::datTimeManager::Reset();
+            ageHook::StaticThunk<0x4C6300>::Call<void>();
         };
 
         AGE_API static void Update(void) {
-            $::datTimeManager::Update();
+            ageHook::StaticThunk<0x4C6340>::Call<void>();
         };
     };
 
