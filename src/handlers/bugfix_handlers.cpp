@@ -476,14 +476,55 @@ void mmHudMapHandler::Install() {
 
 static ConfigValue<bool> cfgChatMusicFix("ChatMusicFix", true);
 
-// Fixes chat music presisting after the chat box is closed
+// fix cd player persisting through popups
+bool wasCdPlayerEnabled = false;
+
+void mmPopupHandler::HudEnable() {
+    auto cdPlayer = mmGameManager::Instance.get()->getGame()->getPlayer()->getHUD()->getCdPlayer();
+
+    // if cd player is inactive, and it was active before
+    // reactivate it
+    if(wasCdPlayerEnabled && !cdPlayer->isActive())
+      cdPlayer->Toggle();
+
+    ageHook::Thunk<0x42D910>::Call<void>(this); // mmHUD::Enable
+}
+
+void mmPopupHandler::HudDisable(int a1) {
+    auto cdPlayer = mmGameManager::Instance.get()->getGame()->getPlayer()->getHUD()->getCdPlayer();
+    wasCdPlayerEnabled = cdPlayer->isActive();
+
+    // hide the cd player if shown
+    if (wasCdPlayerEnabled)
+        cdPlayer->Toggle();
+
+    ageHook::Thunk<0x42D970>::Call<void>(this, a1); // mmHUD::Disable
+}
+
 void mmPopupHandler::Install() {
+    // Fixes chat music presisting after the chat box is closed
     if (cfgChatMusicFix) {
         InstallPatch({ 0x01 }, {
             0x42B558+1,
             0x42B537+1,
         });
     }
+
+    // CD player fixes
+    InstallCallback("mmPopup::DisablePU", "Shows the CD player on popup disable",
+        &HudEnable, {
+            cbHook<CALL>(0x42A2F5),
+        }
+    );
+
+    InstallCallback("mmPopup::ShowResults", "Hides the CD player when popups are showing",
+        &HudDisable, {
+            cbHook<CALL>(0x42A65F),
+            cbHook<CALL>(0x42A722),
+            cbHook<CALL>(0x42A7EB),
+            cbHook<CALL>(0x42A3BF),
+        }
+    );
 }
 
 /*

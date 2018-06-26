@@ -103,6 +103,8 @@ public:
 
 class mmPopupHandler {
 public:
+    void HudEnable();
+    void HudDisable(int a1);
     static void Install();
 };
 
