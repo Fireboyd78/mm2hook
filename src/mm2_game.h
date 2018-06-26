@@ -206,6 +206,10 @@ namespace MM2
     };
 
     class mmHudMap : public asNode {
+    protected:
+        AGE_API int GetCurrentMapMode()                     { return ageHook::Thunk<0x42EF20>::Call<int>(this); }
+        AGE_API int GetNextMapMode()                        { return ageHook::Thunk<0x42EF00>::Call<int>(this); }
+        AGE_API void SetMapMode(int a1)                     { ageHook::Thunk<0x42EF30>::Call<void>(this, a1); }
     public:
         AGE_API void Activate()                             { ageHook::Thunk<0x42EEE0>::Call<void>(this); }
         AGE_API void Deactivate()                           { ageHook::Thunk<0x42EEF0>::Call<void>(this); }
@@ -216,8 +220,19 @@ namespace MM2
         AGE_API bool GetOrient()                            { return ageHook::Thunk<0x42FA50>::Call<bool>(this); }
         AGE_API bool GetZoomIn()                            { return ageHook::Thunk<0x42FA30>::Call<bool>(this); }
 
+        /*
+        asNode virtuals
+        */
+
+        virtual AGE_API void Cull() override                { ageHook::Thunk<0x42F1B0>::Call<void>(this); }
+        virtual AGE_API void Update() override              { ageHook::Thunk<0x42F1A0>::Call<void>(this); }
+        virtual AGE_API void Reset() override               { ageHook::Thunk<0x42EE90>::Call<void>(this); }
+        virtual AGE_API void FileIO(datParser &parser) override 
+                                                            { ageHook::Thunk<0x42FA60>::Call<void>(this, &parser); }
+        virtual AGE_API char* GetClassName() override       { return ageHook::Thunk<0x42FD60>::Call<char*>(this); }
+
         static void BindLua(LuaState L) {
-            LuaBinding(L).beginClass<mmHudMap>("mmHudMap")
+            LuaBinding(L).beginExtendClass<mmHudMap, asNode>("mmHudMap")
                 .addFunction("Activate", &Activate)
                 .addFunction("Deactivate", &Deactivate)
                 .addFunction("SetOrient", &SetOrient)
@@ -226,15 +241,11 @@ namespace MM2
                 .addFunction("ToggleMapRes", &ToggleMapRes)
                 .addFunction("GetOrient", &GetOrient)
                 .addFunction("GetZoomIn", &GetZoomIn)
-                //.addFunction("GetCurrentMapMode", &GetCurrentMapMode)
-                //.addFunction("GetNextMapMode", &GetNextMapMode)
-                //.addFunction("SetMapMode", &SetMapMode)
+                .addFunction("GetCurrentMapMode", &GetCurrentMapMode)
+                .addFunction("GetNextMapMode", &GetNextMapMode)
+                .addFunction("SetMapMode", &SetMapMode)
             .endClass();  
         }
-    protected:
-        AGE_API int GetCurrentMapMode()                     { return ageHook::Thunk<0x42EF20>::Call<int>(this);}
-        AGE_API int GetNextMapMode()                        { return ageHook::Thunk<0x42EF00>::Call<int>(this); }
-        AGE_API void SetMapMode(int a1)                     { ageHook::Thunk<0x42EF30>::Call<void>(this, a1); }
     };
 
     class mmPlayer : public asNode {
@@ -243,8 +254,7 @@ namespace MM2
     protected:
         ageHook::Field<0x2C, vehCar> _car;
         ageHook::Field<0x288, mmHUD> _hud;
-
-        ageHook::Field<0x38A, mmHudMap> _hudmap;
+        ageHook::Field<0x0E28, mmHudMap*> _hudmap;
 
     public:
         inline vehCar* getCar(void) const {
@@ -256,7 +266,7 @@ namespace MM2
         };
 
         inline mmHudMap* getHudmap(void) const {
-            return _hudmap.ptr(this);
+            return _hudmap.get(this);
         }
 
         AGE_API void EnableRegen(bool a1)                   { return ageHook::Thunk<0x406160>::Call<void>(this, a1); }
