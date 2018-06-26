@@ -143,10 +143,55 @@ namespace MM2
         AGE_API bool LoadAmbientSFX(LPCSTR name)            { return ageHook::Thunk<0x434060>::Call<bool>(this, name); };
     };
 
+    class mmCDPlayer : public asNode {
+    private:
+        byte buffer[0x138];
+    protected:
+        ageHook::Field<0x1C, int> _currentTrack;
+        ageHook::Field<0x24, int> _isPlaying;
+    public:
+        inline int getCurrentTrack(void) const {
+            return _currentTrack.get(this);
+        };
+
+        inline bool getIsPlaying(void) const {
+            return (_isPlaying.get(this) > 0);
+        };
+
+        AGE_API void Toggle()                               { ageHook::Thunk<0x4334D0>::Call<void>(this); }
+        AGE_API void PrevTrack()                            { ageHook::Thunk<0x433460>::Call<void>(this); }
+        AGE_API void PlayStop()                             { ageHook::Thunk<0x433370>::Call<void>(this); }
+        AGE_API void NextTrack()                            { ageHook::Thunk<0x4333F0>::Call<void>(this); }
+
+        /*
+            asNode virtuals
+        */
+        AGE_API void Cull()  override                       { ageHook::Thunk<0x433170>::Call<void>(this); }
+        AGE_API void Update()  override                     { ageHook::Thunk<0x433100>::Call<void>(this); }
+        AGE_API void Reset()  override                      { ageHook::Thunk<0x4330F0>::Call<void>(this); }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginExtendClass<mmCDPlayer, asNode>("mmCDPlayer")
+                .addPropertyReadOnly("CurrentTrack", &getCurrentTrack)
+                .addPropertyReadOnly("IsPlaying", &getIsPlaying)
+                .addFunction("Toggle", &Toggle)
+                .addFunction("PrevTrack", &PrevTrack)
+                .addFunction("NextTrack", &NextTrack)
+                .addFunction("PlayStop", &PlayStop)
+                .endClass();
+        }
+    };
+
     class mmHUD : public asNode {
     private:
         byte _buffer[0xB9C]; // unconfirmed
+    protected:
+        ageHook::Field<0x0B94, mmCDPlayer*> _cdplayer;
     public:
+        inline mmCDPlayer* getCdPlayer(void) const {
+            return _cdplayer.get(this);
+        };
+
         AGE_API void SetMessage(LPCSTR message, float duration, int p2)
                                                             { ageHook::Thunk<0x42E1F0>::Call<void>(this, message, duration, p2); };
         AGE_API void SetMessage(LPCSTR message)             { ageHook::Thunk<0x42E240>::Call<void>(this, message); };
@@ -154,7 +199,7 @@ namespace MM2
 
         static void BindLua(luaClassBinder<mmHUD> *lc) {
             asNode::BindLua(lc);
-
+            lc->addPropertyReadOnly("CDPlayer", &getCdPlayer);
             lc->addFunction("SetMessage", static_cast<void (mmHUD::*)(LPCSTR, float, int)>(&SetMessage));
             lc->addFunction("PostChatMessage", &PostChatMessage);
         }
@@ -266,6 +311,7 @@ namespace MM2
         luaBind<mmGame>(L);
         luaBind<mmGameManager>(L);
         luaBind<mmHUD>(L, "mmHUD");
+        luaBind<mmCDPlayer>(L);
         luaBind<mmHudMap>(L);
         luaBind<mmPlayer>(L);
     }
