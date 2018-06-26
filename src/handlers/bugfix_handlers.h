@@ -49,6 +49,15 @@ public:
     static void Install(void);
 };
 
+class vehCarAudioHandler {
+public:
+    bool IsAirBorne();
+    void Update();
+    void Reset();
+
+    static void Install();
+};
+
 class vehCarAudioContainerBugfixHandler : handler_t {
 public:
     void StartSiren();

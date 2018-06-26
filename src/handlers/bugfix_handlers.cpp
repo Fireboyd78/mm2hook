@@ -17,7 +17,8 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<mmPopupHandler>("mmPopupHandler"),
 
     CreateHandler<vehCarHandler>("vehCar"),
-    CreateHandler<vehCarAudioContainerBugfixHandler>("vehCarAudio bugfixes"),
+    CreateHandler<vehCarAudioHandler>("vehCarAudio"),
+    CreateHandler<vehCarAudioContainerBugfixHandler>("vehCarAudioContainer bugfixes"),
     CreateHandler<vehCarModelHandler>("vehCarModel"),
     CreateHandler<mmSpeedIndicatorHandler>("mmSpeedIndicator"),
     CreateHandler<mmHudMapHandler>("mmHudMap"),
@@ -238,6 +239,68 @@ void vehCarHandler::Install(void) {
             }
         );
     }
+}
+
+/*
+    vehCarAudioHandler
+*/
+float carAirborneTimer = 0.0f;
+
+bool vehCarAudioHandler::IsAirBorne() {
+    return carAirborneTimer > 1.0f;
+}
+
+void vehCarAudioHandler::Update() {
+    float elapsedTime = datTimeManager::Seconds;
+    auto carAudio = reinterpret_cast<vehCarAudio*>(this);
+    auto carSim = carAudio->getCarSim();
+    auto vehicleMph = carSim->getInstance()->GetVelocity()->Mag() * 2.23694;
+
+    //update timer
+    if (carSim->OnGround() || carSim->BottomedOut() || vehicleMph < 40.0f) 
+    {
+        carAirborneTimer = 0.0f;
+    }
+    else  
+    {
+        carAirborneTimer += elapsedTime;
+    }
+
+    //call original
+    ageHook::Thunk<0x4DC320>::Call<void>(this);
+}
+
+void vehCarAudioHandler::Reset() {
+    carAirborneTimer = 0.0f;
+
+    //call original
+    ageHook::Thunk<0x4DBE30>::Call<void>(this);
+}
+
+void vehCarAudioHandler::Install() {
+    InstallCallback("vehCarAudio::IsAirBorne", "Better method of vehicle airborne checking.",
+        &IsAirBorne, {
+            cbHook<JMP>(0x4D16F9),
+            cbHook<JMP>(0x4D1705),
+            cbHook<JMP>(0x4D1711),
+            cbHook<JMP>(0x4D171F),
+        }
+    );
+
+    InstallCallback("vehCarAudio::Reset", "Better method of vehicle airborne checking.",
+        &Reset, {
+            cbHook<CALL>(0x4D19CA),
+        }
+    );
+
+
+    InstallVTableHook("vehCarAudio::Update",
+        &Update, {
+            0x5B319C
+        }
+    );
+
+
 }
 
 /*

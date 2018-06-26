@@ -11,6 +11,7 @@ namespace MM2
     class mmVehInfo;
     class mmVehList;
     class vehCar;
+    class vehCarAudio;
     class vehCarAudioContainer;
     class vehPoliceCarAudio;
 
@@ -134,7 +135,7 @@ namespace MM2
 
 
         static void BindLua(LuaState L) {
-            LuaBinding(L).beginClass<vehCarModel>("vehCarModel")
+            LuaBinding(L).beginExtendClass<vehCarModel, lvlInstance>("vehCarModel")
                 //properties
                 .addPropertyReadOnly("Breakables", &getGenBreakableMgr)
                 .addPropertyReadOnly("WheelBreakables", &getMechBreakableMgr)
@@ -157,6 +158,7 @@ namespace MM2
     protected:
         ageHook::Field<0x24C, float> _speed;
         ageHook::Field<0x210, const Vector3> _resetPosition;
+        ageHook::Field<0x1D0, lvlInstance*> _instance;
         //ageHook::Field<0x25C, vehEngine *> _engine;
     public:
         inline float getSpeed(void) {
@@ -167,11 +169,15 @@ namespace MM2
             return _resetPosition.get(this);
         }
 
+        inline lvlInstance* getInstance(void) {
+            return _instance.get(this);
+        }
+
         AGE_API vehCarSim()                                 { ageHook::Thunk<0x4CB660>::Call<void>(this); }
         AGE_API ~vehCarSim()                                { ageHook::Thunk<0x4CB8E0>::Call<void>(this); }
 
-        AGE_API bool BottomedOut()                          { return ageHook::Thunk<0x4CBB40>::Call<bool>(this); }
-        AGE_API bool OnGround()                             { return ageHook::Thunk<0x4CBB00>::Call<bool>(this); }
+        AGE_API int BottomedOut()                           { return ageHook::Thunk<0x4CBB40>::Call<int>(this); }
+        AGE_API int OnGround()                              { return ageHook::Thunk<0x4CBB00>::Call<int>(this); }
         AGE_API void ReconfigureDrivetrain()                { ageHook::Thunk<0x4CC0B0>::Call<void>(this); }
         AGE_API void SetHackedImpactParams()                { ageHook::Thunk<0x4CC080>::Call<void>(this); }
         AGE_API void RestoreImpactParams()                  { ageHook::Thunk<0x4CC050>::Call<void>(this); }
@@ -330,6 +336,18 @@ namespace MM2
         }
     private:
         byte _buffer[0x25C];
+    };
+
+    class vehCarAudio {
+    private:
+        byte _buffer[0x130];
+    protected:
+        ageHook::Field<0x118, vehCarSim *> _sim;
+    public:
+        inline vehCarSim* getCarSim(void) const {
+            return _sim.get(this);
+        };
+
     };
 
     class vehCarAudioContainer {
