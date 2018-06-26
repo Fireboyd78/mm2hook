@@ -1,5 +1,6 @@
 #include "feature_handlers.h"
 #include "..\logfile.h"
+#include <vector>
 
 using namespace MM2;
 
@@ -1607,105 +1608,173 @@ void StreamHandler::Install()
 /*
     TextureVariantHandler
 */
+struct variant_info {
+    const char *suffix;
+    bool canDesaturate;
+};
+std::vector<variant_info> variant_infos;
+bool desaturateDefaultTextures = false;
 
 static gfxImage * (*DefaultLoadImage)(const char *, bool);
-static gfxImage * (*DefaultPrepareImage)(const char *, bool);
+static gfxImage * (*DefaultPrepareImage)(gfxImage*, const char *, bool);
 
 ageHook::Type<bool> EnableTextureVariantHandler(0x6276EC);
 ageHook::Type<bool> AllowDesaturatedTextureVariants(0x6276ED);
 
+
+std::vector<std::string> split(std::string str, std::string token) {
+    std::vector<std::string>result;
+    while (str.size()) {
+        int index = str.find(token);
+        if (index != std::string::npos) {
+            result.push_back(str.substr(0, index));
+            str = str.substr(index + token.size());
+            if (str.size() == 0)result.push_back(str);
+        }
+        else {
+            result.push_back(str);
+            str = "";
+        }
+    }
+    return result;
+}
+
+//load LT file, and do a variant prepass
+void TextureVariantHandler::InitVariantData(int hookedSize) {
+    variant_infos.clear();
+    auto parser = datParser::datParser("OwO");
+
+    //records
+    char textureVariants[100];
+    char textureLuminances[100];
+    int defaultSaturated = 1;
+    parser.AddString("TextureVariants", &textureVariants);
+    parser.AddString("TextureLuminances", &textureLuminances);
+    parser.AddValue("DefaultLuminance", &defaultSaturated);
+
+    //load file
+    int fileId = (dgStatePack::Instance->TimeOfDay * 4) + dgStatePack::Instance->WeatherType;
+    string_buf<16> buffer("lt%02d", fileId);
+    LPCSTR ltExtension = buffer;
+
+    Warningf("Loading lighting file %s", ltExtension);
+    parser.Load("city", MMSTATE->CityName, ltExtension);
+
+    //deal with loaded values
+    desaturateDefaultTextures = defaultSaturated == 0;
+    auto tVarStd = std::string(textureVariants);
+    auto tLumStd = std::string(textureLuminances);
+    auto tVarVec = split(tVarStd, "|");
+    auto tLumVec = split(tLumStd, "|");
+
+    if (tVarVec.size() != tLumVec.size()) {
+        Errorf("Cannot initialize custom texture variants. Luminances.size != Suffixes.size");
+    }
+    else {
+        for (int i = 0; i < tVarVec.size(); i++) {
+            auto suffix = tVarVec[i];
+            auto canDesat = tLumVec[i];
+
+            auto vInfo = variant_info();
+            
+            auto suffix_copy = new char[suffix.length() + 1];
+            memcpy(suffix_copy, suffix.c_str(), suffix.length() + 1);
+            vInfo.suffix = suffix_copy;
+
+            vInfo.canDesaturate = atof(canDesat.c_str()) < 0.5;
+
+            Warningf("Pushing a new variant with suffix %s and desaturate %s", vInfo.suffix, vInfo.canDesaturate ? "true" : "false");
+            variant_infos.push_back(vInfo);
+        }
+    }
+
+    //add defaults
+    if (dgStatePack::Instance->WeatherType == 3) {
+        auto rVariant = variant_info();
+        rVariant.suffix = "fa";
+        rVariant.canDesaturate = true;
+        variant_infos.push_back(rVariant);
+    }
+    if (dgStatePack::Instance->TimeOfDay == 3) {
+        auto nVariant = variant_info();
+        nVariant.suffix = "ni";
+        nVariant.canDesaturate = false;
+        variant_infos.push_back(nVariant);
+    }
+
+    //call original (shrink textures, which we hooked)
+    ageHook::StaticThunk<0x4B3020>::Call<void>(hookedSize);
+}
+
+static void Desaturate(gfxImage* result) {
+    for (gfxImage *image = result; image != nullptr; image = image->Next) {
+        // DesaturateTextureVariant
+        ageHook::StaticThunk<0x442FB0>::Call<void>(image);
+    }
+}
+
+static bool TextureVariantExists(const char *textureName, const char*variant) {
+    string_buf<128> textureVariant("%s_%s", textureName, variant);
+    bool exists = datAssetManager::Exists("texture", textureVariant, "tex");
+    if (exists)
+        return true;
+    exists = datAssetManager::Exists("texture", textureVariant, "tga");
+    if (exists)
+        return true;
+    exists = datAssetManager::Exists("texture", textureVariant, "bmp");
+    return exists;
+}
+
 static bool TryLoadTexVariant(const char *textureName, const char *variant, bool mipmaps, gfxImage **pgfxImage)
 {
     string_buf<64> textureVariant("%s_%s", textureName, variant);
-
     gfxImage *variantTex = DefaultLoadImage(textureVariant, mipmaps);
 
     if (variantTex != nullptr) {
-        //Warningf("[LoadTextureVariant]: Using '%s' variant for texture '%s'", variant, textureName);
+        Warningf("[LoadTextureVariant]: Using '%s' variant for texture '%s' (buffer is %s)", variant, textureName, (LPCSTR)textureVariant);
         *pgfxImage = variantTex;
-
         return true;
     }
 
     return false;
 }
 
-struct variant_info {
-    const char *suffix;
-
-    int timeOfDay;
-    int weather;
-
-    bool canDesaturate;
-} tex_variants[] = {
-    /*
-        texture variants, sorted by priority
-    */
-    { "nifa",   3,  3, false }, // rainy night
-    { "fa",    -1,  3, true },  // rainy
-    { "ni",     3, -1, false }, // night
-    { NULL },
-};
-
 gfxImage * TextureVariantHandler::LoadTextureVariant(const char *textureName, bool mipmaps)
 {
     if (EnableTextureVariantHandler)
     {
-        int timeOfDay = dgStatePack::Instance->TimeOfDay;
-        int weatherType = dgStatePack::Instance->WeatherType;
-
-        bool useEveningHack = (UseNightTexturesInEvening && (timeOfDay == 2));
-
-        if (useEveningHack)
-            timeOfDay = 3;
-
         gfxImage *variantTex = nullptr;
-        
-        for (variant_info *variant = tex_variants; variant->suffix != nullptr; variant++)
-        {
-            if ((variant->timeOfDay == -1)
-                || (variant->timeOfDay == timeOfDay))
-            {
-                if ((variant->weather == -1)
-                    || (variant->weather == weatherType))
-                {
-                    AllowDesaturatedTextureVariants = variant->canDesaturate;
-
-                    if (TryLoadTexVariant(textureName, variant->suffix, mipmaps, &variantTex))
-                        return variantTex;
-                }
-            }
+        for (int i = 0; i < variant_infos.size(); i++) {
+            if (TryLoadTexVariant(textureName, variant_infos[i].suffix, mipmaps, &variantTex))
+                return variantTex;
         }
-
-        // desaturate for night-time if needed
-        AllowDesaturatedTextureVariants = true;
     }
-
-    return DefaultLoadImage(textureName, mipmaps);
+    
+    auto defaultTex = DefaultLoadImage(textureName, mipmaps);
+    return defaultTex;
 }
 
-gfxImage * TextureVariantHandler::PrepareTextureVariant(const char *textureName, bool mipmaps)
+gfxImage * TextureVariantHandler::PrepareTextureVariant(gfxImage* image, const char *textureName, bool mipmaps)
 {
-    gfxImage *result = DefaultPrepareImage(textureName, mipmaps);
-
-    if (EnableTextureVariantHandler
-        && AllowDesaturatedTextureVariants)
+    if (EnableTextureVariantHandler)
     {
-        int timeOfDay = dgStatePack::Instance->TimeOfDay;
-
-        if (UseNightTexturesInEvening && (timeOfDay == 2))
-            timeOfDay = 3;
-
-        if (timeOfDay == 3)
-        {
-            for (gfxImage *image = result; image != nullptr; image = image->Next) {
-                // DesaturateTextureVariant
-                ageHook::StaticThunk<0x442FB0>::Call<void>(image);
+        //check if this variant is handled manually
+        for (int i = 0; i < variant_infos.size(); i++) {
+            if (TextureVariantExists(textureName, variant_infos[i].suffix)) {
+                if (variant_infos[i].canDesaturate) {
+                    // DesaturateTextureVariant
+                    Desaturate(image);
+                }
+                return image;
             }
         }
     }
 
-    return result;
+    //no variant
+    if (desaturateDefaultTextures) {
+        Desaturate(image);
+    }
+    return image;
 }
 
 void TextureVariantHandler::InstallTextureVariantHandler()
@@ -1723,6 +1792,11 @@ void TextureVariantHandler::InstallTextureVariantHandler()
 
 void TextureVariantHandler::Install()
 {
+    InstallCallback(InitVariantData, {
+        cbHook<CALL>(0x443FA0),
+        }, "Installs the texture variant init function."
+    );
+
     InstallCallback(InstallTextureVariantHandler, {
             cbHook<CALL>(0x401599),
         }, "Installs new texture variant handler."

@@ -364,7 +364,7 @@ namespace MM2
     declhook(0x6857D0, _Type<int>, gfxTexReduceSize);
 
     declhook(0x5CD38C, _Type<gfxImage * (*)(const char *, bool)>, gfxLoadImage);
-    declhook(0x5CD680, _Type<gfxImage * (*)(const char *, bool)>, gfxPrepareImage);
+    declhook(0x5CD680, _Type<gfxImage * (*)(gfxImage*, const char *, bool)>, gfxPrepareImage);
 
     declhook(0x6B0454, _Type<uint>, mmCpuSpeed);
     
