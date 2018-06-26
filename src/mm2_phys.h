@@ -6,17 +6,40 @@
 namespace MM2
 {
     // Forward declarations
-    class phCollider;
-    class phInterialCs;
+    class dgPhysManager;
     class dgPhysEntity;
     class dgBangerInstance;
+    struct phCollider;
+    class phInterialCs;
     class phBound;
 
     // External declarations
     extern class lvlInstance;
     
-    class phCollider {
+    class dgPhysManager {
+    public:
+        static ageHook::Type<dgPhysManager *> Instance;
 
+        void DeclareMover(lvlInstance* instance, int a2, int a3) { ageHook::Thunk<0x468370>::Call<void>(this, instance, a2, a3); }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<dgPhysManager>("dgPhysManager")
+                //statics
+                .addStaticFunction("Instance", [] {return (dgPhysManager *)Instance; })
+
+                //functions
+                .addFunction("DeclareMover", &DeclareMover)
+
+                .endClass();
+        }
+    };
+
+    struct phCollider {
+        //todo: figure the rest of this out!
+    private:
+        byte unknown[0x30];
+    public:
+        int colliderId; //?
     };
 
     class phInertialCs {
@@ -65,6 +88,6 @@ namespace MM2
 
     template<>
     void luaAddModule<module_phys>(LuaState L) {
-
+        luaBind<dgPhysManager>(L);
     }
 }
