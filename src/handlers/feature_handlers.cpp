@@ -1414,11 +1414,17 @@ void gizFerryHandler::Install() {
 static ConfigValue<bool> cfgDynamicParkedCarDensity("DynamicParkedCarDensity", true);
 
 void gizParkedCarMgrHandler::EnumeratePath(LPCSTR a1, const Matrix34* a2, bool a3) {
-    int oldRandomSeed = gRandSeed;
-    float rand = ageHook::StaticThunk<0x4BBE30>::Call<float>();
+    //only apply car scaling in cruise
+    if (dgStatePack::Instance->GameMode == Cruise) {
+        int oldRandomSeed = gRandSeed;
+        float rand = ageHook::StaticThunk<0x4BBE30>::Call<float>();
 
-    if (dgStatePack::Instance->TrafficDensity > rand) {
-        gRandSeed = oldRandomSeed;
+        if (dgStatePack::Instance->TrafficDensity > rand) {
+            gRandSeed = oldRandomSeed;
+            ageHook::StaticThunk<0x579BD0>::Call<void>(a1, a2, a3); //gizParkedCarMgr_EnumeratePath
+        }
+    }
+    else {
         ageHook::StaticThunk<0x579BD0>::Call<void>(a1, a2, a3); //gizParkedCarMgr_EnumeratePath
     }
 }
