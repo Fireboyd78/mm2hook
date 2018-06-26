@@ -59,6 +59,11 @@ namespace MM2
             return (flags & 1);
         };
 
+        inline void setActive(bool active) {
+            if (isActive() != active)
+                flags ^= 1;
+        }
+
         AGE_API char * GetName() const {
             return (name) ? name : "";
         };

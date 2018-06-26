@@ -196,6 +196,7 @@ namespace MM2
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<vehCarSim>("vehCarSim")
+                .addPropertyReadOnly("ResetPosition", &getResetPosition)
                 .addFunction("Reset", &Reset)
                 .addFunction("BottomedOut", &BottomedOut)
                 .addFunction("OnGround", &OnGround)
