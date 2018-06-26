@@ -147,3 +147,8 @@ class mmCDPlayerHandler {
 public:
     static void Install();
 };
+
+class aiVehicleAmbientHandler {
+public:
+    static void Install();
+};

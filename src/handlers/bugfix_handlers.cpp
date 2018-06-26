@@ -6,6 +6,7 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<aiPathHandler>("aiPath"),
     CreateHandler<aiPedestrianHandler>("aiPedestrian"),
     CreateHandler<aiPoliceForceHandler>("aiPoliceForce"),
+    CreateHandler<aiVehicleAmbientHandler>("aiVehicleAmbient"),
 
     CreateHandler<audManagerHandler>("audManager"),
 
@@ -822,4 +823,17 @@ void mmCDPlayerHandler::Install() {
     InstallPatch({ 0x18 }, {
         0x42CEC7,
     });
+}
+
+/*
+    aiVehicleInstanceHandler
+*/
+
+void aiVehicleAmbientHandler::Install() {
+    // fixes traffic vehicles using a different color
+    // than their respective breakables
+    InstallPatch({ 0x90, 0x90, 0x90, 0x90, 0x90 }, {
+        0x5513E2,
+    });
+    
 }
