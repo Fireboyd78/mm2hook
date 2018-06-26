@@ -1635,7 +1635,7 @@ std::vector<std::string> split(std::string str, std::string token) {
 //load LT file, and do a variant prepass
 void TextureVariantHandler::InitVariantData(int hookedSize) {
     variant_infos.clear();
-    auto parser = datParser::datParser("OwO");
+    auto parser = datParser("OwO");
 
     //records
     char textureVariants[100];

@@ -244,20 +244,28 @@ void vehCarHandler::Install(void) {
 /*
     vehCarAudioHandler
 */
+static ConfigValue<float> cfgAirborneTimerThresh("AirborneTimerThreshold", 1.1);
+static ConfigValue<float> cfgAirborneSpeedThresh("AirborneSpeedThreshold", 45.0);
+
 float carAirborneTimer = 0.0f;
+float carAirborneThreshold = 1.1f;
+float carAirborneSpeedThreshold = 45.0;
 
 bool vehCarAudioHandler::IsAirBorne() {
-    return carAirborneTimer > 1.0f;
+    return carAirborneTimer > carAirborneThreshold;
 }
 
 void vehCarAudioHandler::Update() {
     float elapsedTime = datTimeManager::Seconds;
     auto carAudio = reinterpret_cast<vehCarAudio*>(this);
     auto carSim = carAudio->getCarSim();
-    auto vehicleMph = carSim->getInstance()->GetVelocity()->Mag() * 2.23694;
+    
+    // grab only forward/sideways velocity, ignore vertical
+    auto vehicleVelo = carSim->getInstance()->GetVelocity();
+    float vehicleMph = sqrt((vehicleVelo->X * vehicleVelo->X) + (vehicleVelo->Z * vehicleVelo->Z)) * 2.23694;
 
     //update timer
-    if (carSim->OnGround() || carSim->BottomedOut() || vehicleMph < 40.0f) 
+    if (carSim->OnGround() || carSim->BottomedOut() || vehicleMph < carAirborneSpeedThreshold) 
     {
         carAirborneTimer = 0.0f;
     }
@@ -266,18 +274,21 @@ void vehCarAudioHandler::Update() {
         carAirborneTimer += elapsedTime;
     }
 
-    //call original
+    // call original
     ageHook::Thunk<0x4DC320>::Call<void>(this);
 }
 
 void vehCarAudioHandler::Reset() {
     carAirborneTimer = 0.0f;
 
-    //call original
+    // call original
     ageHook::Thunk<0x4DBE30>::Call<void>(this);
 }
 
 void vehCarAudioHandler::Install() {
+    carAirborneSpeedThreshold = cfgAirborneSpeedThresh.Get();
+    carAirborneThreshold = cfgAirborneTimerThresh.Get();
+
     InstallCallback("vehCarAudio::IsAirBorne", "Better method of vehicle airborne checking.",
         &IsAirBorne, {
             cbHook<JMP>(0x4D16F9),
@@ -293,14 +304,11 @@ void vehCarAudioHandler::Install() {
         }
     );
 
-
     InstallVTableHook("vehCarAudio::Update",
         &Update, {
             0x5B319C
         }
     );
-
-
 }
 
 /*
