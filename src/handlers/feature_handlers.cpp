@@ -272,13 +272,6 @@ void cityLevelHandler::Install() {
 const int NUM_TIMEWEATHERS = 16;
 
 // handled by TextureVariantHandler
-static bool UseNightTexturesInEvening = true;
-
-bool CanUseNightEffects() {
-    int timeOfDay = dgStatePack::Instance->TimeOfDay;
-
-    return (timeOfDay == 3) || (UseNightTexturesInEvening && (timeOfDay == 2));
-}
 
 struct TimeWeatherInfo {
     cityTimeWeatherLighting *data;
@@ -314,9 +307,9 @@ struct TimeWeatherInfo {
         data = &$::timeWeathers[index];
 
         ShowHeadlights = (statePack->TimeOfDay >= 2 || statePack->WeatherType == 2);
-        ShowLightGlows = CanUseNightEffects();
+        ShowLightGlows = timeOfDay == 3;
 
-        FlatColorIntensity = (CanUseNightEffects()) ? 0.5f : 1.0f;
+        FlatColorIntensity = (timeOfDay == 3) ? 0.5f : 1.0f;
 
         WeatherFriction = (statePack->WeatherType == 3) 
                             ? ((statePack->TimeOfDay == 3) ? 0.75f : 0.8f)
@@ -1647,7 +1640,7 @@ void TextureVariantHandler::InitVariantData(int hookedSize) {
     //records
     char textureVariants[100];
     char textureLuminances[100];
-    int defaultSaturated = 1;
+    int defaultSaturated = (dgStatePack::Instance->TimeOfDay != 3) ? 1 : 0;
     parser.AddString("TextureVariants", &textureVariants);
     parser.AddString("TextureLuminances", &textureLuminances);
     parser.AddValue("DefaultLuminance", &defaultSaturated);
@@ -1692,7 +1685,7 @@ void TextureVariantHandler::InitVariantData(int hookedSize) {
     if (dgStatePack::Instance->WeatherType == 3) {
         auto rVariant = variant_info();
         rVariant.suffix = "fa";
-        rVariant.canDesaturate = true;
+        rVariant.canDesaturate = dgStatePack::Instance->TimeOfDay == 3;
         variant_infos.push_back(rVariant);
     }
     if (dgStatePack::Instance->TimeOfDay == 3) {
@@ -1801,8 +1794,6 @@ void TextureVariantHandler::Install()
             cbHook<CALL>(0x401599),
         }, "Installs new texture variant handler."
     );
-
-    HookConfig::GetProperty("NightTexturesInEvening", UseNightTexturesInEvening);
 
     // handled by cityTimeWeatherLightingHandler
     // leaving this here in case something goes wrong
