@@ -131,3 +131,8 @@ public:
 
     static void Install();
 };
+
+class mmCDPlayerHandler {
+public:
+    static void Install();
+};

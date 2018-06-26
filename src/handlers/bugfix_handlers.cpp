@@ -18,15 +18,16 @@ static init_handler g_bugfix_handlers[] = {
 
     CreateHandler<vehCarHandler>("vehCar"),
     CreateHandler<vehCarAudioContainerBugfixHandler>("vehCarAudio bugfixes"),
-    CreateHandler<vehCarModelHandler>("vehCarModelHandler"),
+    CreateHandler<vehCarModelHandler>("vehCarModel"),
     CreateHandler<mmSpeedIndicatorHandler>("mmSpeedIndicator"),
-    CreateHandler<mmHudMapHandler>("mmHudMapHandler"),
+    CreateHandler<mmHudMapHandler>("mmHudMap"),
+    CreateHandler<mmCDPlayerHandler>("mmCDPlayer"),
 
     CreateHandler<lvlSkyHandler>("lvlSkyHandler"),
 
     CreateHandler<cityLevelBugfixHandler>("cityLevelBugfixHandler"),
 
-    CreateHandler<mmMultiCRHandler>("mmMultiCRHandler"),
+    CreateHandler<mmMultiCRHandler>("mmMultiCR"),
 
     CreateHandler<BugfixPatchHandler>("Bugfix patches"),
 
@@ -693,4 +694,20 @@ void pedAnimationInstanceHandler::Install() {
             cbHook<CALL>(0x54BF6A),
         }
     );
+}
+
+/*
+    mmCDPlayerHandler
+*/
+
+void mmCDPlayerHandler::Install() {
+    //nop out jump
+    InstallPatch({ 0x90, 0x90 }, {
+        0x42CEC4,
+    });
+
+    //force font to 24
+    InstallPatch({ 0x18 }, {
+        0x42CEC7,
+    });
 }
