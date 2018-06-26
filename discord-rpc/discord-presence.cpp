@@ -1,4 +1,5 @@
 #include "discord-presence.h"
+#include "..\src\events\dispatcher.h"
 
 using namespace MM2;
 
@@ -285,10 +286,13 @@ int discordHandler::GameInit(void) {
     g_mm2Info.raceName = getRaceName(MMSTATE->RaceId);
     g_mm2Info.UpdatePresence(presence);
 
+    //forward to dispatcher
+    GameEventDispatcher::onGameInit();
+
     return 1;
 }
 
-void discordHandler::GameBeDone(int) {
+void discordHandler::GameBeDone(int a1) {
     LogFile::WriteLine("[discord] GameBeDone called.");
 
     g_mm2Info.inGame = false;
@@ -298,6 +302,9 @@ void discordHandler::GameBeDone(int) {
     g_mm2Info.vehicleImageKey = NULL;
     g_mm2Info.raceName = NULL;
     g_mm2Info.UpdatePresence(presence);
+
+    //forward to dispatcher
+    GameEventDispatcher::onGameEnd(a1);
 }
 
 int discordHandler::DetectHostMPLobby(char *sessionName, char *sessionPassword, int sessionMaxPlayers, NETSESSION_DESC *sessionData) {
@@ -310,6 +317,9 @@ int discordHandler::DetectHostMPLobby(char *sessionName, char *sessionPassword, 
         g_mm2Info.lobbyMaxPlayers = sessionMaxPlayers;
         g_mm2Info.UpdatePresence(presence);
     }
+
+    //forward to dispatcher
+    GameEventDispatcher::onSessionCreate(sessionName, sessionPassword, sessionMaxPlayers, sessionData);
 
     return result;
 }
@@ -335,6 +345,9 @@ int discordHandler::DetectJoinMPLobby(char *a2, GUID *a3, char *a4) {
 
         g_mm2Info.lobbyMaxPlayers = desc->dwMaxPlayers;
         g_mm2Info.UpdatePresence(presence);
+
+        //forward to dispatcher
+        GameEventDispatcher::onSessionJoin(a2, a3, a4);
     }
 
     return result;
@@ -372,6 +385,9 @@ void discordHandler::DetectDisconnectMPLobby(void) {
     g_mm2Info.UpdatePresence(presence);
 
     NETMGR->Disconnect();
+
+    //forward to dispatcher
+    GameEventDispatcher::onDisconnect();
 }
 
 void discordHandler::DetectDisconnectMPGame(void) {

@@ -33,6 +33,9 @@
     <Filter Include="Source Files\Discord Rich Presence">
       <UniqueIdentifier>{f5a0a057-e458-42d5-b643-cc6123a2590e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\events">
+      <UniqueIdentifier>{da4ebbae-af63-4a06-b383-bddfd7e83af5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\lua\lapi.h">
@@ -266,6 +269,9 @@
     <ClInclude Include="src\settings.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\events\dispatcher.h">
+      <Filter>Source Files\events</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
@@ -450,6 +456,9 @@
     </ClCompile>
     <ClCompile Include="src\settings.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\events\dispatcher.cpp">
+      <Filter>Source Files\events</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,6 @@
 #include "mm2.h"
 #include "mm2_lua.h"
+#include "mm2_network.h"
 
 using namespace LuaIntf;
 using namespace MM2;
@@ -184,6 +185,44 @@ void MM2Lua::OnChatMessage(char* message) {
     LuaRef func(L, "onChatMessage");
     if (func != NULL)
         func.call(message);
+}
+
+void MM2Lua::OnGameEnd() {
+    LuaRef func(L, "onGameEnd");
+    if (func != NULL)
+        func.call();
+}
+
+void MM2Lua::OnGameInit() {
+    LuaRef func(L, "onGameInit");
+    if (func != NULL)
+        func.call();
+}
+
+void MM2Lua::OnSessionCreate(char * sessionName, char * sessionPassword, int sessionMaxPlayers, NETSESSION_DESC * sessionData)
+{
+    LuaRef func(L, "onSessionCreate");
+    if (func != NULL)
+        func.call(sessionName, sessionPassword, sessionMaxPlayers, sessionData);
+}
+
+void MM2Lua::OnSessionJoin(char * a2, GUID * a3, char * a4)
+{
+    LuaRef func(L, "onSessionJoin");
+    if (func != NULL)
+        func.call(a2, a3, a4);
+}
+
+void MM2Lua::OnDisconnect() {
+    LuaRef func(L, "onDisconnect");
+    if (func != NULL)
+        func.call();
+}
+
+void MM2Lua::OnReset() {
+    LuaRef func(L, "onReset");
+    if (func != NULL)
+        func.call();
 }
 
 void MM2Lua::OnTick()

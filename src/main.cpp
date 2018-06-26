@@ -4,6 +4,7 @@
 #include "handlers\feature_handlers.h"
 
 #include <discord-presence.h>
+#include <events\dispatcher.h>
 
 using namespace MM2;
 
@@ -437,8 +438,7 @@ public:
     }
 
     static void Update(void) {
-        if (MM2Lua::IsEnabled())
-            MM2Lua::OnTick();
+        GameEventDispatcher::onTick();
 
         // pass control back to MM2
         datTimeManager::Update();
@@ -642,6 +642,7 @@ private:
         InstallHandler<TimeHandler>("Time manager");
         InstallHandler<StackHandler>("Stack information");
 
+        InstallHandler<GameEventDispatcher>("Event dispatcher");
         InstallHandler<discordHandler>("Discord Rich Presence");
 
         /*
