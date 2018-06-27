@@ -154,3 +154,8 @@ class aiVehicleAmbientHandler {
 public:
     static void Install();
 };
+
+class mpConsistencyHandler {
+public:
+    static void Install();
+};
