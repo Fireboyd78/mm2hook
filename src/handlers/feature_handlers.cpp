@@ -36,6 +36,8 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<mmGameMusicDataHandler>("mmGameMusicData"),
     CreateHandler<Aud3DObjectManagerHandler>("Aud3DObjectManagerHandler"),
 
+    CreateHandler<ltLensFlareHandler>("ltLensFlare"),
+
     CreateHandler<vehCarAudioContainerHandler>("vehCarAudioContainer"),
     CreateHandler<vehPoliceCarAudioHandler>("vehPoliceCarAudio"),
 
@@ -2073,10 +2075,25 @@ void mmCityListHandler::Install() {
 /*
     Dialog_NewPlayerHandler
 */
+
 void Dialog_NewPlayerHandler::Install() {
     InstallPatch("Enables tooltips in the new player dialog.", { 0x90, 0x90, 0x90 }, {
         0x4FD823,
     });
+}
+
+/*
+    ltLensFlareHandler
+*/
+
+static ConfigValue<bool> cfgEnableLensFlare("LensFlare", false);
+
+void ltLensFlareHandler::Install() {
+    if (cfgEnableLensFlare.Get()) {
+        InstallPatch("Enables lens flares in a semi broken fashion.", { 0x90, 0x90, 0x90, 0x90, 0x90 }, {
+            0x59C1EC,
+            });
+    }
 }
 
 #ifndef FEATURES_DECLARED

@@ -210,3 +210,8 @@ class Dialog_NewPlayerHandler {
 public:
     static void Install();
 };
+
+class ltLensFlareHandler {
+public:
+    static void Install();
+};
