@@ -1931,6 +1931,12 @@ void mmPlayerHandler::Zoink() {
     // tell the player "That didn't happen!"
     player->getHUD()->SetMessage(AngelReadString(29), 3.f, 0);
 
+    //if we're in CNR, drop the gold!
+    if (dgStatePack::Instance->GameMode == dgGameMode::CnR) {
+        auto game = mmGameManager::Instance->getGame();
+        ageHook::Thunk<0x425460>::ThisCall<void>(game); // mmMultiCR::DropThruCityHandler
+    }
+
     // if the aimap doesn't exist, reset back to spawn
     auto AIMAP = &aiMap::Instance;
     if (AIMAP == NULL) {
@@ -1945,21 +1951,23 @@ void mmPlayerHandler::Zoink() {
     for (int is = 0; is < AIMAP->numIntersections; is++) {
         auto intersection = AIMAP->intersections[is];
             
-        // avoid dummy intersections and freeways
+        // avoid dummy intersections
         if (intersection->pathCount == 0)
             continue;
 
-        bool isFreeway = false;
+        // check roads to see if this is a valid spawn point
+        // valid == (!freeway && !alley)
+        bool isInvalid = false;
         for (int i = 0; i < intersection->pathCount; i++) {
             auto path = intersection->paths[i];
             ushort pathFlags = *getPtr<ushort>(path, 12);
 
-            if (pathFlags & 4) {
-                isFreeway = true;
+            if (pathFlags & 4 || pathFlags & 2) {
+                isInvalid = true;
             }
         }
 
-        if (isFreeway)
+        if (isInvalid)
             continue;
 
         // this is a valid intersection
