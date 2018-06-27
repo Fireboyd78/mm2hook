@@ -39,6 +39,8 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<vehCarAudioContainerHandler>("vehCarAudioContainer"),
     CreateHandler<vehPoliceCarAudioHandler>("vehPoliceCarAudio"),
 
+    CreateHandler<Dialog_NewPlayerHandler>("New player dialog"),
+
     CreateHandler<lvlHandler>("Propulator"),
     CreateHandler<sdlPage16Handler>("sdlPage16"),
     CreateHandler<vglHandler>("VGL drawing"),
@@ -2058,6 +2060,15 @@ void mmCityListHandler::Install() {
             cbHook<CALL>(0x5244FE),
         }
     );
+}
+
+/*
+    Dialog_NewPlayerHandler
+*/
+void Dialog_NewPlayerHandler::Install() {
+    InstallPatch("Enables tooltips in the new player dialog.", { 0x90, 0x90, 0x90 }, {
+        0x4FD823,
+    });
 }
 
 #ifndef FEATURES_DECLARED

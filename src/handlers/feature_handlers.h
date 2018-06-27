@@ -205,3 +205,8 @@ public:
     void Load(char* cinfoName);
     static void Install();
 };
+
+class Dialog_NewPlayerHandler {
+public:
+    static void Install();
+};
