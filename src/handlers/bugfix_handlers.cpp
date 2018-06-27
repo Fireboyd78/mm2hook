@@ -747,6 +747,10 @@ void audManagerHandler::SetMixerWaveVolume(float value) {
     }
 }
 
+bool audManagerHandler::MinInstall() {
+    return !datAssetManager::Exists("aud\\aud11\\al2", "AL2Pre01", "11k.wav");
+}
+
 void audManagerHandler::Install() {
     int audHeapSize = HookConfig::GetProperty("AudioHeapSize", 32);
 
@@ -780,6 +784,12 @@ void audManagerHandler::Install() {
         }
     );
 #endif
+
+    InstallCallback("mmRaceSpeech::LoadCityInfo", "Non registry dependent minimum install check.",
+        &MinInstall, {
+            cbHook<CALL>(0x51AA2C),
+        }
+    );
 }
 
 /*

@@ -133,6 +133,8 @@ public:
     void SetMixerCDVolume(float value);
     void SetMixerWaveVolume(float value);
 
+    bool MinInstall();
+
     static void Install();
 };
 
