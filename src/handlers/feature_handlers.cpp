@@ -1650,19 +1650,20 @@ void TextureVariantHandler::InitVariantData(int hookedSize) {
     //load file
     int fileId = (dgStatePack::Instance->TimeOfDay * 4) + dgStatePack::Instance->WeatherType;
     string_buf<16> buffer("td%02d", fileId);
-    LPCSTR ltExtension = buffer;
+    LPCSTR tdExtension = buffer;
 
-    Warningf("Loading lighting file %s", ltExtension);
-    parser.Load("city", MMSTATE->CityName, ltExtension);
+    Displayf("Attempting to load texture definition file %s", tdExtension);
+    bool loadResult = parser.Load("city", MMSTATE->CityName, tdExtension);
 
     //deal with loaded values
     desaturateDefaultTextures = defaultSaturated == 0;
+
     auto tVarStd = std::string(textureVariants);
     auto tLumStd = std::string(textureLuminances);
     auto tVarVec = split(tVarStd, "|");
     auto tLumVec = split(tLumStd, "|");
 
-    if(tVarVec.size() > 0) {
+    if (loadResult && tVarStd.length() > 0) {
         for (int i = 0; i < tVarVec.size(); i++) {
             auto vInfo = variant_info();
 
@@ -1684,7 +1685,7 @@ void TextureVariantHandler::InitVariantData(int hookedSize) {
             variant_infos.push_back(vInfo);
         }
     }
-
+    
     //add defaults
     if (dgStatePack::Instance->WeatherType == 3) {
         auto rVariant = variant_info();
@@ -1728,7 +1729,7 @@ static bool TryLoadTexVariant(const char *textureName, const char *variant, bool
     gfxImage *variantTex = DefaultLoadImage(textureVariant, mipmaps);
 
     if (variantTex != nullptr) {
-        Warningf("[LoadTextureVariant]: Using '%s' variant for texture '%s' (buffer is %s)", variant, textureName, (LPCSTR)textureVariant);
+        //Warningf("[LoadTextureVariant]: Using '%s' variant for texture '%s' (buffer is %s)", variant, textureName, (LPCSTR)textureVariant);
         *pgfxImage = variantTex;
         return true;
     }
@@ -1758,10 +1759,9 @@ gfxImage * TextureVariantHandler::PrepareTextureVariant(gfxImage* image, const c
         //check if this variant is handled manually
         for (int i = 0; i < variant_infos.size(); i++) {
             if (TextureVariantExists(textureName, variant_infos[i].suffix)) {
-                if (variant_infos[i].canDesaturate) {
-                    // DesaturateTextureVariant
+                if (variant_infos[i].canDesaturate)
                     Desaturate(image);
-                }
+                
                 return image;
             }
         }
