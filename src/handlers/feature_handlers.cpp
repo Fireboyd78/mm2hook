@@ -103,13 +103,13 @@ void asCullManagerHandler::Install() {
 const double cosNum = 1.570796;
 
 Vector3 addPitch(Vector3 *vec, float pitch) {
-    float p = (float)fmod(pitch, 3.14159);
+    pitch = (float)fmod(pitch, 3.14159);
     bool pitchIsZero = (pitch >= 0.0f);
 
     return {
-        (float)((!pitchIsZero) ? vec->X * cos(pitch + cosNum) : 0.0f),
-        (float)((!pitchIsZero) ? vec->Y * cos(pitch + cosNum) : 0.0f),
-        (float)((!pitchIsZero) ? vec->Z * cos(pitch + cosNum) : 0.0f),
+        (float)((!pitchIsZero) ? fmaxf(vec->X, 0) * cos(pitch + cosNum) : 0.0f),
+        (float)((!pitchIsZero) ? fmaxf(vec->Y, 0) * cos(pitch + cosNum) : 0.0f),
+        (float)((!pitchIsZero) ? fmaxf(vec->Z, 0) * cos(pitch + cosNum) : 0.0f),
     };
 }
 
