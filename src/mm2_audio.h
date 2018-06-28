@@ -26,6 +26,8 @@ namespace MM2
     class Aud3DObject;
     class AudCreatureContainer;
     class aiPedAudio;
+    class audManager;
+    class mmCNRSpeech;
 
     namespace $
     {
@@ -244,8 +246,72 @@ namespace MM2
         }
     };
 
+    class mmCNRSpeech {
+    public:
+        AGE_API void Play(LPCSTR a1)                         { ageHook::Thunk<0x5A7800>::Call<void>(this, a1); }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<mmCNRSpeech>("mmCNRSpeech")
+                .addFunction("Play", &Play)
+                .endClass();
+        }
+    };
+
+    class mmRaceSpeech {
+    public:
+        AGE_API void PlayUnlockVehicle()                     { ageHook::Thunk<0x51A6C0>::Call<void>(this); }
+        AGE_API void PlayUnlockTexture()                     { ageHook::Thunk<0x51A720>::Call<void>(this); }
+        AGE_API void PlayUnlockRace()                        { ageHook::Thunk<0x51A660>::Call<void>(this); }
+        AGE_API void PlayResultsWin()                        { ageHook::Thunk<0x51A890>::Call<void>(this); }
+        AGE_API void PlayResultsPoor()                       { ageHook::Thunk<0x51A840>::Call<void>(this); }
+        AGE_API void PlayResultsMid()                        { ageHook::Thunk<0x51A8E0>::Call<void>(this); }
+        AGE_API void PlayResults(int a1, int a2)             { ageHook::Thunk<0x51A800>::Call<void>(this, a1, a2); }
+        AGE_API void PlayRaceProgress()                      { ageHook::Thunk<0x51A7D0>::Call<void>(this); }
+        AGE_API void PlayPreRace()                           { ageHook::Thunk<0x51A590>::Call<void>(this); }
+        AGE_API void PlayFinalLap()                          { ageHook::Thunk<0x51A780>::Call<void>(this); }
+        AGE_API void PlayFinalCheckPoint()                   { ageHook::Thunk<0x51A750>::Call<void>(this); }
+        AGE_API void PlayDamagePenalty()                     { ageHook::Thunk<0x51A7A0>::Call<void>(this); }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<mmRaceSpeech>("mmRaceSpeech")
+                .addFunction("PlayUnlockVehicle", &PlayUnlockVehicle)
+                .addFunction("PlayUnlockTexture", &PlayUnlockTexture)
+                .addFunction("PlayUnlockRace", &PlayUnlockRace)
+                .addFunction("PlayResultsWin", &PlayResultsWin)
+                .addFunction("PlayResultsPoor", &PlayResultsPoor)
+                .addFunction("PlayResultsMid", &PlayResultsMid)
+                .addFunction("PlayResults", &PlayResults)
+                .addFunction("PlayRaceProgress", &PlayRaceProgress)
+                .addFunction("PlayPreRace", &PlayPreRace)
+                .addFunction("PlayFinalLap", &PlayFinalLap)
+                .addFunction("PlayFinalCheckPoint", &PlayFinalCheckPoint)
+                .addFunction("PlayDamagePenalty", &PlayDamagePenalty)
+                .endClass();
+        }
+    };
+
+    class audManager {
+    public:
+        static ageHook::Type<audManager*> Instance;
+
+        AGE_API mmCNRSpeech* GetCNRSpeechPtr()              { return ageHook::Thunk<0x5195C0>::Call<mmCNRSpeech*>(this); }
+        AGE_API mmRaceSpeech* GetRaceSpeechPtr()             { return ageHook::Thunk<0x519580>::Call<mmRaceSpeech*>(this); }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<audManager>("audManager")
+                .addStaticFunction("Instance", [] { return (audManager*)Instance; })
+
+                .addFunction("GetCNRSpeechPtr", &GetCNRSpeechPtr)
+                .addFunction("GetRaceSpeechPtr", &GetRaceSpeechPtr)
+                .endClass();
+        }
+    };
+
+
     template<>
     void luaAddModule<module_audio>(LuaState L) {
-
+        luaBind<audManager>(L);
+        luaBind<mmCNRSpeech>(L);
+        luaBind<mmRaceSpeech>(L);
     }
 }
