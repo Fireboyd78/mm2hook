@@ -160,3 +160,9 @@ class mpConsistencyHandler {
 public:
     static void Install();
 };
+
+class mmMirrorHandler {
+public:
+    void Cull();
+    static void Install();
+};

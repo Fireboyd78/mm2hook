@@ -24,7 +24,7 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<mmSpeedIndicatorHandler>("mmSpeedIndicator"),
     CreateHandler<mmHudMapHandler>("mmHudMap"),
     CreateHandler<mmCDPlayerHandler>("mmCDPlayer"),
-
+    CreateHandler<mmMirrorHandler>("mmMirrorHandler"),
     CreateHandler<lvlSkyHandler>("lvlSkyHandler"),
 
     CreateHandler<cityLevelBugfixHandler>("cityLevelBugfixHandler"),
@@ -897,4 +897,27 @@ void mpConsistencyHandler::Install() {
     InstallPatch({ 0xEB }, {
         0x4238BE,
     });
+}
+
+/*
+    mmMirrorHandler
+*/
+
+ageHook::Type<byte> someWeirdRenderbyte(0x6856BB);
+
+void mmMirrorHandler::Cull()
+{
+    byte prevByte = someWeirdRenderbyte;
+    someWeirdRenderbyte = 0;
+    ageHook::Thunk<0x42B8C0>::Call<void>(this); //Call original
+    someWeirdRenderbyte = prevByte;
+}
+
+void mmMirrorHandler::Install()
+{
+    InstallVTableHook("mmMirrorHandler::Cull",
+        &Cull, {
+            0x5B0B80
+        }
+    );
 }
