@@ -36,6 +36,8 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<mmGameMusicDataHandler>("mmGameMusicData"),
     CreateHandler<Aud3DObjectManagerHandler>("Aud3DObjectManagerHandler"),
 
+    CreateHandler<mmSingleRaceHandler>("mmSingleRace"),
+
     CreateHandler<ltLensFlareHandler>("ltLensFlare"),
 
     CreateHandler<vehCarAudioContainerHandler>("vehCarAudioContainer"),
@@ -2092,9 +2094,33 @@ void ltLensFlareHandler::Install() {
     if (cfgEnableLensFlare.Get()) {
         InstallPatch("Enables lens flares in a semi broken fashion.", { 0x90, 0x90, 0x90, 0x90, 0x90 }, {
             0x59C1EC,
-            });
+        });
     }
 }
+
+/*
+    mmSingleRaceHandler
+*/
+
+void mmSingleRaceHandler::QueueCopVoice(float a1) {
+    //play damage out voice
+    auto rsPtr = audManager::Instance->GetRaceSpeechPtr();
+    if (rsPtr != nullptr)
+        rsPtr->PlayDamagePenalty();
+}
+
+void mmSingleRaceHandler::Install() {
+    InstallCallback("mmSingleRace::UpdateGame", "Plays damage out voices in checkpoint race.",
+        &QueueCopVoice, {
+            cbHook<CALL>(0x41E9EF),
+        }
+    );
+
+    InstallPatch("Skips Aud3DObjectManager check, since we aren't using it.", { 0x90, 0x90 }, {
+        0x41E9E8,
+    });
+}
+
 
 #ifndef FEATURES_DECLARED
 #define FEATURES_DECLARED

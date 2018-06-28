@@ -215,3 +215,9 @@ class ltLensFlareHandler {
 public:
     static void Install();
 };
+
+class mmSingleRaceHandler {
+public:
+    void QueueCopVoice(float a1);
+    static void Install();
+};
