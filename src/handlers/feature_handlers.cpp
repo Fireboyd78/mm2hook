@@ -1637,7 +1637,7 @@ std::vector<std::string> split(std::string str, std::string token) {
 }
 
 //load LT file, and do a variant prepass
-void TextureVariantHandler::InitVariantData(int hookedSize) {
+void TextureVariantHandler::InitVariantData() {
     variant_infos.clear();
     auto parser = datParser("OwO");
 
@@ -1702,8 +1702,8 @@ void TextureVariantHandler::InitVariantData(int hookedSize) {
         variant_infos.push_back(nVariant);
     }
 
-    //call original (shrink textures, which we hooked)
-    gfxPipelineHandler::gfxSetTexReduceSize(hookedSize);
+    //call vehCarAudioContainer::InitStatics, which we hooked
+    ageHook::StaticThunk<0x4D0FF0>::Call<void>();
 }
 
 static void Desaturate(gfxImage* result) {
@@ -1792,7 +1792,7 @@ void TextureVariantHandler::InstallTextureVariantHandler()
 void TextureVariantHandler::Install()
 {
     InstallCallback(InitVariantData, {
-        cbHook<CALL>(0x443FA0),
+        cbHook<CALL>(0x412746),
         }, "Installs the texture variant init function."
     );
 
