@@ -358,8 +358,8 @@ void vehCarAudioContainerBugfixHandler::Install() {
 
 static ConfigValue<int> cfgMaxVehiclePaintjobs("MaxVehiclePaintjobs", 64);
 
+// Fixes gizmo models in cars by initializing 64 variant slots instead of 10
 void vehCarModelHandler::Install() {
-    // Fixes gizmo models in cars by initializing 64 variant slots instead of 10
     InstallPatch({ (byte)cfgMaxVehiclePaintjobs }, {
         0x4CD39E,
     });
@@ -933,6 +933,10 @@ void vehTrailerInstanceHandler::DrawGlow()
     auto inst = reinterpret_cast<vehTrailerInstance*>(this);
     GeomTableEntry* geomTable = lvlInstance::GetGeomTablePtr();
     
+    //don't draw trailer lights if it's broken
+    if (inst->getTrailer()->getJoint()->IsBroken())
+        return;
+
     //get vars
     auto carsim = inst->getTrailer()->getCarSim();
     float brakeInput = *getPtr<float>(carsim, 0x154c);
@@ -950,10 +954,16 @@ void vehTrailerInstanceHandler::DrawGlow()
     //draw lights
     auto tlight = geomTable[inst->getGeomSetId() + 1];
     auto rlight = geomTable[inst->getGeomSetId() + 7];
+    auto blight = geomTable[inst->getGeomSetId() + 8];
 
     //draw rlight
     if (rlight.Low != nullptr && gear == 0) {
         rlight.Low->Draw(shaders);
+    }
+
+    //draw blight
+    if (blight.Low != nullptr && brakeInput > 0.1) {
+        blight.Low->Draw(shaders);
     }
 
     //draw tlight
@@ -972,6 +982,7 @@ void vehTrailerInstanceHandler::DrawGlow()
 void vehTrailerInstanceHandler::AddGeomHook(const char* pkgName, const char* name, int flags) {
     ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, name, flags);
     ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, "rlight", flags);
+    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, "blight", flags);
 }
 
 void vehTrailerInstanceHandler::Install()
