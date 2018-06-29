@@ -21,6 +21,7 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<vehCarAudioHandler>("vehCarAudio"),
     CreateHandler<vehCarAudioContainerBugfixHandler>("vehCarAudioContainer bugfixes"),
     CreateHandler<vehCarModelHandler>("vehCarModel"),
+    CreateHandler<vehTrailerInstanceHandler>("vehTrailerInstance"),
     CreateHandler<mmSpeedIndicatorHandler>("mmSpeedIndicator"),
     CreateHandler<mmHudMapHandler>("mmHudMap"),
     CreateHandler<mmCDPlayerHandler>("mmCDPlayer"),
@@ -920,4 +921,77 @@ void mmMirrorHandler::Install()
             0x5B0B80
         }
     );
+}
+
+/*
+    vehTrailerInstanceHandler
+*/
+Matrix34 trailerMatrix = Matrix34();
+
+void vehTrailerInstanceHandler::DrawGlow()
+{
+    auto inst = reinterpret_cast<vehTrailerInstance*>(this);
+    GeomTableEntry* geomTable = lvlInstance::GetGeomTablePtr();
+    
+    //get vars
+    auto carsim = inst->getTrailer()->getCarSim();
+    float brakeInput = *getPtr<float>(carsim, 0x154c);
+    int gear = carsim->getTransmission()->getGear();
+
+    //setup renderer
+    *(int*)0x685778 |= 0x88; //set m_Touched
+    inst->GetMatrix(&trailerMatrix);
+    Matrix44::Convert(gfxRenderState::sm_World, &trailerMatrix);
+
+    //get our shader set
+    int shaderSet = *getPtr<int>(this, 24);
+    auto shaders = geomTable[inst->getGeomSetId() - 1].pShaders[shaderSet];
+    
+    //draw lights
+    auto tlight = geomTable[inst->getGeomSetId() + 1];
+    auto rlight = geomTable[inst->getGeomSetId() + 7];
+
+    //draw rlight
+    if (rlight.Low != nullptr && gear == 0) {
+        rlight.Low->Draw(shaders);
+    }
+
+    //draw tlight
+    if (tlight.Low != nullptr) {
+        //draw night copy
+        if (vehCar::sm_DrawHeadlights)
+            tlight.Low->Draw(shaders); 
+
+        //draw brake input copy
+        if(brakeInput > 0.1) {
+            tlight.Low->Draw(shaders);
+        }
+    }
+}
+
+void vehTrailerInstanceHandler::AddGeomHook(const char* pkgName, const char* name, int flags) {
+    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, name, flags);
+    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, "rlight", flags);
+}
+
+void vehTrailerInstanceHandler::Install()
+{
+    InstallCallback("vehTrailerInstance::Init", "Adds reverse light geometry.",
+        &AddGeomHook, {
+            cbHook<CALL>(0x4D7E79),
+        }
+    );
+
+    // adds custom light rendering, which adds proper brake lights
+    // and reverse lights
+    InstallVTableHook("vehTrailerInstance::DrawGlow",
+        &DrawGlow, {
+            0x5B2FBC, 
+        }
+    );
+
+    // removes Angels improperly rendered lights
+    InstallPatch({ 0xEB }, {
+        0x4D7FBF,
+    });
 }

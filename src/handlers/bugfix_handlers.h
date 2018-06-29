@@ -166,3 +166,10 @@ public:
     void Cull();
     static void Install();
 };
+
+class vehTrailerInstanceHandler {
+public :
+    void DrawGlow();
+    void AddGeomHook(const char* pkgName, const char* name, int flags);
+    static void Install();
+};
