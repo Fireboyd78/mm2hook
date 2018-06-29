@@ -67,6 +67,12 @@ namespace MM2
         }
     }
 
+    //TODO? may help with loading custom stuff
+    class asFileIO {
+    public:
+
+    };
+
     class datArgParser {
     public:
         static ageHook::Type<int> Argc;
