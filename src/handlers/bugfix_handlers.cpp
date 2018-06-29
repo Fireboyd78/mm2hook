@@ -358,8 +358,8 @@ void vehCarAudioContainerBugfixHandler::Install() {
 
 static ConfigValue<int> cfgMaxVehiclePaintjobs("MaxVehiclePaintjobs", 64);
 
-//Fixes gizmo models in cars by initializing 64 variant slots instead of 10
 void vehCarModelHandler::Install() {
+    // Fixes gizmo models in cars by initializing 64 variant slots instead of 10
     InstallPatch({ (byte)cfgMaxVehiclePaintjobs }, {
         0x4CD39E,
     });

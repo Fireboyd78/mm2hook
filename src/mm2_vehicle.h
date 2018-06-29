@@ -14,8 +14,6 @@ namespace MM2
     class vehCarAudio;
     class vehCarAudioContainer;
     class vehPoliceCarAudio;
-    class vehWheelPtx;
-    class asParticles;
     
 
     class mmVehInfo {
@@ -270,17 +268,6 @@ namespace MM2
         byte _buffer[0x1560];
     };
 
-    struct vehDamageImpactInfo {
-        phCollider* pCollider;
-        Vector3 vector4;
-        Vector3 vector10;
-        Vector3 vector1C;
-        Vector3 vector28;
-        float float34;
-        float float38;
-        uint32_t dword3C;
-    };
-
     class vehCarDamage : public asNode {
     public:
         AGE_API vehCarDamage()                              { ageHook::Thunk<0x4CA380>::Call<void>(this); }
@@ -289,7 +276,6 @@ namespace MM2
         AGE_API void AddDamage(float a1)                    { ageHook::Thunk<0x4CAEC0>::Call<void>(this, a1); }
         AGE_API void ClearDamage()                          { ageHook::Thunk<0x4CAE80>::Call<void>(this); }
 
-        AGE_API void ApplyImpact(vehDamageImpactInfo* a1) { ageHook::Thunk<0x4CB140>::Call<void>(this, a1); }
         /*
             vehCarDamage virtuals
         */
@@ -333,32 +319,6 @@ namespace MM2
         AGE_API void Reset() override                       { ageHook::Thunk<0x4D6A70>::Call<void>(this); }
     };
 
-    class asParticles {
-
-    };
-
-    class vehWheelPtx : public asNode {
-    private:
-        byte _buffer[0x78];
-    protected:
-        ageHook::Field<0x1C, asParticles> _particles;
-
-    public:
-        inline asParticles* getParticles(void) const {
-            return _particles.ptr(this);
-        };
-
-        AGE_API vehWheelPtx()                               { ageHook::Thunk<0x4D1C00>::Call<void>(this); }
-        AGE_API ~vehWheelPtx()                              { ageHook::Thunk<0x4D1C60>::Call<void>(this); }
-
-        /*
-            asNode virtuals
-        */
-        
-        AGE_API void Update() override                      { ageHook::Thunk<0x4D1E40>::Call<void>(this); }
-        AGE_API void Reset() override                       { ageHook::Thunk<0x4D1DC0>::Call<void>(this); }
-    };
-
     class vehCar : public dgPhysEntity {
         // vehCarSim: 0xB8 (size: ~0x1560)
     protected:
@@ -367,7 +327,6 @@ namespace MM2
         ageHook::Field<0xBC, vehCarModel *> _model;
         ageHook::Field<0xE0, vehSplash *> _splash;
         ageHook::Field<0x254, vehCarAudioContainer *> _audio;
-        ageHook::Field<0x0C4, vehWheelPtx *> _wheelPtx;
     public:
         AGE_API vehCar(BOOL a1)                             { ageHook::Thunk<0x42BAB0>::Call<void>(this, a1); }
         AGE_API ~vehCar()                                   { ageHook::Thunk<0x42BCC0>::Call<void>(this); }
@@ -392,10 +351,6 @@ namespace MM2
 
         inline vehCarAudioContainer* getAudio(void) const {
             return _audio.get(this);
-        }
-
-        inline vehWheelPtx* getWheelPtx(void) const {
-            return _wheelPtx.get(this);
         }
 
         AGE_API void Reset()                                { ageHook::Thunk<0x42C330>::Call<void>(this); }
