@@ -14,6 +14,9 @@ namespace MM2
     class vehCarAudio;
     class vehCarAudioContainer;
     class vehPoliceCarAudio;
+    class vehWheelPtx;
+    class asParticles;
+    
 
     class mmVehInfo {
     private:
@@ -89,6 +92,7 @@ namespace MM2
     protected:
         ageHook::Field<0xAC, vehBreakableMgr *> _mechanicalBreakableMgr;
         ageHook::Field<0xA0, vehBreakableMgr *> _genericBreakableMgr;
+        ageHook::Field<0x18, vehCar *> _car;
     public:
         AGE_API vehCarModel()                               { ageHook::Thunk<0x4CCF20>::Call<void>(this); }
         AGE_API ~vehCarModel()                              { ageHook::Thunk<0x4CCF80>::Call<void>(this); }
@@ -99,6 +103,10 @@ namespace MM2
         
         inline vehBreakableMgr * getMechBreakableMgr(void) const {
             return _mechanicalBreakableMgr.get(this);
+        }
+
+        inline vehCar * getCar(void) const {
+            return _car.get(this);
         }
 
         AGE_API void BreakElectrics(Vector3* a1)            { ageHook::Thunk<0x4CEFE0>::Call<void>(this, a1); }
@@ -114,10 +122,10 @@ namespace MM2
         AGE_API void Reset()  override                      { ageHook::Thunk<0x4CDFD0>::Call<void>(this); }
         AGE_API Vector3 const & GetPosition() override
                                                             { return ageHook::Thunk<0x4CEF50>::Call<Vector3 const &>(this); }
-        AGE_API Matrix34 const & GetMatrix(Matrix34 &a1)
-                                                            { return ageHook::Thunk<0x4CEF90>::Call<Matrix34 const &>(this, &a1); }
-        AGE_API void SetMatrix(Matrix34 const &a1) override 
-                                                            { ageHook::Thunk<0x4CEFA0>::Call<void>(this, &a1); }
+        AGE_API Matrix34 const & GetMatrix(Matrix34* a1)
+                                                            { return ageHook::Thunk<0x4CEF90>::Call<Matrix34 const &>(this, a1); }
+        AGE_API void SetMatrix(const Matrix34* a1) override 
+                                                            { ageHook::Thunk<0x4CEFA0>::Call<void>(this, a1); }
         AGE_API dgPhysEntity* GetEntity() override          { return ageHook::Thunk<0x4CEFC0>::Call<dgPhysEntity*>(this); }
         AGE_API dgPhysEntity* AttachEntity() override 
                                                             { return ageHook::Thunk<0x4CEFD0>::Call<dgPhysEntity*>(this); }
@@ -148,17 +156,64 @@ namespace MM2
                 .addFunction("EjectOneshot", &EjectOneshot)
                 .addFunction("GetVisible", &GetVisible)
                 .addFunction("SetVisible", &SetVisible)
+
+
             .endClass();
         }
     private:
         byte _buffer[0xCC];
     };
 
+    class vehTransmission : public asNode {
+    protected:
+        ageHook::Field<0x24, int> _gear;
+    public:
+        inline int getGear(void) {
+            return _gear.get(this);
+        };
+
+        AGE_API void Upshift()                              { ageHook::Thunk<0x4CF570>::Call<void>(this); }
+        AGE_API void Downshift()                            { ageHook::Thunk<0x4CF5B0>::Call<void>(this); }
+        AGE_API void SetReverse()                           { ageHook::Thunk<0x4CF6C0>::Call<void>(this); }
+        AGE_API void SetNeutral()                           { ageHook::Thunk<0x4CF6D0>::Call<void>(this); }
+        AGE_API void SetForward()                           { ageHook::Thunk<0x4CF6E0>::Call<void>(this); }
+        AGE_API void SetCurrentGear(int a1)                 { ageHook::Thunk<0x4CF700>::Call<void>(this, a1); }
+        AGE_API void Automatic(BOOL a1)                     { ageHook::Thunk<0x4CF6B0>::Call<void>(this, a1); }
+        AGE_API float GearRatioFromMPH(float a1)            { return ageHook::Thunk<0x4CF530>::Call<float>(this, a1); }
+
+        /*
+            asNode virtuals
+        */
+
+        AGE_API void Update() override                      { ageHook::Thunk<0x4CF600>::Call<void>(this); }
+        AGE_API void Reset() override                       { ageHook::Thunk<0x4CF200>::Call<void>(this); }
+        AGE_API void FileIO(datParser &parser)  override
+                                                            { ageHook::Thunk<0x4CF740>::Call<void>(this); }
+        AGE_API char* GetClassName() override               { return ageHook::Thunk<0x4CF880>::Call<char*>(this); }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginExtendClass<vehTransmission, asNode>("vehTransmission")
+                .addProperty("Gear", &getGear, &SetCurrentGear)
+                .addFunction("Automatic", &Automatic, LUA_ARGS(bool))
+                .addFunction("Downshift", &Downshift)
+                .addFunction("Upshift", &Upshift)
+                .addFunction("SetReverse", &SetReverse)
+                .addFunction("SetNeutral", &SetNeutral)
+                .addFunction("SetForward", &SetForward)
+                .addFunction("SetCurrentGear", &SetCurrentGear)
+                .addFunction("GearRatioFromMPH", &GearRatioFromMPH)
+                .endClass();
+        }
+    private:
+        byte _buffer[0x4C];
+    };
+
     class vehCarSim : public asNode {
     protected:
         ageHook::Field<0x24C, float> _speed;
         ageHook::Field<0x210, const Vector3> _resetPosition;
-        ageHook::Field<0x1D0, lvlInstance*> _instance;
+        ageHook::Field<0x1D0, lvlInstance *> _instance;
+        ageHook::Field<0x2E0, vehTransmission> _transmission;
         //ageHook::Field<0x25C, vehEngine *> _engine;
     public:
         inline float getSpeed(void) {
@@ -171,6 +226,10 @@ namespace MM2
 
         inline lvlInstance* getInstance(void) {
             return _instance.get(this);
+        }
+
+        inline vehTransmission* getTransmission(void) const {
+            return _transmission.ptr(this);
         }
 
         AGE_API vehCarSim()                                 { ageHook::Thunk<0x4CB660>::Call<void>(this); }
@@ -195,7 +254,8 @@ namespace MM2
         AGE_API char const* GetDirName() override           { return ageHook::Thunk<0x4CBAF0>::Call<char const*>(this); }
 
         static void BindLua(LuaState L) {
-            LuaBinding(L).beginClass<vehCarSim>("vehCarSim")
+            LuaBinding(L).beginExtendClass<vehCarSim, asNode>("vehCarSim")
+                .addPropertyReadOnly("Transmission", &getTransmission)
                 .addPropertyReadOnly("ResetPosition", &getResetPosition)
                 .addFunction("Reset", &Reset)
                 .addFunction("BottomedOut", &BottomedOut)
@@ -210,6 +270,17 @@ namespace MM2
         byte _buffer[0x1560];
     };
 
+    struct vehDamageImpactInfo {
+        phCollider* pCollider;
+        Vector3 vector4;
+        Vector3 vector10;
+        Vector3 vector1C;
+        Vector3 vector28;
+        float float34;
+        float float38;
+        uint32_t dword3C;
+    };
+
     class vehCarDamage : public asNode {
     public:
         AGE_API vehCarDamage()                              { ageHook::Thunk<0x4CA380>::Call<void>(this); }
@@ -218,6 +289,7 @@ namespace MM2
         AGE_API void AddDamage(float a1)                    { ageHook::Thunk<0x4CAEC0>::Call<void>(this, a1); }
         AGE_API void ClearDamage()                          { ageHook::Thunk<0x4CAE80>::Call<void>(this); }
 
+        AGE_API void ApplyImpact(vehDamageImpactInfo* a1) { ageHook::Thunk<0x4CB140>::Call<void>(this, a1); }
         /*
             vehCarDamage virtuals
         */
@@ -250,15 +322,41 @@ namespace MM2
     
     class vehSplash : public asNode {
     public:
-        AGE_API vehSplash() { ageHook::Thunk<0x4D6A00>::Call<void>(this); }
-        AGE_API ~vehSplash() { ageHook::Thunk<0x4D6F30>::Call<void>(this); }
+        AGE_API vehSplash()                                 { ageHook::Thunk<0x4D6A00>::Call<void>(this); }
+        AGE_API ~vehSplash()                                { ageHook::Thunk<0x4D6F30>::Call<void>(this); }
 
         /*
             asNode virtuals
         */
 
-        AGE_API void Update() override { ageHook::Thunk<0x4D6BF0>::Call<void>(this); }
-        AGE_API void Reset() override { ageHook::Thunk<0x4D6A70>::Call<void>(this); }
+        AGE_API void Update() override                      { ageHook::Thunk<0x4D6BF0>::Call<void>(this); }
+        AGE_API void Reset() override                       { ageHook::Thunk<0x4D6A70>::Call<void>(this); }
+    };
+
+    class asParticles {
+
+    };
+
+    class vehWheelPtx : public asNode {
+    private:
+        byte _buffer[0x78];
+    protected:
+        ageHook::Field<0x1C, asParticles> _particles;
+
+    public:
+        inline asParticles* getParticles(void) const {
+            return _particles.ptr(this);
+        };
+
+        AGE_API vehWheelPtx()                               { ageHook::Thunk<0x4D1C00>::Call<void>(this); }
+        AGE_API ~vehWheelPtx()                              { ageHook::Thunk<0x4D1C60>::Call<void>(this); }
+
+        /*
+            asNode virtuals
+        */
+        
+        AGE_API void Update() override                      { ageHook::Thunk<0x4D1E40>::Call<void>(this); }
+        AGE_API void Reset() override                       { ageHook::Thunk<0x4D1DC0>::Call<void>(this); }
     };
 
     class vehCar : public dgPhysEntity {
@@ -269,10 +367,12 @@ namespace MM2
         ageHook::Field<0xBC, vehCarModel *> _model;
         ageHook::Field<0xE0, vehSplash *> _splash;
         ageHook::Field<0x254, vehCarAudioContainer *> _audio;
+        ageHook::Field<0x0C4, vehWheelPtx *> _wheelPtx;
     public:
         AGE_API vehCar(BOOL a1)                             { ageHook::Thunk<0x42BAB0>::Call<void>(this, a1); }
         AGE_API ~vehCar()                                   { ageHook::Thunk<0x42BCC0>::Call<void>(this); }
 
+        static ageHook::Type<bool> sm_DrawHeadlights;
 
         inline vehCarDamage* getCarDamage(void) const {
             return _damage.get(this);
@@ -292,6 +392,10 @@ namespace MM2
 
         inline vehCarAudioContainer* getAudio(void) const {
             return _audio.get(this);
+        }
+
+        inline vehWheelPtx* getWheelPtx(void) const {
+            return _wheelPtx.get(this);
         }
 
         AGE_API void Reset()                                { ageHook::Thunk<0x42C330>::Call<void>(this); }
@@ -339,6 +443,24 @@ namespace MM2
         byte _buffer[0x25C];
     };
 
+    class vehTrailer {
+    protected:
+        ageHook::Field<0x1E4, vehCarSim *> _sim;
+    public:
+        inline vehCarSim* getCarSim(void) const {
+            return _sim.get(this);
+        }
+    };
+
+    class vehTrailerInstance : public lvlInstance {
+    protected:
+        ageHook::Field<0x14, vehTrailer *> _trailer;
+    public:
+        inline vehTrailer* getTrailer(void) const {
+            return _trailer.get(this);
+        }
+    };
+
     class vehCarAudio {
     private:
         byte _buffer[0x130];
@@ -381,5 +503,6 @@ namespace MM2
         luaBind<vehCarDamage>(L);
         luaBind<vehCarModel>(L);
         luaBind<vehCarSim>(L);
+        luaBind<vehTransmission>(L);
     }
 }

@@ -4,6 +4,23 @@
 
 namespace MM2
 {
+    // Extern declarations
+    extern class phMaterial;
+    extern class phSegment;
+    extern class phIntersection;
+    extern class phIntersectionBase;
+    extern class phIntersectionPoint;
+    extern class phImpactBase;
+
+    // Forward declarations
+    class phBoundGeometry;
+    class phBound;
+    
+    //TODO
+    class phBoundGeometry {
+
+    };
+
     class phBound {
     public:
         void SetOffset(Vector3& offset)                     { ageHook::Thunk<0x4872C0>::Call<void>(this, &offset); }

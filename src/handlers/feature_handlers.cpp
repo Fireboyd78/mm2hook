@@ -72,8 +72,6 @@ ageHook::Type<float> sdl_MedThresh          ( 0x5C5710 );  // default: 50.0
 
 ageHook::Type<int> timeOfDay                ( 0x62B068 );
 
-ageHook::Type<int> vehCar_bHeadlights       ( 0x627518 );
-
 /*
     asCullManagerHandler
 */
@@ -334,7 +332,7 @@ struct TimeWeatherInfo {
         static ageHook::Type<float> g_WeatherFriction       = 0x5CF6B8;
 
         aiMap::Instance->drawHeadlights = ShowHeadlights;
-        vehCar_bHeadlights = ShowHeadlights;
+        vehCar::sm_DrawHeadlights = ShowHeadlights;
 
         g_FlatColorIntensity = FlatColorIntensity;
         g_WeatherFriction = WeatherFriction;
@@ -1516,7 +1514,7 @@ void mmDashViewHandler::UpdateCS() {
     auto car = player->getCar();
     auto carModel = car->getModel();
 
-    sm_DashOffset = carModel->GetMatrix(sm_DashOffset);
+    sm_DashOffset = carModel->GetMatrix(&sm_DashOffset);
 
     auto steering = *getPtr<float>(player, 0x2264);
     auto wheelFact = *getPtr<float>(this, 0x400);

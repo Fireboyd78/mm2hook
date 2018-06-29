@@ -2,6 +2,7 @@
 #include "mm2_common.h"
 #include "mm2_phys.h"
 #include "mm2_gfx.h"
+#include "mm2_bound.h"
 
 namespace MM2
 {
@@ -13,6 +14,9 @@ namespace MM2
     // External declarations
     extern class dgPhysEntity;
     extern class phBound;
+    extern class modStatic;
+    extern class modShader;
+    extern class phBoundGeometry;
 
     namespace $
     {
@@ -22,21 +26,49 @@ namespace MM2
         }
     }
 
+    struct GeomTableEntry
+    {
+        modStatic *VeryLow;
+        modStatic *Low;
+        modStatic *Medium;
+        modStatic *High;
+        modShader **pShaders;
+        phBoundGeometry *BoundGeom;
+        float Radius;
+        uint32_t dword1C;
+    };
+
     class lvlInstance
     {
     private:
-        byte _buffer[0x24];
+        BYTE byte4;
+        BYTE byte5;
+        WORD room;
+        WORD Flags;
+        WORD GeomSet;
+        DWORD dwordC;
+        lvlInstance *Next;
     protected:
-        ageHook::Field<0x06, int> _room;
-
         static AGE_API int GetGeomSet(char const * a1, char const * a2, int a3)
                                                             { return ageHook::StaticThunk<0x4632C0>::Call<int>(a1, a2, a3); }
         static AGE_API void CreateTempBounds()              { ageHook::StaticThunk<0x464680>::Call<void>(); }
         static AGE_API void DeleteTempBounds()              { ageHook::StaticThunk<0x4647E0>::Call<void>(); }
+
+    public:
+        static GeomTableEntry* GetGeomTablePtr() {
+            return reinterpret_cast<GeomTableEntry*>(0x6316D8);
+        }
+        static char** GetGeomNameTablePtr() {
+            return reinterpret_cast<char**>(0x651760);
+        }
     public:
         
         inline short getRoomId(void) const {
-            return _room.get(this);
+            return room;
+        }
+
+        inline short getGeomSetId(void) const {
+            return GeomSet;
         }
 
         static AGE_API void ResetInstanceHeap()             { ageHook::StaticThunk<0x4631A0>::Call<void>(); }
@@ -76,9 +108,9 @@ namespace MM2
         virtual AGE_API int IsVisible(gfxViewport const * a1)
                                                             { return ageHook::Thunk<0x4649F0>::Call<int>(this, a1); }
 
-        virtual AGE_API Matrix34 const & GetMatrix(Matrix34 & a1)
+        virtual AGE_API Matrix34 const & GetMatrix(Matrix34* a1)
                                                             PURE;
-        virtual AGE_API void SetMatrix(Matrix34 const & a1) PURE;
+        virtual AGE_API void SetMatrix(const Matrix34* a1)  PURE;
         
         virtual AGE_API void SetVariant(int a1)             { ageHook::Thunk<0x4643D0>::Call<void>(this, a1); }
         virtual AGE_API float const GetRadius()             { return ageHook::Thunk<0x4643E0>::Call<float>(this); }
