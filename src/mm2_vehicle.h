@@ -14,7 +14,8 @@ namespace MM2
     class vehCarAudio;
     class vehCarAudioContainer;
     class vehPoliceCarAudio;
-    
+    class vehTrailer;
+    class vehTrailerInstance;
 
     class mmVehInfo {
     private:
@@ -327,6 +328,7 @@ namespace MM2
         ageHook::Field<0xBC, vehCarModel *> _model;
         ageHook::Field<0xE0, vehSplash *> _splash;
         ageHook::Field<0x254, vehCarAudioContainer *> _audio;
+        ageHook::Field<0xD8, vehTrailer *> _trailer;
     public:
         AGE_API vehCar(BOOL a1)                             { ageHook::Thunk<0x42BAB0>::Call<void>(this, a1); }
         AGE_API ~vehCar()                                   { ageHook::Thunk<0x42BCC0>::Call<void>(this); }
@@ -353,6 +355,10 @@ namespace MM2
             return _audio.get(this);
         }
 
+        inline vehTrailer* getTrailer(void) const {
+            return _trailer.get(this);
+        }
+
         AGE_API void Reset()                                { ageHook::Thunk<0x42C330>::Call<void>(this); }
 
         AGE_API void ClearDamage()                          { ageHook::Thunk<0x42C450>::Call<void>(this); }
@@ -369,13 +375,13 @@ namespace MM2
         AGE_API bool RequiresTerrainCollision() override
                                                             { return ageHook::Thunk<0x42CA90>::Call<bool>(this); }
         AGE_API lvlInstance* GetInst() override             { return ageHook::Thunk<0x42CA80>::Call<lvlInstance *>(this); }
-        AGE_API phInertialCs* GetICS()                      { return ageHook::Thunk<0x42CA70>::Call<phInertialCs *>(this); }
+        AGE_API phInertialCS* GetICS()                      { return ageHook::Thunk<0x42CA70>::Call<phInertialCS *>(this); }
         AGE_API void PostUpdate() override                  { ageHook::Thunk<0x42C8B0>::Call<void>(this); }
         AGE_API void Update() override                      { ageHook::Thunk<0x42C690>::Call<void>(this); }
         AGE_API void PreUpdate() override                   { ageHook::Thunk<0x42C480>::Call<void>(this); }
 
         static void BindLua(LuaState L) {
-            LuaBinding(L).beginClass<vehCar>("vehCar")
+            LuaBinding(L).beginExtendClass<vehCar, dgPhysEntity>("vehCar")
                 .addConstructor(LUA_ARGS(bool))
                 //properties
                 .addPropertyReadOnly("vehCarDamage", &getCarDamage)
@@ -383,12 +389,12 @@ namespace MM2
                 .addPropertyReadOnly("vehCarModel", &getModel)
                 .addPropertyReadOnly("vehSplash", &getSplash)
                 .addPropertyReadOnly("Audio", &getAudio)
+                .addPropertyReadOnly("Trailer", &getTrailer)
 
                 //functions
                 .addFunction("Init", &Init)
                 .addFunction("InitAudio", &InitAudio)
                 .addFunction("Reset", &Reset)
-                .addFunction("GetInst", &GetInst)
                 .addFunction("ClearDamage", &ClearDamage)
                 .addFunction("SetDrivable", &SetDrivable, LUA_ARGS(bool,bool))
                 .addFunction("IsPlayer", &IsPlayer)
@@ -398,12 +404,24 @@ namespace MM2
         byte _buffer[0x25C];
     };
 
-    class vehTrailer {
+    class vehTrailer : public dgPhysEntity {
     protected:
         ageHook::Field<0x1E4, vehCarSim *> _sim;
+        ageHook::Field<0xCC, dgTrailerJoint> _joint;
     public:
         inline vehCarSim* getCarSim(void) const {
             return _sim.get(this);
+        }
+
+        inline dgTrailerJoint* getJoint(void) const {
+            return _joint.ptr(this);
+        }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginExtendClass<vehTrailer, dgPhysEntity>("vehTrailer")
+                .addPropertyReadOnly("vehCarSim", &getCarSim)
+                .addPropertyReadOnly("Joint", &getJoint)
+                .endClass();
         }
     };
 
@@ -413,6 +431,13 @@ namespace MM2
     public:
         inline vehTrailer* getTrailer(void) const {
             return _trailer.get(this);
+        }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginExtendClass<vehTrailerInstance, lvlInstance>("vehTrailerInstance")
+                //properties
+                .addPropertyReadOnly("Trailer", &getTrailer)
+                .endClass();
         }
     };
 
@@ -459,5 +484,7 @@ namespace MM2
         luaBind<vehCarModel>(L);
         luaBind<vehCarSim>(L);
         luaBind<vehTransmission>(L);
+        luaBind<vehTrailer>(L);
+        luaBind<vehTrailerInstance>(L);
     }
 }
