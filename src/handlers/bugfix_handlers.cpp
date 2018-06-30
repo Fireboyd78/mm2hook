@@ -1127,7 +1127,7 @@ void modShaderHandler::Install()
         &BeginEnvMap, {
             cbHook<CALL>(0x4CE1F5),
             cbHook<CALL>(0x5341DD),
-            cbHook<CALL>(0x52252),
+            cbHook<CALL>(0x552252),
         }
     );
 
