@@ -1,4 +1,5 @@
 #include "bugfix_handlers.h"
+#include "..\mm2_particle.h"
 
 using namespace MM2;
 
@@ -7,6 +8,8 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<aiPedestrianHandler>("aiPedestrian"),
     CreateHandler<aiPoliceForceHandler>("aiPoliceForce"),
     CreateHandler<aiVehicleAmbientHandler>("aiVehicleAmbient"),
+
+    CreateHandler<asMeshCardInfoHandler>("asMeshCardInfo"),
 
     CreateHandler<audManagerHandler>("audManager"),
 
@@ -902,29 +905,6 @@ void mpConsistencyHandler::Install() {
 }
 
 /*
-    mmMirrorHandler
-*/
-
-ageHook::Type<byte> someWeirdRenderbyte(0x6856BB);
-
-void mmMirrorHandler::Cull()
-{
-    byte prevByte = someWeirdRenderbyte;
-    someWeirdRenderbyte = 0;
-    ageHook::Thunk<0x42B8C0>::Call<void>(this); //Call original
-    someWeirdRenderbyte = prevByte;
-}
-
-void mmMirrorHandler::Install()
-{
-    InstallVTableHook("mmMirrorHandler::Cull",
-        &Cull, {
-            0x5B0B80
-        }
-    );
-}
-
-/*
     vehTrailerInstanceHandler
 */
 Matrix34 trailerMatrix = Matrix34();
@@ -1017,4 +997,17 @@ void vehPoliceCarAudioBugfixHandler::Install() {
     InstallPatch({ 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }, {
         0x4D4C28,
     });
+}
+
+/*
+    asMeshCardInfoHandler
+*/
+
+void asMeshCardInfoHandler::Install()
+{
+    InstallCallback("asMeshCardInfo::Draw", "Scales particles correctly based on current cull mode.",
+        &asMeshCardInfo::Draw, {
+            cbHook<JMP>(0x461770),
+        }
+    );
 }

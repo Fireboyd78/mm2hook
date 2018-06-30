@@ -161,12 +161,6 @@ public:
     static void Install();
 };
 
-class mmMirrorHandler {
-public:
-    void Cull();
-    static void Install();
-};
-
 class vehTrailerInstanceHandler {
 public :
     void DrawGlow();
@@ -175,6 +169,11 @@ public :
 };
 
 class vehPoliceCarAudioBugfixHandler {
+public:
+    static void Install();
+};
+
+class asMeshCardInfoHandler {
 public:
     static void Install();
 };

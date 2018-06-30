@@ -104,6 +104,7 @@
   -->
   <ItemGroup>
     <ClInclude Include="src\events\dispatcher.h" />
+    <ClInclude Include="src\mm2_particle.h" />
     <ClInclude Include="src\settings.h" />
     <ClInclude Include="src\handlers\bugfix_handlers.h" />
     <ClInclude Include="src\handlers\feature_handlers.h" />
@@ -136,6 +137,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\events\dispatcher.cpp" />
+    <ClCompile Include="src\mm2_particle.cpp" />
     <ClCompile Include="src\settings.cpp" />
     <ClCompile Include="src\handlers\bugfix_handlers.cpp" />
     <ClCompile Include="src\handlers\feature_handlers.cpp" />

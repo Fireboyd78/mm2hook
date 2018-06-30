@@ -272,6 +272,9 @@
     <ClInclude Include="src\events\dispatcher.h">
       <Filter>Source Files\events</Filter>
     </ClInclude>
+    <ClInclude Include="src\mm2_particle.h">
+      <Filter>Source Files\mm2</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
@@ -459,6 +462,9 @@
     </ClCompile>
     <ClCompile Include="src\events\dispatcher.cpp">
       <Filter>Source Files\events</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mm2_particle.cpp">
+      <Filter>Source Files\mm2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
