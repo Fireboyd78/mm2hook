@@ -162,6 +162,11 @@ public:
     static void Install();
 };
 
+class vehTrailerHandler {
+public:
+    static void Install();
+};
+
 class vehTrailerInstanceHandler {
 public :
     void DrawGlow();

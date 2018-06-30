@@ -404,7 +404,7 @@ namespace MM2
         byte _buffer[0x25C];
     };
 
-    class vehTrailer : public dgPhysEntity {
+    class vehTrailer : public dgPhysEntity, public asNode {
     protected:
         ageHook::Field<0x1E4, vehCarSim *> _sim;
         ageHook::Field<0xCC, dgTrailerJoint> _joint;
