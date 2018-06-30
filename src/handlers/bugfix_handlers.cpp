@@ -35,6 +35,8 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<mmCDPlayerHandler>("mmCDPlayer"),
     CreateHandler<lvlSkyHandler>("lvlSkyHandler"),
 
+    CreateHandler<modShaderHandler>("modShader"),
+
     CreateHandler<cityLevelBugfixHandler>("cityLevelBugfixHandler"),
 
     CreateHandler<mpConsistencyHandler>("mpConsistencyHandler"),
@@ -1088,6 +1090,52 @@ void aiVehicleInstanceHandler::Install()
     InstallVTableHook("aiVehicleInstance::DrawGlow",
         &Reset, {
             0x5B590C,
+        }
+    );
+}
+
+/*
+    modShaderHandler
+*/
+
+byte lastFogMode = 0;
+
+void modShaderHandler::BeginEnvMap(gfxTexture * a1, const Matrix34 * a2)
+{
+    // Set fog mode to off
+    if ((&RSTATE->Data)->FogVertexMode != 0) {
+        lastFogMode = (&RSTATE->Data)->FogVertexMode;
+        (&RSTATE->Data)->FogVertexMode = 0;
+    }
+    
+    ageHook::StaticThunk<0x4A41B0>::Call<void>(a1, a2); //call original
+}
+
+void modShaderHandler::EndEnvMap()
+{
+    // Restore last fog mode
+    if ((&RSTATE->Data)->FogVertexMode != lastFogMode) {
+        (&RSTATE->Data)->FogVertexMode = lastFogMode;
+    }
+
+    ageHook::StaticThunk<0x4A4420>::Call<void>(); //call original
+}
+
+void modShaderHandler::Install()
+{
+    InstallCallback("modShader::BeginEnvMap", "Turns off fog while drawing reflections.",
+        &BeginEnvMap, {
+            cbHook<CALL>(0x4CE1F5),
+            cbHook<CALL>(0x5341DD),
+            cbHook<CALL>(0x52252),
+        }
+    );
+
+    InstallCallback("modShader::EndEnvMap", "Turns off fog while drawing reflections.",
+        &EndEnvMap, {
+            cbHook<CALL>(0x4CE228),
+            cbHook<CALL>(0x534202),
+            cbHook<CALL>(0x55226B),
         }
     );
 }
