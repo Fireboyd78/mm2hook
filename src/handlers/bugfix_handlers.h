@@ -95,6 +95,7 @@ public:
 
 class lvlSkyHandler {
 public:
+    void ResetRot();
     static void Install();
 };
 

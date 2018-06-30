@@ -495,12 +495,23 @@ void mmInterfaceHandler::Install() {
     lvlSkyHandler
 */
 
+void lvlSkyHandler::ResetRot() {
+    float* skyRot = (float*)(0x628728 + 0x18); //cityLevel::sm_Sky + 0x18
+    *skyRot = 0.0f;
+}
+
 void lvlSkyHandler::Install() {
     //Overwrite SetMIPMapEnv call since it does nothing
     //and the game will crash without a .sky file when atetmpting to call it
     InstallPatch({ 0xEB, 0x0F }, {
         0x465226,
     });
+
+    InstallCallback("mmGame::Reset", "Fixes sky rotation on city reset.",
+        &ResetRot, {
+            cbHook<JMP>(0x413DE3),
+        }
+    );
 }
 
 /*
