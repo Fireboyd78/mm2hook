@@ -183,3 +183,9 @@ public:
     void DrawGlow();
     static void Install();
 };
+
+class aiVehicleInstanceHandler {
+public:
+    void Reset();
+    static void Install();
+};
