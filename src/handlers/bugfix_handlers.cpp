@@ -1098,25 +1098,25 @@ void aiVehicleInstanceHandler::Install()
     modShaderHandler
 */
 
-byte lastFogMode = 0;
+float lastFogStart;
+float lastFogEnd;
 
 void modShaderHandler::BeginEnvMap(gfxTexture * a1, const Matrix34 * a2)
 {
-    // Set fog mode to off
-    if ((&RSTATE->Data)->FogVertexMode != 0) {
-        lastFogMode = (&RSTATE->Data)->FogVertexMode;
-        (&RSTATE->Data)->FogVertexMode = 0;
-    }
-    
+    // Set fog distance so it's not blended with reflections
+    lastFogStart = (&RSTATE->Data)->FogStart;
+    lastFogEnd = (&RSTATE->Data)->FogEnd;
+    (&RSTATE->Data)->FogStart = 9999;
+    (&RSTATE->Data)->FogEnd = 10000;
+        
     ageHook::StaticThunk<0x4A41B0>::Call<void>(a1, a2); //call original
 }
 
 void modShaderHandler::EndEnvMap()
 {
-    // Restore last fog mode
-    if ((&RSTATE->Data)->FogVertexMode != lastFogMode) {
-        (&RSTATE->Data)->FogVertexMode = lastFogMode;
-    }
+    // Restore last fog settings
+    (&RSTATE->Data)->FogStart = lastFogStart;
+    (&RSTATE->Data)->FogEnd = lastFogEnd;
 
     ageHook::StaticThunk<0x4A4420>::Call<void>(); //call original
 }
