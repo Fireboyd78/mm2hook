@@ -22,6 +22,7 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<vehCarAudioContainerBugfixHandler>("vehCarAudioContainer bugfixes"),
     CreateHandler<vehCarModelHandler>("vehCarModel"),
     CreateHandler<vehTrailerInstanceHandler>("vehTrailerInstance"),
+    CreateHandler<vehPoliceCarAudioBugfixHandler>("vehPoliceCarAudio"),
     CreateHandler<mmSpeedIndicatorHandler>("mmSpeedIndicator"),
     CreateHandler<mmHudMapHandler>("mmHudMap"),
     CreateHandler<mmCDPlayerHandler>("mmCDPlayer"),
@@ -1004,5 +1005,16 @@ void vehTrailerInstanceHandler::Install()
     // removes Angels improperly rendered lights
     InstallPatch({ 0xEB }, {
         0x4D7FBF,
+    });
+}
+
+/*
+    vehPoliceCarAudioBugfixHandler
+*/
+
+void vehPoliceCarAudioBugfixHandler::Install() {
+    // fixes infinite explosion sounds
+    InstallPatch({ 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }, {
+        0x4D4C28,
     });
 }

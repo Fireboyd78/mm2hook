@@ -173,3 +173,8 @@ public :
     void AddGeomHook(const char* pkgName, const char* name, int flags);
     static void Install();
 };
+
+class vehPoliceCarAudioBugfixHandler {
+public:
+    static void Install();
+};
