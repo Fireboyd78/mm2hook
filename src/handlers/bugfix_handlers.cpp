@@ -20,6 +20,8 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<mmInterfaceHandler>("mmInterface"),
     CreateHandler<mmPopupHandler>("mmPopupHandler"),
 
+    CreateHandler<dgBangerInstanceHandler>("dgBangerInstance"),
+
     CreateHandler<vehCarHandler>("vehCar"),
     CreateHandler<vehCarAudioHandler>("vehCarAudio"),
     CreateHandler<vehCarAudioContainerBugfixHandler>("vehCarAudioContainer bugfixes"),
@@ -1007,6 +1009,41 @@ void asMeshCardInfoHandler::Install()
     InstallCallback("asMeshCardInfo::Draw", "Scales particles correctly based on current cull mode.",
         &asMeshCardInfo::Draw, {
             cbHook<JMP>(0x461770),
+        }
+    );
+}
+
+/*
+    dgBangerInstanceHandler
+*/
+
+void dgBangerInstanceHandler::DrawGlow()
+{
+    $::ltLight::DrawGlowBegin();
+    ageHook::Thunk<0x441840>::Call<void>(this); // call original
+    $::ltLight::DrawGlowEnd();
+}
+
+void dgBangerInstanceHandler::Install()
+{
+    // makes banger glows double sided
+    InstallVTableHook("dgBangerInstance::DrawGlow",
+        &DrawGlow, {
+            0x5B14CC,
+            0x5B1544,
+            0x5B15F0,
+            0x5B5690,
+            0x5B570C,
+            0x5B57D0,
+            0x5B5FC4,
+            0x5B610C,
+            0x5B61B8
+        }
+    );
+
+    InstallCallback("aiTrafficLightInstance::DrawGlow", "Make traffic light banger lights double sided",
+        &DrawGlow, {
+            cbHook<CALL>(0x53CCFD),
         }
     );
 }

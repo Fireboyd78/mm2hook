@@ -177,3 +177,9 @@ class asMeshCardInfoHandler {
 public:
     static void Install();
 };
+
+class dgBangerInstanceHandler {
+public:
+    void DrawGlow();
+    static void Install();
+};
