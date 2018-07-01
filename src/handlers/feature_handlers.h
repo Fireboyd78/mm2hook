@@ -221,3 +221,9 @@ public:
     void QueueCopVoice(float a1);
     static void Install();
 };
+
+class dgBangerInstanceHandler {
+public:
+    void DrawGlow();
+    static void Install();
+};

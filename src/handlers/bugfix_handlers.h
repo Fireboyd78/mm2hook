@@ -184,12 +184,6 @@ public:
     static void Install();
 };
 
-class dgBangerInstanceHandler {
-public:
-    void DrawGlow();
-    static void Install();
-};
-
 class aiVehicleInstanceHandler {
 public:
     void Reset();

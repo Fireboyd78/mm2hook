@@ -8,8 +8,13 @@
 namespace MM2
 {
     // Forward declarations
-    class asSparkPos;
-    class asMeshCardInfo;
+    struct asSparkPos;
+    struct asMeshCardInfo;
+    
+    class asBirthRule {
+    private:
+        byte _buffer[0xB4];
+    };
 
     struct asSparkPos
     {
