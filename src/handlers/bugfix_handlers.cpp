@@ -256,6 +256,7 @@ void vehCarHandler::Install(void) {
 */
 static ConfigValue<float> cfgAirborneTimerThresh("AirborneTimerThreshold", 1.1);
 static ConfigValue<float> cfgAirborneSpeedThresh("AirborneSpeedThreshold", 45.0);
+static ConfigValue<bool> cfgEnableAirborneCheck("TweakableAirborneCheck", false);
 
 float carAirborneTimer = 0.0f;
 float carAirborneThreshold = 1.1f;
@@ -296,6 +297,9 @@ void vehCarAudioHandler::Reset() {
 }
 
 void vehCarAudioHandler::Install() {
+    if (!cfgEnableAirborneCheck.Get())
+        return;
+
     carAirborneSpeedThreshold = cfgAirborneSpeedThresh.Get();
     carAirborneThreshold = cfgAirborneTimerThresh.Get();
 
@@ -1061,6 +1065,8 @@ void aiVehicleInstanceHandler::Install()
     modShaderHandler
 */
 
+static ConfigValue<bool> cfgMm1StyleRefl("MM1StyleReflections", false);
+
 float lastFogStart;
 float lastFogEnd;
 
@@ -1101,4 +1107,11 @@ void modShaderHandler::Install()
             cbHook<CALL>(0x55226B),
         }
     );
+
+    if (cfgMm1StyleRefl.Get()) {
+        // changes the way reflections are rendered, similar to MM1
+        InstallPatch({ 0x03 }, {
+            (0x4A4243 + 0x03),
+        });
+    }
 }
