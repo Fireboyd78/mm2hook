@@ -29,6 +29,8 @@ public:
 
 class cityTimeWeatherLightingHandler {
 public:
+    static void Reset();
+
     static void LoadCityTimeWeatherLighting();
 
     void FileIO(MM2::datParser &parser);
@@ -178,6 +180,7 @@ public:
 class TextureVariantHandler {
 public:
     static void InitVariantData();
+    static void Reset();
 
     static MM2::gfxImage * LoadTextureVariant(const char *textureName, bool mipmaps);
     static MM2::gfxImage * PrepareTextureVariant(MM2::gfxImage* image, const char *textureName, bool mipmaps);
@@ -225,5 +228,6 @@ public:
 class dgBangerInstanceHandler {
 public:
     void DrawGlow();
+    static void Reset();
     static void Install();
 };

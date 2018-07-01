@@ -351,6 +351,12 @@ struct TimeWeatherInfo {
 
         vglSetCloudMap(ShadowMap);
     }
+
+    void ApplyFlatColor() {
+        static ageHook::Type<float> g_FlatColorIntensity = 0x5C9DA0;
+
+        g_FlatColorIntensity = FlatColorIntensity;
+    }
 };
 
 static TimeWeatherInfo g_TimeWeathers[NUM_TIMEWEATHERS];
@@ -387,6 +393,11 @@ void NextTimeWeather(char *buffer, const char *format, int idx) {
 
     // set the next TimeWeather for FileIO to reference
     TimeWeather = &g_TimeWeathers[idx];
+}
+
+void cityTimeWeatherLightingHandler::Reset() {
+    TimeWeather->FlatColorIntensity = 1.0;
+    TimeWeather->ApplyFlatColor();
 }
 
 void cityTimeWeatherLightingHandler::LoadCityTimeWeatherLighting() {
@@ -1637,6 +1648,11 @@ std::vector<std::string> split(std::string str, std::string token) {
     return result;
 }
 
+void TextureVariantHandler::Reset() {
+    variant_infos.clear();
+    desaturateDefaultTextures = false;
+}
+
 //load LT file, and do a variant prepass
 void TextureVariantHandler::InitVariantData() {
     variant_infos.clear();
@@ -2127,6 +2143,11 @@ ageHook::Type<gfxTexture*> glowTexture = 0x62767C;
 gfxTexture* redGlowTexture;
 bool glowLoaded = false;
 
+void dgBangerInstanceHandler::Reset() {
+    redGlowTexture = NULL;
+    glowLoaded = false;
+}
+
 void dgBangerInstanceHandler::DrawGlow()
 {
     //first time texture load
@@ -2140,7 +2161,7 @@ void dgBangerInstanceHandler::DrawGlow()
     gfxTexture* lastTexture = (gfxTexture*)glowTexture;
     bool swappedTexture = false;
 
-    if (!strcmp(data->GetName(), "sp_light_red_f")) {
+    if (!strcmp(data->GetName(), "sp_light_red_f") && lastTexture != NULL) {
         swappedTexture = true;
         glowTexture = redGlowTexture;
     }
