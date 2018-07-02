@@ -21,7 +21,6 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<mmInterfaceHandler>("mmInterface"),
     CreateHandler<mmPopupHandler>("mmPopupHandler"),
 
-    CreateHandler<vehCarHandler>("vehCar"),
     CreateHandler<vehCarAudioHandler>("vehCarAudio"),
     CreateHandler<vehCarAudioContainerBugfixHandler>("vehCarAudioContainer bugfixes"),
     CreateHandler<vehCarModelHandler>("vehCarModel"),
@@ -199,57 +198,6 @@ void gfxImageHandler::Install() {
             cbHook<CALL>(0x401C75),
         }
     );
-}
-
-/*
-    vehCarHandler
-*/
-
-static ConfigValue<bool> cfgVehicleDebug("VehicleDebug", "vehicleDebug", false);
-
-void vehCarHandler::InitCar(LPCSTR vehName, int a2, int a3, bool a4, bool a5) {
-    Displayf("Initializing vehicle (\"%s\", %d, %d, %s, %s)", vehName, a2, a3, bool_str(a4), bool_str(a5));
-    get<vehCar>()->Init(vehName, a2, a3, a4, a5);
-}
-
-void vehCarHandler::InitCarAudio(LPCSTR name, int a2) {
-    Displayf("Loading vehicle audio (\"%s\", %d)", name, a2);
-    get<vehCar>()->InitAudio(name, a2);
-}
-
-const phBound * vehCarHandler::GetModelBound(int a1) {
-    auto result = ageHook::Thunk<0x4648C0>::Call<const phBound *>(this, a1);
-
-    if (result == NULL)
-        Errorf(">>> COULD NOT RETRIEVE VEHICLE BOUND (%d) !!! <<<", a1);
-
-    return result;
-}
-
-void vehCarHandler::Install(void) {
-    if (cfgVehicleDebug) {
-        InstallCallback("vehCar::Init", "Enables debugging for vehicle initialization.",
-            &InitCar, {
-                cbHook<CALL>(0x55942D), // aiVehiclePhysics::Init
-                cbHook<CALL>(0x403BDD), // mmPlayer::Init
-                cbHook<CALL>(0x43C536), // mmNetObject::Init
-            }
-        );
-
-        InstallCallback("vehCar::InitAudio", "Enables debugging for vehicle initialization.",
-            &InitCarAudio, {
-                cbHook<CALL>(0x55943A), // aiVehiclePhysics::Init
-                cbHook<CALL>(0x404090), // mmPlayer::Init
-                cbHook<CALL>(0x43C540), // mmNetObject::Init
-            }
-        );
-
-        InstallVTableHook("vehCarModel::GetBound",
-            &GetModelBound, {
-                0x5B2D14
-            }
-        );
-    }
 }
 
 /*
