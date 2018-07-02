@@ -72,6 +72,7 @@ enum mm2_module {
     module_stream,
     module_ui,
     module_vehicle,
+    module_particle,
 
     module_count, // number of Lua modules
 };
