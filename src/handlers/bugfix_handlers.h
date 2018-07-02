@@ -82,6 +82,8 @@ public:
 class cityLevelBugfixHandler
 {
 public:
+    static bool IsMirrorDrawing;
+    static void UpdateRainParticles();
     void Update();
     static MM2::Stream* OpenPvsStream(const char * folder, const char * file, const char * extension, bool a4, bool a5);
     static void Install();
@@ -194,5 +196,11 @@ class modShaderHandler {
 public:
     static void EndEnvMap();
     static void BeginEnvMap(MM2::gfxTexture* a1, const MM2::Matrix34* a2);
+    static void Install();
+};
+
+class mmMirrorHandler {
+public:
+    void Cull();
     static void Install();
 };
