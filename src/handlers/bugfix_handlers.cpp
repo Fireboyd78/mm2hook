@@ -31,6 +31,7 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<mmSpeedIndicatorHandler>("mmSpeedIndicator"),
     CreateHandler<mmHudMapHandler>("mmHudMap"),
     CreateHandler<mmCDPlayerHandler>("mmCDPlayer"),
+    CreateHandler<mmMirrorHandler>("mmMirror"),
     CreateHandler<lvlSkyHandler>("lvlSkyHandler"),
 
     CreateHandler<modShaderHandler>("modShader"),
