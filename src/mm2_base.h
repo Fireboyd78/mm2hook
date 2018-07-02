@@ -100,7 +100,8 @@ namespace MM2
 
         template <class TNode>
         static void BindLua(luaClassBinder<TNode> *lc) {
-            lc->addProperty("name", &GetName, &SetName);
+            lc->addProperty("Name", &GetName, &SetName);
+            lc->addProperty("Active", &isActive, &setActive);
 
             lc->addFunction("AddChild", &AddChild);
             lc->addFunction("InsertChild", &InsertChild);
