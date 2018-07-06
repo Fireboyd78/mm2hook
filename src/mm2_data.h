@@ -432,6 +432,7 @@ namespace MM2
     class datTimeManager {
     public:
         static ageHook::Type<float> Seconds;
+        static ageHook::Type<Timer> Time;
 
         AGE_API static void Reset(void) {
             ageHook::StaticThunk<0x4C6300>::Call<void>();
