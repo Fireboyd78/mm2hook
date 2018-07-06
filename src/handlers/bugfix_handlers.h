@@ -194,3 +194,9 @@ public:
     void Cull();
     static void Install();
 };
+
+class mmPlayerBugfixHandler {
+public:
+    void Ctor();
+    static void Install();
+};

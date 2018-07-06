@@ -27,6 +27,7 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<vehTrailerHandler>("vehTrailer"),
     CreateHandler<vehTrailerInstanceHandler>("vehTrailerInstance"),
     CreateHandler<vehPoliceCarAudioBugfixHandler>("vehPoliceCarAudio"),
+    CreateHandler<mmPlayerBugfixHandler>("mmPlayer"),
     CreateHandler<mmSpeedIndicatorHandler>("mmSpeedIndicator"),
     CreateHandler<mmHudMapHandler>("mmHudMap"),
     CreateHandler<mmCDPlayerHandler>("mmCDPlayer"),
@@ -1109,4 +1110,35 @@ void modShaderHandler::Install()
             (0x4A4243 + 0x03),
         });
     }
+}
+
+/*
+    mmPlayerBugfixHandler
+*/
+
+void mmPlayerBugfixHandler::Ctor()
+{
+    //clean up our memory
+    memset(this, 0x00, 0x23A4);
+
+    //call ctor original
+    ageHook::Thunk<0x4033D0>::Call<void>(this);
+}
+
+void mmPlayerBugfixHandler::Install()
+{
+    InstallCallback("mmPlayer::mmPlayer", "Clean up player memory on ctor.",
+        &Ctor, {
+            cbHook<CALL>(0x415D79),
+            cbHook<CALL>(0x41AE89),
+            cbHook<CALL>(0x41C6E9),
+            cbHook<CALL>(0x41E169),
+            cbHook<CALL>(0x41FAD9),
+            cbHook<CALL>(0x420169),
+            cbHook<CALL>(0x421E09),
+            cbHook<CALL>(0x423A2E),
+            cbHook<CALL>(0x427739),
+            cbHook<CALL>(0x428469),
+        }
+    );
 }
