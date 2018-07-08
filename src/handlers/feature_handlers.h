@@ -29,6 +29,8 @@ public:
 
 class cityTimeWeatherLightingHandler {
 public:
+    static void Reset();
+
     static void LoadCityTimeWeatherLighting();
 
     void FileIO(MM2::datParser &parser);
@@ -178,6 +180,7 @@ public:
 class TextureVariantHandler {
 public:
     static void InitVariantData();
+    static void Reset();
 
     static MM2::gfxImage * LoadTextureVariant(const char *textureName, bool mipmaps);
     static MM2::gfxImage * PrepareTextureVariant(MM2::gfxImage* image, const char *textureName, bool mipmaps);
@@ -220,4 +223,20 @@ class mmSingleRaceHandler {
 public:
     void QueueCopVoice(float a1);
     static void Install();
+};
+
+class dgBangerInstanceHandler {
+public:
+    void DrawGlow();
+    static void Reset();
+    static void Install();
+};
+
+class vehCarHandler : handler_t {
+public:
+    void InitCar(LPCSTR vehName, int a2, int a3, bool a4, bool a5);
+    void InitCarAudio(LPCSTR a1, int a2);
+    const MM2::phBound * GetModelBound(int a1);
+
+    static void Install(void);
 };

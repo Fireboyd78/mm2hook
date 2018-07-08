@@ -39,16 +39,6 @@ public:
     static void Install();
 };
 
-class vehCarHandler : handler_t {
-public:
-    void InitCar(LPCSTR vehName, int a2, int a3, bool a4, bool a5);
-    void InitCarAudio(LPCSTR name, int a2);
-    void InitBound(LPCSTR name, bool a2);
-    const MM2::phBound * GetModelBound(int a1);
-
-    static void Install(void);
-};
-
 class vehCarAudioHandler {
 public:
     bool IsAirBorne();
@@ -82,6 +72,8 @@ public:
 class cityLevelBugfixHandler
 {
 public:
+    static bool IsMirrorDrawing;
+    static void UpdateRainParticles();
     void Update();
     static MM2::Stream* OpenPvsStream(const char * folder, const char * file, const char * extension, bool a4, bool a5);
     static void Install();
@@ -184,12 +176,6 @@ public:
     static void Install();
 };
 
-class dgBangerInstanceHandler {
-public:
-    void DrawGlow();
-    static void Install();
-};
-
 class aiVehicleInstanceHandler {
 public:
     void Reset();
@@ -200,5 +186,17 @@ class modShaderHandler {
 public:
     static void EndEnvMap();
     static void BeginEnvMap(MM2::gfxTexture* a1, const MM2::Matrix34* a2);
+    static void Install();
+};
+
+class mmMirrorHandler {
+public:
+    void Cull();
+    static void Install();
+};
+
+class mmPlayerBugfixHandler {
+public:
+    void Ctor();
     static void Install();
 };

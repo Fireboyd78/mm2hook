@@ -72,6 +72,7 @@ enum mm2_module {
     module_stream,
     module_ui,
     module_vehicle,
+    module_particle,
 
     module_count, // number of Lua modules
 };
@@ -139,8 +140,19 @@ namespace MM2 {
 
     extern char * AngelReadString(UINT stringId);
 
-    struct Timer {
+    class Timer {
+    public:
+        static float TicksToSeconds;
+        static float TicksToMilliseconds;
+
         DWORD StartTime;
+
+        AGE_API Timer()                                     { ageHook::Thunk<0x4C7840>::Call<void>(this); }
+
+        AGE_API void BeginBenchmark()                       { ageHook::Thunk<0x4C7980>::Call<void>(this); }
+        AGE_API void EndBenchmark()                         { ageHook::Thunk<0x4C79F0>::Call<void>(this); }
+        AGE_API uint QuickTicks()                           { return ageHook::Thunk<0x4C7810>::Call<uint>(this); }
+        AGE_API ulong Ticks()                               { return ageHook::Thunk<0x4C77E0>::Call<ulong>(this); }
     };
 
     class NetStartArray {

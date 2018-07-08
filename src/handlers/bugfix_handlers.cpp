@@ -21,18 +21,17 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<mmInterfaceHandler>("mmInterface"),
     CreateHandler<mmPopupHandler>("mmPopupHandler"),
 
-    CreateHandler<dgBangerInstanceHandler>("dgBangerInstance"),
-
-    CreateHandler<vehCarHandler>("vehCar"),
     CreateHandler<vehCarAudioHandler>("vehCarAudio"),
     CreateHandler<vehCarAudioContainerBugfixHandler>("vehCarAudioContainer bugfixes"),
     CreateHandler<vehCarModelHandler>("vehCarModel"),
     CreateHandler<vehTrailerHandler>("vehTrailer"),
     CreateHandler<vehTrailerInstanceHandler>("vehTrailerInstance"),
     CreateHandler<vehPoliceCarAudioBugfixHandler>("vehPoliceCarAudio"),
+    CreateHandler<mmPlayerBugfixHandler>("mmPlayer"),
     CreateHandler<mmSpeedIndicatorHandler>("mmSpeedIndicator"),
     CreateHandler<mmHudMapHandler>("mmHudMap"),
     CreateHandler<mmCDPlayerHandler>("mmCDPlayer"),
+    CreateHandler<mmMirrorHandler>("mmMirror"),
     CreateHandler<lvlSkyHandler>("lvlSkyHandler"),
 
     CreateHandler<modShaderHandler>("modShader"),
@@ -203,61 +202,11 @@ void gfxImageHandler::Install() {
 }
 
 /*
-    vehCarHandler
-*/
-
-static ConfigValue<bool> cfgVehicleDebug("VehicleDebug", "vehicleDebug", false);
-
-void vehCarHandler::InitCar(LPCSTR vehName, int a2, int a3, bool a4, bool a5) {
-    Displayf("Initializing vehicle (\"%s\", %d, %d, %s, %s)", vehName, a2, a3, bool_str(a4), bool_str(a5));
-    get<vehCar>()->Init(vehName, a2, a3, a4, a5);
-}
-
-void vehCarHandler::InitCarAudio(LPCSTR name, int a2) {
-    Displayf("Loading vehicle audio (\"%s\", %d)", name, a2);
-    get<vehCar>()->InitAudio(name, a2);
-}
-
-const phBound * vehCarHandler::GetModelBound(int a1) {
-    auto result = ageHook::Thunk<0x4648C0>::Call<const phBound *>(this, a1);
-
-    if (result == NULL)
-        Errorf(">>> COULD NOT RETRIEVE VEHICLE BOUND (%d) !!! <<<", a1);
-
-    return result;
-}
-
-void vehCarHandler::Install(void) {
-    if (cfgVehicleDebug) {
-        InstallCallback("vehCar::Init", "Enables debugging for vehicle initialization.",
-            &InitCar, {
-                cbHook<CALL>(0x55942D), // aiVehiclePhysics::Init
-                cbHook<CALL>(0x403BDD), // mmPlayer::Init
-                cbHook<CALL>(0x43C536), // mmNetObject::Init
-            }
-        );
-
-        InstallCallback("vehCar::InitAudio", "Enables debugging for vehicle initialization.",
-            &InitCarAudio, {
-                cbHook<CALL>(0x55943A), // aiVehiclePhysics::Init
-                cbHook<CALL>(0x404090), // mmPlayer::Init
-                cbHook<CALL>(0x43C540), // mmNetObject::Init
-            }
-        );
-
-        InstallVTableHook("vehCarModel::GetBound",
-            &GetModelBound, {
-                0x5B2D14
-            }
-        );
-    }
-}
-
-/*
     vehCarAudioHandler
 */
 static ConfigValue<float> cfgAirborneTimerThresh("AirborneTimerThreshold", 1.1);
 static ConfigValue<float> cfgAirborneSpeedThresh("AirborneSpeedThreshold", 45.0);
+static ConfigValue<bool> cfgEnableAirborneCheck("TweakableAirborneCheck", false);
 
 float carAirborneTimer = 0.0f;
 float carAirborneThreshold = 1.1f;
@@ -298,6 +247,9 @@ void vehCarAudioHandler::Reset() {
 }
 
 void vehCarAudioHandler::Install() {
+    if (!cfgEnableAirborneCheck.Get())
+        return;
+
     carAirborneSpeedThreshold = cfgAirborneSpeedThresh.Get();
     carAirborneThreshold = cfgAirborneTimerThresh.Get();
 
@@ -433,7 +385,9 @@ void mmSpeedIndicatorHandler::Install() {
     cityLevelBugfixHandler
 */
 
+ageHook::Type<asParticles*> sm_RainParticles(0x62770C);
 ageHook::Type<bool> sm_EnablePVS(0x62B070);
+bool cityLevelBugfixHandler::IsMirrorDrawing = false;
 
 void cityLevelBugfixHandler::Update() {
     if (ROOT->IsPaused())
@@ -455,6 +409,25 @@ Stream* cityLevelBugfixHandler::OpenPvsStream(const char * folder, const char * 
     return stream;
 }
 
+void cityLevelBugfixHandler::UpdateRainParticles() {
+    asParticles* rainParticles = (asParticles*)sm_RainParticles;
+
+    // set position if appropriate
+    if (!IsMirrorDrawing) {
+        Vector4 dotWith = Vector4(0.0, 10.0, -10.0, 1.0);
+        
+        Vector4 newParticlePosition = Vector4(0, 0, 0, 0);
+        newParticlePosition.Dot(dotWith, *(Matrix44*)gfxRenderState::sm_Camera);
+
+        rainParticles->pBirthRule->Position.X = newParticlePosition.X;
+        rainParticles->pBirthRule->Position.Y = newParticlePosition.Y;
+        rainParticles->pBirthRule->Position.Z = newParticlePosition.Z;
+    }
+    
+    // render particles
+    rainParticles->Cull();
+}
+
 void cityLevelBugfixHandler::Install() {
     InstallCallback("cityLevel::Load", "Disables PVS when it doesn't exist.",
         &OpenPvsStream, {
@@ -465,6 +438,31 @@ void cityLevelBugfixHandler::Install() {
     InstallCallback("lvlLevel::Update", "Allows for control over when to clear callbacks.",
         &Update, {
             cbHook<JMP>(0x465460),
+        }
+    );
+
+    InstallCallback("lvlLevel::Draw", "Allows for control over when to update rain particle position.",
+        &UpdateRainParticles, {
+            cbHook<CALL>(0x4462B7),
+        }
+    );
+    mem::nop(0x4462BA + 0x02, 76); // nop out the rest of the rain update, since we're replacing it
+}
+
+/*
+    mmMirrorHandler
+*/
+
+void mmMirrorHandler::Cull() {
+    cityLevelBugfixHandler::IsMirrorDrawing = true;
+    ageHook::Thunk<0x42B8C0>::Call<void>(this); // call original
+    cityLevelBugfixHandler::IsMirrorDrawing = false;
+}
+
+void mmMirrorHandler::Install() {
+    InstallVTableHook("mmMirror::Cull",
+        &Cull, {
+            0x5B0B80 ,
         }
     );
 }
@@ -1040,41 +1038,6 @@ void asMeshCardInfoHandler::Install()
 }
 
 /*
-    dgBangerInstanceHandler
-*/
-
-void dgBangerInstanceHandler::DrawGlow()
-{
-    $::ltLight::DrawGlowBegin();
-    ageHook::Thunk<0x441840>::Call<void>(this); // call original
-    $::ltLight::DrawGlowEnd();
-}
-
-void dgBangerInstanceHandler::Install()
-{
-    // makes banger glows double sided
-    InstallVTableHook("dgBangerInstance::DrawGlow",
-        &DrawGlow, {
-            0x5B14CC,
-            0x5B1544,
-            0x5B15F0,
-            0x5B5690,
-            0x5B570C,
-            0x5B57D0,
-            0x5B5FC4,
-            0x5B610C,
-            0x5B61B8
-        }
-    );
-
-    InstallCallback("aiTrafficLightInstance::DrawGlow", "Make traffic light banger lights double sided",
-        &DrawGlow, {
-            cbHook<CALL>(0x53CCFD),
-        }
-    );
-}
-
-/*
     aiVehicleInstanceHandler
 */
 
@@ -1098,25 +1061,27 @@ void aiVehicleInstanceHandler::Install()
     modShaderHandler
 */
 
-byte lastFogMode = 0;
+static ConfigValue<bool> cfgMm1StyleRefl("MM1StyleReflections", false);
+
+float lastFogStart;
+float lastFogEnd;
 
 void modShaderHandler::BeginEnvMap(gfxTexture * a1, const Matrix34 * a2)
 {
-    // Set fog mode to off
-    if ((&RSTATE->Data)->FogVertexMode != 0) {
-        lastFogMode = (&RSTATE->Data)->FogVertexMode;
-        (&RSTATE->Data)->FogVertexMode = 0;
-    }
-    
+    // Set fog distance so it's not blended with reflections
+    lastFogStart = (&RSTATE->Data)->FogStart;
+    lastFogEnd = (&RSTATE->Data)->FogEnd;
+    (&RSTATE->Data)->FogStart = 9999;
+    (&RSTATE->Data)->FogEnd = 10000;
+        
     ageHook::StaticThunk<0x4A41B0>::Call<void>(a1, a2); //call original
 }
 
 void modShaderHandler::EndEnvMap()
 {
-    // Restore last fog mode
-    if ((&RSTATE->Data)->FogVertexMode != lastFogMode) {
-        (&RSTATE->Data)->FogVertexMode = lastFogMode;
-    }
+    // Restore last fog settings
+    (&RSTATE->Data)->FogStart = lastFogStart;
+    (&RSTATE->Data)->FogEnd = lastFogEnd;
 
     ageHook::StaticThunk<0x4A4420>::Call<void>(); //call original
 }
@@ -1136,6 +1101,44 @@ void modShaderHandler::Install()
             cbHook<CALL>(0x4CE228),
             cbHook<CALL>(0x534202),
             cbHook<CALL>(0x55226B),
+        }
+    );
+
+    if (cfgMm1StyleRefl.Get()) {
+        // changes the way reflections are rendered, similar to MM1
+        InstallPatch({ 0x03 }, {
+            (0x4A4243 + 0x03),
+        });
+    }
+}
+
+/*
+    mmPlayerBugfixHandler
+*/
+
+void mmPlayerBugfixHandler::Ctor()
+{
+    //clean up our memory
+    memset(this, 0x00, 0x23A4);
+
+    //call ctor original
+    ageHook::Thunk<0x4033D0>::Call<void>(this);
+}
+
+void mmPlayerBugfixHandler::Install()
+{
+    InstallCallback("mmPlayer::mmPlayer", "Clean up player memory on ctor.",
+        &Ctor, {
+            cbHook<CALL>(0x415D79),
+            cbHook<CALL>(0x41AE89),
+            cbHook<CALL>(0x41C6E9),
+            cbHook<CALL>(0x41E169),
+            cbHook<CALL>(0x41FAD9),
+            cbHook<CALL>(0x420169),
+            cbHook<CALL>(0x421E09),
+            cbHook<CALL>(0x423A2E),
+            cbHook<CALL>(0x427739),
+            cbHook<CALL>(0x428469),
         }
     );
 }

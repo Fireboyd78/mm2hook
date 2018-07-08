@@ -38,8 +38,10 @@ static init_handler g_feature_handlers[] = {
 
     CreateHandler<mmSingleRaceHandler>("mmSingleRace"),
 
+    CreateHandler<dgBangerInstanceHandler>("dgBangerInstance"),
     CreateHandler<ltLensFlareHandler>("ltLensFlare"),
 
+    CreateHandler<vehCarHandler>("vehCar"),
     CreateHandler<vehCarAudioContainerHandler>("vehCarAudioContainer"),
     CreateHandler<vehPoliceCarAudioHandler>("vehPoliceCarAudio"),
 
@@ -350,6 +352,12 @@ struct TimeWeatherInfo {
 
         vglSetCloudMap(ShadowMap);
     }
+
+    void ApplyFlatColor() {
+        static ageHook::Type<float> g_FlatColorIntensity = 0x5C9DA0;
+
+        g_FlatColorIntensity = FlatColorIntensity;
+    }
 };
 
 static TimeWeatherInfo g_TimeWeathers[NUM_TIMEWEATHERS];
@@ -386,6 +394,11 @@ void NextTimeWeather(char *buffer, const char *format, int idx) {
 
     // set the next TimeWeather for FileIO to reference
     TimeWeather = &g_TimeWeathers[idx];
+}
+
+void cityTimeWeatherLightingHandler::Reset() {
+    TimeWeather->FlatColorIntensity = 1.0;
+    TimeWeather->ApplyFlatColor();
 }
 
 void cityTimeWeatherLightingHandler::LoadCityTimeWeatherLighting() {
@@ -1636,6 +1649,11 @@ std::vector<std::string> split(std::string str, std::string token) {
     return result;
 }
 
+void TextureVariantHandler::Reset() {
+    variant_infos.clear();
+    desaturateDefaultTextures = false;
+}
+
 //load LT file, and do a variant prepass
 void TextureVariantHandler::InitVariantData() {
     variant_infos.clear();
@@ -2119,6 +2137,144 @@ void mmSingleRaceHandler::Install() {
     });
 }
 
+/*
+    dgBangerInstanceHandler
+*/
+ageHook::Type<gfxTexture*> glowTexture = 0x62767C;
+gfxTexture* redGlowTexture;
+bool glowLoaded = false;
+
+void dgBangerInstanceHandler::Reset() {
+    redGlowTexture = NULL;
+    glowLoaded = false;
+}
+
+void dgBangerInstanceHandler::DrawGlow()
+{
+    //first time texture load
+    if (!glowLoaded) {
+        redGlowTexture = $gfxGetTexture("s_red_glow", true);
+        glowLoaded = true;
+    }
+
+    //prepare glow texture
+    dgBangerData* data = ageHook::Thunk<0x441AB0>::Call<dgBangerData *>(this);
+    gfxTexture* lastTexture = (gfxTexture*)glowTexture;
+    bool swappedTexture = false;
+
+    if (!strcmp(data->GetName(), "sp_light_red_f") && lastTexture != NULL) {
+        swappedTexture = true;
+        glowTexture = redGlowTexture;
+    }
+
+    //draw glows
+    $::ltLight::DrawGlowBegin();
+    ageHook::Thunk<0x441840>::Call<void>(this); // call original
+    $::ltLight::DrawGlowEnd();
+
+    //reset glow texture
+    if (swappedTexture) {
+        glowTexture = lastTexture;
+    }
+}
+
+void dgBangerInstanceHandler::Install()
+{
+    // makes banger glows double sided
+    InstallVTableHook("dgBangerInstance::DrawGlow",
+        &DrawGlow, {
+            0x5B14CC,
+            0x5B1544,
+            0x5B15F0,
+            0x5B5690,
+            0x5B570C,
+            0x5B57D0,
+            0x5B5FC4,
+            0x5B610C,
+            0x5B61B8
+        }
+    );
+
+    InstallCallback("aiTrafficLightInstance::DrawGlow", "Make traffic light banger lights double sided.",
+        &DrawGlow, {
+            cbHook<CALL>(0x53CCFD),
+        }
+    );
+}
+
+/*
+vehCarHandler
+*/
+
+static ConfigValue<bool> cfgVehicleDebug("VehicleDebug", "vehicleDebug", false);
+
+void vehCarHandler::InitCar(LPCSTR vehName, int a2, int a3, bool a4, bool a5) {
+    Displayf("Initializing vehicle (\"%s\", %d, %d, %s, %s)", vehName, a2, a3, bool_str(a4), bool_str(a5));
+    get<vehCar>()->Init(vehName, a2, a3, a4, a5);
+}
+
+const phBound * vehCarHandler::GetModelBound(int a1) {
+    auto result = ageHook::Thunk<0x4648C0>::Call<const phBound *>(this, a1);
+
+    if (result == NULL)
+        Errorf(">>> COULD NOT RETRIEVE VEHICLE BOUND (%d) !!! <<<", a1);
+
+    return result;
+}
+
+
+void vehCarHandler::InitCarAudio(LPCSTR a1, BOOL a2) {
+    // debug if enabled
+    if (cfgVehicleDebug.Get()) {
+        Displayf("Loading vehicle audio (\"%s\", %d)", a1, a2);
+    }
+
+    // check if this vehicle has a siren
+    bool vehicleHasSiren = false;
+    for (int i = 0; i < 4; i++) {
+        string_buf<80> buffer("%s_SRN%d", a1, i);
+        
+        if (datAssetManager::Exists("geometry", (LPCSTR)buffer, "mtx")) {
+            vehicleHasSiren = true;
+            break;
+        }
+    }
+
+    // add to our siren list
+    if (vehicleHasSiren && !vehCarAudioContainer::IsPolce(a1)) {
+        string_buf<128> sirenBuffer("%s,ENDOFDATA", a1);
+        vehCarAudioContainer::RegisterPoliceNames(NULL, (LPCSTR)sirenBuffer);
+    }
+
+    //pass back to original function
+    get<vehCar>()->InitAudio(a1, a2);
+}
+
+void vehCarHandler::Install(void) {
+    InstallCallback("vehCar::InitAudio", "Enables debugging for vehicle initialization.",
+        &InitCarAudio, {
+            cbHook<CALL>(0x55943A), // aiVehiclePhysics::Init
+            cbHook<CALL>(0x404090), // mmPlayer::Init
+            cbHook<CALL>(0x43C540), // mmNetObject::Init
+        }
+    );
+
+    if (cfgVehicleDebug) {
+        InstallCallback("vehCar::InitAudio", "Enables debugging for vehicle initialization.",
+            &InitCarAudio, {
+                cbHook<CALL>(0x55943A), // aiVehiclePhysics::Init
+                cbHook<CALL>(0x404090), // mmPlayer::Init
+                cbHook<CALL>(0x43C540), // mmNetObject::Init
+            }
+        );
+
+        InstallVTableHook("vehCarModel::GetBound",
+            &GetModelBound, {
+                0x5B2D14
+            }
+        );
+    }
+}
 
 #ifndef FEATURES_DECLARED
 #define FEATURES_DECLARED

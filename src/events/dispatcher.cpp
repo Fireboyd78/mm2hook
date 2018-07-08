@@ -1,6 +1,7 @@
 #include "dispatcher.h"
 #include "..\..\discord-rpc\discord-presence.h"
 #include "..\mm2_network.h"
+#include "..\handlers\feature_handlers.h"
 
 using namespace MM2;
 
@@ -8,12 +9,15 @@ void GameEventDispatcher::onGameEnd(int a1)
 {
     if (MM2Lua::IsEnabled())
         MM2Lua::OnGameEnd();
+    TextureVariantHandler::Reset();
+    cityTimeWeatherLightingHandler::Reset();
 }
 
 void GameEventDispatcher::onGameInit()
 {
     if (MM2Lua::IsEnabled())
         MM2Lua::OnGameInit();
+    dgBangerInstanceHandler::Reset();
 }
 
 void GameEventDispatcher::onChatMessage(char * message)
