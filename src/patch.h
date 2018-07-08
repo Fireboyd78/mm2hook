@@ -39,6 +39,17 @@ namespace mem
         return NULL;
     }
 
+    template <typename Func, typename... Args>
+    void unpack(Func func, Args&&... args)
+    {
+        using unpacker_t = int[];
+
+        (void)unpacker_t
+        {
+            (func(std::forward<Args>(args)), 0)..., 0
+        };
+    }
+
     template <typename ...TArgs>
     inline bool write(auto_ptr address, TArgs ...args)
     {
@@ -56,15 +67,11 @@ namespace mem
         {
             void *lpDst = address;
 
-            using variadic_unpacker_t = int[];
-
-            (void)variadic_unpacker_t
+            unpack([&](const auto& value)
             {
-                (
-                    memcpy(lpDst, &args, sizeof(args)),
-                    lpDst = static_cast<char*>(lpDst) + sizeof(args),
-                0)...
-            };
+                memcpy(lpDst, &value, sizeof(value));
+                lpDst = static_cast<char*>(lpDst) + sizeof(value);
+            }, std::forward<TArgs>(args)...);
 
             VirtualProtect(address, totalSize, dwOldProtect, &dwOldProtect);
 
