@@ -1688,7 +1688,7 @@ void TextureVariantHandler::InitVariantData() {
     auto tLumVec = split(tLumStd, "|");
 
     if (loadResult && tVarStd.length() > 0) {
-        for (int i = 0; i < tVarVec.size(); i++) {
+        for (size_t i = 0; i < tVarVec.size(); i++) {
             auto vInfo = variant_info();
 
             auto suffix = tVarVec[i];
@@ -1766,7 +1766,7 @@ gfxImage * TextureVariantHandler::LoadTextureVariant(const char *textureName, bo
     if (EnableTextureVariantHandler)
     {
         gfxImage *variantTex = nullptr;
-        for (int i = 0; i < variant_infos.size(); i++) {
+        for (size_t i = 0; i < variant_infos.size(); i++) {
             if (TryLoadTexVariant(textureName, variant_infos[i].suffix, mipmaps, &variantTex))
                 return variantTex;
         }
@@ -1781,7 +1781,7 @@ gfxImage * TextureVariantHandler::PrepareTextureVariant(gfxImage* image, const c
     if (EnableTextureVariantHandler)
     {
         //check if this variant is handled manually
-        for (int i = 0; i < variant_infos.size(); i++) {
+        for (size_t i = 0; i < variant_infos.size(); i++) {
             if (TextureVariantExists(textureName, variant_infos[i].suffix)) {
                 if (variant_infos[i].canDesaturate)
                     Desaturate(image);
@@ -2029,7 +2029,7 @@ bool prevSplashState = false;
 void mmPlayerHandler::Splash() {
     auto player = reinterpret_cast<mmPlayer*>(this);
     auto car = player->getCar();
-    float vehicleMph = car->getModel()->GetVelocity()->Mag() * 2.23694;
+    float vehicleMph = car->getModel()->GetVelocity()->Mag() * 2.23694f;
     
     //trigger ColliderId 22 with velocity of vehicleMph
     auto impactAud = car->getAudio()->GetAudImpactPtr();

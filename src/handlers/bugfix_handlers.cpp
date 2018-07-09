@@ -223,7 +223,7 @@ void vehCarAudioHandler::Update() {
     
     // grab only forward/sideways velocity, ignore vertical
     auto vehicleVelo = carSim->getInstance()->GetVelocity();
-    float vehicleMph = sqrt((vehicleVelo->X * vehicleVelo->X) + (vehicleVelo->Z * vehicleVelo->Z)) * 2.23694;
+    float vehicleMph = sqrt((vehicleVelo->X * vehicleVelo->X) + (vehicleVelo->Z * vehicleVelo->Z)) * 2.23694f;
 
     //update timer
     if (carSim->OnGround() || carSim->BottomedOut() || vehicleMph < carAirborneSpeedThreshold) 

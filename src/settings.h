@@ -81,7 +81,7 @@ public:
 
             // allocate a new string buffer
             result = new char[len] { NULL };
-            strncpy(result, buffer, len);
+            strncpy_s(result, len, buffer, len);
         }
 
         return result;
