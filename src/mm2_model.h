@@ -17,9 +17,9 @@ namespace MM2
     extern class gfxTexture;
 
     class modShader {
-    private:
-        gfxTexture *texture;
-        gfxMaterial *material;
+    public:
+        gfxTexture *Texture;
+        gfxMaterial *Material;
     public:
         static ageHook::Type<gfxMaterial *> sm_Materials;
         static ageHook::Type<int> sm_StaticMaterialCount;
@@ -66,16 +66,14 @@ namespace MM2
     };
 
     class modStatic {
-    private:
-        byte numSections;
-        byte flags;
-        
-        ushort fvfType; // one of D3DFVF
+    public:
+        uint8_t PacketCount;
+        uint8_t Flags;
+        uint16_t FvfFlags;
+        uint8_t *ShaderIndices;
+        gfxPacket **ppPackets;
+        gfxPacketList **ppPacketLists;
 
-        byte *shaderIndices; // index table for each section
-
-        gfxPacket **packets;
-        gfxPacketList **packetLists;
     public:
         AGE_API int GetTriCount(void) const	                    { return ageHook::Thunk<0x4A4DE0>::Call<int>(this); }
         AGE_API int GetAdjunctCount(void) const	                { return ageHook::Thunk<0x4A4DB0>::Call<int>(this); }

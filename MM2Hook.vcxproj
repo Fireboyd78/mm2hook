@@ -103,6 +103,7 @@
     Lua 5.3.2 files
   -->
   <ItemGroup>
+    <ClInclude Include="src\mm2_effects.h" />
     <ClInclude Include="src\events\dispatcher.h" />
     <ClInclude Include="src\mm2_particle.h" />
     <ClInclude Include="src\settings.h" />
@@ -136,6 +137,7 @@
     <ClInclude Include="src\lua\lzio.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\mm2_effects.cpp" />
     <ClCompile Include="src\events\dispatcher.cpp" />
     <ClCompile Include="src\mm2_particle.cpp" />
     <ClCompile Include="src\settings.cpp" />

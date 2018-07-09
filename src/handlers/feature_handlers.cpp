@@ -4,6 +4,8 @@
 
 using namespace MM2;
 
+#include "..\mm2_effects.h"
+
 static init_handler g_feature_handlers[] = {
     /*
         Initialize the really important handlers
@@ -57,6 +59,8 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<mmCityListHandler>("mmCityList"),
 
     CreateHandler<PUMainHandler>("PUMain"),
+
+    CreateHandler<fxTexelDamageHandler>("fxTexelDamage"),
 };
 
 // ==========================

@@ -174,6 +174,16 @@ namespace MM2
 
         static ageHook::Type<bool> sm_EnableSetLOD;
         static ageHook::Type<bool> sm_Allow32;
+
+        gfxTexture* Clone()
+        {
+            return ageHook::Thunk<0x4AE250>::Call<gfxTexture*>(this);
+        }
+
+        void Blit(int destX, int destY, gfxTexture *src, int srcX, int srcY, int width, int height)
+        {
+            return ageHook::Thunk<0x4AE1E0>::Call<void>(this, destX, destY, src, srcX, srcY, width, height);
+        }
     };
 
     class gfxImage {
@@ -216,6 +226,33 @@ namespace MM2
         byte* unk_20;
         byte unk_24;
         uint unk_28;
+
+        void DoLock()
+        {
+            ageHook::Thunk<0x4B4720>::Call<void>(this);
+        }
+
+        void DoUnlock()
+        {
+            ageHook::Thunk<0x4B4740>::Call<void>(this);
+        }
+
+        void GetPosition(Vector3* out, int index)
+        {
+            ageHook::Thunk<0x4B3C10>::Call<void>(this, out, index);
+        }
+
+        void GetTexCoord(Vector2* out, int index)
+        {
+            ageHook::Thunk<0x4B3E20>::Call<void>(this, out, index);
+        }
+
+        void GetTri(int* out, int index)
+        {
+            out[0] = Indices[(3 * index) + 0];
+            out[1] = Indices[(3 * index) + 1];
+            out[2] = Indices[(3 * index) + 2];
+        }
     };
 
     class gfxBitmap {
