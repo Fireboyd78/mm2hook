@@ -172,6 +172,7 @@ namespace MM2
             return 1;
         }
 
+        Kill();
         return 0;
     }
 
@@ -179,18 +180,19 @@ namespace MM2
     {
         for (int i = 0; i < TextureCount; ++i)
         {
-            gfxTexture* cleanTexture = CleanShaders[i].Texture;
-
-            if (cleanTexture)
+            if (CleanShaders[i].Texture != CurrentShaders[i].Texture)
             {
                 CurrentShaders[i].Texture->Blit(
                     0, 0,
-                    cleanTexture,
+                    CleanShaders[i].Texture,
                     0, 0,
-                    cleanTexture->Width, cleanTexture->Height
+                    CleanShaders[i].Texture->Width, CleanShaders[i].Texture->Height
                 );
+            }
 
-                *CurrentShaders[i].Material = *CleanShaders[i].Material;
+            if (CleanShaders[i].Material != CurrentShaders[i].Material)
+            {
+                *CleanShaders[i].Material = *CurrentShaders[i].Material;
             }
         }
     }
@@ -246,13 +248,14 @@ namespace MM2
                         + randY * TexCoords[tri1].Y
                         + randZ * TexCoords[tri2].Y;
 
-                    modShader* shader = &CurrentShaders[texIndex];
-
-                    ApplyBirdPoopDamage(
-                        shader->Texture,
-                        damageTexture,
-                        texDamageX,
-                        texDamageY);
+                    if (CleanShaders[texIndex].Texture != CurrentShaders[texIndex].Texture)
+                    {
+                        ApplyBirdPoopDamage(
+                            CurrentShaders[texIndex].Texture,
+                            damageTexture,
+                            texDamageX,
+                            texDamageY);
+                    }
 
                     /*if (texIndex > lastTex)
                     {
@@ -283,7 +286,7 @@ namespace MM2
 
             for (int i = 0; i < TextureCount; ++i)
             {
-                if (CurrentShaders[i].Material)
+                if (CleanShaders[i].Material != CurrentShaders[i].Material)
                 {
                     delete CurrentShaders[i].Material;
                 }
