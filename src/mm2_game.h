@@ -292,7 +292,7 @@ namespace MM2
         virtual AGE_API void Update()                       { ageHook::Thunk<0x405760>::Call<void>(this); }
 
         static void BindLua(LuaState L) {
-            LuaBinding(L).beginClass<mmPlayer>("mmPlayer")
+            LuaBinding(L).beginExtendClass<mmPlayer, asNode>("mmPlayer")
                 //properties
                 .addPropertyReadOnly("Car", &getCar)
                 .addPropertyReadOnly("HUD", &getHUD)
@@ -310,8 +310,6 @@ namespace MM2
                 .addFunction("SetPreRaceCam", &SetPreRaceCam)
                 .addFunction("SetSteering", &SetSteering)
                 .addFunction("SetWideFOV", &SetWideFOV)
-                //virtuals
-                .addFunction("Reset", &Reset)
             .endClass();
         }
     };

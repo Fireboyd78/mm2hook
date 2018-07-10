@@ -46,7 +46,11 @@ void luaSetGlobals()
     auto pHUD = (pPlayer != NULL) ? pPlayer->getHUD() : NULL;
 
     if (pHUD != NULL)
-        Lua::setGlobal(L, "hud", pHUD);
+        Lua::setGlobal(L, "HUD", pHUD);
+    if (pGame != NULL)
+        Lua::setGlobal(L, "Game", pGame);
+    if (pPlayer != NULL)
+        Lua::setGlobal(L, "Player", pPlayer);
 
     LogFile::WriteLine("Done!");
 }
