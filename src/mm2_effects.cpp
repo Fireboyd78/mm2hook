@@ -1,6 +1,8 @@
 #include "mm2_effects.h"
 #include "mm2_model.h"
 
+#include <algorithm>
+
 namespace MM2
 {
     const auto DisableGlobalSeed = (void(*)(void))(0x4BBD50);
@@ -88,8 +90,10 @@ namespace MM2
                     }
                 }
 
-                CurrentShaders[shaderIndex].Texture = cleanShader->Texture->Clone();
-                CurrentShaders[i].Material = new gfxMaterial(*cleanShader->Material);
+                modShader* dirtyShader = &CurrentShaders[shaderIndex];
+
+                dirtyShader->Texture = cleanShader->Texture->Clone();
+                dirtyShader->Material = new gfxMaterial(*cleanShader->Material);
             }
         }
 
@@ -159,9 +163,10 @@ namespace MM2
                 }
             }
 
-            std::qsort(DamageTris, triCount, sizeof(TexelDamageTri), [](const void* lhs, const void* rhs) -> int
+            std::sort(DamageTris, DamageTris + triCount, [] (const TexelDamageTri& lhs, const TexelDamageTri& rhs)
             {
-                return 0 + ((TexelDamageTri*)rhs)->Texture - ((TexelDamageTri*)lhs)->Texture;
+                return 0 + rhs.Texture - lhs.Texture;
+
             });
 
             return 1;
