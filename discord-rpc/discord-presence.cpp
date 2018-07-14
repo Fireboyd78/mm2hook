@@ -97,7 +97,7 @@ void InitDiscord(void) {
     _Discord_Initialize(APPLICATION_ID, &handlers, 1, NULL);
 }
 
-char * carImageKeys[20] = {
+char * carImageKeys[26] = {
     "vpcoop",
     "vpbug",
     "vpcab",
@@ -118,6 +118,12 @@ char * carImageKeys[20] = {
     "vpdb7",
     "vppanozgt",
     "vplafrance",
+	"vpcaddie59",
+	"vpeagle",
+	"vpmoonrover",
+	"vpmtruck",
+	"vpredcar",
+	"vprobin",
 };
 
 bool isRaceMode() {
@@ -165,7 +171,7 @@ char * getCarImageKey(mmVehInfo *vehInfo) {
 
     int vehicleId = VehicleListPtr->GetVehicleID(baseName);
 
-    if (vehicleId < 20) {
+    if (vehicleId < 26) {
         imageKey = carImageKeys[vehicleId];
 
         // FALLBACK: Check if vehicle exists in a non-default slot
