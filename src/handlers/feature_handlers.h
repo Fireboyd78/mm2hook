@@ -240,3 +240,9 @@ public:
 
     static void Install(void);
 };
+
+class vehBreakableMgrHandler {
+public:
+    void ModStaticDraw(MM2::modShader * a1);
+    static void Install();
+};

@@ -46,6 +46,7 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<vehCarHandler>("vehCar"),
     CreateHandler<vehCarAudioContainerHandler>("vehCarAudioContainer"),
     CreateHandler<vehPoliceCarAudioHandler>("vehPoliceCarAudio"),
+    CreateHandler<vehBreakableMgrHandler>("vehBreakableMgr"),
 
     CreateHandler<Dialog_NewPlayerHandler>("New player dialog"),
 
@@ -2279,6 +2280,45 @@ void vehCarHandler::Install(void) {
         );
     }
 }
+
+/*
+    vehBreakableMgrHandler
+*/
+
+static ConfigValue<bool> cfgBreakReflections("ReflectionsOnBreakables", true);
+
+void vehBreakableMgrHandler::ModStaticDraw(modShader* a1) {
+    auto mod = reinterpret_cast<modStatic*>(this);
+    ageHook::Type<gfxTexture *> g_ReflectionMap = 0x628914;
+    bool isSoftware = *(bool*)0x6830D4;
+
+    //convert world matrix for reflection drawing
+    Matrix44* worldMatrix = gfxRenderState::sm_World;
+    Matrix34 envInput = Matrix34();
+    worldMatrix->ToMatrix34(&envInput);
+
+    //draw breakable
+    mod->Draw(a1);
+
+    //draw reflections
+    if (g_ReflectionMap != nullptr && !isSoftware) {
+        modShader::BeginEnvMap(g_ReflectionMap, envInput);
+        mod->DrawEnvMapped(a1, g_ReflectionMap, 1.0f);
+        modShader::EndEnvMap();
+    }
+}
+
+void vehBreakableMgrHandler::Install() {
+    if (!cfgBreakReflections.Get())
+        return;
+
+    InstallCallback("vehBreakableMgr::Draw", "Draws reflections on breakables.",
+        &ModStaticDraw, {
+            cbHook<CALL>(0x4D886D), // vehBreakableMgr::Draw
+        }
+    );
+}
+
 
 #ifndef FEATURES_DECLARED
 #define FEATURES_DECLARED
