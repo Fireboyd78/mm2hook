@@ -97,7 +97,10 @@ void InitDiscord(void) {
     _Discord_Initialize(APPLICATION_ID, &handlers, 1, NULL);
 }
 
-char * carImageKeys[26] = {
+#define NUM_DEFAULT_VEHICLES 20
+
+char * carImageKeys[] = {
+    // Default vehicles
     "vpcoop",
     "vpbug",
     "vpcab",
@@ -118,12 +121,19 @@ char * carImageKeys[26] = {
     "vpdb7",
     "vppanozgt",
     "vplafrance",
+
+    // Beta vehicles
 	"vpcaddie59",
 	"vpeagle",
 	"vpmoonrover",
 	"vpmtruck",
+
+    // Miscellaneous
 	"vpredcar",
 	"vprobin",
+
+    // End of list
+    nullptr,
 };
 
 bool isRaceMode() {
@@ -166,33 +176,32 @@ char * getRaceName(int raceId) {
 }
 
 char * getCarImageKey(mmVehInfo *vehInfo) {
-    char *imageKey = NULL;
     char *baseName = vehInfo->GetBaseName();
 
+    // first we'll try using the vehicle id
     int vehicleId = VehicleListPtr->GetVehicleID(baseName);
 
-    if (vehicleId < 26) {
-        imageKey = carImageKeys[vehicleId];
+    if (vehicleId < NUM_DEFAULT_VEHICLES) {
+        char *key = carImageKeys[vehicleId];
 
-        // FALLBACK: Check if vehicle exists in a non-default slot
-        if (VehicleListPtr->GetVehicleID(imageKey) != vehicleId) {
-            imageKey = NULL;
-
-            // try finding it in the list
-            for (int i = 0; i < 20; i++) {
-                char *key = carImageKeys[i];
-
-                if (strcmp(key, baseName) == 0) {
-                    // update the vehicle id for clarity
-                    vehicleId = VehicleListPtr->GetVehicleID(key);
-                    imageKey = key;
-                    break;
-                }
-            }
-        }
+        // use the hardcoded ID if possible
+        // (no need to set the result, just return)
+        if (VehicleListPtr->GetVehicleID(key) == vehicleId)
+            return key;
     }
 
-    return (imageKey != NULL) ? imageKey : "nocardesc";
+    // try finding it in the list
+    char *key = carImageKeys[0];
+
+    // iterate through the list until we find a match,
+    // or when we've reached the end of it
+    while (key != nullptr) {
+        if (strcmp(key, baseName) == 0)
+            return key;
+        ++key; // move to the next entry
+    }
+
+    return "nocardesc";
 }
 
 char* getCityImageKey(mmCityInfo *cityInfo) {
