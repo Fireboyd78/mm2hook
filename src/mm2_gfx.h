@@ -242,6 +242,10 @@ namespace MM2
             ageHook::Thunk<0x4B3C10>::Call<void>(this, out, index);
         }
 
+        void GetNormal(Vector3* out, int index) {
+            ageHook::Thunk<0x4B3CF0>::Call<void>(this, out, index);
+        }
+
         void GetTexCoord(Vector2* out, int index)
         {
             ageHook::Thunk<0x4B3E20>::Call<void>(this, out, index);
@@ -252,6 +256,14 @@ namespace MM2
             out[0] = Indices[(3 * index) + 0];
             out[1] = Indices[(3 * index) + 1];
             out[2] = Indices[(3 * index) + 2];
+        }
+
+        void SetNormal(const Vector3& normal, int index) {
+            ageHook::Thunk<0x4B3D90>::Call<void>(this, &normal, index);
+        }
+
+        void SetPosition(const Vector3& position, int index) {
+            ageHook::Thunk<0x4B3C70>::Call<void>(this, &position, index);
         }
     };
 
