@@ -130,10 +130,6 @@ char * carImageKeys[] = {
 
     // Miscellaneous
 	"vpredcar",
-	"vprobin",
-
-    // End of list
-    nullptr,
 };
 
 bool isRaceMode() {
@@ -190,15 +186,12 @@ char * getCarImageKey(mmVehInfo *vehInfo) {
             return key;
     }
 
-    // try finding it in the list
-    char *key = carImageKeys[0];
-
-    // iterate through the list until we find a match,
-    // or when we've reached the end of it
-    while (key != nullptr) {
-        if (strcmp(key, baseName) == 0)
+    // iterate through the list until we find a match.
+    // we'll return "nocardesc" if it's not found
+    for (char* key : carImageKeys)
+    {
+        if (!strcmp(key, baseName))
             return key;
-        ++key; // move to the next entry
     }
 
     return "nocardesc";
