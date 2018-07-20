@@ -505,7 +505,7 @@ namespace MM2
 
     class vehCarAudioContainer {
     public:
-        AGE_API static bool IsPolce(const char* name) {
+        AGE_API static bool IsPolice(const char* name) {
             return ageHook::StaticThunk<0x4D1A70>::Call<bool>(name);
         }
         

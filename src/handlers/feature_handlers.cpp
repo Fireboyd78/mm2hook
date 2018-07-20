@@ -2246,7 +2246,7 @@ void vehCarHandler::InitCarAudio(LPCSTR a1, BOOL a2) {
     }
 
     // add to our siren list
-    if (vehicleHasSiren && !vehCarAudioContainer::IsPolce(a1)) {
+    if (vehicleHasSiren && !vehCarAudioContainer::IsPolice(a1)) {
         string_buf<128> sirenBuffer("%s,ENDOFDATA", a1);
         vehCarAudioContainer::RegisterPoliceNames(NULL, (LPCSTR)sirenBuffer);
     }
