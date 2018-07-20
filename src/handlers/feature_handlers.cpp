@@ -2234,23 +2234,6 @@ void vehCarHandler::InitCarAudio(LPCSTR a1, BOOL a2) {
         Displayf("Loading vehicle audio (\"%s\", %d)", a1, a2);
     }
 
-    // check if this vehicle has a siren
-    bool vehicleHasSiren = false;
-    for (int i = 0; i < 4; i++) {
-        string_buf<80> buffer("%s_SRN%d", a1, i);
-        
-        if (datAssetManager::Exists("geometry", (LPCSTR)buffer, "mtx")) {
-            vehicleHasSiren = true;
-            break;
-        }
-    }
-
-    // add to our siren list
-    if (vehicleHasSiren && !vehCarAudioContainer::IsPolice(a1)) {
-        string_buf<128> sirenBuffer("%s,ENDOFDATA", a1);
-        vehCarAudioContainer::RegisterPoliceNames(NULL, (LPCSTR)sirenBuffer);
-    }
-
     //pass back to original function
     get<vehCar>()->InitAudio(a1, a2);
 }
