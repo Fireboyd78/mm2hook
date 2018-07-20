@@ -16,6 +16,7 @@ namespace MM2
     class vehPoliceCarAudio;
     class vehTrailer;
     class vehTrailerInstance;
+    class vehEngine;
 
     class mmVehInfo {
     private:
@@ -92,6 +93,7 @@ namespace MM2
         ageHook::Field<0xAC, vehBreakableMgr *> _mechanicalBreakableMgr;
         ageHook::Field<0xA0, vehBreakableMgr *> _genericBreakableMgr;
         ageHook::Field<0x18, vehCar *> _car;
+        ageHook::Field<0x24, int> _variant;
     public:
         AGE_API vehCarModel()                               { ageHook::Thunk<0x4CCF20>::Call<void>(this); }
         AGE_API ~vehCarModel()                              { ageHook::Thunk<0x4CCF80>::Call<void>(this); }
@@ -106,6 +108,15 @@ namespace MM2
 
         inline vehCar * getCar(void) const {
             return _car.get(this);
+        }
+
+        inline int getVariant(void) const {
+            return _variant.get(this);
+        }
+
+        inline void setVariant(int variant) {
+            this->PreLoadShader(variant);
+            _variant.set(this, variant);
         }
 
         AGE_API void BreakElectrics(Vector3* a1)            { ageHook::Thunk<0x4CEFE0>::Call<void>(this, a1); }
@@ -146,6 +157,7 @@ namespace MM2
                 //properties
                 .addPropertyReadOnly("Breakables", &getGenBreakableMgr)
                 .addPropertyReadOnly("WheelBreakables", &getMechBreakableMgr)
+                .addProperty("Variant", &getVariant, &setVariant)
 
                 //functions
                 .addFunction("GetPosition", &GetPosition)
@@ -207,13 +219,47 @@ namespace MM2
         byte _buffer[0x4C];
     };
 
+    class vehEngine : public asNode {
+    public:
+
+        AGE_API void ComputeConstants()                     { ageHook::Thunk<0x4D8DC0>::Call<void>(this); }
+        AGE_API float CalcTorqueAtFullThrottle(float a1)    { return ageHook::Thunk<0x4D8E20>::Call<float>(this, a1); }
+        AGE_API float CalcTorqueAtZeroThrottle(float a1)    { return ageHook::Thunk<0x4D8EA3>::Call<float>(this, a1); }
+        AGE_API float CalcTorque(float a1)                  { return ageHook::Thunk<0x4D8ED0>::Call<float>(this, a1); }
+        AGE_API float CalcHPAtFullThrottle(float a1)        { return ageHook::Thunk<0x4D8F10>::Call<float>(this, a1); }
+
+        /*
+            asNode virtuals
+        */
+
+        AGE_API void Update() override                      { ageHook::Thunk<0x4D8F30>::Call<void>(this); }
+        AGE_API void Reset() override                       { ageHook::Thunk<0x4D8CE0>::Call<void>(this); }
+        AGE_API void FileIO(datParser &parser)  override
+                                                            { ageHook::Thunk<0x4D9240>::Call<void>(this); }
+        AGE_API char* GetClassName() override               { return ageHook::Thunk<0x4D9310>::Call<char*>(this); }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginExtendClass<vehEngine, asNode>("vehEngine")
+                .addFunction("ComputeConstants", &ComputeConstants)
+                .addFunction("CalcTorqueAtFullThrottle", &CalcTorqueAtFullThrottle)
+                .addFunction("CalcTorqueAtZeroThrottle", &CalcTorqueAtZeroThrottle)
+                .addFunction("CalcTorque", &CalcTorque)
+                .addFunction("CalcHPAtFullThrottle", &CalcHPAtFullThrottle)
+
+                .endClass();
+        }
+    private:
+        byte _buffer[0x84];
+
+    };
+
     class vehCarSim : public asNode {
     protected:
         ageHook::Field<0x24C, float> _speed;
         ageHook::Field<0x210, const Vector3> _resetPosition;
         ageHook::Field<0x1D0, lvlInstance *> _instance;
         ageHook::Field<0x2E0, vehTransmission> _transmission;
-        //ageHook::Field<0x25C, vehEngine *> _engine;
+        ageHook::Field<0x25C, vehEngine> _engine;
     public:
         inline float getSpeed(void) {
             return _speed.get(this);
@@ -229,6 +275,10 @@ namespace MM2
 
         inline vehTransmission* getTransmission(void) const {
             return _transmission.ptr(this);
+        }
+
+        inline vehEngine* getEngine(void) const {
+            return _engine.ptr(this);
         }
 
         AGE_API vehCarSim()                                 { ageHook::Thunk<0x4CB660>::Call<void>(this); }
@@ -256,7 +306,7 @@ namespace MM2
             LuaBinding(L).beginExtendClass<vehCarSim, asNode>("vehCarSim")
                 .addPropertyReadOnly("Transmission", &getTransmission)
                 .addPropertyReadOnly("ResetPosition", &getResetPosition)
-                .addFunction("Reset", &Reset)
+                .addPropertyReadOnly("Engine", &getEngine)
                 .addFunction("BottomedOut", &BottomedOut)
                 .addFunction("OnGround", &OnGround)
                 .addFunction("ReconfigureDrivetrain", &ReconfigureDrivetrain)
@@ -490,6 +540,7 @@ namespace MM2
         luaBind<vehCar>(L);
         luaBind<vehCarDamage>(L);
         luaBind<vehCarModel>(L);
+        luaBind<vehEngine>(L);
         luaBind<vehCarSim>(L);
         luaBind<vehTransmission>(L);
         luaBind<vehTrailer>(L);
