@@ -1348,7 +1348,7 @@ void mmGameHandler::SendChatMessage(char *message) {
     }
     else {
         LogFile::Format("Got chat message: %s\n", message);
-        MM2Lua::OnChatMessage(message);
+        GameEventDispatcher::onChatMessage(message);
     }
 }
 
