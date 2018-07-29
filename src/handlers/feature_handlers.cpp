@@ -1,5 +1,7 @@
 #include "feature_handlers.h"
 #include "..\logfile.h"
+#include "..\events\dispatcher.h"
+
 #include <vector>
 
 using namespace MM2;
