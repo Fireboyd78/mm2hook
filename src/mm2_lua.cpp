@@ -135,10 +135,9 @@ void ReloadScript()
     mmGameManager *mgr = mmGameManager::Instance;
     auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
 
-    if (gamePtr != NULL)
+    if (gamePtr != NULL && gamePtr->getPlayer() != NULL)
     {
-        auto hud = Lua::getGlobal<MM2::mmHUD *>(L, "hud");
-
+        auto hud = gamePtr->getPlayer()->getHUD();
         if (hud != NULL)
             hud->SetMessage("Lua script reloaded.", 3.5, 0);
     }
