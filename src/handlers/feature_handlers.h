@@ -252,3 +252,9 @@ public:
     void ModStaticDraw(MM2::modShader * a1);
     static void Install();
 };
+
+class vehWheelHandler {
+public:
+    float GetBumpDisplacement(float a1);
+    static void Install();
+};

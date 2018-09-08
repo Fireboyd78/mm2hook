@@ -50,6 +50,7 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<vehPoliceCarAudioHandler>("vehPoliceCarAudio"),
     CreateHandler<vehBreakableMgrHandler>("vehBreakableMgr"),
     CreateHandler<vehCarModelFeatureHandler>("vehCarModel"),
+    CreateHandler<vehWheelHandler>("vehWheel"),
 
     CreateHandler<Dialog_NewPlayerHandler>("New player dialog"),
 
@@ -2339,6 +2340,47 @@ void vehCarModelFeatureHandler::Install() {
     InstallCallback("vehCarModel::DrawPart", "Draws reflections on car parts.",
         &ModStaticDraw, {
             cbHook<CALL>(0x4CE92F), // vehCarModel::DrawPart
+        }
+    );
+}
+
+/*
+    vehWheelHandler
+*/
+
+static ConfigValue<bool> cfgWheelWobble("PhysicalWheelWobble", false);
+
+float vehWheelHandler::GetBumpDisplacement(float a1)
+{
+    //call original
+    float displacement = ageHook::Thunk<0x4D3440>::Call<float>(this, a1);
+
+    //get vars
+    float* wheelWobble = getPtr<float>(this, 0x218);
+    float* totalWheelAngle = getPtr<float>(this, 0x1E4);
+    float* wobbleLimit = getPtr<float>(this, 0x74);
+
+    //calculate wobble factor
+    float wheelAngleAbs = fmod(fabs(*totalWheelAngle), 6.28f);
+    float wheelAngleSub = wheelAngleAbs;
+    if (wheelAngleAbs > 3.14f) {
+        wheelAngleSub = 3.14f - (wheelAngleAbs - 3.14f);
+    }
+    float wheelWobbleFactor = (wheelAngleSub / 3.14f) * *wobbleLimit;
+
+    //return displacement - wobble
+    float dispSubtraction = fabs(*wheelWobble) * wheelWobbleFactor;
+    return displacement - dispSubtraction;
+}
+
+void vehWheelHandler::Install()
+{
+    if (!cfgWheelWobble.Get())
+        return;
+
+    InstallCallback("vehWheel::ComputeDwtdw", "Implementation of physical wheel wobbling.",
+        &GetBumpDisplacement, {
+            cbHook<CALL>(0x4D2EDA), // vehWheel::ComputeDwtdw
         }
     );
 }
