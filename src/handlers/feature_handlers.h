@@ -246,3 +246,9 @@ public:
     void ModStaticDraw(MM2::modShader * a1);
     static void Install();
 };
+
+class vehCarModelFeatureHandler {
+public: 
+    void ModStaticDraw(MM2::modShader * a1);
+    static void Install();
+};
