@@ -77,7 +77,12 @@ namespace MM2
     };
 
     class phInertialCS {
-
+    protected:
+        ageHook::Field<0x54, Matrix34> _matrix;
+    public:
+        inline Matrix34* getMatrix(void) const {
+            return _matrix.ptr(this);
+        }
     };
 
     class phMaterial {
@@ -101,7 +106,18 @@ namespace MM2
     };
 
     class phJoint {
+    protected:
+        ageHook::Field<0x04, phInertialCS *> _linkA;
+        ageHook::Field<0x08, phInertialCS *> _linkB;
     public:
+        inline phInertialCS* getFirstLink(void) const {
+            return _linkA.get(this);
+        }
+
+        inline phInertialCS* getSecondLink(void) const {
+            return _linkB.get(this);
+        }
+
         virtual AGE_API bool IsBroken(void)                 { return ageHook::Thunk<0x5961F0>::Call<bool>(this); }
         virtual AGE_API void ComputeInvMassMatrix(phInertialCS* a1, Matrix34* a2, const Vector3* a3) 
                                                             { ageHook::Thunk<0x595E90>::Call<void>(this); }
@@ -112,6 +128,8 @@ namespace MM2
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<phJoint>("phJoint")
+                .addPropertyReadOnly("FirstLink", &getFirstLink)
+                .addPropertyReadOnly("SecondLink", &getSecondLink)
                 .addFunction("IsBroken", &IsBroken)
                 .endClass();
         }
