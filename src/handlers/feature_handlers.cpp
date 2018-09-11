@@ -2356,20 +2356,25 @@ float vehWheelHandler::GetBumpDisplacement(float a1)
     float displacement = ageHook::Thunk<0x4D3440>::Call<float>(this, a1);
 
     //get vars
-    float* wheelWobble = getPtr<float>(this, 0x218);
-    float* totalWheelAngle = getPtr<float>(this, 0x1E4);
-    float* wobbleLimit = getPtr<float>(this, 0x74);
+    float wheelWobble = *getPtr<float>(this, 0x218);
+    float totalWheelAngle = *getPtr<float>(this, 0x1E4);
+    float wobbleLimit = *getPtr<float>(this, 0x74);
+
+    //no need to calculate if the vehicle isn't set up for this
+    if (wobbleLimit == 0.f) {
+        return displacement;
+    }
 
     //calculate wobble factor
-    float wheelAngleAbs = fmod(fabs(*totalWheelAngle), 6.28f);
+    float wheelAngleAbs = fmod(fabs(totalWheelAngle), 6.28f);
     float wheelAngleSub = wheelAngleAbs;
     if (wheelAngleAbs > 3.14f) {
         wheelAngleSub = 3.14f - (wheelAngleAbs - 3.14f);
     }
-    float wheelWobbleFactor = (wheelAngleSub / 3.14f) * *wobbleLimit;
+    float wheelWobbleFactor = (wheelAngleSub / 3.14f) * wobbleLimit;
 
     //return displacement - wobble
-    float dispSubtraction = fabs(*wheelWobble) * wheelWobbleFactor;
+    float dispSubtraction = fabs(wheelWobble) * wheelWobbleFactor;
     return displacement - dispSubtraction;
 }
 

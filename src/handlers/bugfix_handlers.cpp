@@ -926,7 +926,7 @@ void vehTrailerHandler::Install()
 {
     // removes Angels improperly rendered lights
     Installf("Removes default.dgTrailerJoint check preventing trailers from loading properly.");
-    mem::nop(0x4D7DCC, 19); // 6 fld/fstp instructions (size: 3)
+    mem::nop(0x4D7DCC, 19); // nop out default.dgTrailerJoint load attempt
 }
 
 /*
