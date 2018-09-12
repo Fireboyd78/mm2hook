@@ -86,7 +86,7 @@ namespace MM2
         virtual AGE_API void * GetWaypoints(void)           PURE;
 
         static void BindLua(LuaState L) {
-            LuaBinding(L).beginClass<mmGame>("mmGame")
+            LuaBinding(L).beginExtendClass<mmGame, asNode>("mmGame")
                 //properties
                 .addPropertyReadOnly("Player", &getPlayer)
                 .addPropertyReadOnly("Popup", &getPopup)

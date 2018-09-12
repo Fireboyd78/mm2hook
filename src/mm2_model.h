@@ -1,6 +1,7 @@
 #pragma once
 #include "mm2_common.h"
 #include "mm2_gfx.h"
+#include "mm2_base.h"
 
 namespace MM2
 {
@@ -9,6 +10,7 @@ namespace MM2
     class modPackage;
     class modShader;
     class modStatic;
+    class asMeshSetForm;
 
     // External declarations
     extern class Stream;
@@ -118,6 +120,60 @@ namespace MM2
         AGE_API modShader * CopyShaders(void) const             { return ageHook::Thunk<0x5981C0>::Call<modShader *>(this); }
     };
 
+    class asMeshSetForm : public asNode {
+    private:
+        byte _buffer[0x60];
+    protected:
+        ageHook::Field<0x30, Matrix34> _worldMatrix;
+    public:
+        inline Matrix34* getWorldMatrix() const {
+            return _worldMatrix.ptr(this);
+        }
+            
+        inline void setWorldMatrix(Matrix34* a1) const {
+            _worldMatrix.ptr(this)->Set(a1);
+        }
+
+        AGE_API asMeshSetForm(void) {
+            PUSH_VTABLE();
+            ageHook::Thunk<0x533600>::Call<void>(this);
+            POP_VTABLE();
+        }
+
+        AGE_API ~asMeshSetForm(void) {
+            PUSH_VTABLE();
+            ageHook::Thunk<0x5339D0>::Call<void>(this);
+            POP_VTABLE();
+        }
+
+        /*
+            asNode virtuals
+        */
+
+        virtual AGE_API void Cull(void)                         { ageHook::Thunk<0x533810>::Call<void>(this); };
+        virtual AGE_API void Update(void)                       { ageHook::Thunk<0x5337F0>::Call<void>(this); };
+    
+        //Last arg is never used, so I've set it to nullptr. It's a Vector3 reference, which was meant for offset I guess.
+        AGE_API void SetShape(LPCSTR modelName, LPCSTR dirName, bool useLVertex)
+                                                                { ageHook::Thunk<0x533660>::Call<void>(this, modelName, dirName, useLVertex, nullptr); }
+        AGE_API void SetZRead(bool a1)                          { ageHook::Thunk<0x533770>::Call<void>(this, a1); }
+        AGE_API void SetZWrite(bool a1)                         { ageHook::Thunk<0x533790>::Call<void>(this, a1); }
+        AGE_API void EnableLighting(bool a1)                    { ageHook::Thunk<0x5337B0>::Call<void>(this, a1); }
+        AGE_API void EnableAlpha(bool a1)                       { ageHook::Thunk<0x5337D0>::Call<void>(this, a1); }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginExtendClass<asMeshSetForm, asNode>("asMeshSetForm")
+                .addConstructor(LUA_ARGS())
+                .addProperty("WorldMatrix", &getWorldMatrix, &setWorldMatrix)
+                .addFunction("SetShape", &SetShape)
+                .addFunction("SetZRead", &SetZRead)
+                .addFunction("SetZWrite", &SetZWrite)
+                .addFunction("EnableLighting", &EnableLighting)
+                .addFunction("EnableAlpha", &EnableAlpha)
+            .endClass();
+        }
+    };
+
     AGE_EXT modStatic * modGetStatic(LPCSTR file, float &a2, bool a3);
     AGE_EXT modStatic * modGetStatic(LPCSTR file, void(*a2)(Vector3 &, void *), void *a3, bool a4);
     AGE_EXT modModel * modGetModel(LPCSTR filename, uint a2, bool a3, bool a4);
@@ -126,6 +182,6 @@ namespace MM2
 
     template<>
     void luaAddModule<module_model>(LuaState L) {
-
+        luaBind<asMeshSetForm>(L);
     }
 }

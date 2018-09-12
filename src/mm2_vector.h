@@ -104,6 +104,8 @@ namespace MM2
             $::Matrix34::Identity(this);
         }
 
+        AGE_API void Set(const Matrix34* a1)                { ageHook::Thunk<0x4BBFB0>::Call<void>(this, a1); }
+
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<Matrix34>("Matrix34")
                 .addFactory([](float m11 = 0.0, float m12 = 0.0, float m13 = 0.0, float m14 = 0.0,
