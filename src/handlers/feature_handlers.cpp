@@ -74,6 +74,8 @@ static init_handler g_feature_handlers[] = {
 // Pointer hooks
 // ==========================
 
+static float ped_LodThreshold = 1225.f;
+
 ageHook::Type<float> obj_NoDrawThresh       ( 0x5C571C ); // default: 300.0
 ageHook::Type<float> obj_VLowThresh         ( 0x5C6658 ); // default: 200.0
 ageHook::Type<float> obj_LowThresh          ( 0x5C665C ); // default: 100.0
@@ -256,12 +258,18 @@ void cityLevelHandler::SetObjectDetail(int lod) {
     sdl_LowThresh = sdlLowThresh;
     sdl_MedThresh = sdlMedThresh;
 
+    // By default the game doesn't set this based on the detail level
+    float pedDrawThreshold = pow(HookConfig::GetProperty("PedestrianLod", 35.5f), 2) * (lod + 1);
+    ped_LodThreshold = pedDrawThreshold;
+    
     LogFile::Format("[cityLevel::SetObjectDetail]: '%s'\n"
         " - OBJ { %.4f, %.4f, %.4f, %.4f }\n"
-        " - SDL { %.4f, %.4f, %.4f }\n",
+        " - SDL { %.4f, %.4f, %.4f }\n"
+        " - PED { %.4f }\n",
         lodLevelNames[lod],
         objNoDrawThresh, objVLowThresh, objLowThresh, objMedThresh,
-        sdlVLowThresh, sdlLowThresh, sdlMedThresh);
+        sdlVLowThresh, sdlLowThresh, sdlMedThresh,
+        pedDrawThreshold);
 }
 
 void cityLevelHandler::Install() {
@@ -280,6 +288,10 @@ void cityLevelHandler::Install() {
             cbHook<JMP>(0x4452D0), // jump to PostUpdate at the very end
         }
     );
+
+    // moves ped lod threshold to writable memory
+    mem::write(0x54BC3D + 2, &ped_LodThreshold);
+    mem::write(0x57B6CE + 2, &ped_LodThreshold);
 }
 
 /*
