@@ -15,7 +15,8 @@ namespace MM2
     // Forward declarations
     class phBoundGeometry;
     class phBound;
-    
+    class phBoundBox;
+
     //TODO
     class phBoundGeometry {
 
@@ -49,7 +50,7 @@ namespace MM2
                                                             { return ageHook::Thunk<0x4876B0>::Call<bool>(this, &a1, a2, &a3, &a4, &a5); }
         AGE_API virtual void ModifyInvMassMatrix(Matrix34 * a1, int a2, Vector3 const & a3, Vector3 const & a4)
                                                             { ageHook::Thunk<0x45CF90>::Call<void>(this, a1, a2, &a3, &a4); }
-        AGE_API virtual void ModifyInvMassMatrix(class Matrix34 * a1, int a2, Vector3 const & a3)
+        AGE_API virtual void ModifyInvMassMatrix(Matrix34 * a1, int a2, Vector3 const & a3)
                                                             { ageHook::Thunk<0x45CF80>::Call<void>(this, a1, a2, &a3); }
         AGE_API virtual float EffectiveMass(Vector3 const & a1, Vector3 const & a2, int a3, float a4)
                                                             { return ageHook::Thunk<0x45CFA0>::Call<float>(this, &a1, &a2, a3, a4); }
@@ -61,6 +62,10 @@ namespace MM2
                 .addFunction("SetOffset", &SetOffset)
                 .endClass();
         }
+    };
+
+    class phBoundBox : public phBound {
+
     };
 
     template<>

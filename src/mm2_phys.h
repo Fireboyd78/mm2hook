@@ -15,7 +15,6 @@ namespace MM2
     class phBound;
     class phJoint;
     class phTrailerJoint;
-    
 
     // External declarations
     extern class lvlInstance;
