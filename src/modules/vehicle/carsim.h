@@ -6,7 +6,7 @@
 
 namespace MM2
 {
-    // Forward delcarations
+    // Forward declarations
     class vehCarSim;
 
     // External declarations

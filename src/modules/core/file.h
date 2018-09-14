@@ -3,7 +3,7 @@
 
 namespace MM2
 {
-    // Forward delcarations
+    // Forward declarations
     struct coreFileMethods;
 
     // External declarations

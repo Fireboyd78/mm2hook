@@ -22,7 +22,7 @@
 
 namespace MM2
 {
-    // Forward delcarations
+    // Forward declarations
     class aiMap;
 
     // External declarations

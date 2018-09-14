@@ -5,7 +5,7 @@
 
 namespace MM2
 {
-    // Forward delcarations
+    // Forward declarations
     class aiPoliceOfficer;
 
     // External declarations

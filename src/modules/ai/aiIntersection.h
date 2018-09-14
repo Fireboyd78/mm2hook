@@ -8,7 +8,7 @@
 
 namespace MM2
 {
-    // Forward delcarations
+    // Forward declarations
     class aiIntersection;
 
     // External declarations

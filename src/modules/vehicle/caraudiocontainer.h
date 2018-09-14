@@ -5,7 +5,7 @@
 
 namespace MM2
 {
-    // Forward delcarations
+    // Forward declarations
     class vehCarAudioContainer;
 
     // External declarations

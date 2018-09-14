@@ -17,7 +17,7 @@
 
 namespace MM2
 {
-    // Forward delcarations
+    // Forward declarations
 
 
     // External declarations
