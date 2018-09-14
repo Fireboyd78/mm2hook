@@ -1,5 +1,4 @@
 #include "bugfix_handlers.h"
-#include "..\mm2_particle.h"
 
 using namespace MM2;
 
@@ -937,7 +936,7 @@ Matrix34 trailerMatrix = Matrix34();
 void vehTrailerInstanceHandler::DrawGlow()
 {
     auto inst = reinterpret_cast<vehTrailerInstance*>(this);
-    GeomTableEntry* geomTable = lvlInstance::GetGeomTablePtr();
+    auto geomTable = lvlInstance::GetGeomTablePtr();
     
     //don't draw trailer lights if it's broken
     if (inst->getTrailer()->getJoint()->IsBroken())

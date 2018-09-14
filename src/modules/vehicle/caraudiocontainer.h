@@ -1,0 +1,46 @@
+#pragma once
+#include <modules\vehicle.h>
+
+#include "policecaraudio.h"
+
+namespace MM2
+{
+    // Forward delcarations
+    class vehCarAudioContainer;
+
+    // External declarations
+    extern class AudImpact;
+    extern class Stream;
+
+    // Class definitions
+
+    class vehCarAudioContainer {
+    public:
+        AGE_API static bool IsPolice(const char* name) {
+            return ageHook::StaticThunk<0x4D1A70>::Call<bool>(name);
+        }
+        
+        AGE_API static void RegisterPoliceNames(Stream* a1, LPCSTR a2) {
+            ageHook::StaticThunk<0x4D0F10>::Call<void>(a1, a2);
+        }
+
+        AGE_API static void SetSirenCSVName(LPCSTR name) {
+            ageHook::StaticThunk<0x4D0C80>::Call<void>(name);
+        };
+
+        AGE_API void Set3D(bool a1) {
+            ageHook::Thunk<0x4D1840>::Call<void>(this, a1);
+        }
+
+        AGE_API vehPoliceCarAudio * GetPoliceCarAudioPtr() {
+            return ageHook::Thunk<0x4D1790>::Call<vehPoliceCarAudio *>(this);
+        };
+
+        AGE_API AudImpact * GetAudImpactPtr() {
+            return ageHook::Thunk<0x4D1730>::Call<AudImpact *>(this);
+        };
+    };
+
+    // Lua initialization
+
+}

@@ -324,30 +324,3 @@ namespace MM2
         }
     }
 };
-
-void fxTexelDamageHandler::Install()
-{
-    InstallCallback("fxTexelDamage::ApplyDamage", "",
-        &MM2::fxTexelDamage::ApplyDamage, {
-            cbHook<CALL>(0x4CAE46),
-        }
-    );
-
-    InstallCallback("fxTexelDamage::Init", "",
-        &MM2::fxTexelDamage::Init, {
-            cbHook<CALL>(0x4CD492)
-        }
-    );
-
-    InstallCallback("fxTexelDamage::Reset", "",
-        &MM2::fxTexelDamage::Reset, {
-            cbHook<CALL>(0x4CE018)
-        }
-    );
-
-    InstallCallback("fxTexelDamage::Kill", "",
-        &MM2::fxTexelDamage::Kill, {
-            cbHook<JMP>(0x591CC0)
-        }
-    );
-}

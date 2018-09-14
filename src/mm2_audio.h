@@ -25,7 +25,6 @@ namespace MM2
     class mmDirSnd;
     class Aud3DObject;
     class AudCreatureContainer;
-    class aiPedAudio;
     class audManager;
     class mmCNRSpeech;
 
@@ -90,9 +89,6 @@ namespace MM2
         }
     };
 
-    class aiPedAudio : public AudCreatureContainer {
-
-    };
     class DirSnd {
     protected:
         /*0x4*/

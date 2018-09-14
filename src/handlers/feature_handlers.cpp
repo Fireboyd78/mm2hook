@@ -1,12 +1,6 @@
 #include "feature_handlers.h"
-#include "..\logfile.h"
-#include "..\events\dispatcher.h"
-
-#include <vector>
 
 using namespace MM2;
-
-#include "..\mm2_effects.h"
 
 static init_handler g_feature_handlers[] = {
     /*
@@ -77,6 +71,7 @@ static init_handler g_feature_handlers[] = {
 static float ped_LodThreshold = 1225.f;
 
 ageHook::Type<float> obj_NoDrawThresh       ( 0x5C571C ); // default: 300.0
+
 ageHook::Type<float> obj_VLowThresh         ( 0x5C6658 ); // default: 200.0
 ageHook::Type<float> obj_LowThresh          ( 0x5C665C ); // default: 100.0
 ageHook::Type<float> obj_MedThresh          ( 0x5C6660 ); // default: 40.0
@@ -2400,6 +2395,37 @@ void vehWheelHandler::Install()
     InstallCallback("vehWheel::ComputeDwtdw", "Implementation of physical wheel wobbling.",
         &GetBumpDisplacement, {
             cbHook<CALL>(0x4D2EDA), // vehWheel::ComputeDwtdw
+        }
+    );
+}
+
+/*
+    fxTexelDamageHandler
+*/
+
+void fxTexelDamageHandler::Install()
+{
+    InstallCallback("fxTexelDamage::ApplyDamage", "",
+        &fxTexelDamage::ApplyDamage, {
+            cbHook<CALL>(0x4CAE46),
+        }
+    );
+
+    InstallCallback("fxTexelDamage::Init", "",
+        &fxTexelDamage::Init, {
+            cbHook<CALL>(0x4CD492)
+        }
+    );
+
+    InstallCallback("fxTexelDamage::Reset", "",
+        &fxTexelDamage::Reset, {
+            cbHook<CALL>(0x4CE018)
+        }
+    );
+
+    InstallCallback("fxTexelDamage::Kill", "",
+        &fxTexelDamage::Kill, {
+            cbHook<JMP>(0x591CC0)
         }
     );
 }

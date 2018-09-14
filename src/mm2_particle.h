@@ -1,8 +1,7 @@
 #pragma once
 #include "mm2_common.h"
-#include "mm2_level.h"
 #include "mm2_base.h"
-#include "mm2_vector.h"
+#include "mm2_level.h"
 #include "mm2_rgl.h"
 
 namespace MM2
@@ -13,6 +12,9 @@ namespace MM2
     struct asMeshCardVertex;
     class asBirthRule;
     class asParticles;
+
+    // External declarations
+    extern class asNode;
 
     struct asMeshCardVertex {
         float x;

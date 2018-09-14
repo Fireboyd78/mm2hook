@@ -6,7 +6,6 @@
     Class definitions
 */
 #include "mm2_stream.h"
-#include "mm2_phys.h"
 #include "mm2_bound.h"
 #include "mm2_game.h"
 #include "mm2_ai.h"
@@ -19,12 +18,15 @@
 #include "mm2_rgl.h"
 #include "mm2_vehicle.h"
 #include "mm2_ui.h"
-#include "mm2_creature.h"
 #include "mm2_inst.h"
 #include "mm2_breakable.h"
 #include "mm2_level.h"
 #include "mm2_network.h"
 #include "mm2_model.h"
+#include "mm2_particle.h"
+#include "mm2_phys.h"
+#include "mm2_creature.h"
+#include "mm2_effects.h"
 
 #include "mm2_lua.h"
 

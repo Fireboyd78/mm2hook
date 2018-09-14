@@ -3,6 +3,10 @@
 #include "patch.h"
 #include "mm2.h"
 
+#include <vector>
+
+#include "..\events\dispatcher.h"
+
 static bool g_bConsoleOpen;
 
 static ConfigValue<bool> cfgInstantReplay           ("InstantReplay",           true);
@@ -256,6 +260,11 @@ public:
 class vehWheelHandler {
 public:
     float GetBumpDisplacement(float a1);
+    static void Install();
+};
+
+class fxTexelDamageHandler {
+public:
     static void Install();
 };
 

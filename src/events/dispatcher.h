@@ -1,5 +1,5 @@
-#include "..\mm2.h"
-#include "mm2_network.h"
+#pragma once
+#include "mm2.h"
 
 class GameEventDispatcher {
 public:
