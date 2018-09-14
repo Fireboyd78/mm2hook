@@ -73,9 +73,6 @@ namespace MM2
             declhook(0x51CE60, _MemberFunc<UINT>, EAXEnabled);
             declhook(0x51CE70, _MemberFunc<UINT>, DSound3DEnabled);
         }
-        namespace AudCreatureContainer {
-            declhook(0x00510CF0, _MemberFunc<void>, PlayAvoidanceReaction);
-        }
     }
 
     class Aud3DObject {
@@ -84,9 +81,8 @@ namespace MM2
 
     class AudCreatureContainer : public Aud3DObject {
     public:
-        void PlayAvoidanceReaction(float intensity) {
-            $::AudCreatureContainer::PlayAvoidanceReaction(this, intensity);
-        }
+        AGE_API void PlayImpactReaction(float a1)            { ageHook::Thunk<0x510CC0>::Call<void>(this, a1); }
+        AGE_API void PlayAvoidanceReaction(float a1)         { ageHook::Thunk<0x510CF0>::Call<void>(this, a1); }
     };
 
     class DirSnd {

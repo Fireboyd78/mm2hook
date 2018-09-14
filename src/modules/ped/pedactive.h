@@ -17,8 +17,6 @@ namespace MM2
     //TODO
     class pedActiveData {};
 
-    //TODO
-    //also find out why I cant make it a dgPhysEntity
     class pedActive : public dgPhysEntity {
     protected:
         ageHook::Field<0x104, crSkeleton *> _skeleton;
