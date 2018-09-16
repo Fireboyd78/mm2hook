@@ -36,6 +36,48 @@
     <Filter Include="Source Files\events">
       <UniqueIdentifier>{da4ebbae-af63-4a06-b383-bddfd7e83af5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\modules">
+      <UniqueIdentifier>{48324D4D-4F4F-534B-5543-4B53FB780000}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\modules\ai">
+      <UniqueIdentifier>{48324D4D-4F4F-534B-5543-4B53FB780001}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\modules\banger">
+      <UniqueIdentifier>{48324D4D-4F4F-534B-5543-4B53FB780002}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\modules\city">
+      <UniqueIdentifier>{48324D4D-4F4F-534B-5543-4B53FB780003}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\modules\core">
+      <UniqueIdentifier>{48324D4D-4F4F-534B-5543-4B53FB780004}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\modules\creature">
+      <UniqueIdentifier>{48324D4D-4F4F-534B-5543-4B53FB780005}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\modules\data">
+      <UniqueIdentifier>{48324D4D-4F4F-534B-5543-4B53FB780006}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\modules\input">
+      <UniqueIdentifier>{48324D4D-4F4F-534B-5543-4B53FB780007}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\modules\level">
+      <UniqueIdentifier>{48324D4D-4F4F-534B-5543-4B53FB780008}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\modules\node">
+      <UniqueIdentifier>{48324D4D-4F4F-534B-5543-4B53FB780009}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\modules\parse">
+      <UniqueIdentifier>{48324D4D-4F4F-534B-5543-4B53FB78000A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\modules\ped">
+      <UniqueIdentifier>{48324D4D-4F4F-534B-5543-4B53FB78000B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\modules\phys">
+      <UniqueIdentifier>{48324D4D-4F4F-534B-5543-4B53FB78000C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\modules\vehicle">
+      <UniqueIdentifier>{48324D4D-4F4F-534B-5543-4B53FB78000D}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\lua\lapi.h">
@@ -278,180 +320,528 @@
     <ClInclude Include="src\mm2_effects.h">
       <Filter>Source Files\mm2</Filter>
     </ClInclude>
-    <ClInclude Include="src\modules\__template__.h" />
-    <ClInclude Include="src\modules\level\__template__.h" />
-    <ClInclude Include="src\modules\level.h" />
-    <ClInclude Include="src\modules\level\fixed.h" />
-    <ClInclude Include="src\modules\level\inst.h" />
-    <ClInclude Include="src\modules\level\landmark.h" />
-    <ClInclude Include="src\modules\level\material.h" />
-    <ClInclude Include="src\modules\level\multiroom.h" />
-    <ClInclude Include="src\modules\level\pathset.h" />
-    <ClInclude Include="src\modules\level\sky.h" />
-    <ClInclude Include="src\modules\level\track.h" />
-    <ClInclude Include="src\modules\banger\__template__.h" />
-    <ClInclude Include="src\modules\banger\active.h" />
-    <ClInclude Include="src\modules\banger\data.h" />
-    <ClInclude Include="src\modules\banger\glass.h" />
-    <ClInclude Include="src\modules\banger\tree.h" />
-    <ClInclude Include="src\modules\banger.h" />
-    <ClInclude Include="src\modules\ped.h" />
-    <ClInclude Include="src\modules\ped\__template__.h" />
-    <ClInclude Include="src\modules\ped\pedactive.h" />
-    <ClInclude Include="src\modules\ped\pedinst.h" />
-    <ClInclude Include="src\modules\ped\ragdollmgr.h" />
-    <ClInclude Include="src\modules\creature\__template__.h" />
-    <ClInclude Include="src\modules\creature.h" />
-    <ClInclude Include="src\modules\creature\cranimation.h" />
-    <ClInclude Include="src\modules\creature\crbody.h" />
-    <ClInclude Include="src\modules\creature\crskeleton.h" />
-    <ClInclude Include="src\modules\node\__template__.h" />
-    <ClInclude Include="src\modules\node\camera.h" />
-    <ClInclude Include="src\modules\node\cullable.h" />
-    <ClInclude Include="src\modules\node\cullmgr.h" />
-    <ClInclude Include="src\modules\node\event.h" />
-    <ClInclude Include="src\modules\node\eventq.h" />
-    <ClInclude Include="src\modules\node\linear.h" />
-    <ClInclude Include="src\modules\node\root.h" />
-    <ClInclude Include="src\modules\node\str.h" />
-    <ClInclude Include="src\modules\node.h" />
-    <ClInclude Include="src\modules\data\__template__.h" />
-    <ClInclude Include="src\modules\data\args.h" />
-    <ClInclude Include="src\modules\data\asset.h" />
-    <ClInclude Include="src\modules\data\base.h" />
-    <ClInclude Include="src\modules\data\callback.h" />
-    <ClInclude Include="src\modules\data\hash.h" />
-    <ClInclude Include="src\modules\data\timemgr.h" />
-    <ClInclude Include="src\modules\data\timer.h" />
-    <ClInclude Include="src\modules\data\token.h" />
-    <ClInclude Include="src\modules\data.h" />
-    <ClInclude Include="src\modules\parse\__template__.h" />
-    <ClInclude Include="src\modules\parse\csv.h" />
-    <ClInclude Include="src\modules\parse.h" />
-    <ClInclude Include="src\modules\core\__template__.h" />
-    <ClInclude Include="src\modules\core\file.h" />
-    <ClInclude Include="src\modules\core\output.h" />
-    <ClInclude Include="src\modules\core\stream.h" />
-    <ClInclude Include="src\modules\core.h" />
-    <ClInclude Include="src\modules\node\fileio.h" />
-    <ClInclude Include="src\modules\input\__template__.h" />
-    <ClInclude Include="src\modules\input\eventq.h" />
-    <ClInclude Include="src\modules\input\joystick.h" />
-    <ClInclude Include="src\modules\input\keyboard.h" />
-    <ClInclude Include="src\modules\input\mouse.h" />
-    <ClInclude Include="src\modules\input\pad.h" />
-    <ClInclude Include="src\modules\input.h" />
-    <ClInclude Include="src\modules\city\__template__.h" />
-    <ClInclude Include="src\modules\city\ai.h" />
-    <ClInclude Include="src\modules\city\citylevel.h" />
-    <ClInclude Include="src\modules\city\propulate.h" />
-    <ClInclude Include="src\modules\city\psdl.h" />
-    <ClInclude Include="src\modules\city\state.h" />
-    <ClInclude Include="src\modules\city.h" />
-    <ClInclude Include="src\modules\creature\dgragdoll.h" />
-    <ClInclude Include="src\modules\ai\__template__.h" />
-    <ClInclude Include="src\modules\ai\aiBanger.h" />
-    <ClInclude Include="src\modules\ai\aiCableCar.h" />
-    <ClInclude Include="src\modules\ai\aiCityData.h" />
-    <ClInclude Include="src\modules\ai\aiCTFRacer.h" />
-    <ClInclude Include="src\modules\ai\aiData.h" />
-    <ClInclude Include="src\modules\ai\aiIntersection.h" />
-    <ClInclude Include="src\modules\ai\aiMap.h" />
-    <ClInclude Include="src\modules\ai\aiPath.h" />
-    <ClInclude Include="src\modules\ai\aiPedAudio.h" />
-    <ClInclude Include="src\modules\ai\aiPedestrian.h" />
-    <ClInclude Include="src\modules\ai\aiPoliceForce.h" />
-    <ClInclude Include="src\modules\ai\aiPoliceOfficer.h" />
-    <ClInclude Include="src\modules\ai\aiRailSet.h" />
-    <ClInclude Include="src\modules\ai\aiSubway.h" />
-    <ClInclude Include="src\modules\ai\aiVehicle.h" />
-    <ClInclude Include="src\modules\ai\aiVehicleAmbient.h" />
-    <ClInclude Include="src\modules\ai\aiVehicleData.h" />
-    <ClInclude Include="src\modules\ai\aiVehicleMGR.h" />
-    <ClInclude Include="src\modules\ai\aiVehiclePhysics.h" />
-    <ClInclude Include="src\modules\ai\aiVehiclePlayer.h" />
-    <ClInclude Include="src\modules\ai\aiVehicleSpline.h" />
-    <ClInclude Include="src\modules\ai\ArrayList.h" />
-    <ClInclude Include="src\modules\ai\mcHookman.h" />
-    <ClInclude Include="src\modules\ai.h" />
-    <ClInclude Include="src\modules\ai\aiTrafficLight.h" />
-    <ClInclude Include="src\modules\ai\aiRouteRacer.h" />
-    <ClInclude Include="src\modules\vehicle\__template__.h" />
-    <ClInclude Include="src\modules\vehicle\aero.h" />
-    <ClInclude Include="src\modules\vehicle\aiambientvehicleaudio.h" />
-    <ClInclude Include="src\modules\vehicle\aicablecaraudio.h" />
-    <ClInclude Include="src\modules\vehicle\aicablecaraudiodata.h" />
-    <ClInclude Include="src\modules\vehicle\aiengineaudio.h" />
-    <ClInclude Include="src\modules\vehicle\aisubwayaudio.h" />
-    <ClInclude Include="src\modules\vehicle\axle.h" />
-    <ClInclude Include="src\modules\vehicle\bound.h" />
-    <ClInclude Include="src\modules\vehicle\breakable.h" />
-    <ClInclude Include="src\modules\vehicle\caraudio.h" />
-    <ClInclude Include="src\modules\vehicle\caraudiocontainer.h" />
-    <ClInclude Include="src\modules\vehicle\cardamage.h" />
-    <ClInclude Include="src\modules\vehicle\carmodel.h" />
-    <ClInclude Include="src\modules\vehicle\carsim.h" />
-    <ClInclude Include="src\modules\vehicle\drivetrain.h" />
-    <ClInclude Include="src\modules\vehicle\engine.h" />
-    <ClInclude Include="src\modules\vehicle\engineaudio.h" />
-    <ClInclude Include="src\modules\vehicle\hornaudio.h" />
-    <ClInclude Include="src\modules\vehicle\nitrocaraudio.h" />
-    <ClInclude Include="src\modules\vehicle\policecaraudio.h" />
-    <ClInclude Include="src\modules\vehicle\semicaraudio.h" />
-    <ClInclude Include="src\modules\vehicle\siren.h" />
-    <ClInclude Include="src\modules\vehicle\surfaceaudio.h" />
-    <ClInclude Include="src\modules\vehicle\surfaceaudiodata.h" />
-    <ClInclude Include="src\modules\vehicle\suspension.h" />
-    <ClInclude Include="src\modules\vehicle\trailer.h" />
-    <ClInclude Include="src\modules\vehicle\transmission.h" />
-    <ClInclude Include="src\modules\vehicle\wheel.h" />
-    <ClInclude Include="src\modules\vehicle\wheelcheap.h" />
-    <ClInclude Include="src\modules\vehicle\wheelptx.h" />
-    <ClInclude Include="src\modules\vehicle.h" />
-    <ClInclude Include="src\modules\vehicle\splash.h" />
-    <ClInclude Include="src\modules\phys\__template__.h" />
-    <ClInclude Include="src\modules\phys.h" />
-    <ClInclude Include="src\modules\phys\bound.h" />
-    <ClInclude Include="src\modules\phys\impact.h" />
-    <ClInclude Include="src\modules\phys\levelbound.h" />
-    <ClInclude Include="src\modules\phys\physentity.h" />
-    <ClInclude Include="src\modules\phys\physmgr.h" />
-    <ClInclude Include="src\modules\phys\segment.h" />
-    <ClInclude Include="src\modules\phys\trailerjoint.h" />
-    <ClInclude Include="src\modules\phys\phbound.h" />
-    <ClInclude Include="src\modules\phys\phboundbox.h" />
-    <ClInclude Include="src\modules\phys\phboundcollision.h" />
-    <ClInclude Include="src\modules\phys\phboundgeom.h" />
-    <ClInclude Include="src\modules\phys\phboundhotdog.h" />
-    <ClInclude Include="src\modules\phys\phboundpolygonal.h" />
-    <ClInclude Include="src\modules\phys\phboundsphere.h" />
-    <ClInclude Include="src\modules\phys\phboundterrain.h" />
-    <ClInclude Include="src\modules\phys\phboundterrainlocal.h" />
-    <ClInclude Include="src\modules\phys\phcollider.h" />
-    <ClInclude Include="src\modules\phys\phcolliderbase.h" />
-    <ClInclude Include="src\modules\phys\phcolliderjointed.h" />
-    <ClInclude Include="src\modules\phys\phcollision.h" />
-    <ClInclude Include="src\modules\phys\phcollisionprim.h" />
-    <ClInclude Include="src\modules\phys\phcontact.h" />
-    <ClInclude Include="src\modules\phys\phcontactmgr.h" />
-    <ClInclude Include="src\modules\phys\phconvexpoly.h" />
-    <ClInclude Include="src\modules\phys\phimpact.h" />
-    <ClInclude Include="src\modules\phys\phimpactbase.h" />
-    <ClInclude Include="src\modules\phys\phinertia.h" />
-    <ClInclude Include="src\modules\phys\phisectpoint.h" />
-    <ClInclude Include="src\modules\phys\phjoint.h" />
-    <ClInclude Include="src\modules\phys\phline.h" />
-    <ClInclude Include="src\modules\phys\phmaterial.h" />
-    <ClInclude Include="src\modules\phys\phmath.h" />
-    <ClInclude Include="src\modules\phys\phpoly.h" />
-    <ClInclude Include="src\modules\phys\phsleep.h" />
-    <ClInclude Include="src\modules\phys\phintersection.h" />
-    <ClInclude Include="src\modules\node\node.h" />
-    <ClInclude Include="src\modules\banger\banger.h" />
-    <ClInclude Include="src\modules\level\level.h" />
-    <ClInclude Include="src\modules\parse\parse.h" />
-    <ClInclude Include="src\modules\ped\pedanim.h" />
-    <ClInclude Include="src\modules\vehicle\car.h" />
+    <ClInclude Include="src\modules\ai\__template__.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ai\aiBanger.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ai\aiCableCar.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ai\aiCityData.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ai\aiCTFRacer.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ai\aiData.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ai\aiIntersection.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ai\aiMap.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ai\aiPath.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ai\aiPedAudio.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ai\aiPedestrian.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ai\aiPoliceForce.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ai\aiPoliceOfficer.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ai\aiRailSet.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ai\aiRouteRacer.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ai\aiSubway.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ai\aiTrafficLight.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ai\aiVehicle.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ai\aiVehicleAmbient.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ai\aiVehicleData.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ai\aiVehicleMGR.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ai\aiVehiclePhysics.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ai\aiVehiclePlayer.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ai\aiVehicleSpline.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ai\ArrayList.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ai\mcHookman.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\banger\__template__.h">
+      <Filter>Source Files\modules\banger</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\banger\active.h">
+      <Filter>Source Files\modules\banger</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\banger\banger.h">
+      <Filter>Source Files\modules\banger</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\banger\data.h">
+      <Filter>Source Files\modules\banger</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\banger\glass.h">
+      <Filter>Source Files\modules\banger</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\banger\tree.h">
+      <Filter>Source Files\modules\banger</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\city\__template__.h">
+      <Filter>Source Files\modules\city</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\city\ai.h">
+      <Filter>Source Files\modules\city</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\city\citylevel.h">
+      <Filter>Source Files\modules\city</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\city\propulate.h">
+      <Filter>Source Files\modules\city</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\city\psdl.h">
+      <Filter>Source Files\modules\city</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\city\state.h">
+      <Filter>Source Files\modules\city</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\core\__template__.h">
+      <Filter>Source Files\modules\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\core\file.h">
+      <Filter>Source Files\modules\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\core\output.h">
+      <Filter>Source Files\modules\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\core\stream.h">
+      <Filter>Source Files\modules\core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\creature\__template__.h">
+      <Filter>Source Files\modules\creature</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\creature\cranimation.h">
+      <Filter>Source Files\modules\creature</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\creature\crbody.h">
+      <Filter>Source Files\modules\creature</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\creature\crskeleton.h">
+      <Filter>Source Files\modules\creature</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\creature\dgragdoll.h">
+      <Filter>Source Files\modules\creature</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\data\__template__.h">
+      <Filter>Source Files\modules\data</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\data\args.h">
+      <Filter>Source Files\modules\data</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\data\asset.h">
+      <Filter>Source Files\modules\data</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\data\base.h">
+      <Filter>Source Files\modules\data</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\data\callback.h">
+      <Filter>Source Files\modules\data</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\data\hash.h">
+      <Filter>Source Files\modules\data</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\data\timemgr.h">
+      <Filter>Source Files\modules\data</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\data\timer.h">
+      <Filter>Source Files\modules\data</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\data\token.h">
+      <Filter>Source Files\modules\data</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\input\__template__.h">
+      <Filter>Source Files\modules\input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\input\eventq.h">
+      <Filter>Source Files\modules\input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\input\joystick.h">
+      <Filter>Source Files\modules\input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\input\keyboard.h">
+      <Filter>Source Files\modules\input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\input\mouse.h">
+      <Filter>Source Files\modules\input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\input\pad.h">
+      <Filter>Source Files\modules\input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\level\__template__.h">
+      <Filter>Source Files\modules\level</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\level\fixed.h">
+      <Filter>Source Files\modules\level</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\level\inst.h">
+      <Filter>Source Files\modules\level</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\level\landmark.h">
+      <Filter>Source Files\modules\level</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\level\level.h">
+      <Filter>Source Files\modules\level</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\level\material.h">
+      <Filter>Source Files\modules\level</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\level\multiroom.h">
+      <Filter>Source Files\modules\level</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\level\pathset.h">
+      <Filter>Source Files\modules\level</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\level\sky.h">
+      <Filter>Source Files\modules\level</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\level\track.h">
+      <Filter>Source Files\modules\level</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\node\__template__.h">
+      <Filter>Source Files\modules\node</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\node\camera.h">
+      <Filter>Source Files\modules\node</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\node\cullable.h">
+      <Filter>Source Files\modules\node</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\node\cullmgr.h">
+      <Filter>Source Files\modules\node</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\node\event.h">
+      <Filter>Source Files\modules\node</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\node\eventq.h">
+      <Filter>Source Files\modules\node</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\node\fileio.h">
+      <Filter>Source Files\modules\node</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\node\linear.h">
+      <Filter>Source Files\modules\node</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\node\node.h">
+      <Filter>Source Files\modules\node</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\node\root.h">
+      <Filter>Source Files\modules\node</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\node\str.h">
+      <Filter>Source Files\modules\node</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\parse\__template__.h">
+      <Filter>Source Files\modules\parse</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\parse\csv.h">
+      <Filter>Source Files\modules\parse</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\parse\parse.h">
+      <Filter>Source Files\modules\parse</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ped\__template__.h">
+      <Filter>Source Files\modules\ped</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ped\pedactive.h">
+      <Filter>Source Files\modules\ped</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ped\pedanim.h">
+      <Filter>Source Files\modules\ped</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ped\pedinst.h">
+      <Filter>Source Files\modules\ped</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ped\ragdollmgr.h">
+      <Filter>Source Files\modules\ped</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\__template__.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\bound.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\impact.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\levelbound.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phbound.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phboundbox.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phboundcollision.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phboundgeom.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phboundhotdog.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phboundpolygonal.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phboundsphere.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phboundterrain.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phboundterrainlocal.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phcollider.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phcolliderbase.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phcolliderjointed.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phcollision.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phcollisionprim.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phcontact.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phcontactmgr.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phconvexpoly.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phimpact.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phimpactbase.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phinertia.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phintersection.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phisectpoint.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phjoint.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phline.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phmaterial.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phmath.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phpoly.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\phsleep.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\physentity.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\physmgr.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\segment.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys\trailerjoint.h">
+      <Filter>Source Files\modules\phys</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\__template__.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\aero.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\aiambientvehicleaudio.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\aicablecaraudio.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\aicablecaraudiodata.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\aiengineaudio.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\aisubwayaudio.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\axle.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\bound.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\breakable.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\car.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\caraudio.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\caraudiocontainer.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\cardamage.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\carmodel.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\carsim.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\drivetrain.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\engine.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\engineaudio.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\hornaudio.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\nitrocaraudio.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\policecaraudio.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\semicaraudio.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\siren.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\splash.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\surfaceaudio.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\surfaceaudiodata.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\suspension.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\trailer.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\transmission.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\wheel.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\wheelcheap.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle\wheelptx.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\__template__.h">
+      <Filter>Source Files\modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ai.h">
+      <Filter>Source Files\modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\banger.h">
+      <Filter>Source Files\modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\city.h">
+      <Filter>Source Files\modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\core.h">
+      <Filter>Source Files\modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\creature.h">
+      <Filter>Source Files\modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\data.h">
+      <Filter>Source Files\modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\input.h">
+      <Filter>Source Files\modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\level.h">
+      <Filter>Source Files\modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\node.h">
+      <Filter>Source Files\modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\parse.h">
+      <Filter>Source Files\modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\ped.h">
+      <Filter>Source Files\modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\phys.h">
+      <Filter>Source Files\modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\vehicle.h">
+      <Filter>Source Files\modules</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
@@ -647,43 +1037,79 @@
       <Filter>Source Files\mm2</Filter>
     </ClCompile>
     <ClCompile Include="src\modules\banger.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\modules\core.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\modules\creature.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\modules\data.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\modules\level.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\modules\node.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\modules\parse.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\modules\ped.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\modules\input.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\modules</Filter>
     </ClCompile>
     <ClCompile Include="src\modules\city.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\modules</Filter>
     </ClCompile>
-    <ClCompile Include="src\modules\ai.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\modules\core.cpp">
+      <Filter>Source Files\modules</Filter>
     </ClCompile>
-    <ClCompile Include="src\modules\vehicle.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\modules\creature.cpp">
+      <Filter>Source Files\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\modules\data.cpp">
+      <Filter>Source Files\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\modules\input.cpp">
+      <Filter>Source Files\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\modules\level.cpp">
+      <Filter>Source Files\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\modules\node.cpp">
+      <Filter>Source Files\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\modules\parse.cpp">
+      <Filter>Source Files\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\modules\ped.cpp">
+      <Filter>Source Files\modules</Filter>
     </ClCompile>
     <ClCompile Include="src\modules\phys.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\modules\vehicle.cpp">
+      <Filter>Source Files\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\modules\ai.cpp">
+      <Filter>Source Files\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\modules\banger.cpp">
+      <Filter>Source Files\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\modules\city.cpp">
+      <Filter>Source Files\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\modules\core.cpp">
+      <Filter>Source Files\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\modules\creature.cpp">
+      <Filter>Source Files\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\modules\data.cpp">
+      <Filter>Source Files\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\modules\input.cpp">
+      <Filter>Source Files\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\modules\level.cpp">
+      <Filter>Source Files\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\modules\node.cpp">
+      <Filter>Source Files\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\modules\parse.cpp">
+      <Filter>Source Files\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\modules\ped.cpp">
+      <Filter>Source Files\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\modules\phys.cpp">
+      <Filter>Source Files\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\modules\vehicle.cpp">
+      <Filter>Source Files\modules</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
