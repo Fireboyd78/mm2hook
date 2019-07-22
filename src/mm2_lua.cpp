@@ -72,6 +72,7 @@ LUAMOD_API int luaopen_MM2(lua_State *L)
     luaAddModule<module_base>(modL);
     luaAddModule<module_bound>(modL);
     luaAddModule<module_breakable>(modL);
+    luaAddModule<module_camera>(modL);
     luaAddModule<module_city>(modL);
     luaAddModule<module_common>(modL);
     luaAddModule<module_creature>(modL);
@@ -113,12 +114,13 @@ void LoadMainScript() {
             // this is kinda important, no?
             luaSetGlobals();
 
-            L.getGlobal("init");
-            if (L.pcall(0, 0, 0) == LUA_OK)
-                return;
+            //call init
+            LuaRef func(L, "init");
+            if (func.isFunction())
+                func.call();
         }
 
-        mm2L_error(L.toString(-1));
+        //mm2L_error(L.toString(-1));
     }
     else
     {
@@ -186,45 +188,45 @@ void MM2Lua::Reset()
 
 void MM2Lua::OnChatMessage(char* message) {
     LuaRef func(L, "onChatMessage");
-    if (func != NULL)
+    if (func.isFunction())
         func.call(message);
 }
 
 void MM2Lua::OnGameEnd() {
     LuaRef func(L, "onGameEnd");
-    if (func != NULL)
+    if (func.isFunction())
         func.call();
 }
 
 void MM2Lua::OnGameInit() {
     LuaRef func(L, "onGameInit");
-    if (func != NULL)
+    if (func.isFunction())
         func.call();
 }
 
 void MM2Lua::OnSessionCreate(char * sessionName, char * sessionPassword, int sessionMaxPlayers, NETSESSION_DESC * sessionData)
 {
     LuaRef func(L, "onSessionCreate");
-    if (func != NULL)
+    if (func.isFunction())
         func.call(sessionName, sessionPassword, sessionMaxPlayers, sessionData);
 }
 
 void MM2Lua::OnSessionJoin(char * a2, GUID * a3, char * a4)
 {
     LuaRef func(L, "onSessionJoin");
-    if (func != NULL)
+    if (func.isFunction())
         func.call(a2, a3, a4);
 }
 
 void MM2Lua::OnDisconnect() {
     LuaRef func(L, "onDisconnect");
-    if (func != NULL)
+    if (func.isFunction())
         func.call();
 }
 
 void MM2Lua::OnReset() {
     LuaRef func(L, "onReset");
-    if (func != NULL)
+    if (func.isFunction())
         func.call();
 }
 
@@ -233,8 +235,9 @@ void MM2Lua::OnTick()
     if (isMainLuaLoaded) {
         // don't do any errors since this is called EVERY tick
         // testing should be done in the lua script (if needed)
-        L.getGlobal("tick");
-        L.pcall(0, 0, 0);
+        LuaRef tickFunction(L, "tick");
+        if (tickFunction.isFunction())
+            tickFunction.call();
     }
 
     // reset lastKey
@@ -244,18 +247,18 @@ void MM2Lua::OnTick()
 void MM2Lua::OnRestart()
 {
     if (isMainLuaLoaded) {
-        L.getGlobal("restart");
-        if (L.pcall(0, 0, 0) != LUA_OK)
-            mm2L_error(L.toString(-1));
+        LuaRef func(L, "restart");
+        if (func.isFunction())
+            func.call();
     }
 }
 
 void MM2Lua::OnShutdown()
 {
     if (isMainLuaLoaded) {
-        L.getGlobal("shutdown");
-        if (L.pcall(0, 0, 0) != LUA_OK)
-            mm2L_error(L.toString(-1));
+        LuaRef func(L, "shutdown");
+        if (func.isFunction())
+            func.call();
     }
 
     L.close();
