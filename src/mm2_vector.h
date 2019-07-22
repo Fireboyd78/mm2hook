@@ -100,6 +100,11 @@ namespace MM2
         float m33;
         float m34;
 
+		void Matrix34::Dot(Matrix34* rhs)
+		{
+			ageHook::Thunk<0x4BC400>::Call(this, rhs);
+		}
+
         void Identity() {
             $::Matrix34::Identity(this);
         }

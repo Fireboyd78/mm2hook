@@ -505,7 +505,7 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
 
     switch (vKey) {
         // '~'
-        case VK_OEM_2: case VK_OEM_3:
+        case VK_OEM_3:
         // '`'
         case VK_OEM_8:
         {
@@ -1361,6 +1361,31 @@ void mmGameHandler::SendChatMessage(char *message) {
     }
     else {
         LogFile::Format("Got chat message: %s\n", message);
+
+        //handle custom commands (TODO: some "RegisterCommand" thing?)
+        if (!strcmp(message, "/freecam")) {
+            mmGameManager *mgr = mmGameManager::Instance;
+            auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
+            auto playerPtr = (gamePtr != NULL) ? gamePtr->getPlayer() : NULL;
+
+            if (gamePtr != NULL && playerPtr != NULL)
+            {
+                auto playerPosition = playerPtr->getCar()->getModel()->GetPosition();
+                auto freecam = playerPtr->getFreecam();
+                int* camViewCsPtr = *getPtr<int*>(playerPtr, 0x0E2C);
+
+                //hacky call to SetCam, and camBaseCS::UpdateView
+                ageHook::Thunk<0x51FE90>::ThisCall<void>((mmPlayer*)camViewCsPtr, freecam);
+                ageHook::Thunk<0x521E30>::ThisCall<void>(freecam);
+
+                //set freecam pos if >=100m away
+                if (playerPosition.Dist(*freecam->getPosition()) >= 100.f) {
+                    freecam->SetPosition(&playerPosition);
+                }
+            }
+        }
+
+        //send to dispatcher
         GameEventDispatcher::onChatMessage(message);
     }
 }

@@ -2,6 +2,7 @@
 
 #include "handlers\bugfix_handlers.h"
 #include "handlers\feature_handlers.h"
+#include "handlers\debug_handlers.h"
 
 #include <discord-presence.h>
 #include <events\dispatcher.h>

@@ -3,6 +3,7 @@
 #include "mm2_base.h"
 #include "mm2_vehicle.h"
 #include "mm2_ui.h"
+#include "modules/node/camera.h"
 
 namespace MM2
 {
@@ -18,6 +19,7 @@ namespace MM2
     extern class asNode;
     extern class mmPopup;
     extern class vehCar;
+    extern class camAICS;
 
     namespace $
     {
@@ -269,6 +271,10 @@ namespace MM2
             return _hudmap.get(this);
         }
 
+        inline camAICS* getFreecam(void) const {
+            return getPtr<camAICS>(this, 0x1B08);
+        }
+
         AGE_API void EnableRegen(bool a1)                   { return ageHook::Thunk<0x406160>::Call<void>(this, a1); }
         AGE_API float FilterSteering(float a1)              { return ageHook::Thunk<0x404C90>::Call<float>(this, a1); }
         AGE_API bool IsMaxDamaged()                         { return ageHook::Thunk<0x406140>::Call<bool>(this); }
@@ -297,7 +303,8 @@ namespace MM2
                 .addPropertyReadOnly("Car", &getCar)
                 .addPropertyReadOnly("HUD", &getHUD)
                 .addPropertyReadOnly("Hudmap", &getHudmap)
-                
+                .addPropertyReadOnly("Freecam", &getFreecam)
+
                 //functions
                 .addFunction("EnableRegen", &EnableRegen)
                 .addFunction("FilterSteering", &FilterSteering)
