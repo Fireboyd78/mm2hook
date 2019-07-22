@@ -163,11 +163,10 @@ namespace MM2
                 }
             }
 
-            std::sort(DamageTris, DamageTris + triCount, [] (const TexelDamageTri& lhs, const TexelDamageTri& rhs)
-            {
-                return 0 + rhs.Texture - lhs.Texture;
-
-            });
+			std::sort(DamageTris, DamageTris + triCount, [](const TexelDamageTri& lhs, const TexelDamageTri& rhs)
+			{
+				return lhs.Texture < rhs.Texture;
+			});
 
             return 1;
         }
