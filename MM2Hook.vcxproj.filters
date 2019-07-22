@@ -842,6 +842,9 @@
     <ClInclude Include="src\modules\vehicle.h">
       <Filter>Source Files\modules</Filter>
     </ClInclude>
+    <ClInclude Include="src\handlers\debug_handlers.h">
+      <Filter>Source Files\handlers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
@@ -1110,6 +1113,9 @@
     </ClCompile>
     <ClCompile Include="src\modules\vehicle.cpp">
       <Filter>Source Files\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\handlers\debug_handlers.cpp">
+      <Filter>Source Files\handlers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
