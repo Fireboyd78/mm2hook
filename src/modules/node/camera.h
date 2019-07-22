@@ -47,10 +47,16 @@ namespace MM2
         virtual AGE_API void ForceMatrixDelta(const Vector3& a1)  { ageHook::Thunk<0x521E60>::Call<void>(this, a1); };
         virtual AGE_API void SetST(float* a1)                     { ageHook::Thunk<0x51D750>::Call<void>(this, a1); };
 
+        //members
+        AGE_API void UpdateView()                                 { ageHook::Thunk<0x521E30>::Call<void>(this); };
+
         //lua
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<camBaseCS, asNode>("camBaseCS")
+                //properties
                 .addProperty("FOV", &getFOV,  &setFOV)
+                //members
+                .addFunction("UpdateView", &UpdateView)
                 .endClass();
         }
     };
@@ -80,6 +86,7 @@ namespace MM2
         }
 
     protected:
+        //members
         AGE_API void ApproachIt()                                 { ageHook::Thunk<0x522060>::Call<void>(this); };
 
     };

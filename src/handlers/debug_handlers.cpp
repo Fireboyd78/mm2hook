@@ -69,9 +69,9 @@ void vehWheelDebugHandler::Install()
 		InstallVTableHook("vehWheel::Update (Debug Hook)", &Update, {
 			0x5B2DD4
 		});
-	}
 
-	InstallVTableHook("vehWheel::Cull", &Cull, {
-		0x5B2DD0
-	});
+        InstallVTableHook("vehWheel::Cull", &Cull, {
+            0x5B2DD0
+        });
+	}
 }

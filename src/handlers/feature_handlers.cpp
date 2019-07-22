@@ -1376,7 +1376,7 @@ void mmGameHandler::SendChatMessage(char *message) {
 
                 //hacky call to SetCam, and camBaseCS::UpdateView
                 ageHook::Thunk<0x51FE90>::ThisCall<void>((mmPlayer*)camViewCsPtr, freecam);
-                ageHook::Thunk<0x521E30>::ThisCall<void>(freecam);
+                freecam->UpdateView();
 
                 //set freecam pos if >=100m away
                 if (playerPosition.Dist(*freecam->getPosition()) >= 100.f) {
