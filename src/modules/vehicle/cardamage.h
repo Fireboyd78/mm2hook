@@ -7,7 +7,8 @@ namespace MM2
     class vehCarDamage;
 
     // External declarations
-
+    extern class asBirthRule;
+    extern class asParticles;
 
     // Class definitions
 
@@ -37,12 +38,20 @@ namespace MM2
         AGE_API char* GetClassName() override               { return ageHook::Thunk<0x4CB640>::Call<char*>(this); }
         AGE_API char const* GetDirName() override           { return ageHook::Thunk<0x4CA5F0>::Call<char const*>(this); }
         
+        //fields
+        static ageHook::Type<asBirthRule*> EngineSmokeRule;
+
+        inline asParticles* getParticles(void) {
+            return *getPtr<asParticles*>(this, 0x360);
+        }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<vehCarDamage>("vehCarDamage")
                 .addFunction("Reset", &Reset)
                 .addFunction("AddDamage", &AddDamage)
                 .addFunction("ClearDamage", &ClearDamage)
+                .addPropertyReadOnly("Particles", &getParticles)
+                .addStaticProperty("EngineSmokeRule", [] { return EngineSmokeRule.get(); })
             .endClass();
         }
     private:

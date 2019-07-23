@@ -90,6 +90,7 @@ LUAMOD_API int luaopen_MM2(lua_State *L)
     luaAddModule<module_rgl>(modL);
     luaAddModule<module_stream>(modL);
     luaAddModule<module_ui>(modL);
+    luaAddModule<module_particle>(modL);
     luaAddModule<module_vehicle>(modL);
 
     mod.pushToStack();

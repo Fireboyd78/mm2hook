@@ -56,7 +56,6 @@ var hierarchy =
       [ "dgTrailerJoint", "classdg_trailer_joint.html", null ]
     ] ],
     [ "Stream", "class_stream.html", null ],
-    [ "T", "class_t.html", null ],
     [ "TNode", "class_t_node.html", null ],
     [ "Vector2", "class_vector2.html", null ],
     [ "Vector3", "class_vector3.html", null ],

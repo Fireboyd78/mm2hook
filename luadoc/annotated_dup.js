@@ -38,7 +38,6 @@ var annotated_dup =
     [ "phBound", "classph_bound.html", "classph_bound" ],
     [ "phJoint", "classph_joint.html", "classph_joint" ],
     [ "Stream", "class_stream.html", "class_stream" ],
-    [ "T", "class_t.html", null ],
     [ "TNode", "class_t_node.html", "class_t_node" ],
     [ "Vector2", "class_vector2.html", "class_vector2" ],
     [ "Vector3", "class_vector3.html", "class_vector3" ],
