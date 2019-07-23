@@ -40,7 +40,7 @@ namespace MM2
             return getPtr<Matrix34>(this, 0x1C);
         };
 
-         inline float getFOV(void) {
+        inline float getFOV(void) {
              return *getPtr<float>(this, 0x88);
         }
 

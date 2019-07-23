@@ -75,6 +75,91 @@ namespace MM2
         }
     };
 
+    class asBirthRule : public asNode
+    {
+    public:
+        Vector3 Position;
+        Vector3 PositionVar;
+        Vector3 Velocity;
+        Vector3 VelocityVar;
+        float Life;
+        float LifeVar;
+        float Mass;
+        float MassVar;
+        float Radius;
+        float RadiusVar;
+        float DRadius;
+        float DRadiusVar;
+        float Drag;
+        float DragVar;
+        float Damp;
+        float DampVar;
+        float SpewRate;
+        float SpewTimeLimit;
+        float Gravity;
+        float Height;
+        float Intensity;
+        ColorARGB Color;
+        int DAlpha;
+        int DAlphaVar;
+        int DRotation;
+        int DRotationVar;
+        int TexFrameStart;
+        int TexFrameEnd;
+        int InitialBlast;
+        int BirthFlags;
+        void(__cdecl *OnSparkAdded)(struct asSparkInfo *, struct asSparkPos *);
+
+        //helpers
+        inline std::tuple<byte, byte, byte, byte> getColorTuple(void) {
+            return std::make_tuple(Color.a, Color.r, Color.g, Color.b);
+        }
+
+        inline void setColorTuple(std::tuple<byte, byte, byte, byte> color) {
+            auto myColor = &this->Color;
+            myColor->a = std::get<0>(color);
+            myColor->r = std::get<1>(color);
+            myColor->g = std::get<2>(color);
+            myColor->b = std::get<3>(color);
+        }
+
+        //lua
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginExtendClass<asBirthRule, asNode>("asBirthRule")
+                .addVariableRef("Position", &asBirthRule::Position)
+                .addVariableRef("PositionVar", &asBirthRule::PositionVar)
+                .addVariableRef("Velocity", &asBirthRule::Velocity)
+                .addVariableRef("VelocityVar", &asBirthRule::VelocityVar)
+                .addVariableRef("Life", &asBirthRule::Life)
+                .addVariableRef("LifeVar", &asBirthRule::LifeVar)
+                .addVariableRef("Mass", &asBirthRule::Mass)
+                .addVariableRef("MassVar", &asBirthRule::MassVar)
+                .addVariableRef("Radius", &asBirthRule::Radius)
+                .addVariableRef("RadiusVar", &asBirthRule::RadiusVar)
+                .addVariableRef("DRadius", &asBirthRule::DRadius)
+                .addVariableRef("DRadiusVar", &asBirthRule::DRadiusVar)
+                .addVariableRef("Drag", &asBirthRule::Drag)
+                .addVariableRef("DragVar", &asBirthRule::DragVar)
+                .addVariableRef("Damp", &asBirthRule::Damp)
+                .addVariableRef("DampVar", &asBirthRule::DampVar)
+                .addVariableRef("SpewRate", &asBirthRule::SpewRate)
+                .addVariableRef("SpewTimeLimit", &asBirthRule::SpewTimeLimit)
+                .addVariableRef("Gravity", &asBirthRule::Gravity)
+                .addVariableRef("Height", &asBirthRule::Height)
+                .addVariableRef("Intensity", &asBirthRule::Intensity)
+                .addProperty("Color", &getColorTuple, &setColorTuple)
+                .addVariableRef("DAlpha", &asBirthRule::DAlpha)
+                .addVariableRef("DAlphaVar", &asBirthRule::DAlphaVar)
+                .addVariableRef("DRotation", &asBirthRule::DRotation)
+                .addVariableRef("DRotationVar", &asBirthRule::DRotationVar)
+                .addVariableRef("TexFrameStart", &asBirthRule::TexFrameStart)
+                .addVariableRef("TexFrameEnd", &asBirthRule::TexFrameEnd)
+                .addVariableRef("InitialBlast", &asBirthRule::InitialBlast)
+                .addVariableRef("BirthFlags", &asBirthRule::BirthFlags)
+                .endClass();
+        }
+    };
+
     class asParticles {
     public:
         uint dword4;
@@ -103,6 +188,15 @@ namespace MM2
         AGE_API void SetTexture(char const* a1)             { ageHook::Thunk<0x461090>::Call<void>(this, a1); }
         AGE_API void SetTexture(gfxTexture* a1)             { ageHook::Thunk<0x461050>::Call<void>(this, a1); }
 
+        //member hlepers
+        inline asBirthRule* getBirthRule(void) {
+            return pBirthRule;
+        }
+
+        inline void setBirthRule(asBirthRule* rule) {
+            pBirthRule = rule;
+        }
+
         /*
             asParticles Virtuals
         */
@@ -116,48 +210,14 @@ namespace MM2
                 .addFunction("Init", &Init)
                 .addFunction("Reset", &Reset)
                 .addFunction<void (asParticles::*)(const char* a1)>("SetTexture", &SetTexture)
+                .addProperty("BirthRule", &getBirthRule, &setBirthRule)
                 .endClass();
         }
     };
 
-    class asBirthRule : public asNode
-    {
-    public:
-        Vector3 Position;
-        Vector3 PositionVar;
-        Vector3 Velocity;
-        Vector3 VelocityVar;
-        float Life;
-        float LifeVar;
-        float Mass;
-        float MassVar;
-        float Radius;
-        float RadiusVar;
-        float DRadius;
-        float DRadiusVar;
-        float Drag;
-        float DragVar;
-        float Damp;
-        float DampVar;
-        float SpewRate;
-        float SpewRateLimit;
-        float Gravity;
-        float Height;
-        float Intensity;
-        int Color;
-        int DAlpha;
-        int DAlphaVar;
-        int DRotation;
-        int DRotationVar;
-        int TexFrameStart;
-        int TexFrameEnd;
-        int InitialBlast;
-        int BirthFlags;
-        void(__cdecl *OnSparkAdded)(struct asSparkInfo *, struct asSparkPos *);
-    };
-
     template<>
     void luaAddModule<module_particle>(LuaState L) {
+        luaBind<asBirthRule>(L);
         luaBind<asParticles>(L);
     }
 }
