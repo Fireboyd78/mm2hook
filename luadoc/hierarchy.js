@@ -10,6 +10,7 @@ var hierarchy =
     ] ],
     [ "asNode", null, [
       [ "aiVehicleData", "classai_vehicle_data.html", null ],
+      [ "asBirthRule", "classas_birth_rule.html", null ],
       [ "asMeshSetForm", "classas_mesh_set_form.html", null ],
       [ "asParticles", "classas_particles.html", null ],
       [ "camBaseCS", "classcam_base_c_s.html", [

@@ -16,5 +16,7 @@ var searchData=
   ['vehsplash',['vehSplash',['../classveh_car.html#a39938bff9c56d10ebf6100edda8aae78',1,'vehCar']]],
   ['vehtrailer',['vehTrailer',['../classveh_trailer.html',1,'']]],
   ['vehtrailerinstance',['vehTrailerInstance',['../classveh_trailer_instance.html',1,'']]],
-  ['vehtransmission',['vehTransmission',['../classveh_transmission.html',1,'']]]
+  ['vehtransmission',['vehTransmission',['../classveh_transmission.html',1,'']]],
+  ['velocity',['Velocity',['../classas_birth_rule.html#a0d073e023bc3b99e4ad6062a5de6dc7a',1,'asBirthRule']]],
+  ['velocityvar',['VelocityVar',['../classas_birth_rule.html#a9eeab1a675e56a13f5e9bc07721f2b08',1,'asBirthRule']]]
 ];

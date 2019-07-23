@@ -7,6 +7,7 @@ var annotated_dup =
     [ "aiVehicleData", "classai_vehicle_data.html", null ],
     [ "aiVehicleInstance", "classai_vehicle_instance.html", "classai_vehicle_instance" ],
     [ "aiVehicleSpline", "classai_vehicle_spline.html", "classai_vehicle_spline" ],
+    [ "asBirthRule", "classas_birth_rule.html", "classas_birth_rule" ],
     [ "asMeshSetForm", "classas_mesh_set_form.html", "classas_mesh_set_form" ],
     [ "asParticles", "classas_particles.html", "classas_particles" ],
     [ "audManager", "classaud_manager.html", null ],

@@ -2,7 +2,7 @@ var class_stream =
 [
     [ "Stream", "class_stream.html#ac55fe60405d870da3a1e10cd67583f0d", null ],
     [ "Close", "class_stream.html#acaf8b96dcdafd680d7a8cef4350f92e3", null ],
-    [ "Create", "class_stream.html#a667db9c97036f16975ba2a8dd7e3a47b", null ],
+    [ "Create", "class_stream.html#a51e556cf9575d104be2983c22268bd8a", null ],
     [ "DumpOpenFiles", "class_stream.html#a19a9c1d1f24d006efddef7e38b1912db", null ],
     [ "Flush", "class_stream.html#a0fd1727ffe5f37c9901d4875fe7499be", null ],
     [ "GetCh", "class_stream.html#ad684c06379567930a4dcaa5039f862df", null ],
