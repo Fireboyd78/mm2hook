@@ -27,6 +27,16 @@ namespace MM2
         void ReplayDebug(void) override                     FORWARD_THUNK;
 
         void Impact(int a1) override                        FORWARD_THUNK;
+
+        //members
+        AGE_API void Dump()                                 { ageHook::Thunk<0x551A80>::Call<void>(this); }
+
+        //lua
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginExtendClass<aiVehicleAmbient, aiVehicleSpline>("aiVehicleAmbient")
+                .addFunction("Dump", &Dump)
+                .endClass();
+        }
     };
 
     ASSERT_SIZEOF(aiVehicleAmbient, 0x1A0);

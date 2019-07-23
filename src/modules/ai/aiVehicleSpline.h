@@ -43,6 +43,18 @@ namespace MM2
         virtual AudImpact * GetAudImpactPtr(void)           FORWARD_THUNK;
         virtual void PlayHorn(float a1, float a2)           FORWARD_THUNK;
         virtual void StopVoice(void)                        FORWARD_THUNK;
+
+        //fields
+        inline aiVehicleInstance * getVehicleInstance(void) const {
+            return *getPtr<aiVehicleInstance*>(this, 0xD4);
+        }
+
+        //lua
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginExtendClass<aiVehicleSpline, aiVehicle>("aiVehicleSpline")
+                .addPropertyReadOnly("VehicleInstance", &getVehicleInstance)
+                .endClass();
+        }
     };
 
     ASSERT_SIZEOF(aiVehicleSpline, 0x18C);

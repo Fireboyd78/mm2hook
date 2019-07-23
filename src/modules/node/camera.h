@@ -32,6 +32,14 @@ namespace MM2
         };
 
         //fields
+        inline Vector3* getPosition(void) const {
+            return getPtr<Vector3>(this, 0x40);
+        };
+
+        inline Matrix34* getMatrix(void) const {
+            return getPtr<Matrix34>(this, 0x1C);
+        };
+
          inline float getFOV(void) {
              return *getPtr<float>(this, 0x88);
         }
@@ -54,7 +62,10 @@ namespace MM2
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<camBaseCS, asNode>("camBaseCS")
                 //properties
-                .addProperty("FOV", &getFOV,  &setFOV)
+                .addProperty("FOV", &getFOV, &setFOV)
+                .addPropertyReadOnly("Position", &getPosition)
+                .addPropertyReadOnly("Matrix", &getMatrix)
+
                 //members
                 .addFunction("UpdateView", &UpdateView)
                 .endClass();
@@ -134,14 +145,6 @@ namespace MM2
         };
 
         //fields
-        inline Vector3* getPosition(void) const {
-            return getPtr<Vector3>(this, 0x40);
-        };
-
-        inline Matrix34* getMatrix(void) const {
-            return getPtr<Matrix34>(this, 0x1C);
-        };
-
         static inline float getHeight(void) {
             return *(float*)0x5D4340;
         }

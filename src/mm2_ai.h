@@ -12,11 +12,28 @@ namespace MM2
     extern class aiMap;
     extern class lvlAiMap;
     extern class lvlAiRoad;
+    extern class aiVehicleSpline;
+    extern class aiVehicleAmbient;
 
     template<>
     void luaAddModule<module_ai>(LuaState L) {
+        //LogFile::WriteLine("-- aiMap");
         luaBind<aiMap>(L);
+        //LogFile::WriteLine("-- aiObstacle");
+        luaBind<aiObstacle>(L);
+        //LogFile::WriteLine("-- aiVehicle");
+        luaBind<aiVehicle>(L);
+        //LogFile::WriteLine("-- aiVehicleSpline");
+        luaBind<aiVehicleSpline>(L);
+        //LogFile::WriteLine("-- aiVehicleAmbient");
+        luaBind<aiVehicleAmbient>(L);
+        //LogFile::WriteLine("-- lvlAiMap");
         luaBind<lvlAiMap>(L);
+        //LogFile::WriteLine("-- lvlAiRoad");
         luaBind<lvlAiRoad>(L);
+        //LogFile::WriteLine("-- aiVehicleInstance");
+        luaBind<aiVehicleInstance>(L);
+        //LogFile::WriteLine("-- aiVehicleData");
+        luaBind<aiVehicleData>(L);
     }
 }

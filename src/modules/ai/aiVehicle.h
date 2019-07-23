@@ -8,9 +8,42 @@ namespace MM2
     class aiVehicle;
 
     // External declarations
-
+    extern class aiVehicleInstance;
+    extern class dgPhysEntity;
+    extern class phBound;
+    extern class aiVehicleData;
 
     // Class definitions
+    class aiVehicleInstance : public lvlInstance {
+    public:
+        aiVehicleInstance(void)                                    DONOTCALL;
+
+        //overrides
+        AGE_API Vector3 const& GetPosition() override              { return ageHook::Thunk<0x553030>::Call<Vector3 const&>(this); };
+        AGE_API Matrix34 const& GetMatrix(Matrix34* a1) override   { return ageHook::Thunk<0x553020>::Call<Matrix34 const&>(this, a1); };
+        AGE_API void SetMatrix(Matrix34 const *a1) override        { ageHook::Thunk<0x553010>::Call<void>(this, a1); }
+        AGE_API dgPhysEntity* GetEntity() override                 { return ageHook::Thunk<0x52F50>::Call<dgPhysEntity*>(this); };
+        AGE_API dgPhysEntity* AttachEntity() override              { return ageHook::Thunk<0x552FBD>::Call<dgPhysEntity*>(this); };
+        AGE_API void Detach() override                             { ageHook::Thunk<0x552F80>::Call<void>(this); }
+        AGE_API void Draw(int a1) override                         { ageHook::Thunk<0x5521600>::Call<void>(this, a1); }
+        AGE_API void DrawShadow() override                         { ageHook::Thunk<0x552CC0>::Call<void>(this); }
+        AGE_API void DrawShadowMap() override                      { ageHook::Thunk<0x552F30>::Call<void>(this); }
+        AGE_API void DrawGlow() override                           { ageHook::Thunk<0x552930>::Call<void>(this); }
+        AGE_API void DrawReflected(float a1) override              { ageHook::Thunk<0x552CB0>::Call<void>(this, a1); }
+        AGE_API unsigned int SizeOf() override                     { return ageHook::Thunk<0x553060>::Call<int>(this); };
+        AGE_API phBound* GetBound(int a1) override                 { return ageHook::Thunk<0x552F40>::Call<phBound*>(this, a1); };
+        
+        //members
+        aiVehicleData* GetData()                                   { return ageHook::Thunk<0x553F80>::Call<aiVehicleData*>(this); }
+
+        //lua
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginExtendClass<aiVehicleInstance, lvlInstance>("aiVehicleInstance")
+                //members
+                .addFunction("GetData", &GetData)
+                .endClass();
+        }
+    };
 
     class aiObstacle {
     public:
@@ -29,6 +62,12 @@ namespace MM2
                                                             PURE;
         virtual float IsBlockingTarget(const Vector3 &a1, const Vector3 &a2, float a3, float a4)
                                                             PURE;
+
+        //lua
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<aiObstacle>("aiObstacle")
+                .endClass();
+        }
     };
 
     class aiVehicle : public aiObstacle {
@@ -53,6 +92,12 @@ namespace MM2
         virtual int CurrentRoadId(void)                     PURE;
         virtual void DrawId(void)                           PURE;
         virtual void ReplayDebug(void)                      { return ageHook::Thunk<0x556D00>::Call<void>(this); }
+
+        //lua
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginExtendClass<aiVehicle, aiObstacle>("aiVehicle")
+                .endClass();
+        }
     };
 
     // Lua initialization

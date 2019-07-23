@@ -9,9 +9,11 @@ namespace MM2
 {
     // External declarations
     extern class datOutput;
+    extern class datTimeManager;
 
     template<>
     void luaAddModule<module_data>(LuaState L) {
         luaBind<datOutput>(L);
+        luaBind<datTimeManager>(L);
     }
 }

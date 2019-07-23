@@ -163,6 +163,7 @@ namespace MM2
                 .addFunction("Reset", &Reset)
                 .addFunction("IsVisible", &IsVisible)
                 .addFunction("GetMatrix", &GetMatrix)
+                .addFunction("GetPosition", &GetPosition)
                 .addFunction("SetMatrix", &SetMatrix)
                 .addFunction("SetVariant", &SetVariant)
                 .addFunction("GetRadius", &GetRadius)

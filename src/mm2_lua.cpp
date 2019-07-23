@@ -67,9 +67,12 @@ LUAMOD_API int luaopen_MM2(lua_State *L)
 
     // register all Lua modules
     // empty modules will be safely ignored
+    // note that order matters. any beginExtendClass<>
+    // which is missing a parent class will CTD before the game even starts!!
+    luaAddModule<module_base>(modL);
+    luaAddModule<module_inst>(modL);
     luaAddModule<module_ai>(modL);
     luaAddModule<module_audio>(modL);
-    luaAddModule<module_base>(modL);
     luaAddModule<module_bound>(modL);
     luaAddModule<module_breakable>(modL);
     luaAddModule<module_camera>(modL);
@@ -80,7 +83,6 @@ LUAMOD_API int luaopen_MM2(lua_State *L)
     luaAddModule<module_game>(modL);
     luaAddModule<module_gfx>(modL);
     luaAddModule<module_input>(modL);
-    luaAddModule<module_inst>(modL);
     luaAddModule<module_level>(modL);
     luaAddModule<module_model>(modL);
     luaAddModule<module_network>(modL);

@@ -116,12 +116,22 @@ namespace MM2
         short unk_1C8;
 
         short numAmbients;
+    private:
+        //helpers
+        inline int getAmbientCount() {
+            return numAmbientVehicles;
+        }
+        
     public:
         static ageHook::Type<aiMap> Instance;
 
         AGE_API void Dump(void) {
             ageHook::Thunk<0x538840>::Call<void>(this);
         };
+
+        AGE_API aiVehicleAmbient * Vehicle(int num) {
+            return ageHook::Thunk<0x5348B0>::Call<aiVehicleAmbient *>(this, num);
+        }
 
         AGE_API aiPedestrian * Pedestrian(int num) {
             return ageHook::Thunk<0x534AB0>::Call<aiPedestrian *>(this, num);
@@ -131,7 +141,9 @@ namespace MM2
             LuaBinding(L).beginClass<aiMap>("aiMap")
                 .addFunction("Dump", &Dump)
                 .addFunction("Pedestrian", &Pedestrian)
-                .addStaticFunction("Instance", [] { return Instance; })
+                .addFunction("Vehicle", &Vehicle)
+                .addPropertyReadOnly("NumAmbientVehicles", &getAmbientCount)
+                .addStaticProperty("Instance", [] { return  &aiMap::Instance; })
             .endClass();
         }
     };
