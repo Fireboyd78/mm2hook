@@ -8,5 +8,6 @@ var searchData=
   ['aivehicleinstance',['aiVehicleInstance',['../classai_vehicle_instance.html',1,'']]],
   ['aivehiclespline',['aiVehicleSpline',['../classai_vehicle_spline.html',1,'']]],
   ['asmeshsetform',['asMeshSetForm',['../classas_mesh_set_form.html',1,'']]],
-  ['asparticles',['asParticles',['../classas_particles.html',1,'']]]
+  ['asparticles',['asParticles',['../classas_particles.html',1,'']]],
+  ['audmanager',['audManager',['../classaud_manager.html',1,'']]]
 ];
