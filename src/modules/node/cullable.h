@@ -22,6 +22,11 @@ namespace MM2
         virtual AGE_API void Cull(void) {
             ageHook::Thunk<0x4A3440>::Call<void>(this);
         };
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginExtendClass<asCullable, Base>("asCullable")
+                .endClass();
+        }
     };
 
     // Lua initialization

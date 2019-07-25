@@ -75,33 +75,34 @@ namespace MM2
         virtual AGE_API char * GetClassName(void)           { return ageHook::Thunk<0x403360>::Call<char *>(this); };
         virtual AGE_API const char * GetDirName(void)       { return ageHook::Thunk<0x4A0DA0>::Call<const char *>(this); };
 
-        template <class TNode>
-        static void BindLua(luaClassBinder<TNode> *lc) {
-            lc->addProperty("Name", &GetName, &SetName);
-            lc->addProperty("Active", &isActive, &setActive);
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginExtendClass<asNode, asCullable>("asNode")
+            .addProperty("Name", &GetName, &SetName)
+            .addProperty("Active", &isActive, &setActive)
 
-            lc->addFunction("AddChild", &AddChild);
-            lc->addFunction("InsertChild", &InsertChild);
-            lc->addFunction("RemoveChild", static_cast<int (TNode::*)(int)>(&RemoveChild));
-            lc->addFunction("RemoveAllChildren", &RemoveAllChildren);
-            lc->addFunction("GetChild", &GetChild);
-            lc->addFunction("GetNext", &GetNext);
-            lc->addFunction("GetLastChild", &GetLastChild);
-            lc->addFunction("NumChildren", &NumChildren);
-            lc->addFunction("SwitchTo", &SwitchTo);
+            .addFunction("AddChild", &AddChild)
+            .addFunction("InsertChild", &InsertChild)
+            .addFunction("RemoveChild", static_cast<int(asNode::*)(asNode* child)>(&RemoveChild))
+            .addFunction("RemoveAllChildren", &RemoveAllChildren)
+            .addFunction("GetChild", &GetChild)
+            .addFunction("GetNext", &GetNext)
+            .addFunction("GetLastChild", &GetLastChild)
+            .addFunction("NumChildren", &NumChildren)
+            .addFunction("SwitchTo", &SwitchTo)
 
-            lc->addFunction("Update", base_t<TNode>::cast(&Update));
-            lc->addFunction("Reset", base_t<TNode>::cast(&Reset));
-            lc->addFunction("ResChange", base_t<TNode>::cast(&ResChange));
-            lc->addFunction("UpdatePaused", base_t<TNode>::cast(&UpdatePaused));
-            lc->addFunction("FileIO", base_t<TNode>::cast(&FileIO));
-            lc->addFunction("AfterLoad", base_t<TNode>::cast(&AfterLoad));
-            lc->addFunction("BeforeSave", base_t<TNode>::cast(&BeforeSave));
-            lc->addFunction("Save", base_t<TNode>::cast(&Save));
-            lc->addFunction("Load", base_t<TNode>::cast(&Load));
-            lc->addFunction("GetClassName", base_t<TNode>::cast(&GetClassName));
-            lc->addFunction("GetDirName", base_t<TNode>::cast(&GetDirName));
-        };
+            .addFunction("Update", &Update)
+            .addFunction("Reset", &Reset)
+            .addFunction("ResChange", &ResChange)
+            .addFunction("UpdatePaused",&UpdatePaused)
+            .addFunction("FileIO", &FileIO)
+            .addFunction("AfterLoad",  &AfterLoad)
+            .addFunction("BeforeSave", &BeforeSave)
+            .addFunction("Save", &Save)
+            .addFunction("Load", &Load)
+            .addFunction("GetClassName", &GetClassName)
+            .addFunction("GetDirName", &GetDirName)
+                .endClass();
+        }
     };
 
     // Lua initialization
