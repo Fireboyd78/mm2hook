@@ -845,6 +845,9 @@
     <ClInclude Include="src\handlers\debug_handlers.h">
       <Filter>Source Files\handlers</Filter>
     </ClInclude>
+    <ClInclude Include="src\handlers\lua_drawable.h">
+      <Filter>Source Files\handlers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
@@ -1115,6 +1118,9 @@
       <Filter>Source Files\modules</Filter>
     </ClCompile>
     <ClCompile Include="src\handlers\debug_handlers.cpp">
+      <Filter>Source Files\handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\handlers\lua_drawable.cpp">
       <Filter>Source Files\handlers</Filter>
     </ClCompile>
   </ItemGroup>
