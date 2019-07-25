@@ -1375,10 +1375,9 @@ void mmGameHandler::SendChatMessage(char *message) {
             {
                 auto playerPosition = playerPtr->getCar()->getModel()->GetPosition();
                 auto freecam = playerPtr->getFreecam();
-                int* camViewCsPtr = *getPtr<int*>(playerPtr, 0x0E2C);
 
-                //hacky call to SetCam, and camBaseCS::UpdateView
-                ageHook::Thunk<0x51FE90>::ThisCall<void>((mmPlayer*)camViewCsPtr, freecam);
+                //setcam and update view
+                playerPtr->getCamView()->SetCam(freecam);
                 freecam->UpdateView();
 
                 //set freecam pos if >=100m away
