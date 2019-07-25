@@ -193,6 +193,20 @@ namespace MM2 {
     */
 
     struct dgStatePack {
+        //FUNCS
+        AGE_API dgStatePack(void) {
+            PUSH_VTABLE();
+            ageHook::Thunk<0x443110>::Call<void>(this);
+            POP_VTABLE();
+        }
+
+        AGE_API ~dgStatePack(void) {
+            PUSH_VTABLE();
+            ageHook::Thunk<0x443180>::Call<void>(this);
+            POP_VTABLE();
+        }
+
+        //FIELDS
         static ageHook::Type<dgStatePack *> Instance;
 
         dgGameMode GameMode;
@@ -235,6 +249,42 @@ namespace MM2 {
 
         BOOL EnablePedestrians;
         void *unk_68; // related to hookmen
+
+        //lua helpers
+        inline int getSkillLevel(void) {
+            return (int)SkillLevel;
+        }
+        inline void setSkillLevel(int level) {
+            SkillLevel = (dgSkillLevel)level;
+        }
+
+        inline int getGameMode(void) {
+            return (int)GameMode;
+        }
+        inline void setGameMode(int mode) {
+            GameMode = (dgGameMode)mode;
+        }
+
+        inline bool getEnableCableCars(void) {
+            return !!EnableCableCars;
+        }
+        inline void setEnableCableCars(bool value) {
+            EnableCableCars = (value) ? TRUE : FALSE;
+        }
+
+        inline bool getEnableSubways(void) {
+            return !!EnableSubways;
+        }
+        inline void setEnableSubways(bool value) {
+            EnableSubways = (value) ? TRUE : FALSE;
+        }
+
+        inline bool getEnablePedestrians(void) {
+            return !!EnablePedestrians;
+        }
+        inline void setEnablePedestrians(bool value) {
+            EnablePedestrians = (value) ? TRUE : FALSE;
+        }
     };
 
     class mmStatePack : public dgStatePack {
@@ -347,7 +397,7 @@ namespace MM2 {
 
         BOOL IsCheating; // true if player entered a cheatcode
         float TimeLimitOverride; // overrides TimeLimit when > 0
-        BOOL UnlockRewards; // only works on startup
+        BOOL UnlockRewards; // only works on menu loading
 
         /*
             Multiplayer settings
@@ -368,6 +418,45 @@ namespace MM2 {
         bool InCrashCourse;
 
         NetStartArray NetStartArray;
+
+        //LUA
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<mmStatePack>("mmStatePack")
+                //not really instance but -shrug-
+                //todo: fix includes to allow this, error C2065: 'MMSTATE': undeclared identifier
+                //.addStaticProperty("Instance", [] { return &MMSTATE; })
+
+                //dgStatePack. Cannot use beginExtendClass because dgStatePack is not
+                //a polymorphic type. argh.
+                .addProperty("GameMode", &getGameMode, &setGameMode)
+                .addVariableRef("RaceId", &dgStatePack::RaceId)
+
+                .addVariableRef("TrafficDensity", &dgStatePack::TrafficDensity)
+                .addVariableRef("PedestrianDensity", &dgStatePack::PedestrianDensity)
+                .addVariableRef("CopDensity", &dgStatePack::CopDensity)
+                .addVariableRef("OpponentDensity", &dgStatePack::OpponentDensity)
+
+                .addVariableRef("MaxAmbientVehicles", &dgStatePack::MaxAmbientVehicles)
+
+                .addProperty("EnableCableCars", &getEnableCableCars, &setEnableCableCars)
+                .addProperty("EnableSubways", &getEnableSubways, &setEnableSubways)
+
+                .addVariableRef("NumLaps", &dgStatePack::NumLaps)
+
+                .addVariableRef("TextureQuality", &dgStatePack::TextureQuality)
+
+                .addVariableRef("TimeOfDay", &dgStatePack::TimeOfDay)
+                .addVariableRef("WeatherType", &dgStatePack::WeatherType)
+                .addProperty("SkillLevel", &getSkillLevel, &setSkillLevel)
+                .addVariableRef("AudioFlags", &dgStatePack::AudioFlags)
+
+                .addProperty("EnablePedestrians", &getEnablePedestrians, &setEnablePedestrians)
+
+                //mmStatePack stuff goes here.
+
+
+                .endClass();
+        }
     };
 
     /*
@@ -404,6 +493,9 @@ namespace MM2 {
     template<>
     void luaAddModule<module_common>(LuaState L) {
         typedef void(__cdecl *printer_type)(LPCSTR);
+
+        //luaBind<dgStatePack>(L);
+        luaBind<mmStatePack>(L);
 
         LuaBinding(L)
             .addFunction("Printf", (printer_type)&Printf)

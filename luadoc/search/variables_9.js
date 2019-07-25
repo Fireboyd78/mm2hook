@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['spewrate',['SpewRate',['../classas_birth_rule.html#a62c71ea0e4406c1092ebbd4b8aeaa4b1',1,'asBirthRule']]],
-  ['spewtimelimit',['SpewTimeLimit',['../classas_birth_rule.html#abcfb400c497968a5c4b33ca51c95ce9d',1,'asBirthRule']]]
+  ['numlaps',['NumLaps',['../classmm_state_pack.html#a8791a506b9701114b2d8e0cf770665e8',1,'mmStatePack']]]
 ];

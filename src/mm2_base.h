@@ -11,6 +11,8 @@ namespace MM2
 
     template<>
     void luaAddModule<module_base>(LuaState L) {
-        luaBind<asNode>(L, "asNode");
+        luaBind<Base>(L);
+        luaBind<asCullable>(L);
+        luaBind<asNode>(L);
     }
 }

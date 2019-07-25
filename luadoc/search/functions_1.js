@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['beforesave',['BeforeSave',['../classas_node.html#a1807109c9e547b0d544c1d8b85c2eb25',1,'asNode']]],
   ['begingeom',['BeginGeom',['../classlvl_instance.html#ac05f6b535351283fb1249db590b71178',1,'lvlInstance']]],
   ['bezier',['Bezier',['../class_matrix44.html#ac660f8baa19802860bb6cd2040d04015',1,'Matrix44']]],
   ['blast',['Blast',['../classas_particles.html#acbcb65b150ebffefb122af75085677ad',1,'asParticles']]],

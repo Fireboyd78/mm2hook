@@ -132,6 +132,12 @@ namespace MM2
                 }
             }
         }
+
+        //lua
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<datCallback>("datCallback")
+                .endClass();
+        }
     };
 
     // Lua initialization

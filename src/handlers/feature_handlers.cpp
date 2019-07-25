@@ -1,4 +1,5 @@
 #include "feature_handlers.h"
+#include "lua_drawable.h"
 
 using namespace MM2;
 
@@ -61,7 +62,9 @@ static init_handler g_feature_handlers[] = {
 
     CreateHandler<fxTexelDamageHandler>("fxTexelDamage"),
 
-    CreateHandler<pedestrianInstanceHandler>("pedestrianInstanceHandler")
+    CreateHandler<pedestrianInstanceHandler>("pedestrianInstanceHandler"),
+    
+    CreateHandler<luaDrawableHandler>("luaDrawableHandler")
 };
 
 // ==========================

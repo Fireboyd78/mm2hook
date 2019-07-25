@@ -21,6 +21,15 @@ namespace MM2
         float y;
         float z;
         float w;
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<asMeshCardVertex>("asMeshCardVertex")
+                .addVariableRef("x", &asMeshCardVertex::x)
+                .addVariableRef("y", &asMeshCardVertex::y)
+                .addVariableRef("z", &asMeshCardVertex::z)
+                .addVariableRef("w", &asMeshCardVertex::w)
+                .endClass();
+        }
     };
 
     struct asSparkPos
@@ -78,6 +87,18 @@ namespace MM2
     class asBirthRule : public asNode
     {
     public:
+        AGE_API asBirthRule(void) {
+            PUSH_VTABLE();
+            ageHook::Thunk<0x45ECE0>::Call<void>(this);
+            POP_VTABLE();
+        }
+
+        AGE_API virtual ~asBirthRule(void) {
+            PUSH_VTABLE();
+            ageHook::Thunk<0x45FBF0>::Call<void>(this);
+            POP_VTABLE();
+        }
+
         Vector3 Position;
         Vector3 PositionVar;
         Vector3 Velocity;
@@ -126,6 +147,7 @@ namespace MM2
         //lua
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<asBirthRule, asNode>("asBirthRule")
+                .addConstructor(LUA_ARGS())
                 .addVariableRef("Position", &asBirthRule::Position)
                 .addVariableRef("PositionVar", &asBirthRule::PositionVar)
                 .addVariableRef("Velocity", &asBirthRule::Velocity)
@@ -180,8 +202,24 @@ namespace MM2
         uint dword4C;
         float dword50;
     public:
-        AGE_API void Init(int a1, int a2, int a3, int a4, asMeshCardVertex* a5)
-                                                            { ageHook::Thunk<0x460FB0>::Call<void>(this, a1, a2, a3, a5, a5); }
+        AGE_API asParticles(void) {
+            PUSH_VTABLE();
+            ageHook::Thunk<0x460EB0>::Call<void>(this);
+            POP_VTABLE();
+        }
+
+        AGE_API virtual ~asParticles(void) {
+            PUSH_VTABLE();
+            ageHook::Thunk<0x4619E0>::Call<void>(this);
+            POP_VTABLE();
+        }
+
+        void InitLua(int count, int wt, int ht) {
+            Init(count, wt, ht, 4, nullptr);
+        }
+
+        AGE_API void Init(int particleCount, int numWidthTiles, int numHeightTiles, int numParticleVertices, asMeshCardVertex* customMesh)
+                                                            { ageHook::Thunk<0x460FB0>::Call<void>(this, particleCount, numWidthTiles, numHeightTiles, numParticleVertices, customMesh); }
         AGE_API void Blast(int a1, asBirthRule* a2)         { ageHook::Thunk<0x461490>::Call<void>(this, a1, a2); }
         AGE_API void Reset()                                { ageHook::Thunk<0x461040>::Call<void>(this); }
         AGE_API void Update()                               { ageHook::Thunk<0x4610F0>::Call<void>(this); }
@@ -200,15 +238,17 @@ namespace MM2
         /*
             asParticles Virtuals
         */
-        AGE_API virtual ~asParticles()                      { ageHook::Thunk<0x4619E0>::Call<void>(this); }
         AGE_API virtual void Cull()                         { ageHook::Thunk<0x4615A0>::Call<void>(this); }
 
+        //lua
         static void BindLua(LuaState L) {
-            LuaBinding(L).beginExtendClass<asParticles, asNode>("asParticles")
+            LuaBinding(L).beginClass<asParticles>("asParticles")
+                .addConstructor(LUA_ARGS())
                 .addFunction("Blast", &Blast)
                 .addFunction("Update", &Update)
-                .addFunction("Init", &Init)
+                .addFunction("Init", &InitLua)
                 .addFunction("Reset", &Reset)
+                .addFunction("Cull", &Cull)
                 .addFunction<void (asParticles::*)(const char* a1)>("SetTexture", &SetTexture)
                 .addProperty("BirthRule", &getBirthRule, &setBirthRule)
                 .endClass();
@@ -217,6 +257,7 @@ namespace MM2
 
     template<>
     void luaAddModule<module_particle>(LuaState L) {
+        luaBind<asMeshCardVertex>(L);
         luaBind<asBirthRule>(L);
         luaBind<asParticles>(L);
     }

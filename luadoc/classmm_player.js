@@ -11,8 +11,15 @@ var classmm_player =
     [ "SetPreRaceCam", "classmm_player.html#aa7fb074963240808b3f7324b43983bde", null ],
     [ "SetSteering", "classmm_player.html#ac2cbd5f69c65c958e6ec537acfda09cf", null ],
     [ "SetWideFOV", "classmm_player.html#a285776db80e77224782b1d5714032725", null ],
+    [ "CamView", "classmm_player.html#a03a81f93da54bad3f8a3f1582b211fd3", null ],
     [ "Car", "classmm_player.html#a18e85977c53ccd9292b2e403a348512e", null ],
-    [ "Freecam", "classmm_player.html#a689db9ced99fcdf2774564aa4117462c", null ],
+    [ "DashCam", "classmm_player.html#aba781875fa4890f41d8ca1e166520d26", null ],
+    [ "FarCam", "classmm_player.html#ae2563706a162983c0f4cd1f121aedc10", null ],
+    [ "FreeCam", "classmm_player.html#a0a38faa110fc4f88ea43b3d99d68c14b", null ],
     [ "HUD", "classmm_player.html#ac6468d04aec81edb6cbc246b06cedfc6", null ],
-    [ "Hudmap", "classmm_player.html#a8d5f1ade1ebaeda7fd960b8dbc137ed8", null ]
+    [ "Hudmap", "classmm_player.html#a8d5f1ade1ebaeda7fd960b8dbc137ed8", null ],
+    [ "IndCam", "classmm_player.html#a57d3c3bd0b96cf040a123a7a5064b7d0", null ],
+    [ "NearCam", "classmm_player.html#a88cda90758fb82bf59c44203c65a7e9b", null ],
+    [ "PointCam", "classmm_player.html#a685ea2f121bc53272be53dfdfc4a6c25", null ],
+    [ "PovCam", "classmm_player.html#a02ed870cb1f34726a322b809f26d52c3", null ]
 ];

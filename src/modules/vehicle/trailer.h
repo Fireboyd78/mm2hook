@@ -1,6 +1,6 @@
 #pragma once
 #include <modules\vehicle.h>
-
+#include <modules\phys.h>
 #include "carsim.h"
 
 namespace MM2

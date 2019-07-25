@@ -93,12 +93,6 @@ $(document).ready(function(){initNavTree('classas_particles.html','');});
 <div class="title">asParticles Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="dynheader">
-Inheritance diagram for asParticles:</div>
-<div class="dyncontent">
- <div class="center">
-  <img src="classas_particles.png" alt=""/>
- </div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -106,10 +100,12 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:acbcb65b150ebffefb122af75085677ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aadb5b61a050c491cb1da4ab901f1d16e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_particles.html#aadb5b61a050c491cb1da4ab901f1d16e">Update</a> ()</td></tr>
 <tr class="separator:aadb5b61a050c491cb1da4ab901f1d16e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac842a043a9f982bb594db268901b9c46"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_particles.html#ac842a043a9f982bb594db268901b9c46">Init</a> (int a1, int a2, int a3, int a4, asMeshCardVertex a5)</td></tr>
-<tr class="separator:ac842a043a9f982bb594db268901b9c46"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adef0a43a4f4df14606ac62bb51eb5fb5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_particles.html#adef0a43a4f4df14606ac62bb51eb5fb5">Init</a> (int count, int wt, int ht)</td></tr>
+<tr class="separator:adef0a43a4f4df14606ac62bb51eb5fb5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8b9e91bf57872d238b8cc5eb9d3df705"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_particles.html#a8b9e91bf57872d238b8cc5eb9d3df705">Reset</a> ()</td></tr>
 <tr class="separator:a8b9e91bf57872d238b8cc5eb9d3df705"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad0dd8c69d49b2178ba8331eb31eb403c"><td class="memItemLeft" align="right" valign="top">byte&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_particles.html#ad0dd8c69d49b2178ba8331eb31eb403c">Cull</a> (byte)</td></tr>
+<tr class="separator:ad0dd8c69d49b2178ba8331eb31eb403c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae69af24087567e159131bae178faa4d2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_particles.html#ae69af24087567e159131bae178faa4d2">SetTexture</a> (char a1)</td></tr>
 <tr class="separator:ae69af24087567e159131bae178faa4d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -147,8 +143,26 @@ Properties</h2></td></tr>
 
 </div>
 </div>
-<a id="ac842a043a9f982bb594db268901b9c46"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac842a043a9f982bb594db268901b9c46">&#9670;&nbsp;</a></span>Init()</h2>
+<a id="ad0dd8c69d49b2178ba8331eb31eb403c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad0dd8c69d49b2178ba8331eb31eb403c">&#9670;&nbsp;</a></span>Cull()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">byte asParticles.Cull </td>
+          <td>(</td>
+          <td class="paramtype">byte&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="adef0a43a4f4df14606ac62bb51eb5fb5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adef0a43a4f4df14606ac62bb51eb5fb5">&#9670;&nbsp;</a></span>Init()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -157,31 +171,19 @@ Properties</h2></td></tr>
           <td class="memname">void asParticles.Init </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>a1</em>, </td>
+          <td class="paramname"><em>count</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>a2</em>, </td>
+          <td class="paramname"><em>wt</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>a3</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>a4</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">asMeshCardVertex&#160;</td>
-          <td class="paramname"><em>a5</em>&#160;</td>
+          <td class="paramname"><em>ht</em>&#160;</td>
         </tr>
         <tr>
           <td></td>

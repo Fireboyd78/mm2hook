@@ -6,6 +6,6 @@ namespace MM2
 {
     template<>
     void luaAddModule<module_level>(LuaState L) {
-
+        luaBind<lvlLevel>(L);
     }
 }

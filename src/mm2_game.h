@@ -199,11 +199,12 @@ namespace MM2
         AGE_API void SetMessage(LPCSTR message)             { ageHook::Thunk<0x42E240>::Call<void>(this, message); };
         AGE_API void PostChatMessage(LPCSTR message)        { ageHook::Thunk<0x42D280>::Call<void>(this, message); };
 
-        static void BindLua(luaClassBinder<mmHUD> *lc) {
-            asNode::BindLua(lc);
-            lc->addPropertyReadOnly("CDPlayer", &getCdPlayer);
-            lc->addFunction("SetMessage", static_cast<void (mmHUD::*)(LPCSTR, float, int)>(&SetMessage));
-            lc->addFunction("PostChatMessage", &PostChatMessage);
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginExtendClass<mmHUD, asNode>("mmHUD")
+                .addPropertyReadOnly("CDPlayer", &getCdPlayer)
+                .addFunction("SetMessage", static_cast<void (mmHUD::*)(LPCSTR, float, int)>(&SetMessage))
+                .addFunction("PostChatMessage", &PostChatMessage)
+                .endClass();
         }
     };
 
@@ -275,6 +276,54 @@ namespace MM2
             return getPtr<camAICS>(this, 0x1B08);
         }
 
+        inline camViewCS* getCamView(void) const {
+            return *getPtr<camViewCS*>(this, 0xE2C);
+        }
+
+        inline camTrackCS* getFarCam(void) const {
+            return getPtr<camTrackCS>(this, 0x10F8);
+        }
+
+        inline camTrackCS* getNearCam(void) const {
+            return getPtr<camTrackCS>(this, 0xE60);
+        }
+
+        inline camTrackCS* getIndCam(void) const {
+            return getPtr<camTrackCS>(this, 0x1390);
+        }
+
+        inline camPovCS* getPovCam(void) const {
+            return getPtr<camPovCS>(this, 0x1628);
+        }
+
+        inline camPovCS* getDashCam(void) const {
+            return getPtr<camPovCS>(this, 0x1770);
+        }
+
+        inline camPointCS* getPointCam(void) const {
+            return getPtr<camPointCS>(this, 0x1C2C);
+        }
+
+        inline camCarCS* getPreCam(void) const {
+            return getPtr<camCarCS>(this, 0x1D70);
+        }
+
+        inline camCarCS* getPostCam(void) const {
+            return getPtr<camCarCS>(this, 0x1E98);
+        }
+
+        inline camCarCS* getPolarCamOne(void) const {
+            return getPtr<camCarCS>(this, 0x18B8);
+        }
+
+        inline camCarCS* getPolarCamTwo(void) const {
+            return getPtr<camCarCS>(this, 0x19E0);
+        }
+
+        inline camCarCS* getPolarCamThree(void) const {
+            return getPtr<camCarCS>(this, 0x1FBC);
+        }
+
         AGE_API void EnableRegen(bool a1)                   { return ageHook::Thunk<0x406160>::Call<void>(this, a1); }
         AGE_API float FilterSteering(float a1)              { return ageHook::Thunk<0x404C90>::Call<float>(this, a1); }
         AGE_API bool IsMaxDamaged()                         { return ageHook::Thunk<0x406140>::Call<bool>(this); }
@@ -303,7 +352,20 @@ namespace MM2
                 .addPropertyReadOnly("Car", &getCar)
                 .addPropertyReadOnly("HUD", &getHUD)
                 .addPropertyReadOnly("Hudmap", &getHudmap)
-                .addPropertyReadOnly("Freecam", &getFreecam)
+                .addPropertyReadOnly("CamView", &getCamView)
+                .addPropertyReadOnly("FreeCam", &getFreecam)
+                .addPropertyReadOnly("FarCam", &getFarCam)
+                .addPropertyReadOnly("NearCam", &getNearCam)
+                .addPropertyReadOnly("IndCam", &getIndCam)
+                .addPropertyReadOnly("DashCam", &getDashCam)
+                .addPropertyReadOnly("PovCam", &getPovCam)
+                .addPropertyReadOnly("PointCam", &getPointCam)
+
+                //.addPropertyReadOnly("PreCam", &getPreCam)
+                //.addPropertyReadOnly("PostCam", &getPostCam)
+                //.addPropertyReadOnly("PolarCamOne", &getPolarCamOne)
+                //.addPropertyReadOnly("PolarCamTwo", &getPolarCamTwo)
+                //.addPropertyReadOnly("PolarCamThree", &getPolarCamThree)
 
                 //functions
                 .addFunction("EnableRegen", &EnableRegen)
@@ -325,7 +387,7 @@ namespace MM2
     void luaAddModule<module_game>(LuaState L) {
         luaBind<mmGame>(L);
         luaBind<mmGameManager>(L);
-        luaBind<mmHUD>(L, "mmHUD");
+        luaBind<mmHUD>(L);
         luaBind<mmCDPlayer>(L);
         luaBind<mmHudMap>(L);
         luaBind<mmPlayer>(L);

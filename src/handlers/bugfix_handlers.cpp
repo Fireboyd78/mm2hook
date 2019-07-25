@@ -388,13 +388,6 @@ ageHook::Type<asParticles*> sm_RainParticles(0x62770C);
 ageHook::Type<bool> sm_EnablePVS(0x62B070);
 bool cityLevelBugfixHandler::IsMirrorDrawing = false;
 
-void cityLevelBugfixHandler::Update() {
-    if (ROOT->IsPaused())
-        return;
-
-    ageHook::Thunk<0x465680>::Call<void>(this);
-}
-
 Stream* cityLevelBugfixHandler::OpenPvsStream(const char * folder, const char * file, const char * extension, bool a4, bool a5) {
     //open stream
     auto stream = ageHook::StaticThunk<0x4C58C0>::Call<Stream*>(folder, file, extension, a4, a5);
@@ -431,12 +424,6 @@ void cityLevelBugfixHandler::Install() {
     InstallCallback("cityLevel::Load", "Disables PVS when it doesn't exist.",
         &OpenPvsStream, {
             cbHook<CALL>(0x4440E8), // cityLevel::Load
-        }
-    );
-
-    InstallCallback("lvlLevel::Update", "Allows for control over when to clear callbacks.",
-        &Update, {
-            cbHook<JMP>(0x465460),
         }
     );
 

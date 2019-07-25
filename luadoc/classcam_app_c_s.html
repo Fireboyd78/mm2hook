@@ -97,9 +97,15 @@ Inheritance diagram for camAppCS:</div>
  <div class="center">
   <img src="classcam_app_c_s.png" usemap="#camAppCS_map" alt=""/>
   <map id="camAppCS_map" name="camAppCS_map">
-<area href="classcam_base_c_s.html" alt="camBaseCS" shape="rect" coords="0,56,80,80"/>
-<area href="classcam_car_c_s.html" alt="camCarCS" shape="rect" coords="0,168,80,192"/>
-<area href="classcam_a_i_c_s.html" alt="camAICS" shape="rect" coords="0,224,80,248"/>
+<area href="classcam_base_c_s.html" alt="camBaseCS" shape="rect" coords="141,168,225,192"/>
+<area href="classas_node.html" alt="asNode" shape="rect" coords="141,112,225,136"/>
+<area href="classas_cullable.html" alt="asCullable" shape="rect" coords="141,56,225,80"/>
+<area href="class_base.html" alt="Base" shape="rect" coords="141,0,225,24"/>
+<area href="classcam_car_c_s.html" alt="camCarCS" shape="rect" coords="141,280,225,304"/>
+<area href="classcam_a_i_c_s.html" alt="camAICS" shape="rect" coords="0,336,84,360"/>
+<area href="classcam_point_c_s.html" alt="camPointCS" shape="rect" coords="94,336,178,360"/>
+<area href="classcam_pov_c_s.html" alt="camPovCS" shape="rect" coords="188,336,272,360"/>
+<area href="classcam_track_c_s.html" alt="camTrackCS" shape="rect" coords="282,336,366,360"/>
   </map>
 </div></div>
 <table class="memberdecls">
@@ -108,6 +114,47 @@ Additional Inherited Members</h2></td></tr>
 <tr class="inherit_header pub_methods_classcam_base_c_s"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classcam_base_c_s')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classcam_base_c_s.html">camBaseCS</a></td></tr>
 <tr class="memitem:a4264d6ed154bd242f0106ec605e61050 inherit pub_methods_classcam_base_c_s"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcam_base_c_s.html#a4264d6ed154bd242f0106ec605e61050">UpdateView</a> ()</td></tr>
 <tr class="separator:a4264d6ed154bd242f0106ec605e61050 inherit pub_methods_classcam_base_c_s"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classas_node"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classas_node')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classas_node.html">asNode</a></td></tr>
+<tr class="memitem:a9a40884006885a8ba76553cfbe76da38 inherit pub_methods_classas_node"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_node.html#a9a40884006885a8ba76553cfbe76da38">AddChild</a> (<a class="el" href="classas_node.html">asNode</a> child)</td></tr>
+<tr class="separator:a9a40884006885a8ba76553cfbe76da38 inherit pub_methods_classas_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26e87c1a854e6eb42eecb7dfa9f83091 inherit pub_methods_classas_node"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_node.html#a26e87c1a854e6eb42eecb7dfa9f83091">InsertChild</a> (int index, <a class="el" href="classas_node.html">asNode</a> child)</td></tr>
+<tr class="separator:a26e87c1a854e6eb42eecb7dfa9f83091 inherit pub_methods_classas_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae11d78b4c13efacfc5bac9baac034774 inherit pub_methods_classas_node"><td class="memItemLeft" align="right" valign="top">object &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_node.html#ae11d78b4c13efacfc5bac9baac034774">RemoveChild</a> ()</td></tr>
+<tr class="separator:ae11d78b4c13efacfc5bac9baac034774 inherit pub_methods_classas_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d993e3c6ca359cea90f6bad3014181c inherit pub_methods_classas_node"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_node.html#a4d993e3c6ca359cea90f6bad3014181c">RemoveAllChildren</a> ()</td></tr>
+<tr class="separator:a4d993e3c6ca359cea90f6bad3014181c inherit pub_methods_classas_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e2a97198a3793ade9814a8706b2d96c inherit pub_methods_classas_node"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classas_node.html">asNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_node.html#a9e2a97198a3793ade9814a8706b2d96c">GetChild</a> (int index)</td></tr>
+<tr class="separator:a9e2a97198a3793ade9814a8706b2d96c inherit pub_methods_classas_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a352c1beac013be88eb82790bdd0eacb9 inherit pub_methods_classas_node"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classas_node.html">asNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_node.html#a352c1beac013be88eb82790bdd0eacb9">GetNext</a> ()</td></tr>
+<tr class="separator:a352c1beac013be88eb82790bdd0eacb9 inherit pub_methods_classas_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6e6a706d159bfa208d074f234c0523f inherit pub_methods_classas_node"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classas_node.html">asNode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_node.html#ab6e6a706d159bfa208d074f234c0523f">GetLastChild</a> ()</td></tr>
+<tr class="separator:ab6e6a706d159bfa208d074f234c0523f inherit pub_methods_classas_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9b29e208b2db72ee8a2f0e0ae87cb57d inherit pub_methods_classas_node"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_node.html#a9b29e208b2db72ee8a2f0e0ae87cb57d">NumChildren</a> ()</td></tr>
+<tr class="separator:a9b29e208b2db72ee8a2f0e0ae87cb57d inherit pub_methods_classas_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade27d0ad45693eaffc642a33ce7ccb59 inherit pub_methods_classas_node"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_node.html#ade27d0ad45693eaffc642a33ce7ccb59">SwitchTo</a> (int index)</td></tr>
+<tr class="separator:ade27d0ad45693eaffc642a33ce7ccb59 inherit pub_methods_classas_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6edd9e4fe7489005ec44ef8ad2fdf0f1 inherit pub_methods_classas_node"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_node.html#a6edd9e4fe7489005ec44ef8ad2fdf0f1">Update</a> ()</td></tr>
+<tr class="separator:a6edd9e4fe7489005ec44ef8ad2fdf0f1 inherit pub_methods_classas_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4dad99219e0088ebcd3cbbe7c94aeab0 inherit pub_methods_classas_node"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_node.html#a4dad99219e0088ebcd3cbbe7c94aeab0">Reset</a> ()</td></tr>
+<tr class="separator:a4dad99219e0088ebcd3cbbe7c94aeab0 inherit pub_methods_classas_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a760e63e488cd2be28460bf689c94ee24 inherit pub_methods_classas_node"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_node.html#a760e63e488cd2be28460bf689c94ee24">ResChange</a> (int width, int height)</td></tr>
+<tr class="separator:a760e63e488cd2be28460bf689c94ee24 inherit pub_methods_classas_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac6fa6274e332a8a99b7fb6f632127d6d inherit pub_methods_classas_node"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_node.html#ac6fa6274e332a8a99b7fb6f632127d6d">UpdatePaused</a> ()</td></tr>
+<tr class="separator:ac6fa6274e332a8a99b7fb6f632127d6d inherit pub_methods_classas_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3096f8002a64fba63e030eee96421721 inherit pub_methods_classas_node"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_node.html#a3096f8002a64fba63e030eee96421721">FileIO</a> (datParser parser)</td></tr>
+<tr class="separator:a3096f8002a64fba63e030eee96421721 inherit pub_methods_classas_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a59d90dce989db0d4ad2d84d274c7b517 inherit pub_methods_classas_node"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_node.html#a59d90dce989db0d4ad2d84d274c7b517">AfterLoad</a> ()</td></tr>
+<tr class="separator:a59d90dce989db0d4ad2d84d274c7b517 inherit pub_methods_classas_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1807109c9e547b0d544c1d8b85c2eb25 inherit pub_methods_classas_node"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_node.html#a1807109c9e547b0d544c1d8b85c2eb25">BeforeSave</a> ()</td></tr>
+<tr class="separator:a1807109c9e547b0d544c1d8b85c2eb25 inherit pub_methods_classas_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a493e7fad3df6885fd479c3f138ab18bb inherit pub_methods_classas_node"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_node.html#a493e7fad3df6885fd479c3f138ab18bb">Save</a> ()</td></tr>
+<tr class="separator:a493e7fad3df6885fd479c3f138ab18bb inherit pub_methods_classas_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af99e3a21fd3595854a10633d66b42e59 inherit pub_methods_classas_node"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_node.html#af99e3a21fd3595854a10633d66b42e59">Load</a> ()</td></tr>
+<tr class="separator:af99e3a21fd3595854a10633d66b42e59 inherit pub_methods_classas_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a36e0800c4243bd1b8229b78d37a29bad inherit pub_methods_classas_node"><td class="memItemLeft" align="right" valign="top">virtual char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_node.html#a36e0800c4243bd1b8229b78d37a29bad">GetClassName</a> ()</td></tr>
+<tr class="separator:a36e0800c4243bd1b8229b78d37a29bad inherit pub_methods_classas_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad282a603905f272d1c96f5e5e34f685c inherit pub_methods_classas_node"><td class="memItemLeft" align="right" valign="top">virtual char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_node.html#ad282a603905f272d1c96f5e5e34f685c">GetDirName</a> ()</td></tr>
+<tr class="separator:ad282a603905f272d1c96f5e5e34f685c inherit pub_methods_classas_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header properties_classcam_base_c_s"><td colspan="2" onclick="javascript:toggleInherit('properties_classcam_base_c_s')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="classcam_base_c_s.html">camBaseCS</a></td></tr>
 <tr class="memitem:a3d234b700da333e333445ae6ace01fdf inherit properties_classcam_base_c_s"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcam_base_c_s.html#a3d234b700da333e333445ae6ace01fdf">FOV</a><code> [get, set]</code></td></tr>
 <tr class="separator:a3d234b700da333e333445ae6ace01fdf inherit properties_classcam_base_c_s"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -115,6 +162,11 @@ Additional Inherited Members</h2></td></tr>
 <tr class="separator:a9c8d520547f8b21600aadb6a3d89d951 inherit properties_classcam_base_c_s"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a482ce5b03e1d4e9a2091295c4a26fbb5 inherit properties_classcam_base_c_s"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_matrix34.html">Matrix34</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcam_base_c_s.html#a482ce5b03e1d4e9a2091295c4a26fbb5">Matrix</a><code> [get]</code></td></tr>
 <tr class="separator:a482ce5b03e1d4e9a2091295c4a26fbb5 inherit properties_classcam_base_c_s"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header properties_classas_node"><td colspan="2" onclick="javascript:toggleInherit('properties_classas_node')"><img src="closed.png" alt="-"/>&#160;Properties inherited from <a class="el" href="classas_node.html">asNode</a></td></tr>
+<tr class="memitem:ae269d0b7fe7be1b7646c93faf3348972 inherit properties_classas_node"><td class="memItemLeft" align="right" valign="top">char&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_node.html#ae269d0b7fe7be1b7646c93faf3348972">Name</a><code> [get, set]</code></td></tr>
+<tr class="separator:ae269d0b7fe7be1b7646c93faf3348972 inherit properties_classas_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ff40dad538dc61b09f85474b301b238 inherit properties_classas_node"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classas_node.html#a5ff40dad538dc61b09f85474b301b238">Active</a><code> [get, set]</code></td></tr>
+<tr class="separator:a5ff40dad538dc61b09f85474b301b238 inherit properties_classas_node"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>camAppCS.cs</li>
