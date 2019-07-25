@@ -87,7 +87,6 @@ namespace MM2
                 .addProperty("Variant", &getVariant, &setVariant)
 
                 //functions
-                .addFunction("GetPosition", &GetPosition)
                 .addFunction("Reset", &Reset)
                 .addFunction("BreakElectrics", &BreakElectrics)
                 .addFunction("ClearDamage", &ClearDamage)
