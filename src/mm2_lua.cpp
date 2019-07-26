@@ -182,13 +182,11 @@ void MM2Lua::Initialize() {
         L.pop();
 
         LogFile::WriteLine("Setting lfs path...");
-
         char execPath[MAX_PATH];
         GetModuleFileNameA(NULL, execPath, sizeof(execPath));
         PathRemoveFileSpecA(execPath);
 
-        string_buf<MAX_PATH+13> luaCmdBuff("lfs.chdir('%s')", execPath);
-        SendCommand((LPCSTR)luaCmdBuff);
+        LuaRef(L, "lfs").get("chdir").call(execPath);
         
         LogFile::WriteLine("Loading main script...");
         LoadMainScript();
