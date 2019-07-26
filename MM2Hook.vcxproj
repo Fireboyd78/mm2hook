@@ -96,7 +96,7 @@
       <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>
       <FullProgramDatabaseFile>true</FullProgramDatabaseFile>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dxguid.lib;dbghelp.lib;discord-rpc.lib;$(DX7Libs);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;dxguid.lib;dbghelp.lib;discord-rpc.lib;shlwapi.lib;$(DX7Libs);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <!--
@@ -105,6 +105,7 @@
   <ItemGroup>
     <ClInclude Include="src\handlers\debug_handlers.h" />
     <ClInclude Include="src\handlers\lua_drawable.h" />
+    <ClInclude Include="src\luafilesystem\lfs.h" />
     <ClInclude Include="src\mm2_effects.h" />
     <ClInclude Include="src\events\dispatcher.h" />
     <ClInclude Include="src\mm2_particle.h" />
@@ -315,6 +316,7 @@
   <ItemGroup>
     <ClCompile Include="src\handlers\debug_handlers.cpp" />
     <ClCompile Include="src\handlers\lua_drawable.cpp" />
+    <ClCompile Include="src\luafilesystem\lfs.c" />
     <ClCompile Include="src\mm2_effects.cpp" />
     <ClCompile Include="src\events\dispatcher.cpp" />
     <ClCompile Include="src\mm2_particle.cpp" />

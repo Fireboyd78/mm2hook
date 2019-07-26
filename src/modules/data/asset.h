@@ -30,6 +30,7 @@ namespace MM2
         static Stream * Create(char const *,char const *,bool);
         static Stream * Create(char const *,char const *,char const *,bool);
         */
+        static ageHook::Type<char *> sm_Path;
 
         AGE_API static void FullPath(char *buffer, int length, LPCSTR directory, LPCSTR filename) {
             $::datAssetManager::FullPath$1(buffer, length, directory, filename);

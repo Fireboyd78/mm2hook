@@ -78,6 +78,9 @@
     <Filter Include="Source Files\modules\vehicle">
       <UniqueIdentifier>{48324D4D-4F4F-534B-5543-4B53FB78000D}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\luafilesystem">
+      <UniqueIdentifier>{996e8999-c87f-48de-a290-3123c99b9bb6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\lua\lapi.h">
@@ -848,6 +851,9 @@
     <ClInclude Include="src\handlers\lua_drawable.h">
       <Filter>Source Files\handlers</Filter>
     </ClInclude>
+    <ClInclude Include="src\luafilesystem\lfs.h">
+      <Filter>Source Files\luafilesystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
@@ -1122,6 +1128,9 @@
     </ClCompile>
     <ClCompile Include="src\handlers\lua_drawable.cpp">
       <Filter>Source Files\handlers</Filter>
+    </ClCompile>
+    <ClCompile Include="src\luafilesystem\lfs.c">
+      <Filter>Source Files\luafilesystem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

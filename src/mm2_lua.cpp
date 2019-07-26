@@ -1,6 +1,7 @@
 #include "mm2.h"
 #include "mm2_lua.h"
 #include "mm2_network.h"
+#include "luafilesystem/lfs.h"
 
 using namespace LuaIntf;
 using namespace MM2;
@@ -64,7 +65,7 @@ LUAMOD_API int luaopen_MM2(lua_State *L)
 
     luaAddModule_LogFile(modL);
     luaAddModule_Vector(modL);
-
+    
     // register all Lua modules
     // empty modules will be safely ignored
     // note that order matters. any beginExtendClass<>
@@ -177,8 +178,18 @@ void MM2Lua::Initialize() {
 
         L.openLibs();
         L.require("MM2", luaopen_MM2);
+        L.require("lfs", luaopen_lfs);
         L.pop();
 
+        LogFile::WriteLine("Setting lfs path...");
+
+        char execPath[MAX_PATH];
+        GetModuleFileNameA(NULL, execPath, sizeof(execPath));
+        PathRemoveFileSpecA(execPath);
+
+        string_buf<MAX_PATH+13> luaCmdBuff("lfs.chdir('%s')", execPath);
+        SendCommand((LPCSTR)luaCmdBuff);
+        
         LogFile::WriteLine("Loading main script...");
         LoadMainScript();
     }
