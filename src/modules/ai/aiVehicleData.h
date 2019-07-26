@@ -41,8 +41,7 @@ namespace MM2
         //lua helpers
         Vector3* GetWheelPosition(int id) {
             //clamp
-            if (id > 5)
-                id = 5;
+            if (id > 5) id = 5;
 
             //
             return &WheelPositions[id];
@@ -50,8 +49,7 @@ namespace MM2
 
         void SetWheelPosition(int id, Vector3* position) {
             //clamp
-            if (id > 5)
-                id = 5;
+            if (id > 5) id = 5;
 
             auto wheelPosPtr = &WheelPositions[id];
             wheelPosPtr->X = position->X;
@@ -88,6 +86,8 @@ namespace MM2
                 .endClass();
         }
     };
+
+    ASSERT_SIZEOF(aiVehicleData, 0xBC);
 
     // Lua initialization
 
