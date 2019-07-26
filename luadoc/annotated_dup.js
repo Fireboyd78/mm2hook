@@ -4,7 +4,7 @@ var annotated_dup =
     [ "aiObstacle", "classai_obstacle.html", null ],
     [ "aiVehicle", "classai_vehicle.html", null ],
     [ "aiVehicleAmbient", "classai_vehicle_ambient.html", "classai_vehicle_ambient" ],
-    [ "aiVehicleData", "classai_vehicle_data.html", null ],
+    [ "aiVehicleData", "classai_vehicle_data.html", "classai_vehicle_data" ],
     [ "aiVehicleInstance", "classai_vehicle_instance.html", "classai_vehicle_instance" ],
     [ "aiVehicleSpline", "classai_vehicle_spline.html", "classai_vehicle_spline" ],
     [ "asBirthRule", "classas_birth_rule.html", "classas_birth_rule" ],

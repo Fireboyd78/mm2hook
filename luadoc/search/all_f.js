@@ -20,5 +20,7 @@ var searchData=
   ['rotateaboutaxis',['RotateAboutAxis',['../class_vector3.html#aa05311921f9f7926adc993383c60acdb',1,'Vector3']]],
   ['rotatex',['RotateX',['../class_vector3.html#a9ce9099a93476e85ed91294c073974fe',1,'Vector3']]],
   ['rotatey',['RotateY',['../class_vector3.html#a36201474eefc9c92b3d60c7264e221f5',1,'Vector3']]],
-  ['rotatez',['RotateZ',['../class_vector3.html#a680f1b75d3fb6bb3326b8e39632aa5d0',1,'Vector3']]]
+  ['rotatez',['RotateZ',['../class_vector3.html#a680f1b75d3fb6bb3326b8e39632aa5d0',1,'Vector3']]],
+  ['rubberdamp',['RubberDamp',['../classai_vehicle_data.html#a4c68dfaa18b931806ddbd9cfc6fd8a7b',1,'aiVehicleData']]],
+  ['rubberspring',['RubberSpring',['../classai_vehicle_data.html#a4afd0033bc817548bbba22910f99650e',1,'aiVehicleData']]]
 ];

@@ -38,6 +38,7 @@ var searchData=
   ['setvariant',['SetVariant',['../classlvl_instance.html#a99efcb541d95d73174644efe0e5026e7',1,'lvlInstance']]],
   ['setvel',['SetVel',['../classcam_point_c_s.html#ae6dbf61bfdcaa1be81be2b93be4afb5e',1,'camPointCS']]],
   ['setvisible',['SetVisible',['../classveh_car_model.html#a81a6350de200f570f3b076d79face0ae',1,'vehCarModel']]],
+  ['setwheelposition',['SetWheelPosition',['../classai_vehicle_data.html#afdba9cb05f5216d5c61c6e62ce87bb2d',1,'aiVehicleData']]],
   ['setwidefov',['SetWideFOV',['../classmm_player.html#a285776db80e77224782b1d5714032725',1,'mmPlayer']]],
   ['setzoomin',['SetZoomIn',['../classmm_hud_map.html#ae481df57644aeae72dd7e3b54b2492a1',1,'mmHudMap']]],
   ['setzread',['SetZRead',['../classas_mesh_set_form.html#add5b9a307e5fbf5b21d2678e6d467a79',1,'asMeshSetForm']]],

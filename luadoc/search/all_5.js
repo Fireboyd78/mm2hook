@@ -13,5 +13,6 @@ var searchData=
   ['fps',['FPS',['../classdat_time_manager.html#a5094f2376adc37b5c6aeb6fb110a2a19',1,'datTimeManager']]],
   ['framecount',['FrameCount',['../classdat_time_manager.html#ada06457698ec3bb7caaf4b2b3d9ff0aa',1,'datTimeManager']]],
   ['freecam',['FreeCam',['../classmm_player.html#a0a38faa110fc4f88ea43b3d99d68c14b',1,'mmPlayer']]],
+  ['friction',['Friction',['../classai_vehicle_data.html#a197715dacc64ed855c7986e61679dd36',1,'aiVehicleData']]],
   ['frommatrix34',['FromMatrix34',['../class_matrix44.html#ad7ec25f01d5fe66d16f71c9f2bde1643',1,'Matrix44']]]
 ];

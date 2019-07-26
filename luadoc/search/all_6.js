@@ -32,6 +32,7 @@ var searchData=
   ['getroom',['GetRoom',['../classlvl_ai_map.html#a3f56d860c53430ff55869bbbbbd0adb3',1,'lvlAiMap']]],
   ['getvelocity',['GetVelocity',['../classlvl_instance.html#ae4d797a18499c71abff7885c4d3d055c',1,'lvlInstance']]],
   ['getvisible',['GetVisible',['../classveh_car_model.html#aef11a84d8ac6e9355f137e3823fcbcdd',1,'vehCarModel']]],
+  ['getwheelposition',['GetWheelPosition',['../classai_vehicle_data.html#adafd6728de53e979d86b6d4ccf9f27b0',1,'aiVehicleData']]],
   ['getzoomin',['GetZoomIn',['../classmm_hud_map.html#a97179206d35f813db061bfd28b20bc2e',1,'mmHudMap']]],
   ['globals',['Globals',['../class_globals.html',1,'']]],
   ['gravity',['Gravity',['../classas_birth_rule.html#a516e8640f9b3d07eb3400a5d7577ac4e',1,'asBirthRule']]]

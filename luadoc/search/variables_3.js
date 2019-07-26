@@ -3,6 +3,7 @@ var searchData=
   ['dalpha',['DAlpha',['../classas_birth_rule.html#ae25d64deee460a54667e53aa8ac3e019',1,'asBirthRule']]],
   ['dalphavar',['DAlphaVar',['../classas_birth_rule.html#ac1b598ddb5919574e28566f39ba8c33a',1,'asBirthRule']]],
   ['damp',['Damp',['../classas_birth_rule.html#af2b39d9caa7b45cdbb609d354cb2fa4e',1,'asBirthRule']]],
+  ['damping',['Damping',['../classai_vehicle_data.html#a1c991ea7bfe265d51f41262732d3e0c2',1,'aiVehicleData']]],
   ['dampvar',['DampVar',['../classas_birth_rule.html#a0098373041c10d634879df976159333d',1,'asBirthRule']]],
   ['dradius',['DRadius',['../classas_birth_rule.html#a31619a4d2f96f95661a55342e1ffdd2a',1,'asBirthRule']]],
   ['dradiusvar',['DRadiusVar',['../classas_birth_rule.html#aab232fb22a5ccbff02313c59d69a82fc',1,'asBirthRule']]],

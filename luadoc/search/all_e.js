@@ -30,5 +30,6 @@ var searchData=
   ['prevtrack',['PrevTrack',['../classmm_c_d_player.html#a45fe6c44286f4a51af5e473047c8f4c7',1,'mmCDPlayer']]],
   ['print',['Print',['../class_matrix44.html#a8efd29b72c0ca3448ab6a3101fabfe97',1,'Matrix44']]],
   ['processchat',['ProcessChat',['../classmm_popup.html#a32967a2fb209db0e4963462ca82ebbc2',1,'mmPopup']]],
+  ['ptxthresh',['PtxThresh',['../classai_vehicle_data.html#add4d5a1c365db6d9265a25b11c18162c',1,'aiVehicleData']]],
   ['putch',['PutCh',['../class_stream.html#ac776293393ce00acc213126101bd7e51',1,'Stream']]]
 ];

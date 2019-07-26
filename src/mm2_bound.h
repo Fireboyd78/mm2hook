@@ -16,6 +16,7 @@ namespace MM2
     class phBoundGeometry;
     class phBound;
     class phBoundBox;
+    class dgBoundBox;
 
     //TODO
     class phBoundGeometry {
@@ -65,6 +66,10 @@ namespace MM2
     };
 
     class phBoundBox : public phBound {
+
+    };
+
+    class dgBoundBox : public phBoundBox {
 
     };
 
