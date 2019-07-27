@@ -78,7 +78,7 @@ namespace MM2
     public:
         AGE_API camAppCS(void) {
             PUSH_VTABLE();
-            ageHook::Thunk<0x522B50>::Call<void>(this);
+            ageHook::Thunk<0x521F70>::Call<void>(this);
             POP_VTABLE();
         };
 
@@ -108,13 +108,13 @@ namespace MM2
     public:
         AGE_API camCarCS(void) {
             PUSH_VTABLE();
-            ageHook::Thunk<0x520A30>::Call<void>(this);
+            ageHook::Thunk<0x521470>::Call<void>(this);
             POP_VTABLE();
         };
 
         virtual AGE_API ~camCarCS(void) {
             PUSH_VTABLE();
-            ageHook::Thunk<0x406810>::Call<void>(this);
+            ageHook::Thunk<0x521490>::Call<void>(this);
             POP_VTABLE();
         };
 
@@ -224,7 +224,7 @@ namespace MM2
     public:
         AGE_API camTrackCS(void) {
             PUSH_VTABLE();
-            ageHook::Thunk<0x51D798>::Call<void>(this);
+            ageHook::Thunk<0x51D770>::Call<void>(this);
             POP_VTABLE();
         };
 
@@ -315,6 +315,11 @@ namespace MM2
             POP_VTABLE();
         };
 
+        //
+        inline camCarCS* getCurrentCamera(void) const {
+            return *getPtr<camCarCS*>(this, 0x30);
+        }
+
         //overrides
         AGE_API void Update() override                                             { ageHook::Thunk<0x51FFC0>::Call<void>(this); }
         AGE_API void Reset() override                                              { ageHook::Thunk<0x520010>::Call<void>(this); }
@@ -359,10 +364,16 @@ namespace MM2
         //lua
         //.addFunction("RemoveChild", static_cast<int(asNode::*)(asNode* child)>(&RemoveChild))
 
+        bool isCurrentCamera(camCarCS* cam) {
+            return getCurrentCamera() == cam;
+        }
+
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<camViewCS, asNode>("camViewCS")
                 //properties
                 //.addStaticFunction("Instance", &Instance)
+                //.addPropertyReadOnly("CurrentCamera", &getCurrentCamera) //Access violation no RTTI!?!?
+                .addFunction("IsCurrentCamera", &isCurrentCamera)
                 .addFunction("SetCam", &SetCam)
                 .addFunction("NewCam", static_cast<bool(camViewCS::*)(camCarCS*, int, float)>(&NewCam))
                 .addFunction("Init", &Init)
