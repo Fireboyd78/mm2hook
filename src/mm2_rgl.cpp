@@ -36,9 +36,14 @@ void    MM2::vglEndBatch            (void)                                      
 void    MM2::vglBindTexture         (gfxTexture *texture)                                       { return _StaticThunk<0x4A5BA0>::Call<void>(texture); }
 void    MM2::vglDrawLabel           (const Vector3 &position, const char *text)                 { return _StaticThunk<0x4A5C50>::Call<void>(&position, text); }
 
-template <typename ...TArgs>
-void    MM2::vglDrawLabelf          (const Vector3 &position, const char *format, TArgs ...args)
-                                                                                                { return _StaticThunk<0x4A5D00>::Call<void>(&position, format, args...); }
+void MM2::vglDrawLabelf(const Vector3 &position, const char *format, ...) {
+        va_list va;
+        va_start(va, format);
+        char buffer[256];
+        vsprintf_s(buffer, format, va);
+        vglDrawLabel(position, buffer);
+        va_end(va);
+}
 
 void    MM2::vglSetCloudMap         (const char *texture)                                       { return _StaticThunk<0x4A5D30>::Call<void>(texture); }
 void    MM2::vglSetOffset           (float x, float y, float z)                                 { return _StaticThunk<0x4A5DE0>::Call<void>(x, y, z); }

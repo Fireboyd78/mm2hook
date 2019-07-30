@@ -74,8 +74,7 @@ namespace MM2
     extern void vglBindTexture(gfxTexture *texture);
     extern void vglDrawLabel(const Vector3 &position, const char *text);
 
-    template <typename ...TArgs>
-    extern void vglDrawLabelf(const Vector3 &position, const char *format, TArgs ...args);
+    extern void vglDrawLabelf(const Vector3 &position, const char *format, ...);
 
     extern void vglSetCloudMap(const char *texture);
     extern void vglSetOffset(float x, float y, float z);
