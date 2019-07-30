@@ -8,11 +8,26 @@ namespace MM2
 {
     // Forward declarations
     class aiVehiclePhysics;
+    struct aiRouteNode;
 
     // External declarations
     extern class vehCar;
 
     // Class definitions
+    struct  aiRouteNode
+    {
+        int unk_0x00;
+        Vector3 Position;
+        float Angle;
+        int unk_14;
+        short unk_18;
+        short RoadVertexIndex;
+        short unk_1C;
+        short unk_1E;
+        short unk_20;
+        short unk_22;
+    };
+
 
     class aiVehiclePhysics : public aiVehicle {
     private:

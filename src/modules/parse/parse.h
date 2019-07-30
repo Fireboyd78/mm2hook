@@ -178,6 +178,12 @@ namespace MM2
         };
     };
 
+    //TODO: figure out the inheritance that the compiler 
+    //seems to have completely mess up
+    class datAsciiTokenizer {
+    public:
+    };
+
     // Lua initialization
 
 }
