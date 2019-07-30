@@ -6,6 +6,15 @@
 #include <vector>
 
 static ConfigValue<bool> cfgWheelDebug("WheelsDebug", false);
+static ConfigValue<bool> cfgAiDebug("AIDebug", false);
+
+class aiMapDebugHandler {
+public:
+    void Cull();
+    void Update();
+    void UpdatePaused();
+    static void Install();
+};
 
 class vehWheelDebugHandler {
 public:
