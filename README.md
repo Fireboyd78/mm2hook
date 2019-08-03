@@ -3,6 +3,7 @@ MM2Hook
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/Fireboyd78/mm2hook?branch=master&svg=true)](https://ci.appveyor.com/project/Fireboyd78/mm2hook)
 
 A simple DLL-injection module for hooking into Midtown Madness 2, allowing for further control of the game.
+It also works on Linux using Wine.
 
 Also included are complimentary bug-fixes for random crashes, as well as a fix for the infamous **heap overrun** error.
 
@@ -12,7 +13,7 @@ Also included are complimentary bug-fixes for random crashes, as well as a fix f
  * Console output window
  * Lua scripting
  * Plugins (TODO)
- 
+
  * ### [Discord Rich Presence](https://discordapp.com/rich-presence) Integration:
    * Dynamically updates based on the state of your game (playing a race, cruising around, in the main menu, etc.)
    * Shows a thumbnail picture for default vehicles/cities
@@ -21,9 +22,24 @@ Also included are complimentary bug-fixes for random crashes, as well as a fix f
  
 ## Installation
 1) Grab the latest version [here](https://ci.appveyor.com/project/Fireboyd78/mm2hook/build/artifacts).
-2) **Optional:** Download the latest version of Discord Rich Presence [here](https://github.com/discordapp/discord-rpc/releases/latest), and grab `discord-rpc.dll` from the `win32-dynamic\bin` folder.
+2) **Optional:** Download the latest version of [Discord Rich Presence](https://github.com/discordapp/discord-rpc/releases/latest), and grab `discord-rpc.dll` from the `win32-dynamic\bin` folder.
 3) Place all files in your Midtown Madness 2 installation directory and enjoy!
- 
+
+### Startup Instructions
+Inject `MM2Hook.dll` into `Midtown2.exe` using [this](https://github.com/Arvanaghi/Windows-DLL-Injector/) or any similar application.
+
+Example:
+```
+start Midtown2
+DLL_Injector Midtown2.exe MM2Hook.dll
+```
+For testing: `DLL_Injector.exe Midtown2.exe MM2HookLoader.dll`
+
+If `DLL_Injector` throws errors copy and rename these files:
+ * `vcruntime140.dll` (system32) -> `vcruntime140d.dll` (MM2 installation directory)
+ * `ucrtbase.dll` (system32) -> `ucrtbased.dll` (MM2 installation directory)
+
+
 ## Contributing
 If you'd like to contribute to the project, please [fork](https://help.github.com/articles/about-forks/) the project and submit a [pull request](https://help.github.com/articles/about-pull-requests/).
  
