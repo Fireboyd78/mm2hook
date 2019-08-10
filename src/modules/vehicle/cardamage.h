@@ -45,11 +45,41 @@ namespace MM2
             return *getPtr<asParticles*>(this, 0x360);
         }
 
+        inline float getMaxDamage(void) {
+            return *getPtr<float>(this, 0x34);
+        }
+
+        inline void setMaxDamage(float maxDamage) {
+            auto dmgPtr = getPtr<float>(this, 0x34);
+            *dmgPtr = maxDamage;
+        }
+
+        inline float getMedDamage(void) {
+            return *getPtr<float>(this, 0x38);
+        }
+
+        inline void setMedDamage(float medDamage) {
+            auto dmgPtr = getPtr<float>(this, 0x38);
+            *dmgPtr = medDamage;
+        }
+
+        inline float getCurDamage(void) {
+            return *getPtr<float>(this, 0x30);
+        }
+
+        inline void setCurDamage(float curDamage) {
+            auto dmgPtr = getPtr<float>(this, 0x30);
+            *dmgPtr = curDamage;
+        }
+
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<vehCarDamage>("vehCarDamage")
                 .addFunction("Reset", &Reset)
                 .addFunction("AddDamage", &AddDamage)
                 .addFunction("ClearDamage", &ClearDamage)
+                .addProperty("CurDamage", &getCurDamage, &setCurDamage)
+                .addProperty("MedDamage", &getMedDamage, &setMedDamage)
+                .addProperty("MaxDamage", &getMaxDamage, &setMaxDamage)
                 .addPropertyReadOnly("Particles", &getParticles)
                 .addStaticProperty("EngineSmokeRule", [] { return EngineSmokeRule.get(); })
             .endClass();

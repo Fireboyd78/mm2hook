@@ -66,7 +66,7 @@ namespace MM2
         AGE_API void Init(char const* a1, int a2, int a3, bool a4, bool a5)
                                                             { ageHook::Thunk<0x42BE10>::Call<void>(this, a1, a2, a3, a4, a5); }
         AGE_API void InitAudio(char const* a1, int a2)      { ageHook::Thunk<0x42C1F0>::Call<void>(this, a1, a2); }
-        AGE_API void SetDrivable(BOOL a1, BOOL a2)          { ageHook::Thunk<0x42C2C0>::Call<void>(this, a1, a2); }
+        AGE_API void SetDrivable(BOOL a1, int a2)           { ageHook::Thunk<0x42C2C0>::Call<void>(this, a1, a2); }
 
         /*
             dgPhysEntity virtuals
@@ -96,7 +96,7 @@ namespace MM2
                 .addFunction("InitAudio", &InitAudio)
                 .addFunction("Reset", &Reset)
                 .addFunction("ClearDamage", &ClearDamage)
-                .addFunction("SetDrivable", &SetDrivable, LUA_ARGS(bool,bool))
+                .addFunction("SetDrivable", &SetDrivable, LUA_ARGS(bool,int))
                 .addFunction("IsPlayer", &IsPlayer)
             .endClass();
         }

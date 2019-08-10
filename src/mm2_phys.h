@@ -13,6 +13,7 @@ namespace MM2
 
     template<>
     void luaAddModule<module_phys>(LuaState L) {
+        luaBind<phInertialCS>(L);
         luaBind<dgPhysManager>(L);
         luaBind<phJoint>(L);
         luaBind<dgTrailerJoint>(L);
