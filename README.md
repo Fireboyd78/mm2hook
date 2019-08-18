@@ -3,7 +3,6 @@ MM2Hook
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/Fireboyd78/mm2hook?branch=master&svg=true)](https://ci.appveyor.com/project/Fireboyd78/mm2hook)
 
 A simple DLL-injection module for hooking into Midtown Madness 2, allowing for further control of the game.
-It also works on Linux using Wine.
 
 Also included are complimentary bug-fixes for random crashes, as well as a fix for the infamous **heap overrun** error.
 
@@ -25,7 +24,8 @@ Also included are complimentary bug-fixes for random crashes, as well as a fix f
 2) **Optional:** Download the latest version of [Discord Rich Presence](https://github.com/discordapp/discord-rpc/releases/latest), and grab `discord-rpc.dll` from the `win32-dynamic\bin` folder.
 3) Place all files in your Midtown Madness 2 installation directory and enjoy!
 
-### Startup Instructions
+## Startup Instructions
+### Windows
 Inject `MM2Hook.dll` into `Midtown2.exe` using [this](https://github.com/Arvanaghi/Windows-DLL-Injector/) or any similar application.
 
 Example:
@@ -39,6 +39,11 @@ If `DLL_Injector` throws errors copy and rename these files:
  * `vcruntime140.dll` (system32) -> `vcruntime140d.dll` (MM2 installation directory)
  * `ucrtbase.dll` (system32) -> `ucrtbased.dll` (MM2 installation directory)
 
+### Linux/UNIX with Wine
+1) Open `winecfg`
+2) Override the dll `dinput` to `Native then Builtin`
+3) Ensure the `dinput.dll` file from mm2hook is inside your MM2 installation directory
+4) Run the game as usual
 
 ## Contributing
 If you'd like to contribute to the project, please [fork](https://help.github.com/articles/about-forks/) the project and submit a [pull request](https://help.github.com/articles/about-pull-requests/).
