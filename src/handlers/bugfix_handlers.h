@@ -199,3 +199,9 @@ public:
     void Ctor();
     static void Install();
 };
+
+class phBoundBugfixHandler {
+public:
+    void CalculateSphereFromBoundingBox();
+    static void Install();
+};

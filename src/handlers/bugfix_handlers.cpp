@@ -43,6 +43,7 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<BugfixPatchHandler>("Bugfix patches"),
 
     CreateHandler<pedAnimationInstanceHandler>("pedAnimationInstance"),
+    CreateHandler<phBoundBugfixHandler>("phBound"),
 };
 
 /*
@@ -1125,6 +1126,55 @@ void mmPlayerBugfixHandler::Install()
             cbHook<CALL>(0x423A2E),
             cbHook<CALL>(0x427739),
             cbHook<CALL>(0x428469),
+        }
+    );
+}
+
+/* 
+    phBoundBugfixHandler
+*/
+void phBoundBugfixHandler::CalculateSphereFromBoundingBox()
+{
+    //ptrs
+    float*  centerXPtr = getPtr<float>(this, 0x28);
+    float*  centerYPtr = getPtr<float>(this, 0x2C);
+    float*  centerZPtr = getPtr<float>(this, 0x30);
+    float*  bboxMinXPtr = getPtr<float>(this, 0x0C);
+    float*  bboxMinYPtr = getPtr<float>(this, 0x10);
+    float*  bboxMinZPtr = getPtr<float>(this, 0x14);
+    float*  bboxMaxXPtr = getPtr<float>(this, 0x18);
+    float*  bboxMaxYPtr = getPtr<float>(this, 0x1C);
+    float*  bboxMaxZPtr = getPtr<float>(this, 0x20);
+
+    //set center
+    *centerXPtr = (*bboxMaxXPtr - *bboxMinXPtr) * 0.5f + *bboxMinXPtr;
+    *centerYPtr = (*bboxMaxYPtr - *bboxMinYPtr) * 0.5f + *bboxMinYPtr;
+    *centerZPtr = (*bboxMaxZPtr - *bboxMinZPtr) * 0.5f + *bboxMinZPtr;
+
+    //set offset flag
+    if (*centerXPtr != 0.0f || *centerYPtr != 0.0f || *centerZPtr != 0.0f) {
+        BOOL* offsetFlagPtr = getPtr<BOOL>(this, 0x24);
+        *offsetFlagPtr = TRUE;
+    }
+
+    //calculate sphere
+    float sizeX = fmax(fabs(*centerXPtr - *bboxMaxXPtr), fabs(*centerXPtr - *bboxMinXPtr));
+    float sizeY = fmax(fabs(*centerYPtr - *bboxMaxYPtr), fabs(*centerYPtr - *bboxMinYPtr));
+    float sizeZ = fmax(fabs(*centerZPtr - *bboxMaxZPtr), fabs(*centerZPtr - *bboxMinZPtr));
+
+    //set original size multiplied by the value needed to *fully enclose* the bound in the worst case situations
+    float* boundingSpherePtr = getPtr<float>(this, 0x34);
+    *boundingSpherePtr = sqrt(sizeZ * sizeZ + sizeY * sizeY + sizeX * sizeX) * 1.412f;
+}
+
+void phBoundBugfixHandler::Install()
+{
+    InstallCallback("phBound::CalculateSphereFromBoundingBox", "Fix bound sphere calculations causing bad collisions.",
+        &CalculateSphereFromBoundingBox, {
+            cbHook<CALL>(0x480CCC),
+            cbHook<CALL>(0x4842BA),
+            cbHook<CALL>(0x486C31),
+            cbHook<CALL>(0x48712C),
         }
     );
 }
