@@ -1169,12 +1169,14 @@ void phBoundBugfixHandler::CalculateSphereFromBoundingBox()
 
 void phBoundBugfixHandler::Install()
 {
-    InstallCallback("phBound::CalculateSphereFromBoundingBox", "Fix bound sphere calculations causing bad collisions.",
-        &CalculateSphereFromBoundingBox, {
-            cbHook<CALL>(0x480CCC),
-            cbHook<CALL>(0x4842BA),
-            cbHook<CALL>(0x486C31),
-            cbHook<CALL>(0x48712C),
-        }
-    );
+    if (cfgBoundSphereCalculation) {
+        InstallCallback("phBound::CalculateSphereFromBoundingBox", "Fix bound sphere calculations causing bad collisions.",
+            &CalculateSphereFromBoundingBox, {
+                cbHook<CALL>(0x480CCC),
+                cbHook<CALL>(0x4842BA),
+                cbHook<CALL>(0x486C31),
+                cbHook<CALL>(0x48712C),
+            }
+        );
+    }
 }

@@ -3,6 +3,8 @@
 #include "patch.h"
 #include "mm2.h"
 
+static ConfigValue<bool> cfgBoundSphereCalculation("BoundSphereCalculationFix", true);
+
 class gfxImageHandler
 {
 public:
