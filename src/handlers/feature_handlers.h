@@ -13,6 +13,7 @@ static ConfigValue<bool> cfgInstantReplay           ("InstantReplay",           
 static ConfigValue<bool> cfgUseAllParkedCars        ("UseAllParkedCars",        true);
 static ConfigValue<bool> cfgUseAllTrafficColors     ("UseAllTrafficColors",     true);
 static ConfigValue<bool> cfgAmbientSoundsWithMusic  ("AmbientSoundsWithMusic",  true);
+static ConfigValue<bool> cfgAllowInstSpawning       ("AllowSpawnInINSTRooms",   true);
 static ConfigValue<float> cfgFerrySpeedMultiplier   ("FerrySpeedMultiplier",    5.0f);
 
 class asCullManagerHandler {

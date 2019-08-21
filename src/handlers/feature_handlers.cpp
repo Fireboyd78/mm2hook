@@ -1420,6 +1420,12 @@ void mmGameHandler::Install() {
             cbHook<CALL>(0x4131C0), // mmGame::Init
         }
     );
+
+    if (cfgAllowInstSpawning) {
+        InstallPatch("Enables spawning in INST rooms.", { 0x90, 0x90, 0x90, 0x90 }, {
+            0x413C1F,
+            });
+    }
 }
 
 /*
