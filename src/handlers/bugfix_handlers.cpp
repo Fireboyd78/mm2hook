@@ -42,8 +42,8 @@ static init_handler g_bugfix_handlers[] = {
 
     CreateHandler<BugfixPatchHandler>("Bugfix patches"),
 
-    CreateHandler<pedAnimationInstanceHandler>("pedAnimationInstance"),
-    CreateHandler<phBoundBugfixHandler>("phBound"),
+    CreateHandler<pedAnimationInstanceHandler>("pedAnimationInstance")
+    //CreateHandler<phBoundBugfixHandler>("phBound"),
 };
 
 /*
