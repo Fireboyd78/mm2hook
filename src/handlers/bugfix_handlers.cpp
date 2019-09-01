@@ -26,6 +26,7 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<vehTrailerHandler>("vehTrailer"),
     CreateHandler<vehTrailerInstanceHandler>("vehTrailerInstance"),
     CreateHandler<vehPoliceCarAudioBugfixHandler>("vehPoliceCarAudio"),
+    CreateHandler <vehSemiCarAudioBugfixHandler>("vehSemiCarAudio"),
     CreateHandler<mmPlayerBugfixHandler>("mmPlayer"),
     CreateHandler<mmSpeedIndicatorHandler>("mmSpeedIndicator"),
     CreateHandler<mmHudMapHandler>("mmHudMap"),
@@ -1178,4 +1179,77 @@ void phBoundBugfixHandler::Install()
             }
         );
     }
+}
+
+/*
+    vehSemiCarAudioBugfixHandler
+*/
+bool canPlayAirBlowSound = false;
+void vehSemiCarAudioBugfixHandler::UpdateAirBlow() 
+{
+    auto carsim = *getPtr<vehCarSim*>(this, 0x118);
+    float speed = carsim->getSpeed();
+    bool isBraking = carsim->getBrakeInput() > 0.1f;
+
+    //if we're going >5mph, set the sound flag
+    if (speed > 2.2352f) {
+        canPlayAirBlowSound = true;
+    }
+
+    //if we're going <1mph, play the sound
+    if (speed < 0.44704f) {
+        if (isBraking && canPlayAirBlowSound) {
+            auto soundBase = *getPtr<AudSoundBase*>(this, 0x13C);
+            if (soundBase != nullptr)
+                soundBase->PlayOnce(-1.f, -1.f);
+        }
+        canPlayAirBlowSound = false;
+    }
+}
+
+void vehSemiCarAudioBugfixHandler::Init(MM2::vehCarSim * carsim, MM2::vehCarDamage * cardamage, char * basename, bool a5, bool a6, bool a7)
+{
+    //set some things in the semi audio class
+    *getPtr<int>(this, 0x138) = 0;
+    *getPtr<int>(this, 0x13C) = 0;
+    *getPtr<float>(this, 0x130) = 0.87f;
+    *getPtr<float>(this, 0x134) = 0.9f;
+    *getPtr<int>(this, 0x140) = 0xFFFFFFFF;
+    *getPtr<int>(this, 0x144) = 0xFFFFFFFF;
+
+    //call vehSemiCarAudio::Load, to load airbrake
+    string_buf<128> semiDataName("%s_semidata", basename);
+    bool semiDataExists = datAssetManager::Exists("aud\\cardata\\shared", (LPCSTR)semiDataName, "csv");
+
+    //if custom semi data exists, load that. Otherwise load default.
+    if (semiDataExists) {
+        Warningf("Loading custom semi data: %s", (LPCSTR)semiDataName);
+        ageHook::Thunk<0x4DCD70>::Call<void>(this, (LPCSTR)semiDataName);
+    }
+    else {
+        Warningf("Loading DEFAULT semi data, can't find custom semi data: %s", (LPCSTR)semiDataName);
+        ageHook::Thunk<0x4DCD70>::Call<void>(this, "semidata");
+    }
+    
+    //call back to vehCarAudio::Init
+    ageHook::Thunk<0x4DB900>::Call<void>(this, carsim, cardamage, basename, a5, a6, a7);
+}
+
+void vehSemiCarAudioBugfixHandler::Install()
+{
+    if (!cfgAirbrakeFix.Get())
+        return;
+
+    InstallCallback("vehSemiCarAudioBugfixHandler::Init", "Allow custom sounds for air brake audio.",
+        &Init, {
+            cbHook<CALL>(0x4DC99A)
+        }
+    );
+
+    InstallCallback("vehSemiCarAudioBugfixHandler::Init", "Fix semi air brake audio.",
+        &UpdateAirBlow, {
+            cbHook<CALL>(0x4DCB61),
+            cbHook<CALL>(0x4DCB3C)
+        }
+    );
 }

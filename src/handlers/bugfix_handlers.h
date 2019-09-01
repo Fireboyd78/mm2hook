@@ -3,7 +3,8 @@
 #include "patch.h"
 #include "mm2.h"
 
-static ConfigValue<bool> cfgBoundSphereCalculation("BoundSphereCalculationFix", true);
+static ConfigValue<bool> cfgBoundSphereCalculation  ("BoundSphereCalculationFix", true);
+static ConfigValue<bool> cfgAirbrakeFix             ("AirbrakeFix",               true);
 
 class gfxImageHandler
 {
@@ -169,6 +170,13 @@ public :
 
 class vehPoliceCarAudioBugfixHandler {
 public:
+    static void Install();
+};
+
+class vehSemiCarAudioBugfixHandler {
+public:
+    void UpdateAirBlow();
+    void Init(MM2::vehCarSim* carsim, MM2::vehCarDamage* cardamage, char* basename, bool a5, bool a6, bool a7);
     static void Install();
 };
 

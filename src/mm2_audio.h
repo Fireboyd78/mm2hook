@@ -75,6 +75,11 @@ namespace MM2
         }
     }
 
+    class AudSoundBase {
+    public:
+        AGE_API void PlayOnce(float volume, float pitch) { ageHook::Thunk<0x50E090>::Call<void>(this, volume, pitch); }
+    };
+
     class Aud3DObject {
 
     };

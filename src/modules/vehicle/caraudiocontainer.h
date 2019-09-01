@@ -19,7 +19,15 @@ namespace MM2
         AGE_API static bool IsPolice(const char* name) {
             return ageHook::StaticThunk<0x4D1A70>::Call<bool>(name);
         }
+
+        AGE_API static bool IsSemiOrBus(const char* name) {
+            return ageHook::StaticThunk<0x4D1A00>::Call<bool>(name);
+        }
         
+        AGE_API static void RegisterSemiNames(Stream* a1, LPCSTR a2) {
+            ageHook::StaticThunk<0x4D0E30>::Call<void>(a1, a2);
+        }
+
         AGE_API static void RegisterPoliceNames(Stream* a1, LPCSTR a2) {
             ageHook::StaticThunk<0x4D0F10>::Call<void>(a1, a2);
         }
