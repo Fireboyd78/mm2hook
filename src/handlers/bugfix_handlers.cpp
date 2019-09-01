@@ -1192,12 +1192,12 @@ void vehSemiCarAudioBugfixHandler::UpdateAirBlow()
     bool isBraking = carsim->getBrakeInput() > 0.1f;
 
     //if we're going >5mph, set the sound flag
-    if (speed > 2.2352f) {
+    if (speed > 5.f) {
         canPlayAirBlowSound = true;
     }
 
     //if we're going <1mph, play the sound
-    if (speed < 0.44704f) {
+    if (speed < 1.f) {
         if (isBraking && canPlayAirBlowSound) {
             auto soundBase = *getPtr<AudSoundBase*>(this, 0x13C);
             if (soundBase != nullptr)

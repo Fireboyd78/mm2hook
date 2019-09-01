@@ -17,50 +17,61 @@ Vector3 wheelDebugPos;
 
 void vehWheelDebugHandler::Cull()
 {
-	//
-	//rglEnableDisable(MM2::rglToken::RGLTOKEN_TYPE2, false); //no shading please! (WRONG TOKEN!)
+    //
+    //rglEnableDisable(MM2::rglToken::RGLTOKEN_TYPE2, false); //no shading please! (WRONG TOKEN!)
 
-	//draw veh world matrix
-	auto carSimPtr = *getPtr<vehCarSim*>(this, 0x18);
-	if (carSimPtr) {
-		auto carMatrix = *getPtr<Matrix34>(carSimPtr, 0x1D4);
-		rglDrawAxis(3.f, carMatrix);
-	}
+    //draw veh world matrix
+    auto carSimPtr = *getPtr<vehCarSim*>(this, 0x18);
+    if (carSimPtr) {
+        auto carMatrix = *getPtr<Matrix34>(carSimPtr, 0x1D4);
+        rglDrawAxis(3.f, carMatrix);
+    }
 
-	//draw wheel matrix
-	auto wheelMatrixPtr = getPtr<Matrix34>(this, 0x24);
-	rglDrawAxis(1.f, *wheelMatrixPtr);
-	
-	//draw box around wheel
-	Vector3 wheelCenterVector = *getPtr<Vector3>(this, 0x1B0);
-	float wheelRadius = *getPtr<float>(this, 0x1B0);
-	float wheelWidth = *getPtr<float>(this, 0x1C0);
+    //draw wheel matrix
+    auto wheelMatrixPtr = getPtr<Matrix34>(this, 0x24);
+    rglDrawAxis(1.f, *wheelMatrixPtr);
 
-	vglCurrentColor = 0xFF00FFFF;
-	Vector3 wheelBoxVector = Vector3(wheelWidth, wheelRadius, wheelRadius );
-	rglDrawBox(wheelBoxVector, *wheelMatrixPtr);
+    //draw box around wheel
+    Vector3 wheelCenterVector = *getPtr<Vector3>(this, 0x1B0);
+    float wheelRadius = *getPtr<float>(this, 0x1B0);
+    float wheelWidth = *getPtr<float>(this, 0x1C0);
 
-	//draw dotted matrix
-	if (carSimPtr) {
-		auto carMatrixPtr = getPtr<Matrix34>(carSimPtr, 0x1D4);
-		carMatrixCopy = Matrix34(*carMatrixPtr);
-		wheelMatrixCopy = Matrix34(*wheelMatrixPtr);
-		wheelMatrixCopy.Dot(carMatrixPtr);
-		rglDrawAxis(1.f, wheelMatrixCopy);
-	}
+    vglCurrentColor = 0xFF00FFFF;
+    Vector3 wheelBoxVector = Vector3(wheelWidth, wheelRadius, wheelRadius);
+    rglDrawBox(wheelBoxVector, *wheelMatrixPtr);
 
-	//draw hit position
-	Matrix34 identityMatrix = Matrix34();
-	identityMatrix.Identity();
+    //draw dotted matrix
+    if (carSimPtr) {
+        auto carMatrixPtr = getPtr<Matrix34>(carSimPtr, 0x1D4);
+        carMatrixCopy = Matrix34(*carMatrixPtr);
+        wheelMatrixCopy = Matrix34(*wheelMatrixPtr);
+        wheelMatrixCopy.Dot(carMatrixPtr);
+        rglDrawAxis(1.f, wheelMatrixCopy);
+    }
 
-	rglWorldMatrix(identityMatrix);
-	vglBegin(MM2::gfxDrawMode::DRAWMODE_LINELIST, 0);
-	vglCurrentColor = 0xFF3F21FD;
+    //draw hit position
+    Matrix34 identityMatrix = Matrix34();
+    identityMatrix.Identity();
 
-	Vector3 lasSurfNormal = *getPtr <Vector3>(this, 0x18C);
-	Vector3 lastHitPosition = *getPtr <Vector3>(this, 0x1A4);
-	vglVertex3f(lastHitPosition.X, lastHitPosition.Y, lastHitPosition.Z);
-	vglVertex3f(lastHitPosition.X + lasSurfNormal.X, lastHitPosition.Y + lasSurfNormal.Y, lastHitPosition.Z + lasSurfNormal.Z);
+    rglWorldMatrix(identityMatrix);
+    vglBegin(MM2::gfxDrawMode::DRAWMODE_LINELIST, 0);
+    vglCurrentColor = 0xFF3F21FD;
+
+    Vector3 lasSurfNormal = *getPtr <Vector3>(this, 0x18C);
+    Vector3 lastHitPosition = *getPtr <Vector3>(this, 0x1A4);
+    vglVertex3f(lastHitPosition.X, lastHitPosition.Y, lastHitPosition.Z);
+    vglVertex3f(lastHitPosition.X + lasSurfNormal.X, lastHitPosition.Y + lasSurfNormal.Y, lastHitPosition.Z + lasSurfNormal.Z);
+
+    //draw vector things
+    if (wheelMatrixPtr)
+    {
+        vglBegin(MM2::gfxDrawMode::DRAWMODE_LINELIST, 0);
+        vglCurrentColor = 0xFFFF6A00;
+        
+        Vector3 rearwardDir = *getPtr <Vector3>(this, 0x198);
+        vglVertex3f(wheelMatrixPtr->m30, wheelMatrixPtr->m31, wheelMatrixPtr->m32);
+        vglVertex3f(wheelMatrixPtr->m30 + rearwardDir.X, wheelMatrixPtr->m31 + rearwardDir.Y, wheelMatrixPtr->m32 + rearwardDir.Z);
+    }
 
     //draw suspension force
     float targetTravel = *getPtr<float>(this, 0x1F8);
