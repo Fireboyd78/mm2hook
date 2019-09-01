@@ -2171,7 +2171,7 @@ void ltLensFlareHandler::Install() {
 
 void mmSingleRaceHandler::QueueCopVoice(float a1) {
     //play damage out voice
-    auto rsPtr = audManager::Instance->GetRaceSpeechPtr();
+    auto rsPtr = AudManager::Instance->GetRaceSpeechPtr();
     if (rsPtr != nullptr)
         rsPtr->PlayDamagePenalty();
 }
