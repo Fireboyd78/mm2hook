@@ -13,6 +13,7 @@ namespace MM2
 
     template<>
     void luaAddModule<module_inst>(LuaState L) {
+        luaBind <lvlInstance::GeomTableEntry>(L);
         luaBind<lvlInstance>(L);
     }
 }

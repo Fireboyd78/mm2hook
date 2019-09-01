@@ -47,13 +47,89 @@ namespace MM2
             phBoundGeometry *BoundGeom;
             float Radius;
             uint32_t dword1C;
+
+            inline modStatic* getHighestLOD() const {
+                if (High != nullptr)
+                    return High;
+                if (Medium != nullptr)
+                    return Medium;
+                if (Low != nullptr)
+                    return Low;
+                if (VeryLow != nullptr)
+                    return VeryLow;
+                return NULL;
+            }
+
+            inline modStatic* getLowestLOD() const {
+                if (VeryLow != nullptr)
+                    return VeryLow;
+                if (Low != nullptr)
+                    return Low;
+                if (Medium != nullptr)
+                    return Medium;
+                if (High != nullptr)
+                    return High;
+                return NULL;
+            }
+
+            inline modStatic* getVeryLowLOD() const {
+                return VeryLow;
+            }
+
+            inline modStatic* getLowLOD() const {
+                return Low;
+            }
+
+            inline modStatic* getMedLOd() const {
+                return Medium;
+            }
+
+            inline modStatic* getHighLOD() const {
+                return High;
+            }
+
+            inline float getRadius() const {
+                return Radius;
+            }
+
+            static void BindLua(LuaState L) {
+                LuaBinding(L).beginClass<GeomTableEntry>("GeomTableEntry")
+                    //fields
+                    .addPropertyReadOnly("VL", &getVeryLowLOD)
+                    .addPropertyReadOnly("L", &getLowLOD)
+                    .addPropertyReadOnly("M", &getMedLOd)
+                    .addPropertyReadOnly("H", &getHighLOD)
+                    .addPropertyReadOnly("Radius", &getRadius)
+                    .addFunction("GetHighestLOD", &getHighestLOD)
+                    .addFunction("GetLowestLOD", &getLowestLOD)
+                    .endClass();
+            }
+
         };
+        ASSERT_SIZEOF(GeomTableEntry, 32);
+
+        static char* GetGeomName(int id) {
+            if (id >= GetGeomSetCount())
+                return nullptr;
+            return GetGeomNameTablePtr()[id];
+        }
+
+        static GeomTableEntry* GetGeomTableEntry(int id) {
+            if (id >= GetGeomSetCount())
+                return nullptr;
+            return &GetGeomTablePtr()[id];
+        }
 
         static GeomTableEntry* GetGeomTablePtr() {
             return reinterpret_cast<GeomTableEntry*>(0x6316D8);
         }
+
         static char** GetGeomNameTablePtr() {
             return reinterpret_cast<char**>(0x651760);
+        }
+
+        static int GetGeomSetCount() {
+            return *reinterpret_cast<int*>(0x655764);
         }
     public:
         
@@ -138,12 +214,19 @@ namespace MM2
             LuaBinding(L).beginClass<lvlInstance>("lvlInstance")
                 //fields
                 .addPropertyReadOnly("CurrentRoom", &getRoomId)
+                .addPropertyReadOnly("GeometrySetIndex", &getGeomSetId)
 
                 //statics
+                .addStaticFunction("GetGeomName", &GetGeomName)
+                .addStaticFunction("GetGeomTableEntry", &GetGeomTableEntry)
+                .addStaticProperty("GeomTableSize", &GetGeomSetCount)
+
                 .addStaticFunction("ResetInstanceHeap", &ResetInstanceHeap)
                 .addStaticFunction("ResetAll", &ResetAll)
                 .addStaticFunction("SetShadowBillboardMtx", &SetShadowBillboardMtx)
                 .addStaticFunction("GetGeomSet", &GetGeomSet)
+
+                //functiolns
                 .addFunction("LoadBoundOnLastEntry", &LoadBoundOnLastEntry)
                 .addFunction("GetBoundSphere", &GetBoundSphere)
                 .addFunction("BeginGeom", &BeginGeom)

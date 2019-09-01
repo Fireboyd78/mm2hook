@@ -924,16 +924,15 @@ Matrix34 trailerMatrix = Matrix34();
 void vehTrailerInstanceHandler::DrawGlow()
 {
     auto inst = reinterpret_cast<vehTrailerInstance*>(this);
-    auto geomTable = lvlInstance::GetGeomTablePtr();
-    
     //don't draw trailer lights if it's broken
     if (inst->getTrailer()->getJoint()->IsBroken())
         return;
 
     //get vars
     auto carsim = inst->getTrailer()->getCarSim();
-    float brakeInput = *getPtr<float>(carsim, 0x154c);
+    float brakeInput = carsim->getBrakeInput();
     int gear = carsim->getTransmission()->getGear();
+    int geomSet = inst->getGeomSetId() - 1;
 
     //setup renderer
     *(int*)0x685778 |= 0x88; //set m_Touched
@@ -942,32 +941,32 @@ void vehTrailerInstanceHandler::DrawGlow()
 
     //get our shader set
     int shaderSet = *getPtr<int>(this, 24);
-    auto shaders = geomTable[inst->getGeomSetId() - 1].pShaders[shaderSet];
+    auto shaders = lvlInstance::GetGeomTableEntry(geomSet)->pShaders[shaderSet];
     
     //draw lights
-    auto tlight = geomTable[inst->getGeomSetId() + 1];
-    auto rlight = geomTable[inst->getGeomSetId() + 7];
-    auto blight = geomTable[inst->getGeomSetId() + 8];
+    auto tlight = lvlInstance::GetGeomTableEntry(geomSet + 2);
+    auto rlight = lvlInstance::GetGeomTableEntry(geomSet + 8);
+    auto blight = lvlInstance::GetGeomTableEntry(geomSet + 9);
 
     //draw rlight
-    if (rlight.Low != nullptr && gear == 0) {
-        rlight.Low->Draw(shaders);
+    if (rlight->Low != nullptr && gear == 0) {
+        rlight->Low->Draw(shaders);
     }
 
     //draw blight
-    if (blight.Low != nullptr && brakeInput > 0.1) {
-        blight.Low->Draw(shaders);
+    if (blight->Low != nullptr && brakeInput > 0.1) {
+        blight->Low->Draw(shaders);
     }
 
     //draw tlight
-    if (tlight.Low != nullptr) {
+    if (tlight->Low != nullptr) {
         //draw night copy
         if (vehCar::sm_DrawHeadlights)
-            tlight.Low->Draw(shaders); 
+            tlight->Low->Draw(shaders); 
 
         //draw brake input copy
         if(brakeInput > 0.1) {
-            tlight.Low->Draw(shaders);
+            tlight->Low->Draw(shaders);
         }
     }
 }

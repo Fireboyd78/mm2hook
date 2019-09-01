@@ -77,7 +77,7 @@ namespace MM2
                 .addFunction("Reset", &Reset)
                 .addFunction("AddDamage", &AddDamage)
                 .addFunction("ClearDamage", &ClearDamage)
-                .addProperty("CurDamage", &getCurDamage, &setCurDamage)
+                .addProperty("DamageAmount", &getCurDamage, &setCurDamage)
                 .addProperty("MedDamage", &getMedDamage, &setMedDamage)
                 .addProperty("MaxDamage", &getMaxDamage, &setMaxDamage)
                 .addPropertyReadOnly("Particles", &getParticles)

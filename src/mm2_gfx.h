@@ -3,19 +3,13 @@
 
 namespace MM2
 {
+    //External declarations
+    extern class datParser;
+
     namespace $
     {
         namespace gfxLight {
             declhook(0x4B1C00, _MemberFunc<void>, Reset);
-        }
-        namespace ltLight {
-            declhook(0x59ACB0, _MemberFunc<void>, Draw);
-            declhook(0x59AD90, _MemberFunc<void>, DrawGlow);
-            declhook(0x59AE30, _Func<void>, DrawGlowBegin);
-            declhook(0x59AEF0, _Func<void>, DrawGlowEnd);
-            declhook(0x59B390, _Func<void>, SetUpGfxLightBegin);
-            declhook(0x59B5B0, _MemberFunc<void>, SetUpGfxLight);
-            declhook(0x59B5B0, _Func<void>, SetUpGfxLightEnd);
         }
     }
 
@@ -28,6 +22,7 @@ namespace MM2
     {
 
     };
+
     // what kind of primitive to draw
     // same values as D3DPRIMITIVETYPE
     enum gfxDrawMode {
@@ -355,6 +350,114 @@ namespace MM2
         static ageHook::TypeProxy<Matrix44> sm_Transform;
     };
 
+    class ltLight {
+    public:
+        int Type;
+        Vector3 Position;
+        Vector3 Direction;
+        Vector3 Color;
+        float Intensity;
+        int unk_2C;
+        float SpotExponent;
+        gfxTexture* HighlightTexture;
+        int unk_38;
+        float ProjectionSize;
+        bool EnableProjection;
+        byte unk_41;
+        byte unk_42;
+        byte unk_43;
+        int ShadowMode;
+        int unk_48;
+
+        AGE_API ltLight() { ageHook::Thunk<0x59AB80>::Call<void>(this); }
+        AGE_API ~ltLight() { ageHook::Thunk<0x59ABC0>::Call<void>(this); }
+
+        //static funcs
+        static AGE_API void ShutdownLights() { ageHook::StaticThunk<0x59ABD0>::Call<void>(); }
+        static AGE_API void DrawGlowBegin() { ageHook::StaticThunk<0x59AE30>::Call<void>(); }
+        static AGE_API void DrawGlowEnd() { ageHook::StaticThunk<0x59AEF0>::Call<void>(); }
+        static AGE_API void SetUpGfxLightBegin(Vector3 const* a1)
+        {
+            ageHook::StaticThunk<0x59B390>::Call<void>(a1);
+        }
+        static AGE_API void SetUpGfxLightEnd() { ageHook::StaticThunk<0x59B460>::Call<void>(); }
+        static AGE_API int GetNumPointLights() { return ageHook::StaticThunk<0x59B3E0>::Call<int>(); }
+        static AGE_API ltLight* GetPointLight(int a1) { return ageHook::StaticThunk<0x59B3F0>::Call<ltLight*>(a1); }
+        static AGE_API ltLight* GetClosestLight() { return ageHook::StaticThunk<0x59B410>::Call<ltLight*>(); }
+
+
+        //member funcs
+        AGE_API void Default() { ageHook::Thunk<0x59ABF0>::Call<void>(this); }
+        AGE_API void Random() { ageHook::Thunk<0x59AC40>::Call<void>(this); }
+        AGE_API void Draw(float scale) { ageHook::Thunk<0x59ACB0>::Call<void>(this, scale); }
+        AGE_API void DrawGlow(Vector3* position) { ageHook::Thunk<0x59AD90>::Call<void>(this, position); }
+        AGE_API void DrawHighlight(Vector3* a1, Matrix34* a2)
+        {
+            ageHook::Thunk<0x59AFB0>::Call<void>(this, a1, a2);
+        }
+        AGE_API void SetUpGfxLight() { ageHook::Thunk<0x59B5B0>::Call<void>(this); }
+        AGE_API bool SetGfxLight(gfxLight* a1, Vector3* a2)
+        {
+            return ageHook::Thunk<0x59B740>::Call<bool>(this, a1, a2);
+        }
+        AGE_API void Illuminate(Vector3* outColor, Vector3* a2, Vector3* a3)
+        {
+            ageHook::Thunk<0x59B990>::Call<void>(this, outColor, a2, a3);
+        }
+        AGE_API float ComputeIntensity(Vector3* a1, float a2)
+        {
+            return ageHook::Thunk<0x59BA50>::Call<float>(this, a1, a2);
+        }
+        AGE_API float ComputeDistance(Vector3* a1) { return ageHook::Thunk<0x59BB70>::Call<float>(this, a1); }
+
+        //TODO
+        /*AGE_API void SetUpProjection(ltProjection* a1)  { ageHook::Thunk<0x59BBB0 >::Call<void>(this, a1); }*/
+
+        AGE_API void FileIO(datParser* a1) { ageHook::Thunk<0x59BCA0>::Call<void>(this, a1); }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<ltLight>("ltLight")
+                //ctor
+                .addConstructor(LUA_ARGS())
+                //variables
+                .addVariableRef("Type", &ltLight::Type)
+                .addVariableRef("Position", &ltLight::Position)
+                .addVariableRef("Direction", &ltLight::Direction)
+                .addVariableRef("Color", &ltLight::Color)
+                .addVariableRef("Intensity", &ltLight::Intensity)
+                .addVariableRef("SpotExponent", &ltLight::SpotExponent)
+                .addVariableRef("ProjectionSize", &ltLight::ProjectionSize)
+                .addVariableRef("EnableProjection", &ltLight::EnableProjection)
+                .addVariableRef("ShadowMode", &ltLight::ShadowMode)
+
+                //statics
+                .addStaticFunction("ShutdownLights", &ShutdownLights)
+                .addStaticFunction("DrawGlowBegin", &DrawGlowBegin)
+                .addStaticFunction("DrawGlowEnd", &DrawGlowEnd)
+                .addStaticFunction("SetUpGfxLightBegin", &SetUpGfxLightBegin)
+                .addStaticFunction("SetUpGfxLightEnd", &SetUpGfxLightEnd)
+                .addStaticFunction("GetNumPointLights", &GetNumPointLights)
+                .addStaticFunction("GetClosestLight", &GetClosestLight)
+                .addStaticFunction("GetPointLight", &GetPointLight)
+
+                //members
+                .addFunction("Default", &Default)
+                .addFunction("Random", &Random)
+                .addFunction("Draw", &Draw)
+                .addFunction("DrawGlow", &DrawGlow)
+                .addFunction("DrawHighlight", &DrawHighlight)
+                .addFunction("ComputeDistance", &ComputeDistance)
+                .addFunction("ComputeIntensity", &ComputeIntensity)
+                .addFunction("Illuminate", &Illuminate)
+                .addFunction("SetUpGfxLight", &SetUpGfxLight)
+                .addFunction("SetGfxLight", &SetGfxLight)
+                .addFunction("FileIO", &FileIO)
+
+                .endClass();
+        }
+    };
+    ASSERT_SIZEOF(ltLight, 0x4C);
+
     declhook(0x4B30F0, _Func<gfxTexture *>, $gfxGetTexture);
 
     declhook(0x4ABE00, _Func<bool>, $gfxAutoDetect);
@@ -434,7 +537,7 @@ namespace MM2
 
     template<>
     void luaAddModule<module_gfx>(LuaState L) {
-
+        luaBind<ltLight>(L);
     }
 
     ASSERT_SIZEOF(gfxRenderStateData, 0x50);

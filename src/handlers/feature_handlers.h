@@ -14,7 +14,11 @@ static ConfigValue<bool> cfgUseAllParkedCars        ("UseAllParkedCars",        
 static ConfigValue<bool> cfgUseAllTrafficColors     ("UseAllTrafficColors",     true);
 static ConfigValue<bool> cfgAmbientSoundsWithMusic  ("AmbientSoundsWithMusic",  true);
 static ConfigValue<bool> cfgAllowInstSpawning       ("AllowSpawnInINSTRooms",   true);
+static ConfigValue<int> cfgHeadlightStyle           ("HeadlightStyle",          0);
+static ConfigValue<int> cfgSirenStyle               ("SirenStyle",              0);
+static ConfigValue<float> cfgSirenCycleRate         ("SirenCycle",    0.25f);
 static ConfigValue<float> cfgFerrySpeedMultiplier   ("FerrySpeedMultiplier",    5.0f);
+
 
 class asCullManagerHandler {
 public:
@@ -254,6 +258,7 @@ public:
 
 class vehCarModelFeatureHandler {
 public: 
+    void DrawGlow();
     void ModStaticDraw(MM2::modShader * a1);
     static void Install();
 };
@@ -279,5 +284,16 @@ public:
     void aiMapClean();
     void aiMapInit(char* a1, char* a2, char* a3, const MM2::dgStatePack* a4, int a5, MM2::vehCar* a6, bool a7);
 
+    static void Install();
+};
+
+struct MultiTireTrackContainer {
+public:
+    MM2::gfxTexture* TrackTexture;
+    MM2::gfxTexture* OffroadTrackTexture;
+};
+
+class multiTireTrackHandler {
+    void UpdateTrack(void* lvlTrackManagerPtr, void* wheel);
     static void Install();
 };

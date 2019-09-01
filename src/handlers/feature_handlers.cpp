@@ -2219,9 +2219,9 @@ void dgBangerInstanceHandler::DrawGlow()
     }
 
     //draw glows
-    $::ltLight::DrawGlowBegin();
+    ltLight::DrawGlowBegin();
     ageHook::Thunk<0x441840>::Call<void>(this); // call original
-    $::ltLight::DrawGlowEnd();
+    ltLight::DrawGlowEnd();
 
     //reset glow texture
     if (swappedTexture) {
@@ -2351,6 +2351,10 @@ void vehBreakableMgrHandler::Install() {
 /*
     vehCarModelFeatureHandler
 */
+Matrix34 vehCarModelGarbageMtx = Matrix34();
+int sirenStyle = 0;
+int headlightStyle = 0;
+float sirenCycle = 0.25f;
 
 static ConfigValue<bool> cfgPartReflections("ReflectionsOnCarParts", false);
 
@@ -2376,13 +2380,123 @@ void vehCarModelFeatureHandler::ModStaticDraw(modShader* a1) {
     }
 }
 
-void vehCarModelFeatureHandler::Install() {
-    if (!cfgPartReflections.Get())
+void vehCarModelFeatureHandler::DrawGlow() {
+    auto model = reinterpret_cast<vehCarModel*>(this);
+    if (!model->GetVisible())
         return;
 
-    InstallCallback("vehCarModel::DrawPart", "Draws reflections on car parts.",
-        &ModStaticDraw, {
-            cbHook<CALL>(0x4CE92F), // vehCarModel::DrawPart
+    auto geomID = model->getGeomSetId() - 1;
+    auto geomSet = lvlInstance::GetGeomTableEntry(geomID);
+    auto car = model->getCar();
+    auto carsim = car->getCarSim();
+    auto siren = car->getSiren();
+    int gear = carsim->getTransmission()->getGear();
+
+    //setup renderer
+    Matrix34 carMatrix = model->GetMatrix(&vehCarModelGarbageMtx); //argument is useless, we want return value here
+    Matrix44::Convert(gfxRenderState::sm_World, &carMatrix);
+    *(int*)0x685778 |= 0x88; //set m_Touched
+
+    //get our shader set
+    int variantIndex = model->getVariant();
+    auto shaders = geomSet->pShaders[variantIndex];
+
+    //get objects
+    auto hlight = lvlInstance::GetGeomTableEntry(geomID + 2);
+    auto tlight = lvlInstance::GetGeomTableEntry(geomID + 3);
+    auto rlight = lvlInstance::GetGeomTableEntry(geomID + 4);
+    auto blight = lvlInstance::GetGeomTableEntry(geomID + 7);
+    auto siren0 = lvlInstance::GetGeomTableEntry(geomID + 9);
+    auto siren1 = lvlInstance::GetGeomTableEntry(geomID + 10);
+
+    //draw tlight
+    if (tlight->Low != nullptr) {
+        //draw brake copy
+        if(carsim->getBrakeInput() > 0.1)
+            tlight->Low->Draw(shaders);
+        //draw headlight copy
+        if(vehCar::sm_DrawHeadlights)
+            tlight->Low->Draw(shaders);
+    }
+
+    //draw blight
+    if (blight->Low != nullptr) {
+        //draw brake copy
+        if (carsim->getBrakeInput() > 0.1)
+            blight->Low->Draw(shaders);
+    }
+
+    //draw rlight 
+    if (rlight->Low != nullptr && gear == 0) {
+        rlight->Low->Draw(shaders);
+    }
+
+    //Draw siren and headlights
+    if (headlightStyle < 3) {
+        if (headlightStyle == 0 || headlightStyle == 2) {
+            //MM2 headlights
+            if (siren != nullptr && siren->Active)
+            {
+                model->DrawHeadlights(true);
+            }
+            else if (vehCar::sm_DrawHeadlights)
+            {
+                model->DrawHeadlights(false);
+            }
+        }
+        if (headlightStyle == 1 || headlightStyle == 2) {
+            //MM1 headlights
+            Matrix44::Convert(gfxRenderState::sm_World, &carMatrix);
+            *(int*)0x685778 |= 0x88; //set m_Touched
+
+            if (vehCar::sm_DrawHeadlights && hlight->Low != nullptr) {
+                hlight->Low->Draw(shaders);
+            }
+        }
+    }
+
+    if (sirenStyle < 3) {
+        if (sirenStyle == 0 || sirenStyle == 2) {
+            //MM2 siren
+            if (siren != nullptr && siren->HasLights && siren->Active)
+            {
+                siren->Draw(&carMatrix);
+            }
+        }
+        if (sirenStyle == 1 || sirenStyle == 2) {
+            //MM1 siren
+            Matrix44::Convert(gfxRenderState::sm_World, &carMatrix);
+            *(int*)0x685778 |= 0x88; //set m_Touched
+
+            if (siren != nullptr && siren->Active) {
+                int sirenStage = fmod(datTimeManager::ElapsedTime, 2 * sirenCycle) >= sirenCycle ? 1 : 0;
+                if (sirenStage == 0 && siren0->Low != nullptr) {
+                    siren0->Low->Draw(shaders);
+                }
+                else if (sirenStage == 1 && siren1->Low != nullptr) {
+                    siren1->Low->Draw(shaders);
+                }
+            }
+        }
+    }
+}
+
+void vehCarModelFeatureHandler::Install() {
+    if (cfgPartReflections.Get())
+    {
+        InstallCallback("vehCarModel::DrawPart", "Draws reflections on car parts.",
+            &ModStaticDraw, {
+                cbHook<CALL>(0x4CE92F), // vehCarModel::DrawPart
+            }
+        );
+    }
+
+    sirenStyle = cfgSirenStyle.Get();
+    headlightStyle = cfgHeadlightStyle.Get();
+    sirenCycle = cfgSirenCycleRate.Get();
+    InstallVTableHook("vehCarModel::DrawGlow",
+        &DrawGlow, {
+            0x5B2CE8
         }
     );
 }

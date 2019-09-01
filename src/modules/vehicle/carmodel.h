@@ -1,5 +1,6 @@
 #pragma once
 #include <modules\vehicle.h>
+#include <mm2_gfx.h>
 
 #include "car.h"
 #include "breakable.h"
@@ -20,10 +21,19 @@ namespace MM2
         ageHook::Field<0xAC, vehBreakableMgr *> _mechanicalBreakableMgr;
         ageHook::Field<0xA0, vehBreakableMgr *> _genericBreakableMgr;
         ageHook::Field<0x18, vehCar *> _car;
-        ageHook::Field<0x24, int> _variant;
+        ageHook::Field<0x24, byte> _variant;
     public:
-        AGE_API vehCarModel()                               { ageHook::Thunk<0x4CCF20>::Call<void>(this); }
-        AGE_API ~vehCarModel()                              { ageHook::Thunk<0x4CCF80>::Call<void>(this); }
+        AGE_API vehCarModel() {
+            PUSH_VTABLE();
+            ageHook::Thunk<0x4CCF20>::Call<void>(this);
+            POP_VTABLE();
+        }
+
+        AGE_API ~vehCarModel() {
+            PUSH_VTABLE();
+            ageHook::Thunk<0x4CCF800>::Call<void>(this);
+            POP_VTABLE();
+        }
 
         inline vehBreakableMgr * getGenBreakableMgr(void) const {
             return _genericBreakableMgr.get(this);
@@ -46,11 +56,25 @@ namespace MM2
             _variant.set(this, variant);
         }
 
+        inline ltLight* getHeadlight(int index) {
+            //cap index
+            if (index < 0)
+                index = 0;
+            if (index >= 2)
+                index = 1;
+            
+            auto headlightLightsArray = *getPtr<ltLight*>(this, 0xB0);
+            if (headlightLightsArray == nullptr)
+                return NULL;
+            return &headlightLightsArray[index];
+        }
+
         AGE_API void BreakElectrics(Vector3* a1)            { ageHook::Thunk<0x4CEFE0>::Call<void>(this, a1); }
         AGE_API void ClearDamage()                          { ageHook::Thunk<0x4CDFF0>::Call<void>(this); }
         AGE_API void EjectOneshot()                         { ageHook::Thunk<0x4CDCA0>::Call<void>(this); }
         AGE_API bool GetVisible()                           { return ageHook::Thunk<0x4CF070>::Call<bool>(this); }
         AGE_API void SetVisible(bool a1)                    { ageHook::Thunk<0x4CF050>::Call<void>(this, a1); }
+        AGE_API void DrawHeadlights(bool rotate)            { ageHook::Thunk<0x4CED50>::Call<void>(this, rotate); }
         
         /*
             lvlInstance virtuals
@@ -85,14 +109,16 @@ namespace MM2
                 .addPropertyReadOnly("Breakables", &getGenBreakableMgr)
                 .addPropertyReadOnly("WheelBreakables", &getMechBreakableMgr)
                 .addProperty("Variant", &getVariant, &setVariant)
+                .addProperty("Visible", &GetVisible, &SetVisible)
+
+                //lua functions
+                .addFunction("GetHeadlight", &getHeadlight)
 
                 //functions
                 .addFunction("Reset", &Reset)
                 .addFunction("BreakElectrics", &BreakElectrics)
                 .addFunction("ClearDamage", &ClearDamage)
                 .addFunction("EjectOneshot", &EjectOneshot)
-                .addFunction("GetVisible", &GetVisible)
-                .addFunction("SetVisible", &SetVisible)
 
 
             .endClass();

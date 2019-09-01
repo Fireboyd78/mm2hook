@@ -89,6 +89,14 @@ namespace MM2
         AGE_API void DrawOrthoMapped(modShader *shader, gfxTexture *tex, float a3, uint a4) const
                                                                 { return ageHook::Thunk<0x4A4B30>::Call<void>(this, shader, tex, a3, a4); }
         AGE_API void DrawWithTexGenAndTexMatrix(void) const	    { return ageHook::Thunk<0x4A4C50>::Call<void>(this); }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<modStatic>("modStatic")
+                //functions
+                .addFunction("GetTriCount", &GetTriCount)
+                .addFunction("GetAdjunctCount", &GetAdjunctCount)
+                .endClass();
+        }
     };
 
     class modModel {
@@ -182,6 +190,7 @@ namespace MM2
 
     template<>
     void luaAddModule<module_model>(LuaState L) {
+        luaBind<modStatic>(L);
         luaBind<asMeshSetForm>(L);
     }
 }

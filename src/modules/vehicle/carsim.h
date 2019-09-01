@@ -22,7 +22,12 @@ namespace MM2
         ageHook::Field<0x1D0, lvlInstance *> _instance;
         ageHook::Field<0x2E0, vehTransmission> _transmission;
         ageHook::Field<0x25C, vehEngine> _engine;
+        ageHook::Field<0x154C, float> _brakeInput;
     public:
+        inline float getBrakeInput(void) {
+            return _brakeInput.get(this);
+        }
+
         inline float getSpeed(void) {
             return _speed.get(this);
         };
