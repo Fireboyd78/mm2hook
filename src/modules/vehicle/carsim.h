@@ -74,6 +74,8 @@ namespace MM2
                 .addPropertyReadOnly("Transmission", &getTransmission)
                 .addPropertyReadOnly("ResetPosition", &getResetPosition)
                 .addPropertyReadOnly("Engine", &getEngine)
+                .addPropertyReadOnly("Speed", &getSpeed)
+
                 .addFunction("BottomedOut", &BottomedOut)
                 .addFunction("OnGround", &OnGround)
                 .addFunction("ReconfigureDrivetrain", &ReconfigureDrivetrain)
