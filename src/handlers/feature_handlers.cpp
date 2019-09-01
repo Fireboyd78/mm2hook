@@ -2282,7 +2282,7 @@ void vehCarHandler::InitCarAudio(LPCSTR a1, BOOL a2) {
         Displayf("Loading vehicle audio (\"%s\", %d)", a1, a2);
     }
 
-    //add to vehtypes if this has a siren :)
+    //Automatic vehtypes system
     bool vehicleHasSiren = false;
     if (car->getSiren() != nullptr) {
         vehicleHasSiren = car->getSiren()->HasLights && car->getSiren()->LightCount > 0;
@@ -2294,12 +2294,20 @@ void vehCarHandler::InitCarAudio(LPCSTR a1, BOOL a2) {
         vehCarAudioContainer::RegisterPoliceNames(NULL, (LPCSTR)sirenBuffer);
     }
 
+    string_buf<128> semiDataName("%s_semidata", a1);
+    bool semiDataExists = datAssetManager::Exists("aud\\cardata\\shared", (LPCSTR)semiDataName, "csv");
+    if (semiDataExists && !vehCarAudioContainer::IsSemiOrBus(a1)) {
+        Displayf("%s has semidata, but is not in the vehtypes file. Adding it.");
+        string_buf<128> semiBuffer("%s,ENDOFDATA", a1);
+        vehCarAudioContainer::RegisterSemiNames(NULL, (LPCSTR)semiBuffer);
+    }
+
     //pass back to original function
     car->InitAudio(a1, a2);
 }
 
 void vehCarHandler::Install(void) {
-    InstallCallback("vehCar::InitAudio", "Enables debugging for vehicle initialization.",
+    InstallCallback("vehCar::InitAudio", "Enables debugging for vehicle initialization, and automatic vehtypes handling.",
         &InitCarAudio, {
             cbHook<CALL>(0x55943A), // aiVehiclePhysics::Init
             cbHook<CALL>(0x404090), // mmPlayer::Init
