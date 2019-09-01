@@ -1590,11 +1590,11 @@ void mmDashViewHandler::UpdateCS() {
 
     auto bodyRoll = -(steering * wheelFact) * (cfgHeadBobSteeringFactor * (cfgHeadBobSteeringSpeedFactor * velZ));
 
-    auto headBobY = ((sm_DashOffset.m33 - dashCam->m33) * -cfgHeadBobOffsetScaleY) + velY + bodyRoll;
-    auto headBobZ = ((sm_DashOffset.m34 - dashCam->m34) * -cfgHeadBobOffsetScaleZ) * velZ;
+    auto headBobY = ((sm_DashOffset.m31 - dashCam->m31) * -cfgHeadBobOffsetScaleY) + velY + bodyRoll;
+    auto headBobZ = ((sm_DashOffset.m32 - dashCam->m32) * -cfgHeadBobOffsetScaleZ) * velZ;
 
-    dashCam->m33 += (headBobY * cfgHeadBobMultiplierY);
-    dashCam->m34 += (headBobZ * cfgHeadBobMultiplierZ);
+    dashCam->m31 += (headBobY * cfgHeadBobMultiplierY);
+    dashCam->m32 += (headBobZ * cfgHeadBobMultiplierZ);
 
     ageHook::Thunk<0x4A3370>::Call<void>(this);
 }

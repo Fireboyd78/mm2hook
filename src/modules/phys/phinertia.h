@@ -20,7 +20,7 @@ namespace MM2
         //props
         inline Vector3 getPosition(void) const {
             auto mtx = getMatrix();
-            return Vector3(mtx->m32, mtx->m33, mtx->m34);
+            return Vector3(mtx->m30, mtx->m31, mtx->m32);
         }
 
         inline Matrix34 * getMatrix(void) const {
@@ -29,9 +29,9 @@ namespace MM2
 
         inline void setPosition(Vector3* position) const {
             auto mtx = getMatrix();
-            mtx->m32 = position->X;
-            mtx->m33 = position->Y;
-            mtx->m34 = position->Z;
+            mtx->m30 = position->X;
+            mtx->m31 = position->Y;
+            mtx->m32 = position->Z;
         }
 
         inline void setMatrix(Matrix34* matrix) const {

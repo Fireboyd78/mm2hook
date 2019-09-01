@@ -85,28 +85,52 @@ namespace MM2
 
     class Matrix34 {
     public:
+        float m00;
+        float m01;
+        float m02;
+        
+        float m10;
         float m11;
         float m12;
-        float m13;
-        float m14;
 
+        float m20;
         float m21;
         float m22;
-        float m23;
-        float m24;
 
+        float m30;
         float m31;
         float m32;
-        float m33;
-        float m34;
 
 		void Matrix34::Dot(Matrix34* rhs)
 		{
 			ageHook::Thunk<0x4BC400>::Call(this, rhs);
 		}
 
+        void Scale(float amount) {
+            this->m00 = amount * this->m00;
+            this->m01 = amount * this->m01;
+            this->m02 = amount * this->m02;
+            this->m10 = amount * this->m10;
+            this->m11 = amount * this->m11;
+            this->m12 = amount * this->m12;
+            this->m20 = amount * this->m20;
+            this->m21 = amount * this->m21;
+            this->m22 = amount * this->m22;
+        }
+
         void Identity() {
-            $::Matrix34::Identity(this);
+            this->m00 = 1.0;
+            this->m01 = 0.0;
+            this->m02 = 0.0;
+            this->m10 = 0.0;
+            this->m11 = 1.0;
+            this->m12 = 0.0;
+            this->m20 = 0.0;
+            this->m21 = 0.0;
+            this->m22 = 1.0;
+            this->m30 = 0.0;
+            this->m31 = 0.0;
+            this->m32 = 0.0;
         }
 
         AGE_API void Set(const Matrix34* a1)                { ageHook::Thunk<0x4BBFB0>::Call<void>(this, a1); }
@@ -117,36 +141,36 @@ namespace MM2
                             float m21 = 0.0, float m22 = 0.0, float m23 = 0.0, float m24 = 0.0,
                             float m31 = 0.0, float m32 = 0.0, float m33 = 0.0, float m34 = 0.0) {
                     auto mtx = new Matrix34();
-                    mtx->m11 = m11;
-                    mtx->m12 = m12;
-                    mtx->m13 = m13;
-                    mtx->m14 = m14;
+                    mtx->m00 = m11;
+                    mtx->m01 = m12;
+                    mtx->m02 = m13;
+                    mtx->m10 = m14;
 
-                    mtx->m21 = m21;
-                    mtx->m22 = m22;
-                    mtx->m23 = m23;
-                    mtx->m24 = m24;
+                    mtx->m11 = m21;
+                    mtx->m12 = m22;
+                    mtx->m20 = m23;
+                    mtx->m21 = m24;
 
-                    mtx->m31 = m31;
-                    mtx->m32 = m32;
-                    mtx->m33 = m33;
-                    mtx->m34 = m34;
+                    mtx->m22 = m31;
+                    mtx->m30 = m32;
+                    mtx->m31 = m33;
+                    mtx->m32 = m34;
                     return mtx;
                 }, LUA_ARGS(_opt<float>, _opt<float>, _opt<float>, _opt<float>,
                         _opt<float>, _opt<float>, _opt<float>, _opt<float>,
                         _opt<float>, _opt<float>, _opt<float>, _opt<float>))
-                .addVariableRef("m11", &Matrix34::m11)
-                .addVariableRef("m12", &Matrix34::m12)
-                .addVariableRef("m13", &Matrix34::m13)
-                .addVariableRef("m14", &Matrix34::m14)
-                .addVariableRef("m21", &Matrix34::m21)
-                .addVariableRef("m22", &Matrix34::m22)
-                .addVariableRef("m23", &Matrix34::m23)
-                .addVariableRef("m24", &Matrix34::m24)
-                .addVariableRef("m31", &Matrix34::m31)
-                .addVariableRef("m32", &Matrix34::m32)
-                .addVariableRef("m33", &Matrix34::m33)
-                .addVariableRef("m34", &Matrix34::m34)
+                .addVariableRef("m11", &Matrix34::m00)
+                .addVariableRef("m12", &Matrix34::m01)
+                .addVariableRef("m13", &Matrix34::m02)
+                .addVariableRef("m14", &Matrix34::m10)
+                .addVariableRef("m21", &Matrix34::m11)
+                .addVariableRef("m22", &Matrix34::m12)
+                .addVariableRef("m23", &Matrix34::m20)
+                .addVariableRef("m24", &Matrix34::m21)
+                .addVariableRef("m31", &Matrix34::m22)
+                .addVariableRef("m32", &Matrix34::m30)
+                .addVariableRef("m33", &Matrix34::m31)
+                .addVariableRef("m34", &Matrix34::m32)
                 .addFunction("Identity", &Matrix34::Identity)
             .endClass();
         }
