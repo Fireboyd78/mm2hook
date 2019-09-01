@@ -1245,21 +1245,56 @@ void vehSemiCarAudioBugfixHandler::Init(MM2::vehCarSim * carsim, MM2::vehCarDama
     ageHook::Thunk<0x4DB900>::Call<void>(this, carsim, cardamage, basename, a5, a6, a7);
 }
 
+void vehSemiCarAudioBugfixHandler::SetNon3DParams() 
+{
+    bool isStereo = AudManagerBase::Instance.get()->getIsStereo();
+    auto airBrakeSound = *getPtr<AudSoundBase*>(this, 0x13C);
+    auto reverseSound = *getPtr<AudSoundBase*>(this, 0x138);
+    float airBrakeVolume = *getPtr<float>(this, 0x134);
+    float reverseVolume = *getPtr<float>(this, 0x130);  
+    float pan = *getPtr<float>(this, 0x7C);
+
+    //setup reverse sound
+    if (reverseSound != nullptr) {
+        reverseSound->SetVolume(reverseVolume);
+        reverseSound->SetFrequency(1.0f);
+        if (isStereo)
+            reverseSound->SetPan(pan, -1);
+    }
+
+    //setup air brake
+    if (airBrakeSound != nullptr) {
+        airBrakeSound->SetVolume(airBrakeVolume);
+        airBrakeSound->SetFrequency(1.0f);
+        if (isStereo)
+            airBrakeSound->SetPan(pan, -1);
+    }
+ 
+    //call back to vehCarAudio::SetNon3DParams
+    ageHook::Thunk<0x4DC240>::Call<void>(this);
+}
+
 void vehSemiCarAudioBugfixHandler::Install()
 {
     if (!cfgAirbrakeFix.Get())
         return;
 
-    InstallCallback("vehSemiCarAudioBugfixHandler::Init", "Allow custom sounds for air brake audio.",
+    InstallCallback("vehSemiCarAudio::Init", "Allow custom sounds for air brake audio.",
         &Init, {
             cbHook<CALL>(0x4DC99A)
         }
     );
 
-    InstallCallback("vehSemiCarAudioBugfixHandler::Init", "Fix semi air brake audio.",
+    InstallCallback("vehSemiCarAudio::Init", "Fix semi air brake audio.",
         &UpdateAirBlow, {
             cbHook<CALL>(0x4DCB61),
             cbHook<CALL>(0x4DCB3C)
+        }
+    );
+
+    InstallVTableHook("vehSemiCarAudio::SetNon3DParams",
+        &SetNon3DParams, {
+            0x5B31C4
         }
     );
 }

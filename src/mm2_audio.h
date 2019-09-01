@@ -1,5 +1,6 @@
 #pragma once
 #include "mm2_common.h"
+#include "mm2_base.h"
 
 /*
     DirSnd is based on the "Full-Duplex Filter" sample found in the VC98 SDK
@@ -25,7 +26,7 @@ namespace MM2
     class mmDirSnd;
     class Aud3DObject;
     class AudCreatureContainer;
-    class audManager;
+    class AudManager;
     class mmCNRSpeech;
 
     namespace $
@@ -77,7 +78,10 @@ namespace MM2
 
     class AudSoundBase {
     public:
-        AGE_API void PlayOnce(float volume, float pitch) { ageHook::Thunk<0x50E090>::Call<void>(this, volume, pitch); }
+        AGE_API void PlayOnce(float volume, float pitch)    { ageHook::Thunk<0x50E090>::Call<void>(this, volume, pitch); }
+        AGE_API void SetFrequency(float frequency)          { ageHook::Thunk<0x50DAB0>::Call<void>(this, frequency); }
+        AGE_API void SetVolume(float volume)                { ageHook::Thunk<0x50DA30>::Call<void>(this, volume); }
+        AGE_API void SetPan(float pan, int a2)              { ageHook::Thunk<0x50DB30>::Call<void>(this, pan, a2); }
     };
 
     class Aud3DObject {
@@ -287,16 +291,70 @@ namespace MM2
         }
     };
 
-    class audManager {
+    class AudManagerBase : public asNode {
     public:
-        static ageHook::Type<audManager*> Instance;
+        AGE_API AudManagerBase() {
+            PUSH_VTABLE();
+            ageHook::Thunk<0x50EE10>::Call<void>(this);
+            POP_VTABLE();
+        };
 
-        AGE_API mmCNRSpeech* GetCNRSpeechPtr()              { return ageHook::Thunk<0x5195C0>::Call<mmCNRSpeech*>(this); }
-        AGE_API mmRaceSpeech* GetRaceSpeechPtr()             { return ageHook::Thunk<0x519580>::Call<mmRaceSpeech*>(this); }
+        AGE_API ~AudManagerBase() {
+            PUSH_VTABLE();
+            ageHook::Thunk<0x50EE40>::Call<void>(this);
+            POP_VTABLE();
+        };
+
+        //instance
+        static ageHook::Type<AudManagerBase*> Instance;
+
+        //members
+        AGE_API BOOL IsStereo()                         { return ageHook::Thunk<0x50F0D0>::Call<BOOL>(this); }
+
+        //asNode overrides
+        AGE_API virtual void Update() override          { ageHook::Thunk<0x50F130>::Call<void>(this); }
+        AGE_API virtual void UpdatePaused() override    { ageHook::Thunk<0x50F1A0>::Call<void>(this); }
+
+        //lua helpers
+        inline bool getIsStereo() {
+            return IsStereo() == TRUE;
+        }
 
         static void BindLua(LuaState L) {
-            LuaBinding(L).beginClass<audManager>("audManager")
-                .addStaticFunction("Instance", [] { return (audManager*)Instance; })
+            LuaBinding(L).beginExtendClass<AudManagerBase, asNode>("AudManagerBase")
+                .addStaticFunction("Instance", [] { return (AudManagerBase*)Instance; })
+
+                .addPropertyReadOnly("IsStereo", &getIsStereo)
+                .endClass();
+        }
+    };
+
+    class AudManager : public AudManagerBase {
+    public:
+        AGE_API AudManager() {
+            PUSH_VTABLE();
+            ageHook::Thunk<0x519290>::Call<void>(this);
+            POP_VTABLE();
+        };
+
+        AGE_API ~AudManager() {
+            PUSH_VTABLE();
+            ageHook::Thunk<0x5192D0>::Call<void>(this);
+            POP_VTABLE();
+        };
+
+        static ageHook::Type<AudManager*> Instance;
+
+        //members
+        AGE_API mmCNRSpeech* GetCNRSpeechPtr()               { return ageHook::Thunk<0x5195C0>::Call<mmCNRSpeech*>(this); }
+        AGE_API mmRaceSpeech* GetRaceSpeechPtr()             { return ageHook::Thunk<0x519580>::Call<mmRaceSpeech*>(this); }
+        
+        //asNode overrides
+        AGE_API virtual void Update() override               { ageHook::Thunk<0x519D00>::Call<void>(this); }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginExtendClass<AudManager, AudManagerBase>("AudManager")
+                .addStaticFunction("Instance", [] { return (AudManager*)Instance; })
 
                 .addFunction("GetCNRSpeechPtr", &GetCNRSpeechPtr)
                 .addFunction("GetRaceSpeechPtr", &GetRaceSpeechPtr)
@@ -307,7 +365,8 @@ namespace MM2
 
     template<>
     void luaAddModule<module_audio>(LuaState L) {
-        luaBind<audManager>(L);
+        luaBind<AudManagerBase>(L);
+        luaBind<AudManager>(L);
         luaBind<mmCNRSpeech>(L);
         luaBind<mmRaceSpeech>(L);
     }

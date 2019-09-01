@@ -175,6 +175,7 @@ public:
 
 class vehSemiCarAudioBugfixHandler {
 public:
+    void SetNon3DParams();
     void UpdateAirBlow();
     void Init(MM2::vehCarSim* carsim, MM2::vehCarDamage* cardamage, char* basename, bool a5, bool a6, bool a7);
     static void Install();

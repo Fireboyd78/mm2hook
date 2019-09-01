@@ -2,6 +2,11 @@
 using namespace MM2;
 
 /*
-    audManager
+    AudManager
 */
-declfield(audManager::Instance)(0x6B15D0);
+declfield(AudManager::Instance)(0x6B15D0);
+
+/*
+    AudManagerBase
+*/
+declfield(AudManagerBase::Instance)(0x6B1474);
