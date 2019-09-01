@@ -6,6 +6,7 @@ var searchData=
   ['aivehicleambient',['aiVehicleAmbient',['../classai_vehicle_ambient.html',1,'']]],
   ['aivehicledata',['aiVehicleData',['../classai_vehicle_data.html',1,'']]],
   ['aivehicleinstance',['aiVehicleInstance',['../classai_vehicle_instance.html',1,'']]],
+  ['aivehiclemanager',['aiVehicleManager',['../classai_vehicle_manager.html',1,'']]],
   ['aivehiclespline',['aiVehicleSpline',['../classai_vehicle_spline.html',1,'']]],
   ['asbirthrule',['asBirthRule',['../classas_birth_rule.html',1,'']]],
   ['ascullable',['asCullable',['../classas_cullable.html',1,'']]],

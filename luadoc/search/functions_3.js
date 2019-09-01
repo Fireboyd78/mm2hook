@@ -1,6 +1,7 @@
 var searchData=
 [
   ['deactivate',['Deactivate',['../classmm_hud_map.html#af931e97d0b09c5fba8d886a5ab08c3db',1,'mmHudMap']]],
+  ['default',['Default',['../classlt_light.html#ae7328b209d498f136caa978e8868434e',1,'ltLight']]],
   ['deletetempbounds',['DeleteTempBounds',['../classlvl_instance.html#ae26018bfe51a2ccefec0ce49f90d541d',1,'lvlInstance']]],
   ['detach',['Detach',['../classlvl_instance.html#a814c881461345f14ec92b990e8ead640',1,'lvlInstance']]],
   ['detachme',['DetachMe',['../classdg_phys_entity.html#a7bf726af7d66b096265301471ca72def',1,'dgPhysEntity']]],
@@ -8,8 +9,11 @@ var searchData=
   ['dist',['Dist',['../class_vector3.html#a9e60b2934d233f06ff38048c7f8b0225',1,'Vector3']]],
   ['dot',['Dot',['../class_matrix44.html#a633ca633255a548fbc32b4c52e2a1aef',1,'Matrix44']]],
   ['downshift',['Downshift',['../classveh_transmission.html#af834f17f9321dde77e874929ca7e4d4c',1,'vehTransmission']]],
-  ['draw',['Draw',['../classlvl_instance.html#a9f9ed6f72641cc5ef8f268ca1b1af175',1,'lvlInstance']]],
-  ['drawglow',['DrawGlow',['../classlvl_instance.html#a1e4ba8e0a912b8ae903dad1df6cbff20',1,'lvlInstance']]],
+  ['draw',['Draw',['../classlt_light.html#ad57e7e934f096154bb19d16c802f9ec1',1,'ltLight.Draw()'],['../classlvl_instance.html#a9f9ed6f72641cc5ef8f268ca1b1af175',1,'lvlInstance.Draw()'],['../classveh_siren.html#a2a7d310850876a8d371f65d91e5dc8fd',1,'vehSiren.Draw()']]],
+  ['drawglow',['DrawGlow',['../classlt_light.html#ab17de04a38661dedbfd739c8b2d9c7b1',1,'ltLight.DrawGlow()'],['../classlvl_instance.html#a1e4ba8e0a912b8ae903dad1df6cbff20',1,'lvlInstance.DrawGlow()']]],
+  ['drawglowbegin',['DrawGlowBegin',['../classlt_light.html#ac5d1f10876846a3619740854b32d0147',1,'ltLight']]],
+  ['drawglowend',['DrawGlowEnd',['../classlt_light.html#ade2d1382e78c3cdffb23ce7d3560e462',1,'ltLight']]],
+  ['drawhighlight',['DrawHighlight',['../classlt_light.html#addb8c9ecb1b5fc9d0e235ccb146d02b0',1,'ltLight']]],
   ['drawreflected',['DrawReflected',['../classlvl_instance.html#aae80fa6c0f58a45c11921521d146d758',1,'lvlInstance']]],
   ['drawreflectedparts',['DrawReflectedParts',['../classlvl_instance.html#a9e498980b1cce27fa3a447f8fbe723b2',1,'lvlInstance']]],
   ['drawshadow',['DrawShadow',['../classlvl_instance.html#ae47c277e4eb5821eb76b1ebbcd869d45',1,'lvlInstance']]],

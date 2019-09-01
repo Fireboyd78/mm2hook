@@ -17,7 +17,9 @@ var classlvl_instance =
     [ "GetBound", "classlvl_instance.html#adceed69cb3919036baa87b77e09cb0b2", null ],
     [ "GetBoundSphere", "classlvl_instance.html#a7ec8be6ae882e680b31a6a77d4fc6ac4", null ],
     [ "GetEntity", "classlvl_instance.html#aac5adba2d84cbf2718c3e56ff5198782", null ],
+    [ "GetGeomName", "classlvl_instance.html#a092666fd1e449d883a79dcb729be202d", null ],
     [ "GetGeomSet", "classlvl_instance.html#a1c7be7438b1ca303a7f21a0ce49acbac", null ],
+    [ "GetGeomTableEntry", "classlvl_instance.html#acecb3112c205e5b1c1fdbbca956bbbfd", null ],
     [ "GetMatrix", "classlvl_instance.html#abb7881aba974ebe0ebebf60ede49c23c", null ],
     [ "GetNumLightSources", "classlvl_instance.html#aa9fafb9a08e114e024a174367a9ea9b5", null ],
     [ "GetPosition", "classlvl_instance.html#a22c1111aea735acb9276a7538d4c8a5e", null ],
@@ -44,5 +46,7 @@ var classlvl_instance =
     [ "SetupGfxLights", "classlvl_instance.html#a797182168c09f9a88f45383e21826f25", null ],
     [ "SetVariant", "classlvl_instance.html#a99efcb541d95d73174644efe0e5026e7", null ],
     [ "SizeOf", "classlvl_instance.html#afe04a24594709e02bcd9f297a3883051", null ],
-    [ "CurrentRoom", "classlvl_instance.html#a6d7545d30f284895b2f613a2ee4c07a4", null ]
+    [ "CurrentRoom", "classlvl_instance.html#a6d7545d30f284895b2f613a2ee4c07a4", null ],
+    [ "GeometrySetIndex", "classlvl_instance.html#a0d998a3c805a240af935af90d30fe727", null ],
+    [ "GeomTableSize", "classlvl_instance.html#a0e70d37ebfcd9ee82db9abf5964b18a5", null ]
 ];

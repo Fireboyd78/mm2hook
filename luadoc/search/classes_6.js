@@ -11,5 +11,6 @@ var searchData=
   ['mmplayer',['mmPlayer',['../classmm_player.html',1,'']]],
   ['mmpopup',['mmPopup',['../classmm_popup.html',1,'']]],
   ['mmracespeech',['mmRaceSpeech',['../classmm_race_speech.html',1,'']]],
-  ['mmstatepack',['mmStatePack',['../classmm_state_pack.html',1,'']]]
+  ['mmstatepack',['mmStatePack',['../classmm_state_pack.html',1,'']]],
+  ['modstatic',['modStatic',['../classmod_static.html',1,'']]]
 ];

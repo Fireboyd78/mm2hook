@@ -6,5 +6,6 @@ var searchData=
   ['makeroty',['MakeRotY',['../class_matrix44.html#ab8dc93781feac772db8fd9a1b3433117',1,'Matrix44']]],
   ['makerotz',['MakeRotZ',['../class_matrix44.html#a0bbdd5ac4fb0ce596f7e3145a2b2fc84',1,'Matrix44']]],
   ['matrix34',['Matrix34',['../class_matrix34.html#a2d2d10709e37d5f7a5653a1ed0a2ca86',1,'Matrix34']]],
-  ['matrix44',['Matrix44',['../class_matrix44.html#acb39888006d2d78610d42da7e7b13cb8',1,'Matrix44']]]
+  ['matrix44',['Matrix44',['../class_matrix44.html#acb39888006d2d78610d42da7e7b13cb8',1,'Matrix44']]],
+  ['moveics',['MoveICS',['../classph_inertial_c_s.html#acaffa22b8413d1cfaba9482ef45633a3',1,'phInertialCS']]]
 ];

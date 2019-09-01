@@ -1,10 +1,12 @@
 var searchData=
 [
   ['identity',['Identity',['../class_matrix34.html#a9a9fa48343719ec7a1443838429831ee',1,'Matrix34.Identity()'],['../class_matrix44.html#a3646a961847cd1bbc7ca323ab507877d',1,'Matrix44.Identity()']]],
-  ['init',['Init',['../classas_particles.html#adef0a43a4f4df14606ac62bb51eb5fb5',1,'asParticles.Init()'],['../classcam_view_c_s.html#aac843e0b6634933fbcbee4fbaa495ef7',1,'camViewCS.Init()'],['../classlvl_instance.html#ab753bd9afd322788c806599693319de6',1,'lvlInstance.Init()'],['../classveh_car.html#a3cc4b1bbc48495d00dee73b03f33c08e',1,'vehCar.Init()']]],
+  ['illuminate',['Illuminate',['../classlt_light.html#adb952a78ca8c89bbe5f0176d07ec5934',1,'ltLight']]],
+  ['init',['Init',['../classas_particles.html#adef0a43a4f4df14606ac62bb51eb5fb5',1,'asParticles.Init()'],['../classcam_view_c_s.html#aac843e0b6634933fbcbee4fbaa495ef7',1,'camViewCS.Init()'],['../classlvl_instance.html#ab753bd9afd322788c806599693319de6',1,'lvlInstance.Init()'],['../classph_inertial_c_s.html#afadb782e2c5206decf6585dac9d6113a',1,'phInertialCS.Init()'],['../classveh_car.html#a3cc4b1bbc48495d00dee73b03f33c08e',1,'vehCar.Init()'],['../classveh_siren.html#a3f61f38433e58dc8934d4372fb13aeea',1,'vehSiren.Init()']]],
   ['initaudio',['InitAudio',['../classveh_car.html#a1e1120d703f4d7403f2fa84cc27c3c9a',1,'vehCar']]],
   ['initboundterrain',['InitBoundTerrain',['../classlvl_instance.html#aaaa455dee3865b4ae2ea24f4875e4f4a',1,'lvlInstance']]],
   ['initboundterrrainlocal',['InitBoundTerrrainLocal',['../classlvl_instance.html#a542ee450ec227dbd0c7506f84650a8a3',1,'lvlInstance']]],
+  ['initboxmass',['InitBoxMass',['../classph_inertial_c_s.html#a0af659d01fee4767a01d11d9d6b4f2f1',1,'phInertialCS']]],
   ['initghost',['InitGhost',['../classlvl_instance.html#af024921e4a5b6cfe9172aa8087aca665',1,'lvlInstance']]],
   ['initghostbound',['InitGhostBound',['../classlvl_instance.html#af15b76f5bb8ce3ae7a15f51db23cfac7',1,'lvlInstance']]],
   ['insertchild',['InsertChild',['../classas_node.html#a26e87c1a854e6eb42eecb7dfa9f83091',1,'asNode']]],
@@ -12,6 +14,7 @@ var searchData=
   ['invmag',['InvMag',['../class_vector3.html#a36998b7f4d5a5cee3c3bc07b1122dbaa',1,'Vector3']]],
   ['isbroken',['IsBroken',['../classph_joint.html#a50e77355eb8aec296f2867dd9e1a6f70',1,'phJoint']]],
   ['iscollidable',['IsCollidable',['../classlvl_instance.html#affe643126114cd27c485aa76dc27b00e',1,'lvlInstance']]],
+  ['iscurrentcamera',['IsCurrentCamera',['../classcam_view_c_s.html#a3a57e11a6ba3e4fe6574d640fcd901f1',1,'camViewCS']]],
   ['isenabled',['IsEnabled',['../classmm_popup.html#aa2361b8e332575b335b2df1cdd93c0fe',1,'mmPopup']]],
   ['islandmark',['IsLandmark',['../classlvl_instance.html#a3371cae4a6721ca076d3c61b74ea048f',1,'lvlInstance']]],
   ['ismaxdamaged',['IsMaxDamaged',['../classmm_player.html#ad4dcd980509937687dfd0eaea44bef85',1,'mmPlayer']]],

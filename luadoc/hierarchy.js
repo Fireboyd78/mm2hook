@@ -15,6 +15,7 @@ var hierarchy =
       [ "asCullable", "classas_cullable.html", [
         [ "asNode", "classas_node.html", [
           [ "aiVehicleData", "classai_vehicle_data.html", null ],
+          [ "aiVehicleManager", "classai_vehicle_manager.html", null ],
           [ "asBirthRule", "classas_birth_rule.html", null ],
           [ "asMeshSetForm", "classas_mesh_set_form.html", null ],
           [ "camBaseCS", "classcam_base_c_s.html", [
@@ -47,7 +48,9 @@ var hierarchy =
       [ "vehTrailer", "classveh_trailer.html", null ]
     ] ],
     [ "dgPhysManager", "classdg_phys_manager.html", null ],
+    [ "GeomTableEntry", "class_geom_table_entry.html", null ],
     [ "Globals", "class_globals.html", null ],
+    [ "ltLight", "classlt_light.html", null ],
     [ "luaCallback", "classlua_callback.html", null ],
     [ "lvlAiMap", "classlvl_ai_map.html", null ],
     [ "lvlAiRoad", "classlvl_ai_road.html", null ],
@@ -64,7 +67,9 @@ var hierarchy =
     [ "mmPopup", "classmm_popup.html", null ],
     [ "mmRaceSpeech", "classmm_race_speech.html", null ],
     [ "mmStatePack", "classmm_state_pack.html", null ],
+    [ "modStatic", "classmod_static.html", null ],
     [ "phBound", "classph_bound.html", null ],
+    [ "phInertialCS", "classph_inertial_c_s.html", null ],
     [ "phJoint", "classph_joint.html", [
       [ "dgTrailerJoint", "classdg_trailer_joint.html", null ]
     ] ],
@@ -74,5 +79,6 @@ var hierarchy =
     [ "Vector4", "class_vector4.html", null ],
     [ "vehBreakable", "classveh_breakable.html", null ],
     [ "vehBreakableMgr", "classveh_breakable_mgr.html", null ],
-    [ "vehCarDamage", "classveh_car_damage.html", null ]
+    [ "vehCarDamage", "classveh_car_damage.html", null ],
+    [ "vehSiren", "classveh_siren.html", null ]
 ];

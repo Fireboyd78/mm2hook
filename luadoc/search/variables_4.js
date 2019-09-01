@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['friction',['Friction',['../classai_vehicle_data.html#a197715dacc64ed855c7986e61679dd36',1,'aiVehicleData']]]
+  ['enableprojection',['EnableProjection',['../classlt_light.html#afe0126d0e53734db6553ca5c910c228b',1,'ltLight']]]
 ];

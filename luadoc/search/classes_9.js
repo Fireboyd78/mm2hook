@@ -10,6 +10,7 @@ var searchData=
   ['vehcarmodel',['vehCarModel',['../classveh_car_model.html',1,'']]],
   ['vehcarsim',['vehCarSim',['../classveh_car_sim.html',1,'']]],
   ['vehengine',['vehEngine',['../classveh_engine.html',1,'']]],
+  ['vehsiren',['vehSiren',['../classveh_siren.html',1,'']]],
   ['vehtrailer',['vehTrailer',['../classveh_trailer.html',1,'']]],
   ['vehtrailerinstance',['vehTrailerInstance',['../classveh_trailer_instance.html',1,'']]],
   ['vehtransmission',['vehTransmission',['../classveh_transmission.html',1,'']]]

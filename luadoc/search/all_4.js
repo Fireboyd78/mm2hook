@@ -8,6 +8,7 @@ var searchData=
   ['enablecablecars',['EnableCableCars',['../classmm_state_pack.html#aba90ae0b7e955f37a87427cabfa58a11',1,'mmStatePack']]],
   ['enablelighting',['EnableLighting',['../classas_mesh_set_form.html#af3bba4f417513ef333a6d34da0791629',1,'asMeshSetForm']]],
   ['enablepedestrians',['EnablePedestrians',['../classmm_state_pack.html#ae65a678054772bd61822394d513513a0',1,'mmStatePack']]],
+  ['enableprojection',['EnableProjection',['../classlt_light.html#afe0126d0e53734db6553ca5c910c228b',1,'ltLight']]],
   ['enableregen',['EnableRegen',['../classmm_player.html#a71700ad8b9729e1bc68d7a76abac6670',1,'mmPlayer']]],
   ['enablesubways',['EnableSubways',['../classmm_state_pack.html#a616b6022380c94567e957be7f4eada03',1,'mmStatePack']]],
   ['endgeom',['EndGeom',['../classlvl_instance.html#ac88b17b4a945c2a3be7c7a33fb9b815c',1,'lvlInstance']]],
