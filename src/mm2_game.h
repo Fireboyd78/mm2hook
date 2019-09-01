@@ -118,6 +118,14 @@ namespace MM2
             return _game.get(this);
         };
 
+        inline mmPlayer*  getPlayerSafe(void) const {
+            auto game = _game.get(this);
+            if (game == nullptr)
+                return nullptr;
+            auto player = game->getPlayer();
+            return player;
+        }
+
         /* TODO?
         mmGameManager::mmGameManager(void)
         mmGameManager::~mmGameManager(void)
