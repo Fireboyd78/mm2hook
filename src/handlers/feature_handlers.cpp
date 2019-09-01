@@ -2275,13 +2275,27 @@ const phBound * vehCarHandler::GetModelBound(int a1) {
 
 
 void vehCarHandler::InitCarAudio(LPCSTR a1, BOOL a2) {
+    auto car = reinterpret_cast<vehCar*>(this);
+
     // debug if enabled
     if (cfgVehicleDebug.Get()) {
         Displayf("Loading vehicle audio (\"%s\", %d)", a1, a2);
     }
 
+    //add to vehtypes if this has a siren :)
+    bool vehicleHasSiren = false;
+    if (car->getSiren() != nullptr) {
+        vehicleHasSiren = car->getSiren()->HasLights && car->getSiren()->LightCount > 0;
+    }
+
+    if (vehicleHasSiren && !vehCarAudioContainer::IsPolice(a1)) {
+        Displayf("%s has a lightbar, but is not in the vehtypes file. Adding it.");
+        string_buf<128> sirenBuffer("%s,ENDOFDATA", a1);
+        vehCarAudioContainer::RegisterPoliceNames(NULL, (LPCSTR)sirenBuffer);
+    }
+
     //pass back to original function
-    get<vehCar>()->InitAudio(a1, a2);
+    car->InitAudio(a1, a2);
 }
 
 void vehCarHandler::Install(void) {
