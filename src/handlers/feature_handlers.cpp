@@ -1420,6 +1420,12 @@ void mmGameHandler::Install() {
             cbHook<CALL>(0x4131C0), // mmGame::Init
         }
     );
+
+    //removes the "SpecialBound" (INST) spawn limitation (Flag 32), leaving only Standard flag
+    InstallPatch("Enables spawning in INST rooms.", { 0x04 }, {
+        0x413C1C,
+        });
+    
 }
 
 /*
