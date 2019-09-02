@@ -17,19 +17,33 @@ namespace MM2
 
     class vehCarSim : public asNode {
     protected:
-        ageHook::Field<0x24C, float> _speed;
+        ageHook::Field<0x24C, float> _speedMPH;
+        ageHook::Field<0x248, float> _speed;
         ageHook::Field<0x210, const Vector3> _resetPosition;
         ageHook::Field<0x1D0, lvlInstance *> _instance;
         ageHook::Field<0x2E0, vehTransmission> _transmission;
         ageHook::Field<0x25C, vehEngine> _engine;
-        ageHook::Field<0x154C, float> _brakeInput;
+        ageHook::Field<0x154C, float> _brake;
+        ageHook::Field<0x1554, float> _steering;
     public:
-        inline float getBrakeInput(void) {
-            return _brakeInput.get(this);
+        inline float getSteering(void) {
+            return _steering.get(this);
         }
 
-        inline float getSpeed(void) {
-            return _speed.get(this);
+        inline void setSteering(float steering) {
+            _steering.set(this, steering);
+        }
+
+        inline float getBrake(void) {
+            return _brake.get(this);
+        }
+
+        inline void setBrake(float brake) {
+            _brake.set(this, brake);
+        }
+
+        inline float getSpeedMPH(void) {
+            return _speedMPH.get(this);
         };
 
         inline const Vector3 getResetPosition(void) {
@@ -74,7 +88,9 @@ namespace MM2
                 .addPropertyReadOnly("Transmission", &getTransmission)
                 .addPropertyReadOnly("ResetPosition", &getResetPosition)
                 .addPropertyReadOnly("Engine", &getEngine)
-                .addPropertyReadOnly("Speed", &getSpeed)
+                .addPropertyReadOnly("Speed", &getSpeedMPH)
+                .addProperty("Steering", &getSteering, &setSteering)
+                .addProperty("Brake", &getBrake, &setBrake)
 
                 .addFunction("BottomedOut", &BottomedOut)
                 .addFunction("OnGround", &OnGround)

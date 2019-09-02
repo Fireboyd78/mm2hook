@@ -77,6 +77,8 @@ namespace MM2
     }
 
     class AudSoundBase {
+    private:
+        byte _buffer[0x40];
     public:
         AGE_API void PlayOnce(float volume, float pitch)    { ageHook::Thunk<0x50E090>::Call<void>(this, volume, pitch); }
         AGE_API void SetFrequency(float frequency)          { ageHook::Thunk<0x50DAB0>::Call<void>(this, frequency); }

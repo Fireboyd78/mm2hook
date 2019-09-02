@@ -147,7 +147,7 @@ BOOL aiPoliceForceHandler::IsPerpDrivingMadly(vehCar *perpCar) {
         // ignore perp if they're a cop
         if (!ageHook::StaticThunk<0x4D1A70>::Call<bool>(vehName))
         {
-            float speed = perpCar->getCarSim()->getSpeed();
+            float speed = perpCar->getCarSim()->getSpeedMPH();
             float speedLimit = getSpeedLimit(perpCar) * 2.857142857142857f;
 
             if (speed > (speedLimit * cfgSpeedLimitTolerance)) {
@@ -931,7 +931,7 @@ void vehTrailerInstanceHandler::DrawGlow()
 
     //get vars
     auto carsim = inst->getTrailer()->getCarSim();
-    float brakeInput = carsim->getBrakeInput();
+    float brakeInput = carsim->getBrake();
     int gear = carsim->getTransmission()->getGear();
     int geomSet = inst->getGeomSetId() - 1;
 
@@ -1198,8 +1198,8 @@ void vehSemiCarAudioBugfixHandler::UpdateAirBlow()
     if (player->getCar()->getCarSim() != carsim)
         return;
 
-    float speed = carsim->getSpeed();
-    bool isBraking = carsim->getBrakeInput() > 0.1f;
+    float speed = carsim->getSpeedMPH();
+    bool isBraking = carsim->getBrake() > 0.1f;
 
     //if we're going >5mph, set the sound flag
     if (speed > 5.f) {

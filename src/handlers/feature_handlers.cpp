@@ -2377,6 +2377,7 @@ Matrix34 vehCarModelGarbageMtx = Matrix34();
 int sirenStyle = 0;
 int headlightStyle = 0;
 float sirenCycle = 0.25f;
+bool enableSignals = false;
 
 static ConfigValue<bool> cfgPartReflections("ReflectionsOnCarParts", false);
 
@@ -2431,10 +2432,37 @@ void vehCarModelFeatureHandler::DrawGlow() {
     auto siren0 = lvlInstance::GetGeomTableEntry(geomID + 9);
     auto siren1 = lvlInstance::GetGeomTableEntry(geomID + 10);
 
+    auto slight0 = lvlInstance::GetGeomTableEntry(geomID + 5);
+    auto slight1 = lvlInstance::GetGeomTableEntry(geomID + 6);
+
+    //draw signals
+    if (enableSignals && carsim->getSpeedMPH() <= 15.f) {
+        //check signal clock
+        bool drawSignal = fmod(datTimeManager::ElapsedTime, 1.f) > 0.5f;
+
+        //get signal index
+        int slightIndex = -1;
+        if (carsim->getSteering() < -0.5f)
+            slightIndex = 0;
+        if (carsim->getSteering() > 0.5f)
+            slightIndex = 1;
+
+        //draw stuff!
+        if (drawSignal && slightIndex >= 0) {
+            if (slight0->Low != nullptr && slightIndex == 0) {
+                slight0->Low->Draw(shaders);
+            }
+            else if (slight1->Low != nullptr && slightIndex == 1) {
+                slight1->Low->Draw(shaders);
+            }
+        }
+    }
+
+
     //draw tlight
     if (tlight->Low != nullptr) {
         //draw brake copy
-        if(carsim->getBrakeInput() > 0.1)
+        if(carsim->getBrake() > 0.1)
             tlight->Low->Draw(shaders);
         //draw headlight copy
         if(vehCar::sm_DrawHeadlights)
@@ -2444,7 +2472,7 @@ void vehCarModelFeatureHandler::DrawGlow() {
     //draw blight
     if (blight->Low != nullptr) {
         //draw brake copy
-        if (carsim->getBrakeInput() > 0.1)
+        if (carsim->getBrake() > 0.1)
             blight->Low->Draw(shaders);
     }
 
@@ -2512,7 +2540,8 @@ void vehCarModelFeatureHandler::Install() {
             }
         );
     }
-
+    
+    enableSignals = cfgEnableSignals.Get();
     sirenStyle = cfgSirenStyle.Get();
     headlightStyle = cfgHeadlightStyle.Get();
     sirenCycle = cfgSirenCycleRate.Get();

@@ -121,7 +121,7 @@ namespace MM2 {
         AGE_API char * GetEnumPlayer(int a2)                { return ageHook::Thunk<0x570A60>::Call<char *>(this, a2); }
         AGE_API ulong GetPlayerID(int a2)                   { return ageHook::Thunk<0x570A90>::Call<ulong>(this, a2); }
         AGE_API int GetNumPlayers(void)                     { return ageHook::Thunk<0x570AD0>::Call<int>(this); }
-        AGE_API int GetPlayerName(DPID idPlayer)            { return ageHook::Thunk<0x570B90>::Call<int>(this, idPlayer); }
+        AGE_API char* GetPlayerName(DPID idPlayer)          { return ageHook::Thunk<0x570B90>::Call<char*>(this, idPlayer); }
         AGE_API int GetPlayerName(DPID idPlayer, char *a3)  { return ageHook::Thunk<0x570C60>::Call<int>(this, idPlayer, a3); }
         AGE_API void SetPlayerData(DPID idPlayer, void *lpData, DWORD dwDataSize)
                                                             { return ageHook::Thunk<0x570D70>::Call<void>(this, idPlayer, lpData, dwDataSize); }
