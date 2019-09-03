@@ -63,6 +63,12 @@
 #define PTR_(p,o)               PTR(((BYTE*)p + o))
 
 //
+// Useful math things
+//
+
+#define CLAMPINT(x, mn, mx) (x > mx) ? mx : ((x < mn) ? mn : x)
+
+//
 // Console color macros
 //
 
