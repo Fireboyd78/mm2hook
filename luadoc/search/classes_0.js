@@ -14,5 +14,6 @@ var searchData=
   ['asmeshsetform',['asMeshSetForm',['../classas_mesh_set_form.html',1,'']]],
   ['asnode',['asNode',['../classas_node.html',1,'']]],
   ['asparticles',['asParticles',['../classas_particles.html',1,'']]],
-  ['audmanager',['audManager',['../classaud_manager.html',1,'']]]
+  ['audmanager',['AudManager',['../class_aud_manager.html',1,'']]],
+  ['audmanagerbase',['AudManagerBase',['../class_aud_manager_base.html',1,'']]]
 ];

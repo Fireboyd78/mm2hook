@@ -22,6 +22,7 @@ var searchData=
   ['makerotx',['MakeRotX',['../class_matrix44.html#ae952e6f2b0e6c7d2620fa98e8460bcd8',1,'Matrix44']]],
   ['makeroty',['MakeRotY',['../class_matrix44.html#ab8dc93781feac772db8fd9a1b3433117',1,'Matrix44']]],
   ['makerotz',['MakeRotZ',['../class_matrix44.html#a0bbdd5ac4fb0ce596f7e3145a2b2fc84',1,'Matrix44']]],
+  ['manualnumgears',['ManualNumGears',['../classveh_transmission.html#abfae99abb79f0e8e6ff12db23dd0eff8',1,'vehTransmission']]],
   ['mass',['Mass',['../classai_vehicle_data.html#a4700ca5a5398ecc6178bb47c50d7a7d1',1,'aiVehicleData.Mass()'],['../classas_birth_rule.html#ad1a93135807485ef082878c0a944ab70',1,'asBirthRule.Mass()']]],
   ['massvar',['MassVar',['../classas_birth_rule.html#aad7f38af2952f52319e320acb516b245',1,'asBirthRule']]],
   ['matrix',['Matrix',['../classcam_a_i_c_s.html#ad0ad9661d6fddff0685def0e2d296893',1,'camAICS.Matrix()'],['../classcam_base_c_s.html#a482ce5b03e1d4e9a2091295c4a26fbb5',1,'camBaseCS.Matrix()'],['../classph_inertial_c_s.html#aac3f6195f95f59a5fa62226528067418',1,'phInertialCS.Matrix()']]],

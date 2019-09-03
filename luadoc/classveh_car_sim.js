@@ -6,7 +6,10 @@ var classveh_car_sim =
     [ "RestoreImpactParams", "classveh_car_sim.html#a2ec96c565e3d158d2d1298f96803a367", null ],
     [ "SetHackedImpactParams", "classveh_car_sim.html#ac4f0b30940762457193825fa514a6499", null ],
     [ "SetResetPos", "classveh_car_sim.html#aa08eb82e28899b491c435cb1295fe494", null ],
+    [ "Brake", "classveh_car_sim.html#aac0652529cd420f64cc194e894b92d4e", null ],
     [ "Engine", "classveh_car_sim.html#a893480e520df2d6a490000c802a487b3", null ],
     [ "ResetPosition", "classveh_car_sim.html#a66b2023a5b325f4655101916c59e29d8", null ],
+    [ "Speed", "classveh_car_sim.html#acbd94032222dd6995acc5536592bdeda", null ],
+    [ "Steering", "classveh_car_sim.html#a478429af1fd01b999c436021d2afb795", null ],
     [ "Transmission", "classveh_car_sim.html#a63efb06efbc9cc295bc52380a389e676", null ]
 ];

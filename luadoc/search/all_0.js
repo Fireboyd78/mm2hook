@@ -31,6 +31,8 @@ var searchData=
   ['attachentity',['AttachEntity',['../classlvl_instance.html#ae9db5b6d563c6702594cd8f5bffcad80',1,'lvlInstance']]],
   ['audio',['Audio',['../classveh_car.html#a9540f0c2190b092cbd98393903e7b80a',1,'vehCar']]],
   ['audioflags',['AudioFlags',['../classmm_state_pack.html#a5146afb4fc35e69535567e73727bca85',1,'mmStatePack']]],
-  ['audmanager',['audManager',['../classaud_manager.html',1,'']]],
-  ['automatic',['Automatic',['../classveh_transmission.html#a311cc952eea5368da5362d29a022a591',1,'vehTransmission']]]
+  ['audmanager',['AudManager',['../class_aud_manager.html',1,'']]],
+  ['audmanagerbase',['AudManagerBase',['../class_aud_manager_base.html',1,'']]],
+  ['automatic',['Automatic',['../classveh_transmission.html#a311cc952eea5368da5362d29a022a591',1,'vehTransmission']]],
+  ['autonumgears',['AutoNumGears',['../classveh_transmission.html#a86029205374cf0f6462cfe9214492aff',1,'vehTransmission']]]
 ];

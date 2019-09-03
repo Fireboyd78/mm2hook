@@ -6,6 +6,8 @@ var searchData=
   ['damping',['Damping',['../classai_vehicle_data.html#a1c991ea7bfe265d51f41262732d3e0c2',1,'aiVehicleData']]],
   ['dampvar',['DampVar',['../classas_birth_rule.html#a0098373041c10d634879df976159333d',1,'asBirthRule']]],
   ['direction',['Direction',['../classlt_light.html#a398a8fbdbfbb9a955d1f5545e53fecfa',1,'ltLight']]],
+  ['downshiftbiasmax',['DownshiftBiasMax',['../classveh_transmission.html#a92290a3593641254de1b2a7fc8adda26',1,'vehTransmission']]],
+  ['downshiftbiasmin',['DownshiftBiasMin',['../classveh_transmission.html#a1ed4b805a48a00e010a4c8144bff31b1',1,'vehTransmission']]],
   ['dradius',['DRadius',['../classas_birth_rule.html#a31619a4d2f96f95661a55342e1ffdd2a',1,'asBirthRule']]],
   ['dradiusvar',['DRadiusVar',['../classas_birth_rule.html#aab232fb22a5ccbff02313c59d69a82fc',1,'asBirthRule']]],
   ['drag',['Drag',['../classas_birth_rule.html#ad76c383a21ab4f8b62f0b23b7b8bbd91',1,'asBirthRule']]],

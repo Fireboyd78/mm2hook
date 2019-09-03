@@ -18,6 +18,7 @@ var searchData=
   ['resetinstanceheap',['ResetInstanceHeap',['../classlvl_instance.html#ae65899f1ffa9a231dc148b2ad83d9cf8',1,'lvlInstance']]],
   ['resetposition',['ResetPosition',['../classveh_car_sim.html#a66b2023a5b325f4655101916c59e29d8',1,'vehCarSim']]],
   ['restoreimpactparams',['RestoreImpactParams',['../classveh_car_sim.html#a2ec96c565e3d158d2d1298f96803a367',1,'vehCarSim']]],
+  ['reverse',['Reverse',['../classveh_transmission.html#afee43e01f23677bf1fdf6b8e578dc0d8',1,'vehTransmission']]],
   ['rotate',['Rotate',['../classph_inertial_c_s.html#a5746460fbee9d78c0c5e7b5ec2bf4776',1,'phInertialCS']]],
   ['rotateaboutaxis',['RotateAboutAxis',['../class_vector3.html#aa05311921f9f7926adc993383c60acdb',1,'Vector3']]],
   ['rotatex',['RotateX',['../class_vector3.html#a9ce9099a93476e85ed91294c073974fe',1,'Vector3']]],

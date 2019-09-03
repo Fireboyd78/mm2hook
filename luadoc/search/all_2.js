@@ -23,7 +23,7 @@ var searchData=
   ['clearinertialvalues',['ClearInertialValues',['../classph_inertial_c_s.html#a3b1ffc64dfeaf4a315a0d643d34a10ae',1,'phInertialCS']]],
   ['close',['Close',['../class_stream.html#acaf8b96dcdafd680d7a8cef4350f92e3',1,'Stream']]],
   ['color',['Color',['../classlt_light.html#a42070dd6bd03125e50876ffea04d1ee6',1,'ltLight']]],
-  ['computeconstants',['ComputeConstants',['../classveh_engine.html#a70fb37e75057703b1c578d7c9752f449',1,'vehEngine']]],
+  ['computeconstants',['ComputeConstants',['../classveh_engine.html#a70fb37e75057703b1c578d7c9752f449',1,'vehEngine.ComputeConstants()'],['../classveh_transmission.html#ab27d012e234d6b991bc5bf9a8031c845',1,'vehTransmission.ComputeConstants()']]],
   ['computedistance',['ComputeDistance',['../classlt_light.html#a2cd29399f664d4cfed087835977f73f9',1,'ltLight']]],
   ['computeintensity',['ComputeIntensity',['../classlt_light.html#ae100f9b61dbecd6f86b0d6ffe7c92c92',1,'ltLight']]],
   ['convert',['Convert',['../class_matrix44.html#a3bbd7539dfcdeda6365a21d7bb93704b',1,'Matrix44']]],

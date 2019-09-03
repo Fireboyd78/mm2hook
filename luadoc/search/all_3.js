@@ -25,6 +25,8 @@ var searchData=
   ['dist',['Dist',['../class_vector3.html#a9e60b2934d233f06ff38048c7f8b0225',1,'Vector3']]],
   ['dot',['Dot',['../class_matrix44.html#a633ca633255a548fbc32b4c52e2a1aef',1,'Matrix44']]],
   ['downshift',['Downshift',['../classveh_transmission.html#af834f17f9321dde77e874929ca7e4d4c',1,'vehTransmission']]],
+  ['downshiftbiasmax',['DownshiftBiasMax',['../classveh_transmission.html#a92290a3593641254de1b2a7fc8adda26',1,'vehTransmission']]],
+  ['downshiftbiasmin',['DownshiftBiasMin',['../classveh_transmission.html#a1ed4b805a48a00e010a4c8144bff31b1',1,'vehTransmission']]],
   ['dradius',['DRadius',['../classas_birth_rule.html#a31619a4d2f96f95661a55342e1ffdd2a',1,'asBirthRule']]],
   ['dradiusvar',['DRadiusVar',['../classas_birth_rule.html#aab232fb22a5ccbff02313c59d69a82fc',1,'asBirthRule']]],
   ['drag',['Drag',['../classas_birth_rule.html#ad76c383a21ab4f8b62f0b23b7b8bbd91',1,'asBirthRule']]],

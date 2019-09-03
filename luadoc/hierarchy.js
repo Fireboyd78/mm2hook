@@ -10,7 +10,6 @@ var hierarchy =
     ] ],
     [ "asMeshCardVertex", "classas_mesh_card_vertex.html", null ],
     [ "asParticles", "classas_particles.html", null ],
-    [ "audManager", "classaud_manager.html", null ],
     [ "Base", "class_base.html", [
       [ "asCullable", "classas_cullable.html", [
         [ "asNode", "classas_node.html", [
@@ -18,6 +17,9 @@ var hierarchy =
           [ "aiVehicleManager", "classai_vehicle_manager.html", null ],
           [ "asBirthRule", "classas_birth_rule.html", null ],
           [ "asMeshSetForm", "classas_mesh_set_form.html", null ],
+          [ "AudManagerBase", "class_aud_manager_base.html", [
+            [ "AudManager", "class_aud_manager.html", null ]
+          ] ],
           [ "camBaseCS", "classcam_base_c_s.html", [
             [ "camAppCS", "classcam_app_c_s.html", [
               [ "camCarCS", "classcam_car_c_s.html", [
