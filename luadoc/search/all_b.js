@@ -31,6 +31,8 @@ var searchData=
   ['maxambientvehicles',['MaxAmbientVehicles',['../classmm_state_pack.html#a40785cc7aaeeb2c5d2e35ae4c3b32ae8',1,'mmStatePack']]],
   ['maxang',['MaxAng',['../classai_vehicle_data.html#ab38a939f21273ba8df7d6abb7f093067',1,'aiVehicleData']]],
   ['maxdamage',['MaxDamage',['../classai_vehicle_data.html#ae2464a035b9e422ea2e18ff3f6989d88',1,'aiVehicleData.MaxDamage()'],['../classveh_car_damage.html#a132cbbd2f664913a3ab5a94786055900',1,'vehCarDamage.MaxDamage()']]],
+  ['maxhorsepower',['MaxHorsePower',['../classveh_engine.html#ad59f3eedd4d1c88a2685ec047faa70eb',1,'vehEngine']]],
+  ['maxrpm',['MaxRPM',['../classveh_engine.html#ab9ca6e7a035d3e6de2e29b9223d66d38',1,'vehEngine']]],
   ['meddamage',['MedDamage',['../classveh_car_damage.html#a258664a3e479ea3b47e6577841e00ff2',1,'vehCarDamage']]],
   ['mmcdplayer',['mmCDPlayer',['../classmm_c_d_player.html',1,'']]],
   ['mmcnrspeech',['mmCNRSpeech',['../classmm_c_n_r_speech.html',1,'']]],

@@ -21,5 +21,7 @@ var searchData=
   ['massvar',['MassVar',['../classas_birth_rule.html#aad7f38af2952f52319e320acb516b245',1,'asBirthRule']]],
   ['maxambientvehicles',['MaxAmbientVehicles',['../classmm_state_pack.html#a40785cc7aaeeb2c5d2e35ae4c3b32ae8',1,'mmStatePack']]],
   ['maxang',['MaxAng',['../classai_vehicle_data.html#ab38a939f21273ba8df7d6abb7f093067',1,'aiVehicleData']]],
-  ['maxdamage',['MaxDamage',['../classai_vehicle_data.html#ae2464a035b9e422ea2e18ff3f6989d88',1,'aiVehicleData']]]
+  ['maxdamage',['MaxDamage',['../classai_vehicle_data.html#ae2464a035b9e422ea2e18ff3f6989d88',1,'aiVehicleData']]],
+  ['maxhorsepower',['MaxHorsePower',['../classveh_engine.html#ad59f3eedd4d1c88a2685ec047faa70eb',1,'vehEngine']]],
+  ['maxrpm',['MaxRPM',['../classveh_engine.html#ab9ca6e7a035d3e6de2e29b9223d66d38',1,'vehEngine']]]
 ];
