@@ -71,3 +71,7 @@
 ###############################################################################
 src/lua/*       linguist-documentation
 src/LuaIntf/*   linguist-documentation
+
+# ayy, thanks Aaron ;)
+lua/*       linguist-documentation
+luadoc/*    linguist-documentation
