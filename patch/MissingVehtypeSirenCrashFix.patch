@@ -1,6 +1,0 @@
-//fix for Activate/Deactivate siren crahing game without the proper vehtype
-D4AF5 83F9000F841A010000EB18
-D4B18 8BF1EB0A
-D4B24 EBCF
-D4C20 EB61
-D4C83 83F90074FA33C0EB96
