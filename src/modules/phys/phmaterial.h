@@ -7,7 +7,8 @@ namespace MM2
     class phMaterial;
 
     // External declarations
-
+    extern class datAsciiTokenizer;
+    extern class Stream;
 
     // Class definitions
     class phMaterial {
@@ -21,21 +22,19 @@ namespace MM2
         float Elasticity;
         float Friction;
     public:
-        phMaterial() {
-            PUSH_VTABLE();
+        AGE_API phMaterial() {
+            scoped_vtable x(this);
             ageHook::Thunk<0x492FF0>::Call<void>(this);
-            POP_VTABLE();
         }
 
-        //members
-        AGE_API void SetName(char* const name)                    { ageHook::Thunk<0x493050>::Call<void>(this, name);}
-        AGE_API void Load(datAsciiTokenizer* tokenizer)           { ageHook::Thunk<0x493070>::Call<void>(this, tokenizer); }
-        AGE_API void LoadBinary(Stream* stream)                   { ageHook::Thunk<0x4932A0>::Call<void>(this, stream); }
+        AGE_API void SetName(const char *name)                  { ageHook::Thunk<0x493050>::Call<void>(this, name);}
+        AGE_API void Load(datAsciiTokenizer *reader)            { ageHook::Thunk<0x493070>::Call<void>(this, reader); }
+        AGE_API void LoadBinary(Stream *stream)                 { ageHook::Thunk<0x4932A0>::Call<void>(this, stream); }
 
         //virtuals
-        AGE_API virtual void Copy(const phMaterial* copyFrom)     { ageHook::Thunk<0x493270>::Call<void>(this, copyFrom);}
-        AGE_API virtual void Save(datAsciiTokenizer* tokenizer)   { ageHook::Thunk<0x493160>::Call<void>(this, tokenizer);}
-        AGE_API virtual void SaveBinary(Stream* stream)           { ageHook::Thunk<0x493340>::Call<void>(this, stream); }
+        virtual AGE_API void Copy(const phMaterial *material)   { ageHook::Thunk<0x493270>::Call<void>(this, material);}
+        virtual AGE_API void Save(datAsciiTokenizer *writer)    { ageHook::Thunk<0x493160>::Call<void>(this, writer);}
+        virtual AGE_API void SaveBinary(Stream *stream)         { ageHook::Thunk<0x493340>::Call<void>(this, stream); }
     };
 
     ASSERT_SIZEOF(phMaterial, 0x30);

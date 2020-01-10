@@ -13,10 +13,10 @@ public:
     static void BindLua(LuaState L) {
         LuaBinding(L).beginClass<luaCallback>("luaCallback")
             .addFactory([](LuaRef self, LuaRef function = LuaRef()) {
-            auto callback = new luaCallback();
-            callback->self = self;
-            callback->function = function;
-        }, LUA_ARGS(LuaRef, _opt<LuaRef>))
+                auto callback = new luaCallback();
+                callback->self = self;
+                callback->function = function;
+            }, LUA_ARGS(LuaRef, _opt<LuaRef>))
             .endClass();
     }
 };

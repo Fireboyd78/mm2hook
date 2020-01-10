@@ -415,3 +415,18 @@ public:
             endTime = ticks();
     }
 };
+
+struct scoped_vtable {
+private:
+    const intptr_t obj;
+    const intptr_t vtbl;
+public:
+    template <typename TClass>
+    inline scoped_vtable(const TClass *obj) noexcept :
+        obj(reinterpret_cast<const intptr_t>(obj)),
+        vtbl(*reinterpret_cast<const intptr_t *>(obj)) { }
+
+    inline ~scoped_vtable() noexcept {
+        *reinterpret_cast<intptr_t *>(obj) = vtbl;
+    }
+};

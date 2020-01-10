@@ -14,24 +14,22 @@ namespace MM2
 
     class aiVehicleManager : public asNode {
     private:
-        byte _buffer[0x177A4 - 4]; //size - vtable
+        byte _buffer[0x177A4 - sizeof(asNode)];
     public:
         static ageHook::Type<aiVehicleManager *> Instance;
 
         AGE_API aiVehicleManager(void) {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x553B30>::Call<void>(this);
-            POP_VTABLE();
         }
 
         AGE_API virtual ~aiVehicleManager(void) {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x553C2>::Call<void>(this);
-            POP_VTABLE();
         }
 
         //members
-        AGE_API void Init(char* unused)                           { ageHook::Thunk<0x553CE0>::Call<void>(this, unused); }
+        AGE_API void Init(char *unused)                           { ageHook::Thunk<0x553CE0>::Call<void>(this, unused); }
         AGE_API int AddVehicleDataEntry(LPCSTR name)              { return ageHook::Thunk<0x553FA0>::Call<int>(this, name); }
         AGE_API void SaveEntry()                                  { ageHook::Thunk<0x5541E0>::Call<void>(this); }
         /*
@@ -48,7 +46,7 @@ namespace MM2
             return *getPtr<int>(this, 0x1798);
         }
 
-        aiVehicleData* getData(int num) {
+        aiVehicleData * getData(int num) {
             //clamp
             int max = getDataCount();
             if (num >= max)
@@ -69,12 +67,11 @@ namespace MM2
 
                 .addPropertyReadOnly("DataCount", &getDataCount)
                 .addFunction("GetData", &getData)
-                .endClass();
+            .endClass();
         }
     };
 
-    //fix this!!
-    //ASSERT_SIZEOF(aiVehicleManager, 0x177A4);
+    ASSERT_SIZEOF(aiVehicleManager, 0x177A4);
 
     // Lua initialization
 

@@ -17,24 +17,22 @@ namespace MM2
     private:
         byte _buffer[0x64]; //guessed size
     protected:
-        ageHook::Field<0x30, phBoundBox*> _boundBox;
+        ageHook::Field<0x30, phBoundBox *> _boundBox;
     public:
-        inline phBoundBox* getBoundBox() const {
-            return _boundBox.get(this);
+        AGE_API pedRagdollMgr(void) {
+            scoped_vtable x(this);
+            ageHook::Thunk<0x57B8B0>::Call<void>(this);
+        }
+
+        virtual AGE_API ~pedRagdollMgr(void) {
+            scoped_vtable x(this);
+            ageHook::Thunk<0x57B910>::Call<void>(this);
         }
 
         static ageHook::Type<pedRagdollMgr *> Instance;
 
-        AGE_API pedRagdollMgr(void) {
-            PUSH_VTABLE();
-            ageHook::Thunk<0x57B8B0>::Call<void>(this);
-            POP_VTABLE();
-        }
-
-        virtual AGE_API ~pedRagdollMgr(void) {
-            PUSH_VTABLE();
-            ageHook::Thunk<0x57B910>::Call<void>(this);
-            POP_VTABLE();
+        inline phBoundBox* getBoundBox() const {
+            return _boundBox.get(this);
         }
 
         AGE_API void Init(int skelCount, char** skelNames)  { ageHook::Thunk<0x57B9B0>::Call<void>(this, skelCount, skelNames); }
@@ -43,11 +41,11 @@ namespace MM2
         AGE_API bool UnusedActive()                         { return ageHook::Thunk<0x57BBB0>::Call<bool>(this); }
 
         /*
-        asNode virtuals
+            asNode virtuals
         */
 
-        AGE_API virtual void Update()                       { ageHook::Thunk<0x57BC10>::Call<void>(this); }
-        AGE_API virtual void Reset()                        { ageHook::Thunk<0x57BBD0>::Call<void>(this); }
+        virtual AGE_API void Update()                       { ageHook::Thunk<0x57BC10>::Call<void>(this); }
+        virtual AGE_API void Reset()                        { ageHook::Thunk<0x57BBD0>::Call<void>(this); }
 
 
     };

@@ -195,15 +195,13 @@ namespace MM2 {
     struct dgStatePack {
         //FUNCS
         AGE_API dgStatePack(void) {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x443110>::Call<void>(this);
-            POP_VTABLE();
         }
 
         AGE_API ~dgStatePack(void) {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x443180>::Call<void>(this);
-            POP_VTABLE();
         }
 
         //FIELDS

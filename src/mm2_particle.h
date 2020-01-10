@@ -10,6 +10,7 @@ namespace MM2
     struct asSparkPos;
     struct asMeshCardInfo;
     struct asMeshCardVertex;
+
     class asBirthRule;
     class asParticles;
 
@@ -88,15 +89,13 @@ namespace MM2
     {
     public:
         AGE_API asBirthRule(void) {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x45ECE0>::Call<void>(this);
-            POP_VTABLE();
         }
 
         AGE_API virtual ~asBirthRule(void) {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x45FBF0>::Call<void>(this);
-            POP_VTABLE();
         }
 
         Vector3 Position;
@@ -203,42 +202,40 @@ namespace MM2
         float dword50;
     public:
         AGE_API asParticles(void) {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x460EB0>::Call<void>(this);
-            POP_VTABLE();
         }
 
         AGE_API virtual ~asParticles(void) {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x4619E0>::Call<void>(this);
-            POP_VTABLE();
         }
 
         void InitLua(int count, int wt, int ht) {
             Init(count, wt, ht, 4, nullptr);
         }
 
-        AGE_API void Init(int particleCount, int numWidthTiles, int numHeightTiles, int numParticleVertices, asMeshCardVertex* customMesh)
-                                                            { ageHook::Thunk<0x460FB0>::Call<void>(this, particleCount, numWidthTiles, numHeightTiles, numParticleVertices, customMesh); }
-        AGE_API void Blast(int a1, asBirthRule* a2)         { ageHook::Thunk<0x461490>::Call<void>(this, a1, a2); }
+        AGE_API void Init(int nParticles, int nTilesW, int nTilesH, int nVertices, asMeshCardVertex *mesh)
+                                                            { ageHook::Thunk<0x460FB0>::Call<void>(this, nParticles, nTilesW, nTilesH, nVertices, mesh); }
+        AGE_API void Blast(int a1, asBirthRule *rule)       { ageHook::Thunk<0x461490>::Call<void>(this, a1, rule); }
         AGE_API void Reset()                                { ageHook::Thunk<0x461040>::Call<void>(this); }
         AGE_API void Update()                               { ageHook::Thunk<0x4610F0>::Call<void>(this); }
-        AGE_API void SetTexture(char const* a1)             { ageHook::Thunk<0x461090>::Call<void>(this, a1); }
-        AGE_API void SetTexture(gfxTexture* a1)             { ageHook::Thunk<0x461050>::Call<void>(this, a1); }
+        AGE_API void SetTexture(const char *tex)            { ageHook::Thunk<0x461090>::Call<void>(this, tex); }
+        AGE_API void SetTexture(gfxTexture *tex)            { ageHook::Thunk<0x461050>::Call<void>(this, tex); }
 
         //member hlepers
-        inline asBirthRule* getBirthRule(void) {
+        inline asBirthRule * getBirthRule(void) {
             return pBirthRule;
         }
 
-        inline void setBirthRule(asBirthRule* rule) {
+        inline void setBirthRule(asBirthRule *rule) {
             pBirthRule = rule;
         }
 
         /*
             asParticles Virtuals
         */
-        AGE_API virtual void Cull()                         { ageHook::Thunk<0x4615A0>::Call<void>(this); }
+        virtual AGE_API void Cull()                         { ageHook::Thunk<0x4615A0>::Call<void>(this); }
 
         //lua
         static void BindLua(LuaState L) {
@@ -251,7 +248,7 @@ namespace MM2
                 .addFunction("Cull", &Cull)
                 .addFunction<void (asParticles::*)(const char* a1)>("SetTexture", &SetTexture)
                 .addProperty("BirthRule", &getBirthRule, &setBirthRule)
-                .endClass();
+            .endClass();
         }
     };
 

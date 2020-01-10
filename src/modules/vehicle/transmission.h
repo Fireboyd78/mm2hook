@@ -149,7 +149,7 @@ namespace MM2
                 .addFunction("SetCurrentGear", &SetCurrentGear)
                 .addFunction("GearRatioFromMPH", &GearRatioFromMPH)
                 .addFunction("ComputeConstants", &ComputeConstants)
-                .endClass();
+            .endClass();
         }
     };
 

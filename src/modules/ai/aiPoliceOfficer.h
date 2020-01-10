@@ -9,6 +9,7 @@ namespace MM2
     class aiPoliceOfficer;
 
     // External declarations
+    extern class aiVehiclePhysics;
 
     // Class definitions
 

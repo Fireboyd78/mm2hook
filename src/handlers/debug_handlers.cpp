@@ -98,7 +98,7 @@ void vehWheelDebugHandler::Cull()
 void vehWheelDebugHandler::Update()
 {
 	ageHook::Thunk<0x4D34E0>::Call<void>(this); //call original
-	ageHook::Thunk<0x4A15B0>::ThisCall<void>(*(vehWheelDebugHandler**)0x661784, this); //major hackily declare cullable :D
+    asCullManager::Instance->DeclareCullable(reinterpret_cast<asCullable *>(this));
 }
 
 void vehWheelDebugHandler::Install()
@@ -174,14 +174,14 @@ void aiMapDebugHandler::Update()
 {
     test = 1;
     ageHook::Thunk<0x536E50>::Call<void>(this); //call original
-    ageHook::Thunk<0x4A15B0>::ThisCall<void>(*(aiMapDebugHandler**)0x661784, this); //major hackily declare cullable :D
+    asCullManager::Instance->DeclareCullable(reinterpret_cast<asCullable *>(this));
 }
 
 void aiMapDebugHandler::UpdatePaused()
 {
     test = 2;
     ageHook::Thunk<0x5374E0>::Call<void>(this); //call original
-    ageHook::Thunk<0x4A15B0>::ThisCall<void>(*(aiMapDebugHandler**)0x661784, this); //major hackily declare cullable :D
+    asCullManager::Instance->DeclareCullable(reinterpret_cast<asCullable *>(this));
 }
 
 

@@ -20,15 +20,13 @@ namespace MM2
         bool useNanSignal;
     public:
         AGE_API asRoot(void) {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x4A0B70>::Call<void>(this);
-            POP_VTABLE();
         }
 
         AGE_API virtual ~asRoot(void) {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x4A0C90>::Call<void>(this);
-            POP_VTABLE();
         }
 
         inline Matrix34 & getMatrix(void) {

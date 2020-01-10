@@ -135,15 +135,13 @@ namespace MM2
         };
     public:
         AGE_API DirSnd() {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             $::DirSnd::$$ctor(this);
-            POP_VTABLE();
         };
 
         AGE_API ~DirSnd() {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             $::DirSnd::$$dtor(this);
-            POP_VTABLE();
         };
 
         AGE_API static DirSnd * Init(DWORD sampleRate, bool enableStero, bool enable3D, char *deviceName) {
@@ -210,15 +208,13 @@ namespace MM2
         UINT dsound3DEnabled;
     public:
         AGE_API mmDirSnd() {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             $::mmDirSnd::$$ctor(this);
-            POP_VTABLE();
         };
 
         AGE_API ~mmDirSnd() {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             $::mmDirSnd::$$dtor(this);
-            POP_VTABLE();
         };
 
         AGE_API static mmDirSnd * Init(ulong sampleRate, bool enableStero, int p3, int volume, char *deviceName, short p6, short p7) {
@@ -256,7 +252,7 @@ namespace MM2
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<mmCNRSpeech>("mmCNRSpeech")
                 .addFunction("Play", &Play)
-                .endClass();
+            .endClass();
         }
     };
 
@@ -289,22 +285,20 @@ namespace MM2
                 .addFunction("PlayFinalLap", &PlayFinalLap)
                 .addFunction("PlayFinalCheckPoint", &PlayFinalCheckPoint)
                 .addFunction("PlayDamagePenalty", &PlayDamagePenalty)
-                .endClass();
+            .endClass();
         }
     };
 
     class AudManagerBase : public asNode {
     public:
         AGE_API AudManagerBase() {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x50EE10>::Call<void>(this);
-            POP_VTABLE();
         };
 
         AGE_API ~AudManagerBase() {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x50EE40>::Call<void>(this);
-            POP_VTABLE();
         };
 
         //instance
@@ -327,22 +321,20 @@ namespace MM2
                 .addStaticFunction("Instance", [] { return (AudManagerBase*)Instance; })
 
                 .addPropertyReadOnly("IsStereo", &getIsStereo)
-                .endClass();
+            .endClass();
         }
     };
 
     class AudManager : public AudManagerBase {
     public:
         AGE_API AudManager() {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x519290>::Call<void>(this);
-            POP_VTABLE();
         };
 
         AGE_API ~AudManager() {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x5192D0>::Call<void>(this);
-            POP_VTABLE();
         };
 
         static ageHook::Type<AudManager*> Instance;
@@ -360,7 +352,7 @@ namespace MM2
 
                 .addFunction("GetCNRSpeechPtr", &GetCNRSpeechPtr)
                 .addFunction("GetRaceSpeechPtr", &GetRaceSpeechPtr)
-                .endClass();
+            .endClass();
         }
     };
 

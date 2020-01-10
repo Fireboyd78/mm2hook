@@ -17,6 +17,11 @@ namespace MM2
     protected:
         ageHook::Field<0x54, Matrix34> _matrix;
     public:
+        AGE_API phInertialCS() {
+            scoped_vtable x(this);
+            ageHook::Thunk<0x475DE0>::Call<void>(this);
+        }
+
         //props
         inline Vector3 getPosition(void) const {
             auto mtx = getMatrix();
@@ -27,35 +32,28 @@ namespace MM2
             return _matrix.ptr(this);
         }
 
-        inline void setPosition(Vector3* position) const {
+        inline void setPosition(Vector3 *position) const {
             auto mtx = getMatrix();
             mtx->m30 = position->X;
             mtx->m31 = position->Y;
             mtx->m32 = position->Z;
         }
 
-        inline void setMatrix(Matrix34* matrix) const {
+        inline void setMatrix(Matrix34 *matrix) const {
             getMatrix()->Set(matrix);
         }
 
-        //ctor
-        phInertialCS() {
-            PUSH_VTABLE();
-            ageHook::Thunk<0x475DE0>::Call<void>(this);
-            POP_VTABLE();
-        }
-
         //members (not all here yet!)
-        AGE_API void Zero()                   { ageHook::Thunk<0x475DED>::Call<void>(this); }
-        AGE_API void Reset()                  { ageHook::Thunk<0x475E10>::Call<void>(this); }
-        AGE_API void Freeze()                 { ageHook::Thunk<0x475E20>::Call<void>(this); }
-        AGE_API void ZeroForces()             { ageHook::Thunk<0x475E60>::Call<void>(this); }
+        AGE_API void Zero()                     { ageHook::Thunk<0x475DED>::Call<void>(this); }
+        AGE_API void Reset()                    { ageHook::Thunk<0x475E10>::Call<void>(this); }
+        AGE_API void Freeze()                   { ageHook::Thunk<0x475E20>::Call<void>(this); }
+        AGE_API void ZeroForces()               { ageHook::Thunk<0x475E60>::Call<void>(this); }
         AGE_API void Init(float mass, float inertiaTensorX, float inertiaTensorY, float inertiaTensorZ)
-                                              { ageHook::Thunk<0x475FC0>::Call<void>(this, mass, inertiaTensorX, inertiaTensorY, inertiaTensorZ); }
+                                                { ageHook::Thunk<0x475FC0>::Call<void>(this, mass, inertiaTensorX, inertiaTensorY, inertiaTensorZ); }
         AGE_API void InitBoxMass(float mass, float inertiaBoxX, float inertiaBoxY, float inertiaBoxZ)
-                                              { ageHook::Thunk<0x4760D0>::Call<void>(this, mass, inertiaBoxX, inertiaBoxY, inertiaBoxZ); }
-        AGE_API void Rotate(Vector3* angles)  { ageHook::Thunk<0x476A00>::Call<void>(this, angles); }
-        AGE_API void ClearInertialValues()    { ageHook::Thunk<0x476B20>::Call<void>(this); }
+                                                { ageHook::Thunk<0x4760D0>::Call<void>(this, mass, inertiaBoxX, inertiaBoxY, inertiaBoxZ); }
+        AGE_API void Rotate(Vector3 *angles)    { ageHook::Thunk<0x476A00>::Call<void>(this, angles); }
+        AGE_API void ClearInertialValues()      { ageHook::Thunk<0x476B20>::Call<void>(this); }
         
         AGE_API void MoveICS()                  { ageHook::Thunk<0x478680>::Call<void>(this); }
 
@@ -74,7 +72,7 @@ namespace MM2
 
                 .addProperty("Position", &getPosition, &setPosition)
                 .addProperty("Matrix", &getMatrix, &setMatrix)
-                .endClass();
+            .endClass();
         }
     };
 

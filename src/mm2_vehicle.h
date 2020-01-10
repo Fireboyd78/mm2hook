@@ -45,15 +45,13 @@ namespace MM2
         unsigned long tuningCRC;
     public:
         AGE_API mmVehInfo(void) {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x529720>::Call<void>(this);
-            POP_VTABLE();
         }
 
         virtual AGE_API ~mmVehInfo(void) {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x529770>::Call<void>(this);
-            POP_VTABLE();
         }
 
         inline char * GetBaseName(void) {
@@ -72,15 +70,13 @@ namespace MM2
         int numVehicles;
     public:
         AGE_API mmVehList(void) {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x524550>::Call<void>(this);
-            POP_VTABLE();
         }
 
         virtual AGE_API ~mmVehList(void) {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x524570>::Call<void>(this);
-            POP_VTABLE();
         }
 
         AGE_API int GetVehicleID(char *vehicle)             { return ageHook::Thunk<0x5246B0>::Call<int>(this, vehicle); }

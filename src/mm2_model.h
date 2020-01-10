@@ -48,15 +48,13 @@ namespace MM2
         uint fileSize;
     public:
         AGE_API modPackage(void) {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x4A46D0>::Call<void>(this);
-            POP_VTABLE();
         }
 
         AGE_API ~modPackage(void) {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x4A46F0>::Call<void>(this);
-            POP_VTABLE();
         }
 
         AGE_API bool Open(LPCSTR dir, LPCSTR filename)          { return ageHook::Thunk<0x4A4700>::Call<bool>(this, dir, filename); }
@@ -143,15 +141,13 @@ namespace MM2
         }
 
         AGE_API asMeshSetForm(void) {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x533600>::Call<void>(this);
-            POP_VTABLE();
         }
 
         AGE_API ~asMeshSetForm(void) {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x5339D0>::Call<void>(this);
-            POP_VTABLE();
         }
 
         /*

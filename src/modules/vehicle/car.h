@@ -22,10 +22,10 @@ namespace MM2
     // Class definitions
 
     class vehCar : public dgPhysEntity {
-        // vehCarSim: 0xB8 (size: ~0x1560)
+        byte _buffer[0x25C];
     protected:
         ageHook::Field<0xC0, vehCarDamage *> _damage;
-        ageHook::Field<0xB8, vehCarSim *> _sim;
+        ageHook::Field<0xB8, vehCarSim *> _sim; // size: ~0x1560
         ageHook::Field<0xBC, vehCarModel *> _model;
         ageHook::Field<0xE0, vehSplash *> _splash;
         ageHook::Field<0x254, vehCarAudioContainer *> _audio;
@@ -69,9 +69,9 @@ namespace MM2
 
         AGE_API void ClearDamage()                          { ageHook::Thunk<0x42C450>::Call<void>(this); }
         AGE_API bool IsPlayer()                             { return ageHook::Thunk<0x42C890>::Call<bool>(this); }
-        AGE_API void Init(char const* a1, int a2, int a3, bool a4, bool a5)
+        AGE_API void Init(char const *a1, int a2, int a3, bool a4, bool a5)
                                                             { ageHook::Thunk<0x42BE10>::Call<void>(this, a1, a2, a3, a4, a5); }
-        AGE_API void InitAudio(char const* a1, int a2)      { ageHook::Thunk<0x42C1F0>::Call<void>(this, a1, a2); }
+        AGE_API void InitAudio(char const *a1, int a2)      { ageHook::Thunk<0x42C1F0>::Call<void>(this, a1, a2); }
         AGE_API void SetDrivable(BOOL a1, int a2)           { ageHook::Thunk<0x42C2C0>::Call<void>(this, a1, a2); }
 
         /*
@@ -107,8 +107,6 @@ namespace MM2
                 .addFunction("IsPlayer", &IsPlayer)
             .endClass();
         }
-    private:
-        byte _buffer[0x25C];
     };
 
     // Lua initialization

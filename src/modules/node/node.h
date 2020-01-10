@@ -21,15 +21,13 @@ namespace MM2
         char *name;
     public:
         AGE_API asNode() {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x4A0CE0>::Call<void>(this);
-            POP_VTABLE();
         };
 
         virtual AGE_API ~asNode() {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x4A0D00>::Call<void>(this);
-            POP_VTABLE();
         };
 
         inline bool isActive(void) const {
@@ -104,6 +102,8 @@ namespace MM2
                 .endClass();
         }
     };
+
+    ASSERT_SIZEOF(asNode, 0x18);
 
     // Lua initialization
 

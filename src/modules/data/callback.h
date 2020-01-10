@@ -140,6 +140,8 @@ namespace MM2
         }
     };
 
+    ASSERT_SIZEOF(datCallback, 0xC);
+
     // Lua initialization
 
 }

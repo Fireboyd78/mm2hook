@@ -14,9 +14,8 @@ namespace MM2
     class Base {
     public:
         virtual AGE_API ~Base() {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x4C8200>::Call<void>(this);
-            POP_VTABLE();
         };
 
         //lua

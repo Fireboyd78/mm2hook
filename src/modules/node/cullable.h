@@ -14,9 +14,8 @@ namespace MM2
     class asCullable : public Base {
     public:
         virtual AGE_API ~asCullable() {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x460EA0>::Call<void>(this);
-            POP_VTABLE();
         };
 
         virtual AGE_API void Cull(void) {

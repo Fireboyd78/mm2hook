@@ -3,23 +3,31 @@
 #include "mm2_base.h"
 #include "mm2_vehicle.h"
 #include "mm2_ui.h"
-#include "modules/node/camera.h"
+
+#include <modules/node/camera.h>
 
 namespace MM2
 {
     // Forward declarations
-    extern class mmGame;
-    extern class mmGameManager;
-    extern class mmGameMusicData;
-    extern class mmHUD;
-    extern class mmPlayer;
-    extern class dgPhysEntity;
+    class mmGame;
+    class mmGameManager;
+    class mmGameMusicData;
+    class mmCDPlayer;
+    class mmHUD;
+    class mmPlayer;
     
     // External declarations
     extern class asNode;
+    extern class dgPhysEntity;
     extern class mmPopup;
     extern class vehCar;
+
     extern class camAICS;
+    extern class camCarCS;
+    extern class camPointCS;
+    extern class camPovCS;
+    extern class camTrackCS;
+    extern class camViewCS;
 
     namespace $
     {
@@ -37,18 +45,16 @@ namespace MM2
         ageHook::Field<0x94, mmPopup *> _popup;
     public:
         AGE_API mmGame(void) {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x412550>::Call<void>(this);
-            POP_VTABLE();
         };
 
         virtual AGE_API ~mmGame(void) {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x413940>::Call<void>(this);
-            POP_VTABLE();
         };
 
-        inline mmPlayer* getPlayer(void) const {
+        inline mmPlayer * getPlayer(void) const {
             return _player.get(this);
         };
 
@@ -114,11 +120,11 @@ namespace MM2
     public:
         static ageHook::Type<mmGameManager *> Instance;
 
-        inline mmGame* getGame(void) const {
+        inline mmGame * getGame(void) const {
             return _game.get(this);
         };
 
-        inline mmPlayer*  getPlayerSafe(void) const {
+        inline mmPlayer * getPlayerSafe(void) const {
             auto game = _game.get(this);
             if (game == nullptr)
                 return nullptr;
@@ -150,7 +156,7 @@ namespace MM2
 
     class mmGameMusicData {
     public:
-        AGE_API bool LoadAmbientSFX(LPCSTR name)            { return ageHook::Thunk<0x434060>::Call<bool>(this, name); };
+        AGE_API bool LoadAmbientSFX(LPCSTR name)            { return ageHook::Thunk<0x434060>::Call<bool>(this, name); }
     };
 
     class mmCDPlayer : public asNode {
@@ -188,7 +194,7 @@ namespace MM2
                 .addFunction("PrevTrack", &PrevTrack)
                 .addFunction("NextTrack", &NextTrack)
                 .addFunction("PlayStop", &PlayStop)
-                .endClass();
+            .endClass();
         }
     };
 
@@ -212,7 +218,7 @@ namespace MM2
                 .addPropertyReadOnly("CDPlayer", &getCdPlayer)
                 .addFunction("SetMessage", static_cast<void (mmHUD::*)(LPCSTR, float, int)>(&SetMessage))
                 .addFunction("PostChatMessage", &PostChatMessage)
-                .endClass();
+            .endClass();
         }
     };
 
@@ -232,15 +238,15 @@ namespace MM2
         AGE_API bool GetZoomIn()                            { return ageHook::Thunk<0x42FA30>::Call<bool>(this); }
 
         /*
-        asNode virtuals
+            asNode virtuals
         */
 
-        virtual AGE_API void Cull() override                { ageHook::Thunk<0x42F1B0>::Call<void>(this); }
-        virtual AGE_API void Update() override              { ageHook::Thunk<0x42F1A0>::Call<void>(this); }
-        virtual AGE_API void Reset() override               { ageHook::Thunk<0x42EE90>::Call<void>(this); }
-        virtual AGE_API void FileIO(datParser &parser) override 
-                                                            { ageHook::Thunk<0x42FA60>::Call<void>(this, &parser); }
-        virtual AGE_API char* GetClassName() override       { return ageHook::Thunk<0x42FD60>::Call<char*>(this); }
+        AGE_API void Cull() override                { ageHook::Thunk<0x42F1B0>::Call<void>(this); }
+        AGE_API void Update() override              { ageHook::Thunk<0x42F1A0>::Call<void>(this); }
+        AGE_API void Reset() override               { ageHook::Thunk<0x42EE90>::Call<void>(this); }
+        AGE_API void FileIO(datParser &parser) override 
+                                                    { ageHook::Thunk<0x42FA60>::Call<void>(this, &parser); }
+        AGE_API char * GetClassName() override      { return ageHook::Thunk<0x42FD60>::Call<char*>(this); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<mmHudMap, asNode>("mmHudMap")
@@ -265,84 +271,55 @@ namespace MM2
     protected:
         ageHook::Field<0x2C, vehCar> _car;
         ageHook::Field<0x288, mmHUD> _hud;
-        ageHook::Field<0x0E28, mmHudMap*> _hudmap;
+        
+        ageHook::Field<0xE28, mmHudMap *> _hudmap;
+        ageHook::Field<0xE2C, camViewCS *> _camView;
+
+        ageHook::Field<0xE60, camTrackCS> _nearCam;
+        ageHook::Field<0x10F8, camTrackCS> _farCam;
+        ageHook::Field<0x1390, camTrackCS> _indCam;
+        ageHook::Field<0x1628, camPovCS> _povCam;
+        ageHook::Field<0x1770, camPovCS> _dashCam;
+        ageHook::Field<0x18B8, camCarCS> _polarCam1;
+        ageHook::Field<0x19E0, camCarCS> _polarCam2;
+        ageHook::Field<0x1B08, camAICS> _freeCam;
+        ageHook::Field<0x1C2C, camPointCS> _pointCam;
+        ageHook::Field<0x1D70, camCarCS> _preCam;
+        ageHook::Field<0x1E98, camCarCS> _postCam;
+        ageHook::Field<0x1FBC, camCarCS> _polarCam3;
 
     public:
-        inline vehCar* getCar(void) const {
-            return _car.ptr(this);
-        };
+        inline vehCar * getCar(void) const                  { return _car.ptr(this); }
+        inline mmHUD * getHUD(void) const                   { return _hud.ptr(this); }
 
-        inline mmHUD* getHUD(void) const {
-            return _hud.ptr(this);
-        };
+        inline mmHudMap * getHudmap(void) const             { return _hudmap.get(this); }
+        inline camViewCS * getCamView(void) const           { return _camView.get(this); }
 
-        inline mmHudMap* getHudmap(void) const {
-            return _hudmap.get(this);
-        }
+        inline camTrackCS * getNearCam(void) const          { return _nearCam.ptr(this); }
+        inline camTrackCS * getFarCam(void) const           { return _farCam.ptr(this); }
+        inline camTrackCS * getIndCam(void) const           { return _indCam.ptr(this); }
+        inline camPovCS * getPovCam(void) const             { return _povCam.ptr(this); }
+        inline camPovCS * getDashCam(void) const            { return _dashCam.ptr(this); }
+        inline camAICS * getFreecam(void) const             { return _freeCam.ptr(this); }
+        inline camPointCS * getPointCam(void) const         { return _pointCam.ptr(this); }
+        inline camCarCS * getPreCam(void) const             { return _preCam.ptr(this); }
+        inline camCarCS * getPostCam(void) const            { return _postCam.ptr(this); }
+  
+        inline camCarCS * getPolarCamOne(void) const        { return _polarCam1.ptr(this); }
+        inline camCarCS * getPolarCamTwo(void) const        { return _polarCam2.ptr(this); }
+        inline camCarCS * getPolarCamThree(void) const      { return _polarCam3.ptr(this); }
 
-        inline camAICS* getFreecam(void) const {
-            return getPtr<camAICS>(this, 0x1B08);
-        }
-
-        inline camViewCS* getCamView(void) const {
-            return *getPtr<camViewCS*>(this, 0xE2C);
-        }
-
-        inline camTrackCS* getFarCam(void) const {
-            return getPtr<camTrackCS>(this, 0x10F8);
-        }
-
-        inline camTrackCS* getNearCam(void) const {
-            return getPtr<camTrackCS>(this, 0xE60);
-        }
-
-        inline camTrackCS* getIndCam(void) const {
-            return getPtr<camTrackCS>(this, 0x1390);
-        }
-
-        inline camPovCS* getPovCam(void) const {
-            return getPtr<camPovCS>(this, 0x1628);
-        }
-
-        inline camPovCS* getDashCam(void) const {
-            return getPtr<camPovCS>(this, 0x1770);
-        }
-
-        inline camPointCS* getPointCam(void) const {
-            return getPtr<camPointCS>(this, 0x1C2C);
-        }
-
-        inline camCarCS* getPreCam(void) const {
-            return getPtr<camCarCS>(this, 0x1D70);
-        }
-
-        inline camCarCS* getPostCam(void) const {
-            return getPtr<camCarCS>(this, 0x1E98);
-        }
-
-        inline camCarCS* getPolarCamOne(void) const {
-            return getPtr<camCarCS>(this, 0x18B8);
-        }
-
-        inline camCarCS* getPolarCamTwo(void) const {
-            return getPtr<camCarCS>(this, 0x19E0);
-        }
-
-        inline camCarCS* getPolarCamThree(void) const {
-            return getPtr<camCarCS>(this, 0x1FBC);
-        }
-
-        AGE_API void EnableRegen(bool a1)                   { return ageHook::Thunk<0x406160>::Call<void>(this, a1); }
+        AGE_API void EnableRegen(bool a1)                   { ageHook::Thunk<0x406160>::Call<void>(this, a1); }
         AGE_API float FilterSteering(float a1)              { return ageHook::Thunk<0x404C90>::Call<float>(this, a1); }
         AGE_API bool IsMaxDamaged()                         { return ageHook::Thunk<0x406140>::Call<bool>(this); }
         AGE_API void ResetDamage()                          { ageHook::Thunk<0x406180>::Call<void>(this); }
         AGE_API void SetCamera(int a1, int a2)              { ageHook::Thunk<0x404710>::Call<void>(this, a1, a2); }
-        AGE_API void SetMPPostCam(Matrix34 * a1, float a2)  { ageHook::Thunk<0x404460>::Call<void>(this, a1, a2); }
+        AGE_API void SetMPPostCam(Matrix34 *a1, float a2)   { ageHook::Thunk<0x404460>::Call<void>(this, a1, a2); }
         AGE_API void SetPostRaceCam()                       { ageHook::Thunk<0x404350>::Call<void>(this); }
         AGE_API void SetPreRaceCam()                        { ageHook::Thunk<0x404250>::Call<void>(this); }
         AGE_API void SetSteering(float a1)                  { ageHook::Thunk<0x404C50>::Call<void>(this, a1); }
         AGE_API void SetWideFOV(bool a1)                    { ageHook::Thunk<0x404580>::Call<void>(this, a1); }
-        AGE_API void ReInit(LPCSTR basename)                { ageHook::Thunk<0x4039B0>::Call<void>(this, basename); }
+        AGE_API void ReInit(const char *basename)           { ageHook::Thunk<0x4039B0>::Call<void>(this, basename); }
 
         /*
             asNode virtuals

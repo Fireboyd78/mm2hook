@@ -220,15 +220,13 @@ namespace MM2
         }
     public:
         AGE_API mmCityInfo(void) {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x52A540>::Call<void>(this);
-            POP_VTABLE();
         }
 
         virtual AGE_API ~mmCityInfo(void) {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x52A560>::Call<void>(this);
-            POP_VTABLE();
         }
 
         inline char * GetLocalisedName(void) {
@@ -262,15 +260,13 @@ namespace MM2
         int curCity;
     public:
         AGE_API mmCityList(void) {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x524160>::Call<void>(this);
-            POP_VTABLE();
         }
 
         virtual AGE_API ~mmCityList(void) {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x524180>::Call<void>(this);
-            POP_VTABLE();
         }
 
         AGE_API void Load(char* cinfoName)                  { ageHook::Thunk<0x524330>::Call<void>(this, cinfoName); }

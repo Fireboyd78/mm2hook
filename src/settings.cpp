@@ -113,23 +113,56 @@ static bool isLoaded;
 
 static std::map<std::string, std::string> properties;
 
-bool skip_comments(std::string &line) {
-    return (line[0] != '#' && line[0] != ';');
+inline bool is_comment(char c) {
+    return (c == '#' || c == ';');
 }
 
-int skip_whitespace(std::string &line, int start, int end) {
-    int result = 0;
+inline bool is_whitespace(char c) {
+    return (c == '\t' || c == ' ');
+}
 
-    while (start < end) {
-        char c = line[start];
+bool skip_comments(std::string &line) {
+    return !is_comment(line[0]);
+}
 
-        if (c != '\t' && c != ' ')
-            break;
+size_t skip_whitespace(std::string &line, size_t start = 0, size_t end = 0) {
+    if (end == 0)
+        end = line.length();
 
-        ++result;
+    for (size_t idx = start; idx < end; idx++) {
+        char c = line[idx];
+
+        if (!is_whitespace(c))
+            return idx;
     }
 
-    return result;
+    // no whitespace
+    return 0;
+}
+
+std::string read_line(line_reader &reader) {
+    std::string line = reader.read_line(skip_comments);
+
+    // trim leading whitespace
+    size_t trim = skip_whitespace(line);
+
+    if (trim > 0)
+        line = line.substr(trim);
+
+    size_t length = line.length();
+    
+    // strip out inline comments
+    for (size_t idx = 0; idx < length; idx++) {
+        char c = line[idx];
+
+        // stop at the first inline comment
+        if (is_comment(c)) {
+            line = line.substr(0, idx);
+            break;
+        }
+    }
+
+    return line;
 }
 
 std::string read_token(std::string &line, int start, int end) {
@@ -137,7 +170,7 @@ std::string read_token(std::string &line, int start, int end) {
     while (end > start) {
         char c = line[end - 1]; // check the previous character
 
-        if (c != '\t' && c != ' ')
+        if (!is_whitespace(c))
             break;
 
         --end;
@@ -157,7 +190,8 @@ bool HookConfig::Read() {
     properties.clear();
 
     while (!reader.eof()) {
-        std::string line = reader.read_line(skip_comments);
+        // read line (minus leading whitespace or inline comments)
+        std::string line = read_line(reader);
 
         // skip empty lines
         if (line.empty())
@@ -175,39 +209,33 @@ bool HookConfig::Read() {
 
             std::string section(line, sIdx, (sEnd - sIdx));
 
-            //LogFile::Format("**** config section '%s' on line %d ****\n", section.c_str(), reader.line());
+            LogFile::Format("**** config section '%s' on line %d ****\n", section.c_str(), reader.line());
 
             // we don't do anything with sections yet,
             // so just skip them and move on
             continue;
         }
 
+        size_t end = line.length();
+
         std::string key = "";
         std::string val = "";
 
-        size_t idx = line.find_first_of('=');
+        // property name
+        size_t pIdx = line.find_first_of('=');
 
-        if (idx == -1) {
+        // -1 = not found, 0 = no property name
+        if (pIdx < 1) {
             LogFile::Format("**** config line %d malformed (empty/invalid property) ****\n", reader.line());
             continue;
         }
 
-        int start = skip_whitespace(line, 0, idx);
+        key = read_token(line, 0, pIdx);
+        
+        // property value (trim leading whitespace as needed)
+        size_t vIdx = skip_whitespace(line, (pIdx + 1),  end);
 
-        key = read_token(line, start, idx);
-        start = (idx + 1);
-
-        for (idx = start; idx < line.length(); idx++) {
-            char c = line[idx];
-
-            // stop if we encounter an inline comment
-            if (c == '#' || c == ';')
-                break;
-        }
-
-        start += skip_whitespace(line, start, idx);
-
-        val = read_token(line, start, idx);
+        val = read_token(line, vIdx, (end - vIdx));
 
         // add key/value pair
         properties.insert(std::make_pair(key, val));
@@ -222,6 +250,7 @@ bool HookConfig::Initialize(const char *filename) {
         return false;
     }
 
+    LogFile::WriteLine("Opening configuration file...");
     handle = CreateFileA(filename,
         GENERIC_READ | GENERIC_WRITE,
         FILE_SHARE_READ | FILE_SHARE_WRITE,
@@ -234,6 +263,7 @@ bool HookConfig::Initialize(const char *filename) {
 
     if (isOpen) {
         // read in settings
+        LogFile::WriteLine("Loading configuration file...");
         Read();
         isLoaded = true;
     }
@@ -284,7 +314,7 @@ bool HookConfig::GetProperty(const char *key, int &value) {
     if (!isLoaded)
         return false;
 
-    char buffer[512] { NULL };
+    char buffer[128] { NULL };
 
     if (GetProperty(key, buffer)) {
         value = atoi(buffer);
@@ -298,7 +328,7 @@ bool HookConfig::GetProperty(const char *key, float &value) {
     if (!isLoaded)
         return false;
 
-    char buffer[512] { NULL };
+    char buffer[128] { NULL };
 
     if (GetProperty(key, buffer)) {
         value = (float)atof(buffer);

@@ -5,10 +5,11 @@
 namespace MM2
 {
     // Forward declarations
-
+    class lvlMaterial;
 
     // External declarations
-
+    extern class datAsciiTokenizer;
+    extern class phMaterial;
 
     // Class definitions
     class lvlMaterial : public phMaterial {
@@ -20,18 +21,17 @@ namespace MM2
         short PtxIndex[2];
         float PtxThreshold[2];
     public:
-        lvlMaterial() {
-            PUSH_VTABLE();
+        AGE_API lvlMaterial() {
+            scoped_vtable x(this);
             ageHook::Thunk<0x4664C0>::Call<void>(this);
-            POP_VTABLE();
         }
 
         //members
-        AGE_API void Load(datAsciiTokenizer* tokenizer) { ageHook::Thunk<0x466510>::Call<void>(this, tokenizer); }
+        AGE_API void Load(datAsciiTokenizer *reader)            { ageHook::Thunk<0x466510>::Call<void>(this, reader); }
 
         //virtuals
-        AGE_API virtual void Copy(const phMaterial* copyFrom) override { ageHook::Thunk<0x4668E0>::Call<void>(this, copyFrom); }
-        AGE_API virtual void Save(datAsciiTokenizer* tokenizer) override { ageHook::Thunk<0x4666F0>::Call<void>(this, tokenizer); }
+        AGE_API void Copy(const phMaterial *material) override  { ageHook::Thunk<0x4668E0>::Call<void>(this, material); }
+        AGE_API void Save(datAsciiTokenizer *writer) override   { ageHook::Thunk<0x4666F0>::Call<void>(this, writer); }
     };
 
     ASSERT_SIZEOF(lvlMaterial, 0x4C);

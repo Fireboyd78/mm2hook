@@ -24,15 +24,13 @@ namespace MM2
         ageHook::Field<0x24, byte> _variant;
     public:
         AGE_API vehCarModel() {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x4CCF20>::Call<void>(this);
-            POP_VTABLE();
         }
 
         AGE_API ~vehCarModel() {
-            PUSH_VTABLE();
+            scoped_vtable x(this);
             ageHook::Thunk<0x4CCF800>::Call<void>(this);
-            POP_VTABLE();
         }
 
         inline vehBreakableMgr * getGenBreakableMgr(void) const {
@@ -81,16 +79,16 @@ namespace MM2
         */
 
         AGE_API void Reset()  override                      { ageHook::Thunk<0x4CDFD0>::Call<void>(this); }
-        AGE_API Vector3 const & GetPosition() override
-                                                            { return ageHook::Thunk<0x4CEF50>::Call<Vector3 const &>(this); }
-        AGE_API Matrix34 const & GetMatrix(Matrix34* a1)
-                                                            { return ageHook::Thunk<0x4CEF90>::Call<Matrix34 const &>(this, a1); }
-        AGE_API void SetMatrix(const Matrix34* a1) override 
+        AGE_API const Vector3 & GetPosition() override
+                                                            { return ageHook::Thunk<0x4CEF50>::Call<const Vector3 &>(this); }
+        AGE_API const Matrix34 & GetMatrix(Matrix34 *a1)
+                                                            { return ageHook::Thunk<0x4CEF90>::Call<const Matrix34 &>(this, a1); }
+        AGE_API void SetMatrix(const Matrix34 *a1) override 
                                                             { ageHook::Thunk<0x4CEFA0>::Call<void>(this, a1); }
-        AGE_API dgPhysEntity* GetEntity() override          { return ageHook::Thunk<0x4CEFC0>::Call<dgPhysEntity*>(this); }
-        AGE_API dgPhysEntity* AttachEntity() override 
+        AGE_API dgPhysEntity * GetEntity() override         { return ageHook::Thunk<0x4CEFC0>::Call<dgPhysEntity*>(this); }
+        AGE_API dgPhysEntity * AttachEntity() override 
                                                             { return ageHook::Thunk<0x4CEFD0>::Call<dgPhysEntity*>(this); }
-        AGE_API Vector3 const * GetVelocity() override
+        AGE_API const Vector3 * GetVelocity() override
                                                             { return ageHook::Thunk<0x4CEF80>::Call<Vector3 const*>(this); }
 
         AGE_API void Draw(int a1) override                  { ageHook::Thunk<0x4CE040>::Call<void>(this, a1); }
