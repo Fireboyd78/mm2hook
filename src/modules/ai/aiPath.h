@@ -17,6 +17,11 @@ namespace MM2
     public:
         aiPath(void)                                        DONOTCALL;
         aiPath(const aiPath &&)                             DONOTCALL;
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<aiPath>("aiPath")
+                .endClass();
+        }
     };
 
     ASSERT_SIZEOF(aiPath, 0x164);

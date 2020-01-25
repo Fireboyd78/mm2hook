@@ -17,6 +17,8 @@ namespace MM2
 
     template<>
     void luaAddModule<module_ai>(LuaState L) {
+        luaBind<aiPath>(L);
+        luaBind<aiIntersection>(L);
         luaBind<aiMap>(L);
         luaBind<aiObstacle>(L);
         luaBind<aiVehicle>(L);

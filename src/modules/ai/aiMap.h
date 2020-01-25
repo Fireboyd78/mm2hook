@@ -121,28 +121,49 @@ namespace MM2
         inline int getAmbientCount() {
             return numAmbientVehicles;
         }
+
+
+        inline int getPathsCount() {
+            return numPaths;
+        }
+
+        inline int getIntersectionCount() {
+            return numIntersections;
+        }
         
     public:
         static ageHook::Type<aiMap> Instance;
 
-        AGE_API void Dump(void) {
-            ageHook::Thunk<0x538840>::Call<void>(this);
-        };
+        /*
+            asNode virtuals
+        */
 
-        AGE_API aiVehicleAmbient * Vehicle(int num) {
-            return ageHook::Thunk<0x5348B0>::Call<aiVehicleAmbient *>(this, num);
-        }
-
-        AGE_API aiPedestrian * Pedestrian(int num) {
-            return ageHook::Thunk<0x534AB0>::Call<aiPedestrian *>(this, num);
-        }
+        AGE_API void Cull() override                { ageHook::Thunk<0x5374F0>::Call<void>(this); }
+        AGE_API void Update() override              { ageHook::Thunk<0x536E50>::Call<void>(this); }
+        AGE_API void UpdatePaused() override        { ageHook::Thunk<0x5374E0>::Call<void>(this); }
+        AGE_API void Reset() override               { ageHook::Thunk<0x536A30>::Call<void>(this); }
+        
+        /*
+            aiMap
+        */
+        AGE_API void Dump(void)                              { ageHook::Thunk<0x538840>::Call<void>(this); }
+        AGE_API void TestProbes(BOOL a2)                     { ageHook::Thunk<0x53B870>::Call<void>(this, a2); }
+        AGE_API aiVehicleAmbient * Vehicle(int num)          { return ageHook::Thunk<0x5348B0>::Call<aiVehicleAmbient *>(this, num); }
+        AGE_API aiPedestrian * Pedestrian(int num)           { return ageHook::Thunk<0x534AB0>::Call<aiPedestrian *>(this, num); }
+        AGE_API aiIntersection* Intersection(int num)        { return ageHook::Thunk<0x534880>::Call<aiIntersection*>(this, num); }
+        AGE_API aiPath* Path(int num)                        { return ageHook::Thunk<0x534850>::Call<aiPath*>(this, num); }
 
         static void BindLua(LuaState L) {
-            LuaBinding(L).beginClass<aiMap>("aiMap")
+            LuaBinding(L).beginExtendClass<aiMap, asNode>("aiMap")
                 .addFunction("Dump", &Dump)
+                .addFunction("TestProbes", &TestProbes, LUA_ARGS(bool))
                 .addFunction("Pedestrian", &Pedestrian)
+                .addFunction("Path", &Path)
+                .addFunction("Intersection", &Intersection)
                 .addFunction("Vehicle", &Vehicle)
                 .addPropertyReadOnly("NumAmbientVehicles", &getAmbientCount)
+                .addPropertyReadOnly("NumPaths", &getPathsCount)
+                .addPropertyReadOnly("NumIntersections", &getIntersectionCount)
                 .addStaticProperty("Instance", [] { return  &aiMap::Instance; })
             .endClass();
         }

@@ -208,11 +208,15 @@ namespace MM2
             this->SetInterest(nullptr);
         }
 
-        //asNode overrides
+        /*
+            asNode virtuals
+        */
         AGE_API void Reset() override                       { ageHook::Thunk<0x42E780>::Call<void>(this); }
         AGE_API void Update() override                      { ageHook::Thunk<0x42E7F0>::Call<void>(this); }
 
-        //mmArrow
+        /*
+            mmArrow
+        */
         AGE_API void SetInterest(Vector3 *interestPoint)    { ageHook::Thunk<0x42E790>::Call<void>(this, interestPoint); }
 
         static void BindLua(LuaState L) {
@@ -239,7 +243,9 @@ namespace MM2
             return _arrow.ptr(this);
         };
 
-        //asNode overrides
+        /*
+            asNode virtuals
+        */
         AGE_API void Update() override                      { ageHook::Thunk<0x42DBC0>::Call<void>(this); }
         AGE_API void UpdatePaused() override                { ageHook::Thunk<0x42DF10>::Call<void>(this); }
         AGE_API void Cull() override                        { ageHook::Thunk<0x42DF40>::Call<void>(this); }
@@ -247,7 +253,9 @@ namespace MM2
         AGE_API void ResChange(int width, int height) override
                                                             { ageHook::Thunk<0x42D2E0>::Call<void>(this, width, height); }
 
-        //mmHud
+        /*
+            mmHUD
+        */
         AGE_API void Init(LPCSTR vehName, mmPlayer* player, BOOL useAltTimingMethod)
                                                             { ageHook::Thunk<0x42D5E0>::Call<void>(this); }
         AGE_API void StartTimers()                          { ageHook::Thunk<0x42D560>::Call<void>(this); }

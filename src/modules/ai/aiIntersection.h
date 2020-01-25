@@ -28,9 +28,42 @@ namespace MM2
         aiTrafficLightSet *trafficLights;
         aiObstacle *vehicles;
         aiObstacle *bangers;
+    private:
+        //helpers
+        inline int getPathCount() {
+            return pathCount;
+        }
+
+        inline aiPath* getPath(int id) {
+            if (id >= pathCount)
+                return nullptr;
+            return paths[id];
+        }
+
+        inline int getId() {
+            return id;
+        }
+
+        inline int getRoomId() {
+            return roomId;
+        }
+
+        inline Vector3 getCenter() {
+            return center;
+        }
     public:
         aiIntersection(void)                                DONOTCALL;
         aiIntersection(const aiIntersection &&)             DONOTCALL;
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<aiIntersection>("aiIntersection")
+                .addFunction("GetPath", &getPath)
+                .addPropertyReadOnly("Id", &getId)
+                .addPropertyReadOnly("RoomId", &getRoomId)
+                .addPropertyReadOnly("Center", &getCenter)
+                .addPropertyReadOnly("NumPaths", &getPathCount)
+                .endClass();
+        }
     };
 
     ASSERT_SIZEOF(aiIntersection, 0x2C);
