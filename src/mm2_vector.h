@@ -133,45 +133,60 @@ namespace MM2
             this->m32 = 0.0;
         }
 
+        void Identity3x3() {
+            this->m00 = 1.0;
+            this->m01 = 0.0;
+            this->m02 = 0.0;
+            this->m10 = 0.0;
+            this->m11 = 1.0;
+            this->m12 = 0.0;
+            this->m20 = 0.0;
+            this->m21 = 0.0;
+            this->m22 = 1.0;
+        }
+
         AGE_API void Set(const Matrix34* a1)                { ageHook::Thunk<0x4BBFB0>::Call<void>(this, a1); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<Matrix34>("Matrix34")
-                .addFactory([](float m11 = 0.0, float m12 = 0.0, float m13 = 0.0, float m14 = 0.0,
-                            float m21 = 0.0, float m22 = 0.0, float m23 = 0.0, float m24 = 0.0,
-                            float m31 = 0.0, float m32 = 0.0, float m33 = 0.0, float m34 = 0.0) {
+                .addFactory([](float m00 = 0.0, float m01 = 0.0, float m02 = 0.0,
+                               float m10 = 0.0, float m11 = 0.0, float m12 = 0.0, 
+                               float m20 = 0.0, float m21 = 0.0, float m22 = 0.0, 
+                               float m30 = 0.0, float m31 = 0.0, float m32 = 0.0) {
                     auto mtx = new Matrix34();
-                    mtx->m00 = m11;
-                    mtx->m01 = m12;
-                    mtx->m02 = m13;
-                    mtx->m10 = m14;
+                    mtx->m00 = m00;
+                    mtx->m01 = m01;
+                    mtx->m02 = m02;
 
-                    mtx->m11 = m21;
-                    mtx->m12 = m22;
-                    mtx->m20 = m23;
-                    mtx->m21 = m24;
+                    mtx->m10 = m10;
+                    mtx->m11 = m11;
+                    mtx->m12 = m12;
+                  
+                    mtx->m20 = m20;
+                    mtx->m21 = m21;
+                    mtx->m22 = m22;
 
-                    mtx->m22 = m31;
-                    mtx->m30 = m32;
-                    mtx->m31 = m33;
-                    mtx->m32 = m34;
+                    mtx->m30 = m30;
+                    mtx->m31 = m31;
+                    mtx->m32 = m32;
                     return mtx;
                 }, LUA_ARGS(_opt<float>, _opt<float>, _opt<float>, _opt<float>,
                         _opt<float>, _opt<float>, _opt<float>, _opt<float>,
                         _opt<float>, _opt<float>, _opt<float>, _opt<float>))
-                .addVariableRef("m11", &Matrix34::m00)
-                .addVariableRef("m12", &Matrix34::m01)
-                .addVariableRef("m13", &Matrix34::m02)
-                .addVariableRef("m14", &Matrix34::m10)
-                .addVariableRef("m21", &Matrix34::m11)
-                .addVariableRef("m22", &Matrix34::m12)
-                .addVariableRef("m23", &Matrix34::m20)
-                .addVariableRef("m24", &Matrix34::m21)
-                .addVariableRef("m31", &Matrix34::m22)
-                .addVariableRef("m32", &Matrix34::m30)
-                .addVariableRef("m33", &Matrix34::m31)
-                .addVariableRef("m34", &Matrix34::m32)
+                .addVariableRef("m00", &Matrix34::m00)
+                .addVariableRef("m01", &Matrix34::m01)
+                .addVariableRef("m02", &Matrix34::m02)
+                .addVariableRef("m10", &Matrix34::m10)
+                .addVariableRef("m11", &Matrix34::m11)
+                .addVariableRef("m12", &Matrix34::m12)
+                .addVariableRef("m20", &Matrix34::m20)
+                .addVariableRef("m21", &Matrix34::m21)
+                .addVariableRef("m22", &Matrix34::m22)
+                .addVariableRef("m30", &Matrix34::m30)
+                .addVariableRef("m31", &Matrix34::m31)
+                .addVariableRef("m32", &Matrix34::m32)
                 .addFunction("Identity", &Matrix34::Identity)
+                .addFunction("Identity3x3", &Matrix34::Identity3x3)
             .endClass();
         }
     };
