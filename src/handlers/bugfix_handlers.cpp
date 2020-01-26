@@ -54,8 +54,10 @@ static init_handler g_bugfix_handlers[] = {
 int numPedUpdateAttempts = 0;
 
 void aiPathHandler::UpdatePedestrians(void) {
+    auto path = reinterpret_cast<aiPath*>(this);
     numPedUpdateAttempts = 0;
-    $::aiPath::UpdatePedestrians(this);
+
+    path->UpdatePedestrians();
 }
 
 void aiPathHandler::Install() {

@@ -49,9 +49,6 @@ namespace MM2
             declhook(0x551CB0, _MemberFunc<void>, StopVoice);
             declhook(0x551CA0, _MemberFunc<void>, PlayHorn);
         }
-        namespace aiPath {
-            declhook(0x544150, _MemberFunc<void>, UpdatePedestrians);            
-        }
         namespace aiPedestrian {
             declhook(0x54B9C0, _MemberFunc<void>, Update);
         }
