@@ -43,7 +43,8 @@ static init_handler g_bugfix_handlers[] = {
 
     CreateHandler<BugfixPatchHandler>("Bugfix patches"),
 
-    CreateHandler<pedAnimationInstanceHandler>("pedAnimationInstance")
+    CreateHandler<pedAnimationInstanceHandler>("pedAnimationInstance"),
+    CreateHandler<fxShardManagerBugfixHandler>("fxShardManager")
     //CreateHandler<phBoundBugfixHandler>("phBound"),
 };
 
@@ -1181,6 +1182,19 @@ void phBoundBugfixHandler::Install()
             }
         );
     }
+}
+
+
+/*
+    fxShardManagerBugfixHandler
+*/
+void fxShardManagerBugfixHandler::Install()
+{
+    InstallCallback("fxShardManager::Drraw", "Fix crashes with cars with low material count.",
+        &fxShardManager::Draw, {
+            cbHook<JMP>(0x4602D0)
+        }
+    );
 }
 
 /*

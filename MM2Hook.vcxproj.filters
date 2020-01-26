@@ -81,6 +81,9 @@
     <Filter Include="Source Files\luafilesystem">
       <UniqueIdentifier>{996e8999-c87f-48de-a290-3123c99b9bb6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\modules\effects">
+      <UniqueIdentifier>{c056a17a-1c1e-4b69-915a-b28dd4c155ba}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\lua\lapi.h">
@@ -854,6 +857,15 @@
     <ClInclude Include="src\luafilesystem\lfs.h">
       <Filter>Source Files\luafilesystem</Filter>
     </ClInclude>
+    <ClInclude Include="src\modules\effects.h">
+      <Filter>Source Files\modules</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\effects\__template__.h">
+      <Filter>Source Files\modules\effects</Filter>
+    </ClInclude>
+    <ClInclude Include="src\modules\effects\shard.h">
+      <Filter>Source Files\modules\effects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
@@ -1131,6 +1143,9 @@
     </ClCompile>
     <ClCompile Include="src\luafilesystem\lfs.c">
       <Filter>Source Files\luafilesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\modules\effects.cpp">
+      <Filter>Source Files\modules</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

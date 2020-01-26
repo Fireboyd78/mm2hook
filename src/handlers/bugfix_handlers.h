@@ -2,6 +2,7 @@
 #include "common.h"
 #include "patch.h"
 #include "mm2.h"
+#include "..\modules\effects.h"
 
 static ConfigValue<bool> cfgBoundSphereCalculation  ("BoundSphereCalculationFix", true);
 static ConfigValue<bool> cfgAirbrakeFix             ("AirbrakeFix",               true);
@@ -214,5 +215,10 @@ public:
 class phBoundBugfixHandler {
 public:
     void CalculateSphereFromBoundingBox();
+    static void Install();
+};
+
+class fxShardManagerBugfixHandler {
+public:
     static void Install();
 };

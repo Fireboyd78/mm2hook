@@ -173,6 +173,9 @@
     <ClInclude Include="src\modules\data\timer.h" />
     <ClInclude Include="src\modules\data\token.h" />
     <ClInclude Include="src\modules\data\__template__.h" />
+    <ClInclude Include="src\modules\effects.h" />
+    <ClInclude Include="src\modules\effects\shard.h" />
+    <ClInclude Include="src\modules\effects\__template__.h" />
     <ClInclude Include="src\modules\input.h" />
     <ClInclude Include="src\modules\input\eventq.h" />
     <ClInclude Include="src\modules\input\joystick.h" />
@@ -328,6 +331,7 @@
     <ClCompile Include="src\modules\core.cpp" />
     <ClCompile Include="src\modules\creature.cpp" />
     <ClCompile Include="src\modules\data.cpp" />
+    <ClCompile Include="src\modules\effects.cpp" />
     <ClCompile Include="src\modules\input.cpp" />
     <ClCompile Include="src\modules\level.cpp" />
     <ClCompile Include="src\modules\node.cpp" />
