@@ -58,6 +58,11 @@ namespace MM2
     extern ageHook::Type<Matrix44 *>        mtxstack;
 
     /*
+        Lua helper
+    */
+    extern void luaSetColor(float r, float g, float b, float a);
+
+    /*
         Function declarations
     */
 
@@ -110,6 +115,33 @@ namespace MM2
 
     template<>
     void luaAddModule<module_rgl>(LuaState L) {
+        LuaBinding(L)
+            .addFunction("vglTexCoord2f", &vglTexCoord2f)
+            .addFunction("vglVertex3f", static_cast<void(*)(Vector3 vector)>(&vglVertex3f))
+            .addFunction("vglBegin", &vglBegin)
+            .addFunction("vglEnd", &vglEnd)
+            .addFunction("vglBeginBatch", &vglBeginBatch)
+            .addFunction("vglEndBatch", &vglEndBatch)
+            .addFunction("vglBindTexture", &vglBindTexture)
+            .addFunction("vglDrawLabel", &vglDrawLabel)
 
+            .addFunction("mkfrgba", &mkfrgba)
+
+            .addFunction("rglWorldMatrix", &rglWorldMatrix)
+            .addFunction("rglWorldIdentity", &rglWorldIdentity)
+            .addFunction("rglCameraMatrix", &rglCameraMatrix)
+
+            .addFunction("rglDrawBox", &rglDrawBox)
+            .addFunction("rglDrawSolidBox", &rglDrawSolidBox)
+            .addFunction("rglDrawAxis", &rglDrawAxis)
+            .addFunction("rglDrawSphere", static_cast<void(*)(float p1, int p2)>(&rglDrawSphere))
+            .addFunction("rglDrawParticle", &rglDrawParticle)
+            .addFunction("rglResetDrawTexture", &rglResetDrawTexture)
+            .addFunction("rglDrawTexture", &rglDrawTexture)
+            .addFunction("rglPushMatrix", &rglPushMatrix)
+            .addFunction("rglPopMatrix", &rglPopMatrix)
+            .addFunction("rglMultMatrix", &rglMultMatrix)
+
+            .addFunction("rglSetColor", &luaSetColor);
     }
 }

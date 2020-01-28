@@ -18,6 +18,11 @@ declfield(MM2::vglCloudMapTexture)  (0x682B74);
 
 declfield(MM2::mtxstack)            (0x682F98);
 
+/* lua helper */
+void MM2::luaSetColor(float r, float g, float b, float a) {
+    vglCurrentColor.set(mkfrgba(r, g, b, a));
+}
+
 /* psdl.obj */
 
 void    MM2::vglTexCoord2f          (float u, float v)                                          { return _StaticThunk<0x45CFD0>::Call<void>(u, v); }
