@@ -101,8 +101,160 @@ namespace MM2
         float m31;
         float m32;
 
-		void Matrix34::Dot(Matrix34* rhs)
-		{
+        void Set(Matrix34* values) {
+            ageHook::Thunk<0x4BBFB0>::Call<void>(this, values);
+        }
+
+        void MakeScale(float xScale, float yScale, float zScale) {
+            this->m00 = xScale;
+            this->m01 = 0.0;
+            this->m02 = 0.0;
+            this->m10 = 0.0;
+            this->m11 = yScale;
+            this->m12 = 0.0;
+            this->m20 = 0.0;
+            this->m21 = 0.0;
+            this->m22 = zScale;
+        }
+
+        void MakeScale(float scale) {
+            this->m00 = scale;
+            this->m01 = 0.0;
+            this->m02 = 0.0;
+            this->m10 = 0.0;
+            this->m11 = scale;
+            this->m12 = 0.0;
+            this->m20 = 0.0;
+            this->m21 = 0.0;
+            this->m22 = scale;
+        }
+
+        void MakeRotateZ(float angle) {
+            this->m02 = 0.0;
+            float v2 = sin(angle);
+            float v3 = cos(angle);
+            this->m00 = *(float*)&v3;
+            this->m01 = v2;
+            this->m10 = -v2;
+            this->m12 = 0.0;
+            this->m11 = *(float*)&v3;
+            this->m20 = 0.0;
+            this->m21 = 0.0;
+            this->m22 = 1.0;
+        }
+
+        void MakeRotateY(float angle) {
+            float v2 = cos(angle);
+            this->m01 = 0.0;
+            float v3 = sin(angle);
+            this->m00 = v2;
+            this->m02 = -v3;
+            this->m10 = 0.0;
+            this->m11 = 1.0;
+            this->m12 = 0.0;
+            this->m21 = 0.0;
+            this->m20 = v3;
+            this->m22 = v2;
+        }
+
+        void MakeRotateX(float angle) {
+            this->m00 = 1.0;
+            this->m01 = 0.0;
+            this->m02 = 0.0;
+            this->m10 = 0.0;
+            float v2 = sin(angle);
+            float v3 = cos(angle);
+            this->m11 = v3;
+            this->m12 = v2;
+            this->m21 = -v2;
+            this->m20 = 0.0;
+            this->m22 = v3;
+        }
+
+        void RotateX(float angle) {
+            Matrix34 rotMatrix = Matrix34();
+            rotMatrix.MakeRotateX(angle);
+            this->Dot(&rotMatrix);
+        }
+
+        void RotateY(float angle) {
+            Matrix34 rotMatrix = Matrix34();
+            rotMatrix.MakeRotateY(angle);
+            this->Dot(&rotMatrix);
+        }
+
+        void RotateZ(float angle) {
+            Matrix34 rotMatrix = Matrix34();
+            rotMatrix.MakeRotateZ(angle);
+            this->Dot(&rotMatrix);
+        }
+
+        void Add(Matrix34* values) {
+            this->m00 = values->m00 + this->m00;
+            this->m01 = values->m01 + this->m01;
+            this->m02 = values->m02 + this->m02;
+            this->m10 = values->m10 + this->m10;
+            this->m11 = values->m11 + this->m11;
+            this->m12 = values->m12 + this->m12;
+            this->m20 = values->m20 + this->m20;
+            this->m21 = values->m21 + this->m21;
+            this->m22 = values->m22 + this->m22;
+            this->m30 = values->m30 + this->m30;
+            this->m31 = values->m31 + this->m31;
+            this->m32 = values->m32 + this->m32;
+        }
+
+        void Normalize() {
+            float v17 = this->m22 * this->m11 - this->m21 * this->m12;
+            float v16 = this->m20 * this->m12 - this->m22 * this->m10;
+            float v1 = this->m21 * this->m10;
+            float v2 = this->m11 * this->m20;
+            this->m00 = v17;
+            this->m01 = v16;
+            this->m02 = v1 - v2;
+            float v3 = this->m02 * this->m02 + v16 * v16 + v17 * v17;
+            float v4 = (v3 == 0.0f) ? 0.0f : 1.0f / sqrt(v3);
+            float v5 = v4 * v17;
+            this->m00 = v5;
+            float v6 = v4 * v16;
+            this->m01 = v6;
+            float v7 = v4 * this->m02;
+            this->m02 = v7;
+            float v8 = v7 * this->m21 - v6 * this->m22;
+            float v9 = v5 * this->m22 - v7 * this->m20;
+            float v10 = v6 * this->m20;
+            float v11 = v5 * this->m21;
+            this->m11 = v9;
+            this->m12 = v10 - v11;
+            this->m10 = v8;
+            float v12 = this->m10 * this->m10 + this->m11 * this->m11 + this->m12 * this->m12;
+            float v13 = (v12 == 0.0f) ? 0.0f : 1.0f / sqrt(v12);
+            this->m10 = v13 * this->m10;
+            this->m11 = v13 * this->m11;
+            this->m12 = v13 * this->m12;
+            float v14 = this->m20 * this->m20 + this->m21 * this->m21 + this->m22 * this->m22;
+            float v15 = (v14 == 0.0f) ? 0.0f : 1.0f / sqrt(v14);
+            this->m20 = v15 * this->m20;
+            this->m21 = v15 * this->m21;
+            this->m22 = v15 * this->m22;
+        }
+
+        void Zero() {
+            this->m02 = 0.0;
+            this->m01 = 0.0;
+            this->m00 = 0.0;
+            this->m12 = 0.0;
+            this->m11 = 0.0;
+            this->m10 = 0.0;
+            this->m22 = 0.0;
+            this->m21 = 0.0;
+            this->m20 = 0.0;
+            this->m32 = 0.0;
+            this->m31 = 0.0;
+            this->m30 = 0.0;
+        }
+
+		void Dot(Matrix34* rhs) {
 			ageHook::Thunk<0x4BC400>::Call(this, rhs);
 		}
 
@@ -116,6 +268,48 @@ namespace MM2
             this->m20 = amount * this->m20;
             this->m21 = amount * this->m21;
             this->m22 = amount * this->m22;
+        }
+
+        void Scale(float xAmount, float yAmount, float zAmount) {
+            this->m00 = xAmount * this->m00;
+            this->m10 = xAmount * this->m10;
+            this->m20 = xAmount * this->m20;
+            this->m01 = yAmount * this->m01;
+            this->m11 = yAmount * this->m11;
+            this->m21 = yAmount * this->m21;
+            this->m02 = zAmount * this->m02;
+            this->m12 = zAmount * this->m12;
+            this->m22 = zAmount * this->m22;
+        }
+
+        void ScaleFull(float amount) {
+            this->m00 = amount * this->m00;
+            this->m01 = amount * this->m01;
+            this->m02 = amount * this->m02;
+            this->m10 = amount * this->m10;
+            this->m11 = amount * this->m11;
+            this->m12 = amount * this->m12;
+            this->m20 = amount * this->m20;
+            this->m21 = amount * this->m21;
+            this->m22 = amount * this->m22;
+            this->m30 = amount * this->m30;
+            this->m31 = amount * this->m31;
+            this->m32 = amount * this->m32;
+        }
+
+        void ScaleFull(float xAmount, float yAmount, float zAmount) {
+            this->m00 = xAmount * this->m00;
+            this->m10 = xAmount * this->m10;
+            this->m20 = xAmount * this->m20;
+            this->m30 = xAmount * this->m30;
+            this->m01 = yAmount * this->m01;
+            this->m11 = yAmount * this->m11;
+            this->m21 = yAmount * this->m21;
+            this->m31 = yAmount * this->m31;
+            this->m02 = zAmount * this->m02;
+            this->m12 = zAmount * this->m12;
+            this->m22 = zAmount * this->m22;
+            this->m32 = zAmount * this->m32;
         }
 
         void Identity() {
@@ -185,8 +379,20 @@ namespace MM2
                 .addVariableRef("m30", &Matrix34::m30)
                 .addVariableRef("m31", &Matrix34::m31)
                 .addVariableRef("m32", &Matrix34::m32)
+
                 .addFunction("Identity", &Matrix34::Identity)
                 .addFunction("Identity3x3", &Matrix34::Identity3x3)
+                .addFunction("Scale", static_cast<void(Matrix34::*)(float, float, float)>(&Matrix34::Scale))
+                .addFunction("Normalize", &Matrix34::Normalize)
+
+                .addFunction("Zero", &Matrix34::Zero)
+                .addFunction("MakeRotateX", &Matrix34::MakeRotateX)
+                .addFunction("MakeRotateY", &Matrix34::MakeRotateY)
+                .addFunction("MakeRotateZ", &Matrix34::MakeRotateZ)
+                .addFunction("MakeScale", static_cast<void(Matrix34::*)(float, float, float)>(&Matrix34::MakeScale))
+                .addFunction("RotateX", &Matrix34::RotateX)
+                .addFunction("RotateY", &Matrix34::RotateY)
+                .addFunction("RotateZ", &Matrix34::RotateZ)
             .endClass();
         }
     };
