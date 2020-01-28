@@ -14,5 +14,7 @@ namespace MM2
         luaBind<Base>(L);
         luaBind<asCullable>(L);
         luaBind<asNode>(L);
+        luaBind<asCullManager>(L);
+        luaBind<luaNode>(L);
     }
 }
