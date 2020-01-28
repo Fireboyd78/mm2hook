@@ -866,6 +866,9 @@
     <ClInclude Include="src\modules\effects\shard.h">
       <Filter>Source Files\modules\effects</Filter>
     </ClInclude>
+    <ClInclude Include="src\modules\node\luanode.h">
+      <Filter>Source Files\modules\node</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">

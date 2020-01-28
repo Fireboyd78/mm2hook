@@ -202,6 +202,7 @@
     <ClInclude Include="src\modules\node\eventq.h" />
     <ClInclude Include="src\modules\node\fileio.h" />
     <ClInclude Include="src\modules\node\linear.h" />
+    <ClInclude Include="src\modules\node\luanode.h" />
     <ClInclude Include="src\modules\node\node.h" />
     <ClInclude Include="src\modules\node\root.h" />
     <ClInclude Include="src\modules\node\str.h" />

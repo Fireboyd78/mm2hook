@@ -7,6 +7,7 @@
 #include "node\str.h"
 #include "node\cullable.h"
 #include "node\node.h"
+#include "node\luaNode.h"
 #include "node\root.h"
 #include "node\cullmgr.h"
 #include "node\event.h"
