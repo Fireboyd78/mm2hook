@@ -1,5 +1,6 @@
 var classveh_car =
 [
+    [ "vehCar", "classveh_car.html#af7a847f24451fe9d5059ddb80488a0c4", null ],
     [ "ClearDamage", "classveh_car.html#a367157489640ac8228f94f6f9d5b323e", null ],
     [ "Init", "classveh_car.html#a3cc4b1bbc48495d00dee73b03f33c08e", null ],
     [ "InitAudio", "classveh_car.html#a1e1120d703f4d7403f2fa84cc27c3c9a", null ],

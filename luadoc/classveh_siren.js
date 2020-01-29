@@ -1,5 +1,6 @@
 var classveh_siren =
 [
+    [ "vehSiren", "classveh_siren.html#a111605bde8b42b3a7eb8737a51576d5a", null ],
     [ "AddLight", "classveh_siren.html#a40d9199783dda00716774f7b80462778", null ],
     [ "Draw", "classveh_siren.html#a2a7d310850876a8d371f65d91e5dc8fd", null ],
     [ "GetLight", "classveh_siren.html#aaded525c701a11a8c7e62e4646af5aa7", null ],

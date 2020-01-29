@@ -1,5 +1,6 @@
 var classas_birth_rule =
 [
+    [ "asBirthRule", "classas_birth_rule.html#a988ddb06d9887dc870088b5f1af742cd", null ],
     [ "BirthFlags", "classas_birth_rule.html#a8f2a00a43b5cf150990f4302ccadec4b", null ],
     [ "byte", "classas_birth_rule.html#a3b491e164189fd81b0ecb0e6ae919f9c", null ],
     [ "DAlpha", "classas_birth_rule.html#ae25d64deee460a54667e53aa8ac3e019", null ],
@@ -15,7 +16,7 @@ var classas_birth_rule =
     [ "Gravity", "classas_birth_rule.html#a516e8640f9b3d07eb3400a5d7577ac4e", null ],
     [ "Height", "classas_birth_rule.html#a949feb57f4a52fa05e2d69a7ebd06520", null ],
     [ "InitialBlast", "classas_birth_rule.html#ae2eba6a5aca5c8903d621ece1fcf5d51", null ],
-    [ "Intensity", "classas_birth_rule.html#a94accd11761b230d448158e55c218d6b", null ],
+    [ "Intensity", "classas_birth_rule.html#a18c8992c126146cb698b0b5a613505a3", null ],
     [ "Life", "classas_birth_rule.html#a143cf56259b98c8c1e96cb8af3430f82", null ],
     [ "LifeVar", "classas_birth_rule.html#a3f1c254798c245da241f5cb37e0aa76c", null ],
     [ "Mass", "classas_birth_rule.html#ad1a93135807485ef082878c0a944ab70", null ],

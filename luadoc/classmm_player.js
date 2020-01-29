@@ -3,7 +3,7 @@ var classmm_player =
     [ "EnableRegen", "classmm_player.html#a71700ad8b9729e1bc68d7a76abac6670", null ],
     [ "FilterSteering", "classmm_player.html#a3472cbace7f7fb92da3eca099ba3511b", null ],
     [ "IsMaxDamaged", "classmm_player.html#ad4dcd980509937687dfd0eaea44bef85", null ],
-    [ "ReInit", "classmm_player.html#a82959f76b6eafc88001d07be99b5dfa0", null ],
+    [ "ReInit", "classmm_player.html#ac4e6713c057a1392d83005ff826bb0ec", null ],
     [ "ResetDamage", "classmm_player.html#af8a597a0c8820e066ce940ac181c807e", null ],
     [ "SetCamera", "classmm_player.html#a684968ae7f21cd587111d592ff69bde1", null ],
     [ "SetMPPostCam", "classmm_player.html#af56d73856d5a2bf86be4e78cce7fa692", null ],

@@ -1,6 +1,6 @@
 var hierarchy =
 [
-    [ "aiMap", "classai_map.html", null ],
+    [ "aiIntersection", "classai_intersection.html", null ],
     [ "aiObstacle", "classai_obstacle.html", [
       [ "aiVehicle", "classai_vehicle.html", [
         [ "aiVehicleSpline", "classai_vehicle_spline.html", [
@@ -8,14 +8,17 @@ var hierarchy =
         ] ]
       ] ]
     ] ],
+    [ "aiPath", "classai_path.html", null ],
     [ "asMeshCardVertex", "classas_mesh_card_vertex.html", null ],
     [ "asParticles", "classas_particles.html", null ],
     [ "Base", "class_base.html", [
       [ "asCullable", "classas_cullable.html", [
         [ "asNode", "classas_node.html", [
+          [ "aiMap", "classai_map.html", null ],
           [ "aiVehicleData", "classai_vehicle_data.html", null ],
           [ "aiVehicleManager", "classai_vehicle_manager.html", null ],
           [ "asBirthRule", "classas_birth_rule.html", null ],
+          [ "asCullManager", "classas_cull_manager.html", null ],
           [ "asMeshSetForm", "classas_mesh_set_form.html", null ],
           [ "AudManagerBase", "class_aud_manager_base.html", [
             [ "AudManager", "class_aud_manager.html", null ]
@@ -31,6 +34,8 @@ var hierarchy =
             ] ]
           ] ],
           [ "camViewCS", "classcam_view_c_s.html", null ],
+          [ "luaNode", "classlua_node.html", null ],
+          [ "mmArrow", "classmm_arrow.html", null ],
           [ "mmCDPlayer", "classmm_c_d_player.html", null ],
           [ "mmGame", "classmm_game.html", null ],
           [ "mmHUD", "classmm_h_u_d.html", null ],
@@ -45,13 +50,18 @@ var hierarchy =
     [ "datCallback", "classdat_callback.html", null ],
     [ "datOutput", "classdat_output.html", null ],
     [ "datTimeManager", "classdat_time_manager.html", null ],
+    [ "dgPath", "classdg_path.html", null ],
+    [ "dgPathPoint", "classdg_path_point.html", null ],
+    [ "dgPathSet", "classdg_path_set.html", null ],
     [ "dgPhysEntity", "classdg_phys_entity.html", [
       [ "vehCar", "classveh_car.html", null ],
       [ "vehTrailer", "classveh_trailer.html", null ]
     ] ],
     [ "dgPhysManager", "classdg_phys_manager.html", null ],
     [ "GeomTableEntry", "class_geom_table_entry.html", null ],
-    [ "Globals", "class_globals.html", null ],
+    [ "GlobalNamespace1664508633", "class_global_namespace1664508633.html", null ],
+    [ "GlobalNamespace473744903", "class_global_namespace473744903.html", null ],
+    [ "GlobalNamespace687894436", "class_global_namespace687894436.html", null ],
     [ "ltLight", "classlt_light.html", null ],
     [ "luaCallback", "classlua_callback.html", null ],
     [ "lvlAiMap", "classlvl_ai_map.html", null ],
