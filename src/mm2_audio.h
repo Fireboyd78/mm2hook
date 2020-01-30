@@ -76,14 +76,85 @@ namespace MM2
         }
     }
 
-    class AudSoundBase {
+    class AudSoundBase : public asNode {
     private:
         byte _buffer[0x40];
+    private:
+        //lua helper
+        bool LoadLua(LPCSTR wavName, int handle) {
+            return Load(wavName, handle, false) != FALSE;
+        }
     public:
+        AGE_API AudSoundBase() {
+            scoped_vtable x(this);
+            ageHook::Thunk<0x50D580>::Call<void>(this);
+        };
+
+        AGE_API AudSoundBase(unsigned int flags, int soundCount, int unused) {
+            scoped_vtable x(this);
+            ageHook::Thunk<0x50D6D0>::Call<void>(this, flags, soundCount, unused);
+        };
+
+        AGE_API ~AudSoundBase() {
+            Warningf("audSoundBase DTOR");
+            scoped_vtable x(this);
+            ageHook::Thunk<0x50D7B0>::Call<void>(this);
+        };
+
+        /*
+            asNode virtuals
+        */
+        AGE_API void Update() override                      { ageHook::Thunk<0x50DBE0>::Call<void>(this); }
+
+        /*
+            AudSoundBase
+        */
+        AGE_API static unsigned int Get3DFlags()            { return ageHook::StaticThunk<0x50E070>::Call<unsigned int>(); }
+        AGE_API static unsigned int Get2DFlags()            { return ageHook::StaticThunk<0x50E030>::Call<unsigned int>(); }
+        AGE_API static unsigned int GetSoft2DFlags()        { return ageHook::StaticThunk<0x50E040>::Call<unsigned int>(); }
+
+        AGE_API bool IsPlaying()                            { return ageHook::Thunk<0x50E250>::Call<bool>(this); }
+        AGE_API void Enable3DMode()                         { ageHook::Thunk<0x50E2F0>::Call<void>(this); }
+        AGE_API void Disable3DMode()                        { ageHook::Thunk<0x50E300>::Call<void>(this); }
+        AGE_API BOOL Load(LPCSTR wavName, int handle, bool unknown)
+                                                            { return ageHook::Thunk<0x50DE90>::Call<BOOL>(this, wavName, handle, unknown); }
         AGE_API void PlayOnce(float volume, float pitch)    { ageHook::Thunk<0x50E090>::Call<void>(this, volume, pitch); }
+        AGE_API void PlayLoop(float volume, float pitch)    { ageHook::Thunk<0x50E150>::Call<void>(this, volume, pitch); }
+        AGE_API void Stop()                                 { ageHook::Thunk<0x50E1F0>::Call<void>(this); }
         AGE_API void SetFrequency(float frequency)          { ageHook::Thunk<0x50DAB0>::Call<void>(this, frequency); }
         AGE_API void SetVolume(float volume)                { ageHook::Thunk<0x50DA30>::Call<void>(this, volume); }
         AGE_API void SetPan(float pan, int a2)              { ageHook::Thunk<0x50DB30>::Call<void>(this, pan, a2); }
+        AGE_API void SetSoundHandleIndex(int index)         { ageHook::Thunk<0x50E2C0>::Call<void>(this, index); }
+        AGE_API void SetSubPath(LPCSTR path)                { ageHook::Thunk<0x50D8D0>::Call<void>(this, path); }
+        AGE_API int GetSoundHandleIndex()                   { return ageHook::Thunk<0x50E2D0>::Call<int>(this); }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginExtendClass<AudSoundBase, asNode>("AudSoundBase")
+                .addFactory([](unsigned int flags = 0xC2, int soundCount = 1) { //0xC2 is the return value of Get2DFlags
+                    auto soundBase = new AudSoundBase(flags, soundCount, -1);
+                    return soundBase;
+                    }, LUA_ARGS(_opt<unsigned int>, _opt<int>))
+
+                .addStaticFunction("Get3DFlags", &Get3DFlags)
+                .addStaticFunction("Get2DFlags", &Get2DFlags)
+                .addStaticFunction("GetSoft2DFlags", &GetSoft2DFlags)
+        
+                .addProperty("IsPlaying", &IsPlaying)
+                .addProperty("SoundHandleIndex", &GetSoundHandleIndex, &SetSoundHandleIndex)
+
+                .addFunction("Load", &LoadLua)
+
+                .addFunction("Enable3DMode", &Enable3DMode)
+                .addFunction("Disable3DMode", &Disable3DMode)
+
+                .addFunction("PlayOnce", &PlayOnce)
+                .addFunction("PlayLoop", &PlayLoop)
+                .addFunction("SetFrequency", &SetFrequency)
+                .addFunction("SetPan", &SetPan)
+                .addFunction("SetVolume", &SetVolume)
+                .addFunction("SetSubPath", &SetSubPath)
+                .endClass();
+        }
     };
 
     class Aud3DObject {
@@ -361,6 +432,7 @@ namespace MM2
     void luaAddModule<module_audio>(LuaState L) {
         luaBind<AudManagerBase>(L);
         luaBind<AudManager>(L);
+        luaBind<AudSoundBase>(L);
         luaBind<mmCNRSpeech>(L);
         luaBind<mmRaceSpeech>(L);
     }
