@@ -23,6 +23,7 @@ Also included are complimentary bug-fixes for random crashes, as well as a fix f
 1) Grab the latest version [here](https://ci.appveyor.com/project/Fireboyd78/mm2hook/build/artifacts).
 2) **Optional:** Download the latest version of Discord Rich Presence [here](https://github.com/discordapp/discord-rpc/releases/latest), and grab `discord-rpc.dll` from the `win32-dynamic\bin` folder.
 3) Place all files in your Midtown Madness 2 installation directory and enjoy!
+**Note for Wine users:** In order to use this on Wine, you must open winecfg, go to the Libraries tab, and add an override for dinput. Set the override to either "native" or "native then builtin"
  
 ## Contributing
 If you'd like to contribute to the project, please [fork](https://help.github.com/articles/about-forks/) the project and submit a [pull request](https://help.github.com/articles/about-pull-requests/).
