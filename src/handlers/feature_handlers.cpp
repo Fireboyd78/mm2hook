@@ -2425,15 +2425,15 @@ void vehCarModelFeatureHandler::DrawGlow() {
     auto shaders = geomSet->pShaders[variantIndex];
 
     //get objects
-    auto hlight = lvlInstance::GetGeomTableEntry(geomID + 2);
-    auto tlight = lvlInstance::GetGeomTableEntry(geomID + 3);
-    auto rlight = lvlInstance::GetGeomTableEntry(geomID + 4);
-    auto blight = lvlInstance::GetGeomTableEntry(geomID + 7);
-    auto siren0 = lvlInstance::GetGeomTableEntry(geomID + 9);
-    auto siren1 = lvlInstance::GetGeomTableEntry(geomID + 10);
+    modStatic* hlight = lvlInstance::GetGeomTableEntry(geomID + 2)->getHighestLOD();
+    modStatic* tlight = lvlInstance::GetGeomTableEntry(geomID + 3)->getHighestLOD();
+    modStatic* rlight = lvlInstance::GetGeomTableEntry(geomID + 4)->getHighestLOD();
+    modStatic* blight = lvlInstance::GetGeomTableEntry(geomID + 7)->getHighestLOD();
+    modStatic* siren0 = lvlInstance::GetGeomTableEntry(geomID + 9)->getHighestLOD();
+    modStatic* siren1 = lvlInstance::GetGeomTableEntry(geomID + 10)->getHighestLOD();
 
-    auto slight0 = lvlInstance::GetGeomTableEntry(geomID + 5);
-    auto slight1 = lvlInstance::GetGeomTableEntry(geomID + 6);
+    modStatic* slight0 = lvlInstance::GetGeomTableEntry(geomID + 5)->getHighestLOD();
+    modStatic* slight1 = lvlInstance::GetGeomTableEntry(geomID + 6)->getHighestLOD();
 
     //draw signals
     if (enableSignals && carsim->getSpeedMPH() <= 15.f) {
@@ -2449,36 +2449,36 @@ void vehCarModelFeatureHandler::DrawGlow() {
 
         //draw stuff!
         if (drawSignal && slightIndex >= 0) {
-            if (slight0->Low != nullptr && slightIndex == 0) {
-                slight0->Low->Draw(shaders);
+            if (slight0 != nullptr && slightIndex == 0) {
+                slight0->Draw(shaders);
             }
-            else if (slight1->Low != nullptr && slightIndex == 1) {
-                slight1->Low->Draw(shaders);
+            else if (slight1 != nullptr && slightIndex == 1) {
+                slight1->Draw(shaders);
             }
         }
     }
 
 
     //draw tlight
-    if (tlight->Low != nullptr) {
+    if (tlight != nullptr) {
         //draw brake copy
         if(carsim->getBrake() > 0.1)
-            tlight->Low->Draw(shaders);
+            tlight->Draw(shaders);
         //draw headlight copy
         if(vehCar::sm_DrawHeadlights)
-            tlight->Low->Draw(shaders);
+            tlight->Draw(shaders);
     }
 
     //draw blight
-    if (blight->Low != nullptr) {
+    if (blight != nullptr) {
         //draw brake copy
         if (carsim->getBrake() > 0.1)
-            blight->Low->Draw(shaders);
+            blight->Draw(shaders);
     }
 
     //draw rlight 
-    if (rlight->Low != nullptr && gear == 0) {
-        rlight->Low->Draw(shaders);
+    if (rlight != nullptr && gear == 0) {
+        rlight->Draw(shaders);
     }
 
     //Draw siren and headlights
@@ -2499,8 +2499,8 @@ void vehCarModelFeatureHandler::DrawGlow() {
             Matrix44::Convert(gfxRenderState::sm_World, &carMatrix);
             *(int*)0x685778 |= 0x88; //set m_Touched
 
-            if (vehCar::sm_DrawHeadlights && hlight->Low != nullptr) {
-                hlight->Low->Draw(shaders);
+            if (vehCar::sm_DrawHeadlights && hlight != nullptr) {
+                hlight->Draw(shaders);
             }
         }
     }
@@ -2520,11 +2520,11 @@ void vehCarModelFeatureHandler::DrawGlow() {
 
             if (siren != nullptr && siren->Active) {
                 int sirenStage = fmod(datTimeManager::ElapsedTime, 2 * sirenCycle) >= sirenCycle ? 1 : 0;
-                if (sirenStage == 0 && siren0->Low != nullptr) {
-                    siren0->Low->Draw(shaders);
+                if (sirenStage == 0 && siren0 != nullptr) {
+                    siren0->Draw(shaders);
                 }
-                else if (sirenStage == 1 && siren1->Low != nullptr) {
-                    siren1->Low->Draw(shaders);
+                else if (sirenStage == 1 && siren1 != nullptr) {
+                    siren1->Draw(shaders);
                 }
             }
         }

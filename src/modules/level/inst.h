@@ -57,7 +57,7 @@ namespace MM2
                     return Low;
                 if (VeryLow != nullptr)
                     return VeryLow;
-                return NULL;
+                return nullptr;
             }
 
             inline modStatic * getLowestLOD() const {
@@ -69,7 +69,7 @@ namespace MM2
                     return Medium;
                 if (High != nullptr)
                     return High;
-                return NULL;
+                return nullptr;
             }
 
             inline modStatic * getVeryLowLOD() const {
