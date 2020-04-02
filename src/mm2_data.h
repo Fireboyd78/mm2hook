@@ -14,6 +14,7 @@ namespace MM2
     template<>
     void luaAddModule<module_data>(LuaState L) {
         luaBind<datOutput>(L);
+        luaBind<datStack>(L);
         luaBind<datTimeManager>(L);
     }
 }

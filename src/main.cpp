@@ -1,4 +1,5 @@
 #include "main.h"
+#include "mm2_data.h"
 
 #include "handlers\bugfix_handlers.h"
 #include "handlers\feature_handlers.h"
@@ -613,6 +614,10 @@ public:
     }
 
     static void Install() {
+        InstallCallback("datStack::ExceptionFilter", "Custom exception filter",
+            &MM2::datStack::ExceptionFilterCombined, {
+                cbHook<JMP>(0x4C7720), //redirect function
+            });
         InstallCallback("datStack::LookupAddress", "Allows for more detailed address information.",
             static_cast<void (*)(char*, LPCSTR, int, char*, int)>(&GetAddressName), {
                 cbHook<CALL>(0x4C74DD), // sprintf

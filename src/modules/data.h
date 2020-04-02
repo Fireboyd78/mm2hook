@@ -10,6 +10,7 @@
 #include "data\hash.h"
 #include "data\base.h"
 #include "data\token.h"
+#include "data\stack.h"
 
 namespace MM2
 {
