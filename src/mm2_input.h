@@ -7,6 +7,6 @@ namespace MM2
 {
     template<>
     void luaAddModule<module_input>(LuaState L) {
-
+        luaBind<ioKeyboard>(L);
     }
 }
