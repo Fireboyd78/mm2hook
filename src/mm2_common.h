@@ -192,6 +192,37 @@ namespace MM2 {
         You should verify what you're doing is actually used by the game.
     */
 
+
+    template<typename T>
+    CppBindClass<T, LuaBinding> beginStatePackLua(LuaState L, const char* name) {
+        auto binder = LuaBinding(L).beginClass<T>(name);
+        binder
+            .addProperty("GameMode", &dgStatePack::getGameMode, &dgStatePack::setGameMode)
+            .addVariableRef("RaceId", &dgStatePack::RaceId)
+
+            .addVariableRef("TrafficDensity", &dgStatePack::TrafficDensity)
+            .addVariableRef("PedestrianDensity", &dgStatePack::PedestrianDensity)
+            .addVariableRef("CopDensity", &dgStatePack::CopDensity)
+            .addVariableRef("OpponentDensity", &dgStatePack::OpponentDensity)
+
+            .addVariableRef("MaxAmbientVehicles", &dgStatePack::MaxAmbientVehicles)
+
+            .addProperty("EnableCableCars", &dgStatePack::getEnableCableCars, &dgStatePack::setEnableCableCars)
+            .addProperty("EnableSubways", &dgStatePack::getEnableSubways, &dgStatePack::setEnableSubways)
+
+            .addVariableRef("NumLaps", &dgStatePack::NumLaps)
+
+            .addVariableRef("TextureQuality", &dgStatePack::TextureQuality)
+
+            .addVariableRef("TimeOfDay", &dgStatePack::TimeOfDay)
+            .addVariableRef("WeatherType", &dgStatePack::WeatherType)
+            .addProperty("SkillLevel", &dgStatePack::getSkillLevel, &dgStatePack::setSkillLevel)
+            .addVariableRef("AudioFlags", &dgStatePack::AudioFlags)
+
+            .addProperty("EnablePedestrians", &dgStatePack::getEnablePedestrians, &dgStatePack::setEnablePedestrians);
+        return binder;
+    }
+
     struct dgStatePack {
         //FUNCS
         AGE_API dgStatePack(void) {
@@ -283,9 +314,32 @@ namespace MM2 {
         inline void setEnablePedestrians(bool value) {
             EnablePedestrians = (value) ? TRUE : FALSE;
         }
+
+        //LUA
+        static void BindLua(LuaState L) {
+            beginStatePackLua<dgStatePack>(L, "dgStatePack")
+                .endClass();
+        }
     };
 
     class mmStatePack : public dgStatePack {
+    private:
+        //lua helper for portals
+        bool getUsePortals() {
+            return this->UsePortals == TRUE;
+        }
+
+        void setUsePortals(bool usePortals) {
+            this->UsePortals = (usePortals) ? TRUE : FALSE;
+        }
+
+        LPCSTR getNetName() {
+            return (LPCSTR)NetName;
+        }
+
+        void setNetName(LPCSTR name) {
+            memcpy(&NetName, name, sizeof(NetName) - 1); //copy all but last char to avoid overflow
+        }
     public:
         char CityName[40];
         char CityLocale[40]; // same as city name, referred to as 'locale'?
@@ -419,41 +473,17 @@ namespace MM2 {
 
         //LUA
         static void BindLua(LuaState L) {
-            LuaBinding(L).beginClass<mmStatePack>("mmStatePack")
-                //not really instance but -shrug-
-                //todo: fix includes to allow this, error C2065: 'MMSTATE': undeclared identifier
-                //.addStaticProperty("Instance", [] { return &MMSTATE; })
+            beginStatePackLua<mmStatePack>(L, "mmStatePack")
 
-                //dgStatePack. Cannot use beginExtendClass because dgStatePack is not
-                //a polymorphic type. argh.
-                .addProperty("GameMode", &getGameMode, &setGameMode)
-                .addVariableRef("RaceId", &dgStatePack::RaceId)
+            //mmStatePack specifics
+            .addStaticProperty("Instance", [] { return (mmStatePack*)0x6B1610; }) //HACK but it should work
 
-                .addVariableRef("TrafficDensity", &dgStatePack::TrafficDensity)
-                .addVariableRef("PedestrianDensity", &dgStatePack::PedestrianDensity)
-                .addVariableRef("CopDensity", &dgStatePack::CopDensity)
-                .addVariableRef("OpponentDensity", &dgStatePack::OpponentDensity)
-
-                .addVariableRef("MaxAmbientVehicles", &dgStatePack::MaxAmbientVehicles)
-
-                .addProperty("EnableCableCars", &getEnableCableCars, &setEnableCableCars)
-                .addProperty("EnableSubways", &getEnableSubways, &setEnableSubways)
-
-                .addVariableRef("NumLaps", &dgStatePack::NumLaps)
-
-                .addVariableRef("TextureQuality", &dgStatePack::TextureQuality)
-
-                .addVariableRef("TimeOfDay", &dgStatePack::TimeOfDay)
-                .addVariableRef("WeatherType", &dgStatePack::WeatherType)
-                .addProperty("SkillLevel", &getSkillLevel, &setSkillLevel)
-                .addVariableRef("AudioFlags", &dgStatePack::AudioFlags)
-
-                .addProperty("EnablePedestrians", &getEnablePedestrians, &setEnablePedestrians)
-
-                //mmStatePack stuff goes here.
-
-
-                .endClass();
+            .addProperty("NetName", &getNetName, &setNetName)
+            .addVariableRef("InCrashCourse", &mmStatePack::InCrashCourse)
+            .addVariableRef("FarClip", &mmStatePack::FarClip)
+            .addVariableRef("TimeLimitOverride", &mmStatePack::TimeLimitOverride)
+            .addProperty("UsePortals", &getUsePortals, &setUsePortals)
+            .endClass();
         }
     };
 
@@ -492,7 +522,7 @@ namespace MM2 {
     void luaAddModule<module_common>(LuaState L) {
         typedef void(__cdecl *printer_type)(LPCSTR);
 
-        //luaBind<dgStatePack>(L);
+        luaBind<dgStatePack>(L);
         luaBind<mmStatePack>(L);
 
         LuaBinding(L)
