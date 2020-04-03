@@ -25,10 +25,10 @@ namespace MM2
     private:
         char baseName[40];
         char description[80];
-        char colors[64];
+        char colors[100];
         int flags;
         int order;
-        BOOL valid;
+        BOOL isValid;
         int unlockScore;
         int unlockFlags;
         BOOL isLocked;
@@ -38,11 +38,11 @@ namespace MM2
         int mass;
         int rewardFlags;
         int unk_10C;
-        int scoringBias;
+        float scoringBias;
         float uiDist;
         float unk_118;
         float unk_11C;
-        unsigned long tuningCRC;
+        unsigned int tuningCrc;
     public:
         AGE_API mmVehInfo(void) {
             scoped_vtable x(this);
@@ -61,6 +61,46 @@ namespace MM2
         inline char * GetDescription(void) {
             return description;
         }
+
+        inline char* GetColors(void) {
+            return colors;
+        }
+
+        inline unsigned int GetTuningCRC(void) {
+            return tuningCrc;
+        }
+
+        //helpers
+        void SetBaseName(LPCSTR basename) {
+            strcpy_s(this->baseName, 40, basename);
+        }
+
+        void SetDescription(LPCSTR description) {
+            strcpy_s(this->description, 80, description);
+        }
+
+        void SetColors(LPCSTR colors) {
+            strcpy_s(this->colors, 100, colors);
+        }
+
+        //lua
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<mmVehInfo>("mmVehInfo")
+                .addProperty("Colors", &GetColors, &SetColors)
+                .addProperty("Basename", &GetBaseName, &SetBaseName)
+                .addProperty("Description", &GetDescription, &SetDescription)
+                .addVariableRef("Flags", &mmVehInfo::flags)
+                .addVariableRef("Order", &mmVehInfo::order)
+                .addVariableRef("UnlockFlags", &mmVehInfo::unlockFlags)
+                .addVariableRef("UnlockScore", &mmVehInfo::unlockScore)
+                .addVariableRef("Horsepower", &mmVehInfo::horsepower)
+                .addVariableRef("TopSpeed", &mmVehInfo::topSpeed)
+                .addVariableRef("Durability", &mmVehInfo::durability)
+                .addVariableRef("Mass", &mmVehInfo::mass)
+                .addVariableRef("UIDist", &mmVehInfo::uiDist)
+                .addPropertyReadOnly("TuningCRC", &GetTuningCRC)
+                .endClass();
+        }
     };
 
     class mmVehList {
@@ -69,6 +109,8 @@ namespace MM2
         mmVehInfo *defaultVehicle;
         int numVehicles;
     public:
+        ANGEL_ALLOCATOR
+
         AGE_API mmVehList(void) {
             scoped_vtable x(this);
             ageHook::Thunk<0x524550>::Call<void>(this);
@@ -79,10 +121,33 @@ namespace MM2
             ageHook::Thunk<0x524570>::Call<void>(this);
         }
 
+        AGE_API void LoadAll()                              { ageHook::Thunk<0x524950>::Call<void>(this); }
+
         AGE_API int GetVehicleID(char *vehicle)             { return ageHook::Thunk<0x5246B0>::Call<int>(this, vehicle); }
 
         AGE_API mmVehInfo * GetVehicleInfo(int vehicle)     { return ageHook::Thunk<0x5245E0>::Call<mmVehInfo *>(this, vehicle); }
         AGE_API mmVehInfo * GetVehicleInfo(char *vehicle)   { return ageHook::Thunk<0x524610>::Call<mmVehInfo *>(this, vehicle); }
+
+        AGE_API void SetDefaultVehicle(char* vehicle)       { ageHook::Thunk<0x524690>::Call<void>(this, vehicle); }
+        AGE_API void Print()                                { ageHook::Thunk<0x524810>::Call<void>(this); }
+        
+        //helper
+        inline int GetNumVehicles() {
+            return this->numVehicles;
+        }
+
+        //lua
+        static void BindLua(LuaState L) {
+            /*throws nearly triple digit errors?
+            LuaBinding(L).beginClass<mmVehList>("mmVehList")
+                .addStaticProperty("Instance", [] { return (mmVehList*)0x6B1CA8; }) //HACK but it should work
+                .addPropertyReadOnly("NumVehicles", &GetNumVehicles)
+                .addFunction("GetVehicleInfo", static_cast<mmVehInfo *(mmVehList::*)(char*)>(&GetVehicleInfo))
+                .addFunction("GetVehicleInfoFromID", static_cast<mmVehInfo *(mmVehList::*)(int)>(&GetVehicleInfo))
+                .addFunction("GetVehicleID", &GetVehicleID)
+                .addFunction("SetDefaultVehicle", &SetDefaultVehicle)
+                .endClass();*/
+        }
     };
 
     declhook(0x6B1CA8, _Type<mmVehList *>, VehicleListPtr);
@@ -100,5 +165,8 @@ namespace MM2
         luaBind<vehTransmission>(L);
         luaBind<vehTrailer>(L);
         luaBind<vehTrailerInstance>(L);
+
+        luaBind<mmVehInfo>(L);
+        luaBind<mmVehList>(L);
     }
 }
