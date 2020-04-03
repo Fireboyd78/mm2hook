@@ -109,8 +109,6 @@ namespace MM2
         mmVehInfo *defaultVehicle;
         int numVehicles;
     public:
-        ANGEL_ALLOCATOR
-
         AGE_API mmVehList(void) {
             scoped_vtable x(this);
             ageHook::Thunk<0x524550>::Call<void>(this);
