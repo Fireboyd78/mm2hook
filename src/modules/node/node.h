@@ -12,10 +12,11 @@ namespace MM2
     // Class definitions
 
     class asNode : public asCullable {
+    protected:
         asNode *next;
         asNode *child; // not sure on this one
         asNode *parent;
-
+    
         unsigned int flags; // not sure how these work yet
 
         char *name;
