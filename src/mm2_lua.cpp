@@ -52,6 +52,7 @@ void luaSetGlobals()
         Lua::setGlobal(L, "Game", pGame);
     if (pPlayer != NULL)
         Lua::setGlobal(L, "Player", pPlayer);
+    Lua::setGlobal(L, "ROOT", &ROOT);
 
     LogFile::WriteLine("Done!");
 }

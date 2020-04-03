@@ -16,7 +16,7 @@ namespace MM2
         Matrix34 matrix; // used for asLinearCS::CurrentMatrix
 
         bool isPaused;
-        bool unk_49; // pauses the game if set to true, then turns itself off (unused -- never set by anything)
+        bool pauseNextFrame; // pauses the game if set to true, then turns itself off (used in beta1's F12 frame advance function)
         bool useNanSignal;
     public:
         AGE_API asRoot(void) {
@@ -50,6 +50,15 @@ namespace MM2
         virtual AGE_API void Update(void) override          { ageHook::Thunk<0x4A0C00>::Call<void>(this); };
         virtual AGE_API void Reset(void) override           { ageHook::Thunk<0x4A0C40>::Call<void>(this); };
         virtual AGE_API char * GetClassName(void) override  { return ageHook::Thunk<0x4A0CD0>::Call<char *>(this); };
+
+        //lua
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginExtendClass<asRoot, asNode>("asRoot")
+                .addProperty("Paused", &IsPaused, &SetPause)
+                .addVariableRef("PauseNextFrame", &asRoot::pauseNextFrame)
+                .addFunction("TogglePause", &TogglePause)
+                .endClass();
+        }
     };
 
     declhook(0x661738, _TypeProxy<asRoot>, ROOT);
