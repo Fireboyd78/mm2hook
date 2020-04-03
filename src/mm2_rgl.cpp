@@ -23,6 +23,11 @@ void MM2::luaSetColor(float r, float g, float b, float a) {
     vglCurrentColor.set(mkfrgba(r, g, b, a));
 }
 
+void MM2::luaGfxDrawFont(double x, double y, const char* text) {
+    //letting lua handle this gives us 'number has no integer representation' so this is what we do instead
+    gfxDrawFont((int)round(x), (int)round(y), text);
+}
+
 /* psdl.obj */
 
 void    MM2::vglTexCoord2f          (float u, float v)                                          { return _StaticThunk<0x45CFD0>::Call<void>(u, v); }
@@ -40,6 +45,9 @@ void    MM2::vglBeginBatch          (void)                                      
 void    MM2::vglEndBatch            (void)                                                      { return _StaticThunk<0x4A5B80>::Call<void>(); }
 void    MM2::vglBindTexture         (gfxTexture *texture)                                       { return _StaticThunk<0x4A5BA0>::Call<void>(texture); }
 void    MM2::vglDrawLabel           (const Vector3 &position, const char *text)                 { return _StaticThunk<0x4A5C50>::Call<void>(&position, text); }
+
+/* font.obj */
+void    MM2::gfxDrawFont            (int x, int y, const char *text)                            { return _StaticThunk<0x4B1280>::Call<void>(x, y, text); }
 
 void MM2::vglDrawLabelf(const Vector3 &position, const char *format, ...) {
         va_list va;

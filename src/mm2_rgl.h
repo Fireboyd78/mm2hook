@@ -61,6 +61,7 @@ namespace MM2
         Lua helper
     */
     extern void luaSetColor(float r, float g, float b, float a);
+    extern void luaGfxDrawFont(double x, double y, const char* text);
 
     /*
         Function declarations
@@ -80,6 +81,7 @@ namespace MM2
     extern void vglDrawLabel(const Vector3 &position, const char *text);
 
     extern void vglDrawLabelf(const Vector3 &position, const char *format, ...);
+    extern void gfxDrawFont(int x, int y, const char* text);
 
     extern void vglSetCloudMap(const char *texture);
     extern void vglSetOffset(float x, float y, float z);
@@ -116,6 +118,8 @@ namespace MM2
     template<>
     void luaAddModule<module_rgl>(LuaState L) {
         LuaBinding(L)
+            .addFunction("gfxDrawFont", &luaGfxDrawFont)
+
             .addFunction("vglTexCoord2f", &vglTexCoord2f)
             .addFunction("vglVertex3f", static_cast<void(*)(Vector3 vector)>(&vglVertex3f))
             .addFunction("vglBegin", &vglBegin)
