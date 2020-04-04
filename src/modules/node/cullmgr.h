@@ -10,6 +10,7 @@ namespace MM2
     extern class asCullable;
     extern class Matrix34;
     extern class gfxBitmap;
+    extern class asCamera;
 
     // Class definitions
     class asCullManager : public asNode {
@@ -17,7 +18,7 @@ namespace MM2
 
         // 0x1C - 0x5C
         int NumCameras;
-        struct asCamera *Cameras[16];
+        asCamera *Cameras[16];
 
         void *unk_60; // unused
 
@@ -70,7 +71,7 @@ namespace MM2
         /*
             asCullManager virtuals
         */
-        virtual AGE_API void DeclareCamera(struct asCamera *camera)
+        virtual AGE_API void DeclareCamera(asCamera *camera)
                                                             { ageHook::Thunk<0x4A1580>::Call<void>(this, camera); }
 
         virtual AGE_API void DeclareCullable(asCullable *cullable)

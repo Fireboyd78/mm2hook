@@ -14,12 +14,30 @@ namespace MM2
     class camTrackCS;
     class camAICS;
     class camViewCS;
+    class asCamera;
 
     // External declarations
     extern class asNode;
     extern class vehCar;
 
     // Class definitions
+    class asCamera : public asNode {
+    private:
+        byte _buffer[0x158];
+    public:
+        AGE_API asCamera(void) {
+            scoped_vtable x(this);
+            ageHook::Thunk<0x4A2340>::Call<void>(this);
+        };
+
+        virtual AGE_API ~asCamera(void) {
+            scoped_vtable x(this);
+            ageHook::Thunk<0x4A22E0>::Call<void>(this);
+        };
+    };
+    
+    ASSERT_SIZEOF(asCamera, 0x170);
+
     class camBaseCS : public asNode {
     protected:
         uint16_t unk_18; // flags?
