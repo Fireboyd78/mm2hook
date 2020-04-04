@@ -23,12 +23,41 @@
 namespace MM2
 {
     // Forward declarations
+    struct aiMapStats;
     class aiMap;
-
+    
     // External declarations
     extern class asNode;
 
     // Class definitions
+    struct aiMapStats {
+    public:
+        float _fSubwayUpdate;
+        float _fCableCarUpdate;
+        float _fCTFOppUpdate;
+        float _fPedUpdate;
+        float _fAmbientUpdate;
+        float _fCopUpdate;
+        int _nPedQty;
+        float _fOppUpdate;
+        int _nAmbientQty;
+        float _fTotUpdate;
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<aiMapStats>("aiMapStats")
+                .addVariable("SubwayUpdateTime", &aiMapStats::_fSubwayUpdate, false)
+                .addVariable("CableCarUpdateTime", &aiMapStats::_fCableCarUpdate, false)
+                .addVariable("CTFOpponentUpdateTime", &aiMapStats::_fCTFOppUpdate, false)
+                .addVariable("PedUpdateTime", &aiMapStats::_fPedUpdate, false)
+                .addVariable("AmbientUpdateTime", &aiMapStats::_fAmbientUpdate, false)
+                .addVariable("CopUpdateTime", &aiMapStats::_fCopUpdate, false)
+                .addVariable("OpponentUpdateTime", &aiMapStats::_fOppUpdate, false)
+                .addVariable("PedQuantity", &aiMapStats::_nPedQty, false)
+                .addVariable("AmbientQuantity", &aiMapStats::_nAmbientQty, false)
+                .addVariable("TotalUpdateTime", &aiMapStats::_fTotUpdate, false)
+                .endClass();
+        }
+    };
 
     class aiMap : public asNode {
     public:
@@ -130,7 +159,33 @@ namespace MM2
         inline int getIntersectionCount() {
             return numIntersections;
         }
-        
+
+        aiMapStats getStats() {
+            aiMapStats stats;
+            stats._fSubwayUpdate = *this->_fSubwayUpdate;
+            stats._fCableCarUpdate = *this->_fCableCarUpdate;
+            stats._fCTFOppUpdate = *this->_fCTFOppUpdate;
+            stats._fPedUpdate = *this->_fPedUpdate;
+            stats._fAmbientUpdate = *this->_fAmbientUpdate;
+            stats._fCopUpdate = *this->_fCopUpdate;
+            stats._nPedQty = *this->_nPedQty;
+            stats._fOppUpdate = *this->_fOppUpdate;
+            stats._nAmbientQty = *this->_nAmbientQty;
+            stats._fTotUpdate = *this->_fTotUpdate;
+            return stats;
+        }
+    private:
+        //profiling hooks
+        static ageHook::Type<float> _fSubwayUpdate;
+        static ageHook::Type<float> _fCableCarUpdate;
+        static ageHook::Type<float> _fCTFOppUpdate;
+        static ageHook::Type<float> _fPedUpdate;
+        static ageHook::Type<float> _fAmbientUpdate;
+        static ageHook::Type<float> _fCopUpdate;
+        static ageHook::Type<int>   _nPedQty;
+        static ageHook::Type<float> _fOppUpdate;
+        static ageHook::Type<int>   _nAmbientQty;
+        static ageHook::Type<float> _fTotUpdate;
     public:
         static ageHook::Type<aiMap> Instance;
 
@@ -161,6 +216,7 @@ namespace MM2
                 .addFunction("Path", &Path)
                 .addFunction("Intersection", &Intersection)
                 .addFunction("Vehicle", &Vehicle)
+                .addPropertyReadOnly("Stats", &getStats)
                 .addPropertyReadOnly("NumAmbientVehicles", &getAmbientCount)
                 .addPropertyReadOnly("NumPaths", &getPathsCount)
                 .addPropertyReadOnly("NumIntersections", &getIntersectionCount)
