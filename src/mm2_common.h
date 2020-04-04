@@ -22,6 +22,12 @@ Multiple declarations will cause compiler errors!
 #define VIRTUAL_THUNK(addr, rtype, ...) { return ageHook::Thunk<addr>::Call<rtype> WRAP(this, __VA_ARGS__); }
 
 //
+// Allocator
+// Calls MM2's internal operator new
+//
+#define ANGEL_ALLOCATOR void* operator new(size_t size) { return ageHook::StaticThunk<0x577360>::Call<void*>(size); }
+
+//
 // MM2 uses DirectX 7
 //
 #define DIRECTX_VERSION 0x0700
