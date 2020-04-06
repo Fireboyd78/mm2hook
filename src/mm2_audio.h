@@ -90,9 +90,9 @@ namespace MM2
             ageHook::Thunk<0x50D580>::Call<void>(this);
         };
 
-        AGE_API AudSoundBase(unsigned int flags, int soundCount, int unused) {
+        AGE_API AudSoundBase(unsigned int flags, int soundHandleCount, int unused) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x50D6D0>::Call<void>(this, flags, soundCount, unused);
+            ageHook::Thunk<0x50D6D0>::Call<void>(this, flags, soundHandleCount, unused);
         };
 
         AGE_API ~AudSoundBase() {
@@ -127,18 +127,19 @@ namespace MM2
         AGE_API void SetSoundHandleIndex(int index)         { ageHook::Thunk<0x50E2C0>::Call<void>(this, index); }
         AGE_API void SetSubPath(LPCSTR path)                { ageHook::Thunk<0x50D8D0>::Call<void>(this, path); }
         AGE_API int GetSoundHandleIndex()                   { return ageHook::Thunk<0x50E2D0>::Call<int>(this); }
+        AGE_API int GetNumSoundHandles()                    { return ageHook::Thunk<0x50E310>::Call<int>(this); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<AudSoundBase, asNode>("AudSoundBase")
-                .addFactory([](unsigned int flags = 0xC2, int soundCount = 1) { //0xC2 is the return value of Get2DFlags
-                    auto soundBase = new AudSoundBase(flags, soundCount, -1);
-                    return soundBase;
+                .addFactory([](unsigned int flags = 0xC2, int soundHandleCount = 1) { //0xC2 is the return value of Get2DFlags
+                    return new AudSoundBase(flags, soundHandleCount, -1);
                     }, LUA_ARGS(_opt<unsigned int>, _opt<int>))
 
                 .addStaticFunction("Get3DFlags", &Get3DFlags)
                 .addStaticFunction("Get2DFlags", &Get2DFlags)
                 .addStaticFunction("GetSoft2DFlags", &GetSoft2DFlags)
         
+                .addProperty("NumSoundHandles", &GetNumSoundHandles)
                 .addProperty("IsPlaying", &IsPlaying)
                 .addProperty("SoundHandleIndex", &GetSoundHandleIndex, &SetSoundHandleIndex)
 
