@@ -2378,6 +2378,7 @@ int sirenStyle = 0;
 int headlightStyle = 0;
 float sirenCycle = 0.25f;
 bool enableSignals = false;
+bool flashingHeadlights = true;
 
 static ConfigValue<bool> cfgPartReflections("ReflectionsOnCarParts", false);
 
@@ -2485,13 +2486,21 @@ void vehCarModelFeatureHandler::DrawGlow() {
     if (headlightStyle < 3) {
         if (headlightStyle == 0 || headlightStyle == 2) {
             //MM2 headlights
-            if (siren != nullptr && siren->Active)
-            {
-                model->DrawHeadlights(true);
+            if (flashingHeadlights) {
+                if (siren != nullptr && siren->Active)
+                {
+                    model->DrawHeadlights(true);
+                }
+                else if (vehCar::sm_DrawHeadlights)
+                {
+                    model->DrawHeadlights(false);
+                }
             }
-            else if (vehCar::sm_DrawHeadlights)
-            {
-                model->DrawHeadlights(false);
+            else if (!flashingHeadlights) {
+                if (vehCar::sm_DrawHeadlights)
+                {
+                    model->DrawHeadlights(false);
+                }
             }
         }
         if (headlightStyle == 1 || headlightStyle == 2) {
@@ -2542,6 +2551,7 @@ void vehCarModelFeatureHandler::Install() {
     }
     
     enableSignals = cfgEnableSignals.Get();
+    flashingHeadlights = cfgFlashingHeadlights.Get();
     sirenStyle = cfgSirenStyle.Get();
     headlightStyle = cfgHeadlightStyle.Get();
     sirenCycle = cfgSirenCycleRate.Get();
