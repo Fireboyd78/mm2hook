@@ -2375,6 +2375,7 @@ void vehBreakableMgrHandler::Install() {
 */
 Matrix34 vehCarModelGarbageMtx = Matrix34();
 int sirenStyle = 0;
+int hazardLights = 0;
 int headlightStyle = 0;
 float sirenCycle = 0.25f;
 bool enableSignals = false;
@@ -2455,6 +2456,26 @@ void vehCarModelFeatureHandler::DrawGlow() {
             }
             else if (slight1 != nullptr && slightIndex == 1) {
                 slight1->Draw(shaders);
+            }
+        }
+        else if (drawSignal && hazardLights <= 3) {
+            if (hazardLights == 0 || hazardLights == 2) {
+                if (slight0 != nullptr && gear == 0)
+                    slight0->Draw(shaders);
+                if (slight1 != nullptr && gear == 0)
+                    slight1->Draw(shaders);
+            }
+            if (hazardLights == 1 || hazardLights == 2) {
+                if (slight0 != nullptr && gear == 1)
+                    slight0->Draw(shaders);
+                if (slight1 != nullptr && gear == 1)
+                    slight1->Draw(shaders);
+            }
+            if (hazardLights == 3) {
+                if (slight0 != nullptr && carsim->getHandBrake() > 0.1)
+                    slight0->Draw(shaders);
+                if (slight1 != nullptr && carsim->getHandBrake() > 0.1)
+                    slight1->Draw(shaders);
             }
         }
     }
@@ -2551,6 +2572,7 @@ void vehCarModelFeatureHandler::Install() {
     }
     
     enableSignals = cfgEnableSignals.Get();
+    hazardLights = cfgHazardLights.Get();
     flashingHeadlights = cfgFlashingHeadlights.Get();
     sirenStyle = cfgSirenStyle.Get();
     headlightStyle = cfgHeadlightStyle.Get();

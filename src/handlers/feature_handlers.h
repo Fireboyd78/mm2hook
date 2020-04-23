@@ -15,6 +15,7 @@ static ConfigValue<bool> cfgUseAllTrafficColors     ("UseAllTrafficColors",     
 static ConfigValue<bool> cfgAmbientSoundsWithMusic  ("AmbientSoundsWithMusic",  true);
 static ConfigValue<bool> cfgFlashingHeadlights      ("FlashingHeadlights",      true);
 static ConfigValue<bool> cfgEnableSignals           ("EnableSignalLights",      false);
+static ConfigValue<int> cfgHazardLights             ("HazardLightsMethod",      0);
 static ConfigValue<int> cfgHeadlightStyle           ("HeadlightStyle",          0);
 static ConfigValue<int> cfgSirenStyle               ("SirenStyle",              0);
 static ConfigValue<float> cfgSirenCycleRate         ("SirenCycle",    0.25f);
