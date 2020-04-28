@@ -269,6 +269,7 @@ namespace MM2
             ageHook::Thunk<0x524180>::Call<void>(this);
         }
 
+        AGE_API void LoadAll()                              { ageHook::Thunk<0x5244F0>::Call<void>(this); }
         AGE_API void Load(char* cinfoName)                  { ageHook::Thunk<0x524330>::Call<void>(this, cinfoName); }
         AGE_API int GetCityID(char *city)                   { return ageHook::Thunk<0x524270>::Call<int>(this, city); }
 
@@ -276,6 +277,8 @@ namespace MM2
         AGE_API mmCityInfo * GetCityInfo(char *city)        { return ageHook::Thunk<0x524220>::Call<mmCityInfo *>(this, city); }
 
         AGE_API mmCityInfo * GetCurrentCity(void)           { return ageHook::Thunk<0x524320>::Call<mmCityInfo *>(this); }
+
+        AGE_API void SetCurrentCity(char* city)             { ageHook::Thunk<0x5242C0>::Call<void>(this, city); }
     };
 
     declhook(0x6B1CA0, _Type<mmCityList *>, CityListPtr);
