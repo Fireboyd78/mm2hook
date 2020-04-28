@@ -948,29 +948,29 @@ void vehTrailerInstanceHandler::DrawGlow()
     auto shaders = lvlInstance::GetGeomTableEntry(geomSet)->pShaders[shaderSet];
     
     //draw lights
-    auto tlight = lvlInstance::GetGeomTableEntry(geomSet + 2);
-    auto rlight = lvlInstance::GetGeomTableEntry(geomSet + 8);
-    auto blight = lvlInstance::GetGeomTableEntry(geomSet + 9);
+    modStatic* tlight = lvlInstance::GetGeomTableEntry(geomSet + 2)->getHighestLOD();
+    modStatic* rlight = lvlInstance::GetGeomTableEntry(geomSet + 8)->getHighestLOD();
+    modStatic* blight = lvlInstance::GetGeomTableEntry(geomSet + 9)->getHighestLOD();
 
     //draw rlight
-    if (rlight->Low != nullptr && gear == 0) {
-        rlight->Low->Draw(shaders);
+    if (rlight != nullptr && gear == 0) {
+        rlight->Draw(shaders);
     }
 
     //draw blight
-    if (blight->Low != nullptr && brakeInput > 0.1) {
-        blight->Low->Draw(shaders);
+    if (blight != nullptr && brakeInput > 0.1) {
+        blight->Draw(shaders);
     }
 
     //draw tlight
-    if (tlight->Low != nullptr) {
+    if (tlight != nullptr) {
         //draw night copy
         if (vehCar::sm_DrawHeadlights)
-            tlight->Low->Draw(shaders); 
+            tlight->Draw(shaders); 
 
         //draw brake input copy
         if(brakeInput > 0.1) {
-            tlight->Low->Draw(shaders);
+            tlight->Draw(shaders);
         }
     }
 }
