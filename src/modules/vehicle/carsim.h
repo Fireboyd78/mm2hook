@@ -24,7 +24,7 @@ namespace MM2
         ageHook::Field<0x2E0, vehTransmission> _transmission;
         ageHook::Field<0x25C, vehEngine> _engine;
         ageHook::Field<0x154C, float> _brake;
-        ageHook::Field<0x1550, float> _handBrake;
+        ageHook::Field<0x1550, float> _handbrake;
         ageHook::Field<0x1554, float> _steering;
     public:
         inline float getSteering(void) {
@@ -43,12 +43,12 @@ namespace MM2
             _brake.set(this, brake);
         }
 
-        inline float getHandBrake(void) {
-            return _handBrake.get(this);
+        inline float getHandbrake(void) {
+            return _handbrake.get(this);
         }
 
-        inline void setHandBrake(float handBrake) {
-            _handBrake.set(this, handBrake);
+        inline void setHandbrake(float handBrake) {
+            _handbrake.set(this, handBrake);
         }
 
         inline float getSpeedMPH(void) {
@@ -100,7 +100,7 @@ namespace MM2
                 .addPropertyReadOnly("Speed", &getSpeedMPH)
                 .addProperty("Steering", &getSteering, &setSteering)
                 .addProperty("Brake", &getBrake, &setBrake)
-                .addProperty("HandBrake", &getHandBrake, &setHandBrake)
+                .addProperty("Handbrake", &getHandbrake, &setHandbrake)
 
                 .addFunction("BottomedOut", &BottomedOut)
                 .addFunction("OnGround", &OnGround)
