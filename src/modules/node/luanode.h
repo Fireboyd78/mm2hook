@@ -8,6 +8,7 @@ namespace MM2
 
     // External declarations
     extern class datParser;
+    extern class asCullManager;
 
     // Class definitions
     class luaNode : public asNode {
@@ -18,18 +19,22 @@ namespace MM2
         LuaRef m_ResetFunction;
         LuaRef m_ResChangeFunction;
         LuaRef m_CullFunction;
+        bool m_AutoDeclareCullbale;
     private:
         static bool CheckFunctionAndWarn(LuaRef ref, LPCSTR functionName) {
-            bool retVal = ref.isFunction();
+            bool retVal = ref.isValid() && ref.isFunction();
             if (!retVal) {
-                Warningf("%s must recieve a lua function as it's parameter.");
+                Warningf("%s must recieve a valid lua function as it's parameter.", functionName);
             }
             return retVal;
         }
     public:
+        ANGEL_ALLOCATOR
+
         luaNode(LPCSTR name) {
             m_ClassName = "luaNode";
             this->SetName(name);
+            this->m_AutoDeclareCullbale = false;
         }
 
         //lua setters
@@ -71,6 +76,8 @@ namespace MM2
         void Update() override {
             if (m_UpdateFunction.isValid() && m_UpdateFunction.isFunction())
                 m_UpdateFunction();
+            //if (m_AutoDeclareCullbale)
+                //asCullManager::Instance->DeclareCullable(this);
             asNode::Update();
         }
 
@@ -102,6 +109,7 @@ namespace MM2
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<luaNode, asNode>("luaNode")
                 .addConstructor(LUA_ARGS(LPCSTR))
+                .addVariableRef("AutoDeclareCullable", &luaNode::m_AutoDeclareCullbale)
                 .addFunction("SetUpdateFunction", &SetUpdateFunction)
                 .addFunction("SetUpdatePausedFunction", &SetUpdatePausedFunction)
                 .addFunction("SetResetFunction", &SetResetFunction)
