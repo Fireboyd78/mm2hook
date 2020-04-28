@@ -40,7 +40,7 @@ namespace MM2
             {
                 auto v6 = currentEbpPtr[1];
                 currentEbpPtr = (DWORD*)*currentEbpPtr;
-                if (v6 < 0)
+                if (v6 < 0 || currentEbpPtr == nullptr)
                     break;
                 datStack::LookupAddress(addressBuffer, v6);
                 if (output)
