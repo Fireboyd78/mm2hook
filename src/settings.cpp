@@ -235,7 +235,7 @@ bool HookConfig::Read() {
         // property value (trim leading whitespace as needed)
         size_t vIdx = skip_whitespace(line, (pIdx + 1),  end);
 
-        val = read_token(line, vIdx, (end - vIdx));
+        val = read_token(line, vIdx, end);
 
         // add key/value pair
         properties.insert(std::make_pair(key, val));
