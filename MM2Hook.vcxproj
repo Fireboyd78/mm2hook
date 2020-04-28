@@ -561,7 +561,7 @@
     <Message Text="  - %(Changed.Identity)" Importance="High" />
   </Target>
   <!-- Move compiled files to MM2 directory (if applicable) -->
-  <Target Name="CopyDInputFiles" AfterTargets="MakeDInputDLL" Condition="'$(MM2Directory)' != ''">
+  <Target Name="CopyDInputFiles" AfterTargets="MakeDInputDLL" Condition="'$(MM2Directory)' != '' and Exists('$(MM2Directory)')">
     <ItemGroup>
       <TargetFiles Include="$(DITargetDir)*.*" />
       <TargetFiles Include="$(TargetDir)mm2hook.ini" />
