@@ -15,6 +15,7 @@ namespace MM2
     public:
         static ageHook::Type<dgPhysManager *> Instance;
 
+        void IgnoreMover(lvlInstance* instance)                  { ageHook::Thunk<0x468860>::Call<void>(this, instance); }
         void DeclareMover(lvlInstance* instance, int a2, int a3) { ageHook::Thunk<0x468370>::Call<void>(this, instance, a2, a3); }
 
         static void BindLua(LuaState L) {
@@ -23,6 +24,7 @@ namespace MM2
                 .addStaticFunction("Instance", [] {return (dgPhysManager *)Instance; })
 
                 //functions
+                .addFunction("IgnoreMover", &IgnoreMover)
                 .addFunction("DeclareMover", &DeclareMover)
 
                 .endClass();
