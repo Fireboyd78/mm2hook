@@ -157,6 +157,10 @@ BOOL aiPoliceHandler::IsPerpDrivingMadly(vehCar *perpCar) {
                 LogFile::Printf(1, "PERP DETECTED!!! He's doing %.4f over the speed limit (~%.4fmph)!\n", (speed - speedLimit), speedLimit);
                 return TRUE;
             }
+            if (ageHook::Thunk<0x53E370>::Call<BOOL>(this, perpCar)) {
+                LogFile::Printf(1, "PERP IS DOING DAMAGE TO PROPERTY!");
+                return TRUE;
+            }
         }
         if (ageHook::Thunk<0x53E390>::Call<BOOL>(this, perpCar)) {
             LogFile::Printf(1, "OFFICER INVOLVED COLLISION WITH PERP!");
@@ -182,6 +186,10 @@ void aiPoliceHandler::Install() {
             }
         );
     }
+	//fix collision code
+	InstallPatch({ 0x8B, 0x91, 0xF4, 0x0, 0x0, 0x0 }, {
+		0x53E37E,
+	});
 }
 
 /*
