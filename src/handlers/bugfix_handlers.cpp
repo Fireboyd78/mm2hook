@@ -534,6 +534,13 @@ void BugfixPatchHandler::Install() {
     }, {
         0x424982,   // mmMultiCR::ImpactCallback
     });
+
+    InstallPatch("Fixes a bug where makes the cops fly away.", {
+        0xEB, 0x41, // jmp short loc_53DCEA
+    }, {
+        0x53DCA7,   // aiPoliceOfficer::Update
+    });
+
 }
 
 /*
