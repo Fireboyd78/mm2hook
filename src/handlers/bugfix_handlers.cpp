@@ -192,11 +192,11 @@ void aiPoliceHandler::Install() {
         0x53E37E,
     });
 
-	//fix a bug which makes the cops fly away
-	InstallPatch({ 0xEB, 0x41 }, // jmp short loc_53DCA7
-	{
-		0x53DCA7,
-	});
+    //fix a bug which makes the cops fly away
+    InstallPatch({ 0xEB, 0x41 }, // jmp short loc_53DCA7
+    {
+        0x53DCA7,
+    });
 }
 
 /*
