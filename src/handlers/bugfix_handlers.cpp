@@ -5,7 +5,7 @@ using namespace MM2;
 static init_handler g_bugfix_handlers[] = {
     CreateHandler<aiPathHandler>("aiPath"),
     CreateHandler<aiPedestrianHandler>("aiPedestrian"),
-    CreateHandler<aiPoliceForceHandler>("aiPoliceForce"),
+    CreateHandler<aiPoliceHandler>("aiPoliceForce"),
     CreateHandler<aiVehicleAmbientHandler>("aiVehicleAmbient"),
     CreateHandler<aiVehicleInstanceHandler>("aiVehicleInstance"),
 
@@ -98,7 +98,7 @@ static ConfigValue<bool> cfgPoliceAcademyFunding    ("PoliceAcademyFunding",    
 static ConfigValue<float> cfgDefaultSpeedLimit      ("DefaultSpeedLimit",       12.25f);
 static ConfigValue<float> cfgSpeedLimitTolerance    ("SpeedLimitTolerance",     1.125f);
 
-void aiPoliceForceHandler::Reset(void) {
+void aiPoliceHandler::Reset(void) {
     // reset number of cops pursuing player
     // fixes incorrect music bug
     vehPoliceCarAudio::iNumCopsPursuingPlayer = 0;
@@ -143,7 +143,7 @@ float getSpeedLimit(vehCar *car) {
     return cfgDefaultSpeedLimit;
 }
 
-BOOL aiPoliceForceHandler::IsPerpDrivingMadly(vehCar *perpCar) {
+BOOL aiPoliceHandler::IsPerpDrivingMadly(vehCar *perpCar) {
     if (ageHook::Thunk<0x53E2A0>::Call<BOOL>(this, perpCar)) {
         char *vehName = perpCar->getCarDamage()->GetName(); // we can't use vehCarSim because the game forces vpcop to vpmustang99...
 
@@ -168,7 +168,7 @@ BOOL aiPoliceForceHandler::IsPerpDrivingMadly(vehCar *perpCar) {
     return FALSE;
 }
 
-void aiPoliceForceHandler::Install() {
+void aiPoliceHandler::Install() {
     InstallCallback("aiPoliceForce::Reset", "Resets the number of cops pursuing the player upon reset.",
         &Reset, {
             cbHook<CALL>(0x536AAE),
@@ -177,7 +177,6 @@ void aiPoliceForceHandler::Install() {
     );
 
     if (cfgPoliceAcademyFunding) {
-        // obviously doesn't belong in aiPoliceForceHandler, should either move it or make this a generic "PoliceHandler"
         InstallCallback("aiPoliceOfficer::DetectPerpetrator", "Experimenting with making cops a little smarter about chasing people.",
             &IsPerpDrivingMadly, {
                 cbHook<CALL>(0x53E057), // aiPoliceOfficer::Fov

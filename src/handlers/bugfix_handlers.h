@@ -23,7 +23,7 @@ public:
     static void Install();
 };
 
-class aiPoliceForceHandler {
+class aiPoliceHandler {
 public:
     void Reset();
     BOOL IsPerpDrivingMadly(MM2::vehCar *perpCar);
