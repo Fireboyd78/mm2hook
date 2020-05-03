@@ -186,10 +186,17 @@ void aiPoliceHandler::Install() {
             }
         );
     }
+
     //fix collision code
     InstallPatch({ 0x8B, 0x91, 0xF4, 0x0, 0x0, 0x0 }, {
         0x53E37E,
     });
+
+	//fix a bug which makes the cops fly away
+	InstallPatch({ 0xEB, 0x41 }, // jmp short loc_53DCA7
+	{
+		0x53DCA7,
+	});
 }
 
 /*
