@@ -144,11 +144,11 @@ float getSpeedLimit(vehCar *car) {
 }
 
 BOOL aiPoliceHandler::IsPerpDrivingMadly(vehCar *perpCar) {
-    if (ageHook::Thunk<0x53E2A0>::Call<BOOL>(this, perpCar)) {
-        char *vehName = perpCar->getCarDamage()->GetName(); // we can't use vehCarSim because the game forces vpcop to vpmustang99...
+    char *vehName = perpCar->getCarDamage()->GetName(); // we can't use vehCarSim because the game forces vpcop to vpmustang99...
 
-        // ignore perp if they're a cop
-        if (!ageHook::StaticThunk<0x4D1A70>::Call<bool>(vehName))
+    // ignore perp if they're a cop
+    if (!ageHook::StaticThunk<0x4D1A70>::Call<bool>(vehName)) {
+        if (ageHook::Thunk<0x53E2A0>::Call<BOOL>(this, perpCar))
         {
             float speed = perpCar->getCarSim()->getSpeedMPH();
             float speedLimit = getSpeedLimit(perpCar) * 2.857142857142857f;
@@ -158,11 +158,10 @@ BOOL aiPoliceHandler::IsPerpDrivingMadly(vehCar *perpCar) {
                 return TRUE;
             }
         }
-    }
-    
-    if (ageHook::Thunk<0x53E390>::Call<BOOL>(this, perpCar)) {
-        LogFile::Printf(1, "OFFICER INVOLVED COLLISION WITH PERP!");
-        return TRUE;
+        if (ageHook::Thunk<0x53E390>::Call<BOOL>(this, perpCar)) {
+            LogFile::Printf(1, "OFFICER INVOLVED COLLISION WITH PERP!");
+            return TRUE;
+        }
     }
 
     return FALSE;
