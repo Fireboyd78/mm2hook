@@ -186,10 +186,10 @@ void aiPoliceHandler::Install() {
             }
         );
     }
-	//fix collision code
-	InstallPatch({ 0x8B, 0x91, 0xF4, 0x0, 0x0, 0x0 }, {
-		0x53E37E,
-	});
+    //fix collision code
+    InstallPatch({ 0x8B, 0x91, 0xF4, 0x0, 0x0, 0x0 }, {
+        0x53E37E,
+    });
 }
 
 /*
