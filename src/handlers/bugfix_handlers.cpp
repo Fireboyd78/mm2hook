@@ -8,6 +8,7 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<aiPoliceForceHandler>("aiPoliceForce"),
     CreateHandler<aiVehicleAmbientHandler>("aiVehicleAmbient"),
     CreateHandler<aiVehicleInstanceHandler>("aiVehicleInstance"),
+    CreateHandler<aiGoalAvoidPlayerHandler>("aiGoalAvoidPlayer"),
 
     CreateHandler<asMeshCardInfoHandler>("asMeshCardInfo"),
 
@@ -1060,6 +1061,17 @@ void aiVehicleInstanceHandler::Install()
             0x5B590C,
         }
     );
+}
+
+/*
+    aiGoalAvoidPlayerHandler
+*/
+
+void aiGoalAvoidPlayerHandler::Install() {
+    // fixes traffic reactions when they avoid the player
+    InstallPatch({ 0x90, 0x90, 0x90 }, {
+        0x56B235,
+    });
 }
 
 /*

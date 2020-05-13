@@ -193,6 +193,11 @@ public:
     static void Install();
 };
 
+class aiGoalAvoidPlayerHandler {
+public:
+    static void Install();
+};
+
 class modShaderHandler {
 public:
     static void EndEnvMap();
