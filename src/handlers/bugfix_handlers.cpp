@@ -6,8 +6,10 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<aiPathHandler>("aiPath"),
     CreateHandler<aiPedestrianHandler>("aiPedestrian"),
     CreateHandler<aiPoliceForceHandler>("aiPoliceForce"),
+    CreateHandler<aiPoliceOfficerHandler>("aiPoliceOfficer"),
     CreateHandler<aiVehicleAmbientHandler>("aiVehicleAmbient"),
     CreateHandler<aiVehicleInstanceHandler>("aiVehicleInstance"),
+    CreateHandler<aiGoalAvoidPlayerHandler>("aiGoalAvoidPlayer"),
 
     CreateHandler<asMeshCardInfoHandler>("asMeshCardInfo"),
 
@@ -192,6 +194,28 @@ void aiPoliceForceHandler::Install() {
     InstallPatch({ 0x8B, 0x91, 0xF4, 0x00, 0x00, 0x00 }, {
         0x53E37E,
     });
+}
+
+/*
+    aiPoliceOfficerHandler
+*/
+
+void aiPoliceOfficerHandler::PerpEscapes(bool a1) {
+    // stop siren lights when perp escapes
+    $::aiPoliceOfficer::StopSiren(this);
+
+    $::aiPoliceOfficer::PerpEscapes(this, a1);
+}
+
+void aiPoliceOfficerHandler::Install() {
+    InstallCallback("aiPoliceOfficer::PerpEscapes", "Fixes ai police siren lights being active if perp escaped.",
+        &PerpEscapes, {
+            cbHook<CALL>(0x53DD1F),
+            cbHook<CALL>(0x53DE83),
+            cbHook<CALL>(0x53DE9F),
+            cbHook<CALL>(0x53DEC1),
+        }
+    );
 }
 
 /*
@@ -1060,6 +1084,17 @@ void aiVehicleInstanceHandler::Install()
             0x5B590C,
         }
     );
+}
+
+/*
+    aiGoalAvoidPlayerHandler
+*/
+
+void aiGoalAvoidPlayerHandler::Install() {
+    // fixes traffic reactions when they avoid the player
+    InstallPatch({ 0x90, 0x90, 0x90 }, {
+        0x56B235,
+    });
 }
 
 /*

@@ -31,6 +31,13 @@ public:
     static void Install();
 };
 
+class aiPoliceOfficerHandler {
+public:
+    void PerpEscapes(bool a1);
+
+    static void Install();
+};
+
 class aiPathHandler {
 public:
     void UpdatePedestrians();
@@ -190,6 +197,11 @@ public:
 class aiVehicleInstanceHandler {
 public:
     void Reset();
+    static void Install();
+};
+
+class aiGoalAvoidPlayerHandler {
+public:
     static void Install();
 };
 
