@@ -9,6 +9,7 @@ namespace MM2
     // External declarations
     extern class vehCarSim;
     extern class vehTransmission;
+    extern class vehDriveTrain;
 
     // Class definitions
     class vehEngine : public asNode {
@@ -40,6 +41,7 @@ namespace MM2
         Matrix34 *EngineVisualMatrixPtr;
         vehCarSim *VehCarSimPtr;
         vehTransmission *VehTransmissionPtr;
+        vehDriveTrain *VehDriveTrainPtr;
     public:
 
         AGE_API void ComputeConstants()                     { ageHook::Thunk<0x4D8DC0>::Call<void>(this); }
@@ -101,7 +103,7 @@ namespace MM2
                 .endClass();
         }
     };
-    ASSERT_SIZEOF(vehEngine, 0x84);
+    ASSERT_SIZEOF(vehEngine, 0x88);
 
     // Lua initialization
 

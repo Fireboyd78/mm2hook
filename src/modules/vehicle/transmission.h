@@ -59,6 +59,10 @@ namespace MM2
             return this->CurrentGear;
         };
 
+        inline int IsAuto(void) {
+            return this->IsAutomatic;
+        };
+
         inline float getAutoGearRatio(int gear) {
             return AutoRatios[CLAMPINT(gear, 0, 7)];
         }

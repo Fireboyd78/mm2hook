@@ -45,6 +45,12 @@ public:
     static void Install();
 };
 
+class vehCarSimHandler {
+public:
+    void Update();
+    static void Install();
+};
+
 class vehCarModelHandler {
 public:
     static void Install();
@@ -71,6 +77,12 @@ class mmBillInstanceHandler
 {
 public:
     void Scale(float x, float y, float z);
+    static void Install();
+};
+
+class mmGearIndicatorHandler
+{
+public:
     static void Install();
 };
 
