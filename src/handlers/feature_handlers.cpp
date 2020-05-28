@@ -2122,11 +2122,6 @@ void mmPlayerHandler::Install() {
             0x404044,
         });
     }
-
-    // deactivate auto Handbrake system
-    InstallPatch({ 0xD8, 0x1D, 0x3C, 0x04, 0x5B, 0x00 }, {
-        0x405C81
-    });
 }
 
 /*

@@ -242,11 +242,12 @@ void gfxImageHandler::Install() {
 /*
     vehCarSimHandler
 */
+static ConfigValue<bool> cfgMm1StyleTransmission("MM1StyleTransmission", false);
 
 void vehCarSimHandler::Update() {
     auto carsim = reinterpret_cast<vehCarSim*>(this);
     auto engine = carsim->getEngine();
-    auto driveTrain = carsim->getDriveTrain();
+    auto drivetrain = carsim->getDrivetrain();
     int gear = carsim->getTransmission()->getGear();
     BOOL autoGear = carsim->getTransmission()->IsAuto();
 
@@ -270,7 +271,7 @@ void vehCarSimHandler::Update() {
     // attach drive train if we just hit throttle
     // fixes the short delay that happens before the car moves
     if (engine->getThrottleInput() > 0.f) {
-        driveTrain->Attach();
+        drivetrain->Attach();
     }
 
     // call original
@@ -278,10 +279,17 @@ void vehCarSimHandler::Update() {
 }
 
 void vehCarSimHandler::Install() {
-    InstallVTableHook("vehCarSim::Update",
-        &Update, {
-            0x5B2C7C
+    if (cfgMm1StyleTransmission.Get()) {
+        InstallVTableHook("vehCarSim::Update",
+            &Update, {
+                0x5B2C7C
+            });
+
+        // deactivate auto Handbrake system
+        InstallPatch({ 0xD8, 0x1D, 0x3C, 0x04, 0x5B, 0x00 }, {
+            0x405C81
         });
+    }
 }
 
 /*

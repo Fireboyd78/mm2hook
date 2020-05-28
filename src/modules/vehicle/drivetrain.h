@@ -4,17 +4,21 @@
 namespace MM2
 {
     // Forward declarations
-    class vehDriveTrain;
+    class vehDrivetrain;
 
     // External declarations
     extern class vehCarSim;
     extern class vehEngine;
 
     // Class definitions
-    class vehDriveTrain : public asNode {
+    class vehDrivetrain : public asNode {
     private:
         vehCarSim *VehCarSimPtr;
         vehEngine *VehEnginePtr;
+        byte _buffer[0x4C - 0x2C];
+        float AngInertia;
+        float BrakeDynamicCoef;
+        float BrakeStaticCoef;
     public:
         AGE_API void Attach()                              { ageHook::Thunk<0x4D9E20>::Call<void>(this); }
         AGE_API void Detach()                              { ageHook::Thunk<0x4D9E40>::Call<void>(this); }
@@ -30,14 +34,20 @@ namespace MM2
         AGE_API char * GetClassName() override             { return ageHook::Thunk<0x4DA600>::Call<char *>(this); }
 
         static void BindLua(LuaState L) {
-            LuaBinding(L).beginExtendClass<vehDriveTrain, asNode>("vehDriveTrain")
+            LuaBinding(L).beginExtendClass<vehDrivetrain, asNode>("vehDrivetrain")
+                //properties
+                .addVariableRef("AngInertia", &vehDrivetrain::AngInertia)
+                .addVariableRef("BrakeDynamicCoef", &vehDrivetrain::BrakeDynamicCoef)
+                .addVariableRef("BrakeStaticCoef", &vehDrivetrain::BrakeStaticCoef)
+
+                //functions
                 .addFunction("Attach", &Attach)
                 .addFunction("Detach", &Detach)
             .endClass();
         }
     };
 
-    ASSERT_SIZEOF(vehDriveTrain, 0x20);
+    ASSERT_SIZEOF(vehDrivetrain, 0x4C);
 
     // Lua initialization
 
