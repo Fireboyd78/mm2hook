@@ -3,6 +3,7 @@
 
 #include "transmission.h"
 #include "engine.h"
+#include "drivetrain.h"
 
 namespace MM2
 {
@@ -23,6 +24,7 @@ namespace MM2
         ageHook::Field<0x1D0, lvlInstance *> _instance;
         ageHook::Field<0x2E0, vehTransmission> _transmission;
         ageHook::Field<0x25C, vehEngine> _engine;
+        ageHook::Field<0x3D4, vehDrivetrain> _drivetrain;
         ageHook::Field<0x154C, float> _brake;
         ageHook::Field<0x1550, float> _handbrake;
         ageHook::Field<0x1554, float> _steering;
@@ -69,6 +71,10 @@ namespace MM2
 
         inline vehEngine * getEngine(void) const {
             return _engine.ptr(this);
+        }
+
+        inline vehDrivetrain * getDrivetrain(void) const {
+            return _drivetrain.ptr(this);
         }
 
         AGE_API vehCarSim()                                 { ageHook::Thunk<0x4CB660>::Call<void>(this); }

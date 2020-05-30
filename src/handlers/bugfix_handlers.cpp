@@ -22,6 +22,7 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<mmInterfaceHandler>("mmInterface"),
     CreateHandler<mmPopupHandler>("mmPopupHandler"),
 
+    CreateHandler<vehCarSimHandler>("vehCarSim"),
     CreateHandler<vehCarAudioHandler>("vehCarAudio"),
     CreateHandler<vehCarAudioContainerBugfixHandler>("vehCarAudioContainer bugfixes"),
     CreateHandler<vehCarModelHandler>("vehCarModel"),
@@ -30,6 +31,7 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<vehPoliceCarAudioBugfixHandler>("vehPoliceCarAudio"),
     CreateHandler <vehSemiCarAudioBugfixHandler>("vehSemiCarAudio"),
     CreateHandler<mmPlayerBugfixHandler>("mmPlayer"),
+    CreateHandler<mmGearIndicatorHandler>("mmGearIndicator"),
     CreateHandler<mmSpeedIndicatorHandler>("mmSpeedIndicator"),
     CreateHandler<mmHudMapHandler>("mmHudMap"),
     CreateHandler<mmCDPlayerHandler>("mmCDPlayer"),
@@ -238,6 +240,59 @@ void gfxImageHandler::Install() {
 }
 
 /*
+    vehCarSimHandler
+*/
+static ConfigValue<bool> cfgMm1StyleTransmission("MM1StyleTransmission", false);
+
+void vehCarSimHandler::Update() {
+    auto carsim = reinterpret_cast<vehCarSim*>(this);
+    auto engine = carsim->getEngine();
+    auto drivetrain = carsim->getDrivetrain();
+    int gear = carsim->getTransmission()->getGear();
+    BOOL autoGear = carsim->getTransmission()->IsAuto();
+
+    if (autoGear == TRUE) {
+        if (carsim->getSpeedMPH() >= 1.f) {
+            if (engine->getThrottleInput() < 0.1f && gear != 1)
+                engine->setThrottleInput(0.1f);
+        }
+        // activate Handbrake if car goes under 1mph (P gear)
+        if (carsim->getSpeedMPH() < 1.f) {
+            carsim->setHandbrake(1.f);
+        }
+    }
+    if (autoGear == FALSE) {
+        if (carsim->getBrake() < 0.1f && carsim->getHandbrake() < 0.1f) {
+            if (engine->getThrottleInput() < 0.1f && gear != 1)
+                engine->setThrottleInput(0.1f);
+        }
+    }
+
+    // attach drive train if we just hit throttle
+    // fixes the short delay that happens before the car moves
+    if (engine->getThrottleInput() > 0.f) {
+        drivetrain->Attach();
+    }
+
+    // call original
+    ageHook::Thunk<0x4CC8E0>::Call<void>(this);
+}
+
+void vehCarSimHandler::Install() {
+    if (cfgMm1StyleTransmission.Get()) {
+        InstallVTableHook("vehCarSim::Update",
+            &Update, {
+                0x5B2C7C
+            });
+
+        // deactivate auto Handbrake system
+        InstallPatch({ 0xD8, 0x1D, 0x3C, 0x04, 0x5B, 0x00 }, {
+            0x405C81
+        });
+    }
+}
+
+/*
     vehCarAudioHandler
 */
 static ConfigValue<float> cfgAirborneTimerThresh("AirborneTimerThreshold", 1.1);
@@ -380,6 +435,28 @@ void mmBillInstanceHandler::Install() {
 
     Installf("Installing fix for vertical billboarding of CnR checkpoints...");
     mem::nop(0x43F8FD, (6 * 3)); // 6 fld/fstp instructions (size: 3)
+}
+
+/*
+    mmGearIndicatorHandler
+*/
+
+void mmGearIndicatorHandler::Install() {
+    InstallPatch("Replace N letter with P", {
+        0xB8, 0xD4, 0x52, 0x5C, 0x00,    // mov eax, offset aDigitac_gear_p
+        0x75, 0x05,                      // jnz short loc_43F132
+        0xB8, 0xE8, 0x52, 0x5C, 0x00,    // mov eax, offset aDigitac_gear_0
+    }, {
+        0x43F126
+    });
+
+    InstallPatch("Replace P letter with N", {
+        0xB8, 0x64, 0x52, 0x5C, 0x00,    // mov eax, offset aDigitac_gear_n
+        0x75, 0x05,                      // jnz short loc_43F1AF
+        0xB8, 0x78, 0x52, 0x5C, 0x00,    // mov eax, offset aDigitac_gear_3
+    }, {
+        0x43F1A3
+    });
 }
 
 /*
