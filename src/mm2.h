@@ -27,6 +27,7 @@
 #include "mm2_phys.h"
 #include "mm2_creature.h"
 #include "mm2_effects.h"
+#include "mm2_replay.h"
 
 #include "mm2_lua.h"
 

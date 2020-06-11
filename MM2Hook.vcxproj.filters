@@ -872,6 +872,9 @@
     <ClInclude Include="src\modules\data\stack.h">
       <Filter>Source Files\modules\data</Filter>
     </ClInclude>
+    <ClInclude Include="src\mm2_replay.h">
+      <Filter>Source Files\mm2</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
@@ -1152,6 +1155,9 @@
     </ClCompile>
     <ClCompile Include="src\modules\effects.cpp">
       <Filter>Source Files\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mm2_replay.cpp">
+      <Filter>Source Files\mm2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
