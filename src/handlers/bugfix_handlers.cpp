@@ -257,7 +257,7 @@ void vehCarSimHandler::Update() {
                 engine->setThrottleInput(0.1f);
         }
         // activate Handbrake if car goes under 1mph (P gear)
-        if (carsim->getSpeedMPH() < 1.f) {
+        if (carsim->getSpeedMPH() < 1.f && engine->getThrottleInput() < 0.1f) {
             carsim->setHandbrake(1.f);
         }
     }

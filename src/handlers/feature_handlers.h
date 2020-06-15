@@ -151,6 +151,7 @@ class mmGameHandler : handler_t {
 public:
     void SendChatMessage(char *message);
     void InitWeather(void);
+    void UpdateSteeringBrakes(void);
 
     static void Install();
 };
