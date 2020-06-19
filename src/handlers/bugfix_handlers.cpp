@@ -1242,6 +1242,23 @@ void mmPlayerBugfixHandler::Ctor()
     ageHook::Thunk<0x4033D0>::Call<void>(this);
 }
 
+void mmPlayerBugfixHandler::Reset()
+{
+    auto player = reinterpret_cast<mmPlayer*>(this);
+    auto car = player->getCar();
+    auto audio = car->getAudio();
+    auto siren = car->getSiren();
+    byte *sirenLights = *getPtr<byte*>(player, 0xF4);
+    if (siren != nullptr && siren->Active) {
+        // deactivate siren lights
+        sirenLights[1] = 0;
+        // deactivate siren sounds
+        audio->StopSiren();
+    }
+    // call original
+    ageHook::Thunk<0x404A60>::Call<void>(this);
+}
+
 void mmPlayerBugfixHandler::Install()
 {
     InstallCallback("mmPlayer::mmPlayer", "Clean up player memory on ctor.",
@@ -1256,6 +1273,12 @@ void mmPlayerBugfixHandler::Install()
             cbHook<CALL>(0x423A2E),
             cbHook<CALL>(0x427739),
             cbHook<CALL>(0x428469),
+        }
+    );
+
+    InstallVTableHook("mmPlayer::Reset",
+        &Reset, {
+            0x5B03C0,
         }
     );
 }
