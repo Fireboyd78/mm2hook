@@ -1494,7 +1494,7 @@ void mmGameHandler::Install() {
         });
     
     if (cfgMm1StyleAutoReverse.Get()) {
-        InstallCallback("mmGameHandler::UpdateSteeringBrakes", "Improves auto reverse system.",
+        InstallCallback("mmGame::UpdateSteeringBrakes", "Improves auto reverse system.",
             &UpdateSteeringBrakes, {
                 cbHook<CALL>(0x413EED),
                 cbHook<CALL>(0x413F29),
@@ -2330,7 +2330,7 @@ void dgBangerInstanceHandler::Install()
 }
 
 /*
-vehCarHandler
+    vehCarHandler
 */
 
 static ConfigValue<bool> cfgVehicleDebug("VehicleDebug", "vehicleDebug", false);

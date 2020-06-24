@@ -240,7 +240,7 @@ void gfxImageHandler::Install() {
 }
 
 /*
-    vehCarSimHandler
+    vehCarBugfixHandler
 */
 static ConfigValue<bool> cfgMm1StyleTransmission("MM1StyleTransmission", false);
 
@@ -272,6 +272,7 @@ void vehCarBugfixHandler::Update() {
         }
     }
     // setting up this case for crash course
+    // fixes ai cops and opponents have no brakes if they're damaged out
     if (curDamage >= maxDamage) {
         carsim->setBrake(1.f);
         transmission->SetNeutral();
