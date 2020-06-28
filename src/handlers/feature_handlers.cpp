@@ -1421,9 +1421,9 @@ void mmGameHandler::UpdateSteeringBrakes(void) {
     int autoReverse = *getPtr<int>(gameInputPtr, 0x18C);
     int *pedalsSwapped = getPtr<int>(gameInputPtr, 0x1D4); // swaps throttle and brake inputs if true
 
-    float v1 = *getPtr<float>(game, 0x40C);
-    float v2 = *getPtr<float>(game, 0x68);
-    float v3 = *getPtr<float>(game, 0x6C);
+    float v1 = *getPtr<float>(this, 0x40C);
+    float v2 = *getPtr<float>(this, 0x68);
+    float v3 = *getPtr<float>(this, 0x6C);
     float speedMPH = carsim->getSpeedMPH();
     float brakes = inst->GetBrakes();
     float throttle = inst->GetThrottle();
