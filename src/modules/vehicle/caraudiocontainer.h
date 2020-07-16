@@ -40,6 +40,14 @@ namespace MM2
             ageHook::Thunk<0x4D1840>::Call<void>(this, a1);
         }
 
+        AGE_API void StartSiren() {
+            ageHook::Thunk<0x4D18B0>::Call<void>(this);
+        }
+
+        AGE_API void StopSiren() {
+            ageHook::Thunk<0x4D18C0>::Call<void>(this);
+        }
+
         AGE_API vehPoliceCarAudio * GetPoliceCarAudioPtr() {
             return ageHook::Thunk<0x4D1790>::Call<vehPoliceCarAudio *>(this);
         };

@@ -1402,6 +1402,73 @@ void mmGameHandler::InitWeather(void) {
     }
 }
 
+static ConfigValue<bool> cfgMm1StyleAutoReverse("MM1StyleAutoReverse", false);
+
+void mmGameHandler::UpdateSteeringBrakes(void) {
+    auto game = reinterpret_cast<mmGame*>(this);
+    auto player = game->getPlayer();
+    auto car = player->getCar();
+    auto carsim = car->getCarSim();
+    auto engine = carsim->getEngine();
+    auto transmission = carsim->getTransmission();
+    auto inst = mmReplayManager::Instance;
+
+    void *gameInputPtr = *reinterpret_cast<void **>(0x6B1CF0); // pointer to mmInput
+    void *dword_6B39A4 = *reinterpret_cast<void **>(0x6B39A4);
+
+    int *vehCarPtr = *getPtr<int*>(player, 0x284);
+    int reverse = *getPtr<int>(vehCarPtr, 0x304);
+    int autoReverse = *getPtr<int>(gameInputPtr, 0x18C);
+    int *pedalsSwapped = getPtr<int>(gameInputPtr, 0x1D4); // swaps throttle and brake inputs if true
+
+    float v1 = *getPtr<float>(this, 0x40C);
+    float v2 = *getPtr<float>(this, 0x68);
+    float v3 = *getPtr<float>(this, 0x6C);
+    float speedMPH = carsim->getSpeedMPH();
+    float brakes = inst->GetBrakes();
+    float throttle = inst->GetThrottle();
+    float steering = inst->GetSteering();
+    float handbrakes = inst->GetHandBrakes();
+
+    carsim->setBrake(brakes);
+    carsim->setHandbrake(handbrakes);
+    player->SetSteering(steering);
+
+    if (dword_6B39A4 && reverse >= 2) {
+        if (throttle >= 0.f) {
+            if (throttle > v1)
+                throttle = v1;
+            engine->setThrottleInput(throttle);
+        }
+        else {
+            engine->setThrottleInput(0.f);
+        }
+    }
+    else {
+        engine->setThrottleInput(throttle);
+    }
+
+    if (transmission->IsAuto() && autoReverse) {
+        if (reverse) {
+            if (speedMPH <= v3 && brakes >= v2 && throttle <= 0.1f) {
+                *pedalsSwapped = true;
+                transmission->SetReverse();
+            }
+        }
+        else if (!reverse && *pedalsSwapped) {
+            if (speedMPH <= v3 && brakes >= v2 && throttle <= 0.1f) {
+                *pedalsSwapped = false;
+                transmission->SetForward();
+            }
+        }
+        else if (!reverse && !*pedalsSwapped) {
+            if (speedMPH <= v3 && brakes >= v2 && throttle <= 0.1f) {
+                *pedalsSwapped = true;
+            }
+        }
+    }
+}
+
 void mmGameHandler::Install() {
     InstallPatch("Increases chat buffer size.", { 60 }, {
         0x4E68B5,
@@ -1426,6 +1493,15 @@ void mmGameHandler::Install() {
         0x413C1C,
         });
     
+    if (cfgMm1StyleAutoReverse.Get()) {
+        InstallCallback("mmGame::UpdateSteeringBrakes", "Improves auto reverse system.",
+            &UpdateSteeringBrakes, {
+                cbHook<CALL>(0x413EED),
+                cbHook<CALL>(0x413F29),
+                cbHook<CALL>(0x413F4C),
+            }
+        );
+    }
 }
 
 /*
@@ -2254,7 +2330,7 @@ void dgBangerInstanceHandler::Install()
 }
 
 /*
-vehCarHandler
+    vehCarHandler
 */
 
 static ConfigValue<bool> cfgVehicleDebug("VehicleDebug", "vehicleDebug", false);

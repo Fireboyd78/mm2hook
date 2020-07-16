@@ -22,7 +22,7 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<mmInterfaceHandler>("mmInterface"),
     CreateHandler<mmPopupHandler>("mmPopupHandler"),
 
-    CreateHandler<vehCarSimHandler>("vehCarSim"),
+    CreateHandler<vehCarBugfixHandler>("vehCar"),
     CreateHandler<vehCarAudioHandler>("vehCarAudio"),
     CreateHandler<vehCarAudioContainerBugfixHandler>("vehCarAudioContainer bugfixes"),
     CreateHandler<vehCarModelHandler>("vehCarModel"),
@@ -240,32 +240,42 @@ void gfxImageHandler::Install() {
 }
 
 /*
-    vehCarSimHandler
+    vehCarBugfixHandler
 */
 static ConfigValue<bool> cfgMm1StyleTransmission("MM1StyleTransmission", false);
 
-void vehCarSimHandler::Update() {
-    auto carsim = reinterpret_cast<vehCarSim*>(this);
+void vehCarBugfixHandler::Update() {
+    auto car = reinterpret_cast<vehCar*>(this);
+    auto carsim = car->getCarSim();
     auto engine = carsim->getEngine();
     auto drivetrain = carsim->getDrivetrain();
-    int gear = carsim->getTransmission()->getGear();
-    BOOL autoGear = carsim->getTransmission()->IsAuto();
+    auto transmission = carsim->getTransmission();
+    auto curDamage = car->getCarDamage()->getCurDamage();
+    auto maxDamage = car->getCarDamage()->getMaxDamage();
 
-    if (autoGear == TRUE) {
-        if (carsim->getSpeedMPH() >= 1.f) {
-            if (engine->getThrottleInput() < 0.1f && gear != 1)
-                engine->setThrottleInput(0.1f);
+    if (curDamage < maxDamage) {
+        if (transmission->IsAuto()) {
+            if (carsim->getSpeedMPH() >= 1.f) {
+                if (engine->getThrottleInput() < 0.1f && transmission->getGear() != 1)
+                    engine->setThrottleInput(0.1f);
+            }
+            // activate Handbrake if car goes under 1mph (P gear)
+            if (carsim->getSpeedMPH() < 1.f && engine->getThrottleInput() < 0.1f) {
+                carsim->setHandbrake(1.f);
+            }
         }
-        // activate Handbrake if car goes under 1mph (P gear)
-        if (carsim->getSpeedMPH() < 1.f) {
-            carsim->setHandbrake(1.f);
+        if (!transmission->IsAuto()) {
+            if (carsim->getBrake() < 0.1f && carsim->getHandbrake() < 0.1f) {
+                if (engine->getThrottleInput() < 0.1f && transmission->getGear() != 1)
+                    engine->setThrottleInput(0.1f);
+            }
         }
     }
-    if (autoGear == FALSE) {
-        if (carsim->getBrake() < 0.1f && carsim->getHandbrake() < 0.1f) {
-            if (engine->getThrottleInput() < 0.1f && gear != 1)
-                engine->setThrottleInput(0.1f);
-        }
+    // setting up this case for crash course
+    // fixes ai cops and opponents have no brakes if they're damaged out
+    if (curDamage >= maxDamage) {
+        carsim->setBrake(1.f);
+        transmission->SetNeutral();
     }
 
     // attach drive train if we just hit throttle
@@ -275,19 +285,19 @@ void vehCarSimHandler::Update() {
     }
 
     // call original
-    ageHook::Thunk<0x4CC8E0>::Call<void>(this);
+    ageHook::Thunk<0x42C690>::Call<void>(this);
 }
 
-void vehCarSimHandler::Install() {
+void vehCarBugfixHandler::Install() {
     if (cfgMm1StyleTransmission.Get()) {
-        InstallVTableHook("vehCarSim::Update",
+        InstallVTableHook("vehCar::Update",
             &Update, {
-                0x5B2C7C
+                0x5B0BB8,
             });
 
         // deactivate auto Handbrake system
         InstallPatch({ 0xD8, 0x1D, 0x3C, 0x04, 0x5B, 0x00 }, {
-            0x405C81
+            0x405C81,
         });
     }
 }
@@ -1242,6 +1252,23 @@ void mmPlayerBugfixHandler::Ctor()
     ageHook::Thunk<0x4033D0>::Call<void>(this);
 }
 
+void mmPlayerBugfixHandler::Reset()
+{
+    auto player = reinterpret_cast<mmPlayer*>(this);
+    auto car = player->getCar();
+    auto audio = car->getAudio();
+    auto siren = car->getSiren();
+    byte *sirenLights = *getPtr<byte*>(this, 0xF4);
+    if (siren != nullptr && siren->Active) {
+        // deactivate siren lights
+        sirenLights[1] = 0;
+        // deactivate siren sounds
+        audio->StopSiren();
+    }
+    // call original
+    ageHook::Thunk<0x404A60>::Call<void>(this);
+}
+
 void mmPlayerBugfixHandler::Install()
 {
     InstallCallback("mmPlayer::mmPlayer", "Clean up player memory on ctor.",
@@ -1256,6 +1283,12 @@ void mmPlayerBugfixHandler::Install()
             cbHook<CALL>(0x423A2E),
             cbHook<CALL>(0x427739),
             cbHook<CALL>(0x428469),
+        }
+    );
+
+    InstallVTableHook("mmPlayer::Reset",
+        &Reset, {
+            0x5B03C0,
         }
     );
 }

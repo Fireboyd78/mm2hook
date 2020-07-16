@@ -53,6 +53,10 @@ namespace MM2
             _handbrake.set(this, handBrake);
         }
 
+        inline float getSpeed(void) {
+            return _speed.get(this);
+        }
+
         inline float getSpeedMPH(void) {
             return _speedMPH.get(this);
         };

@@ -45,7 +45,7 @@ public:
     static void Install();
 };
 
-class vehCarSimHandler {
+class vehCarBugfixHandler {
 public:
     void Update();
     static void Install();
@@ -233,6 +233,7 @@ public:
 class mmPlayerBugfixHandler {
 public:
     void Ctor();
+    void Reset();
     static void Install();
 };
 
