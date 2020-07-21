@@ -1469,6 +1469,65 @@ void mmGameHandler::UpdateSteeringBrakes(void) {
     }
 }
 
+static ConfigValue<bool> cfgGtaStyleHornSiren("GTAStyleHornSiren", false);
+
+void mmGameHandler::UpdateHorn(bool a1) {
+    auto game = reinterpret_cast<mmGame*>(this);
+    auto player = game->getPlayer();
+    auto car = player->getCar();
+    auto siren = car->getSiren();
+    auto audio = car->getAudio();
+    auto policeAudio = audio->GetPoliceCarAudioPtr();
+    char *vehName = car->getCarDamage()->GetName();
+    bool elapsedTime = fmod(datTimeManager::ElapsedTime, 1.f) > 0.75f;
+    byte *sirenLights = *getPtr<byte*>(player, 0xF4);
+    byte *buttonPressed = getPtr<byte>(this, 0x274);
+    if (audio->IsPolice(vehName)) {
+        auto hornSound = *getPtr<AudSoundBase*>(policeAudio, 0x10C);
+        if (a1) {
+            if (!*buttonPressed && elapsedTime) {
+                sirenLights[1] = sirenLights[1] == 0;
+                if (siren != nullptr && siren->Active) {
+                    audio->StartSiren();
+                    *buttonPressed = 1;
+                }
+                else {
+                    audio->StopSiren();
+                    *buttonPressed = 1;
+                }
+                return;
+            }
+            if (!*buttonPressed) {
+                if (hornSound != nullptr && !hornSound->IsPlaying()) {
+                    hornSound->SetPlayPosition(0);
+                    hornSound->PlayLoop(-1.f, -1.f);
+                }
+            }
+            *buttonPressed = 1;
+            return;
+        }
+        if (*buttonPressed) {
+            if (hornSound != nullptr && hornSound->IsPlaying()) {
+                hornSound->Stop();
+            }
+            *buttonPressed = 0;
+        }
+    }
+    if (!audio->IsPolice(vehName)) {
+        if (a1) {
+            if (!*buttonPressed) {
+                audio->PlayHorn();
+            }
+            *buttonPressed = 1;
+            return;
+        }
+        if (*buttonPressed) {
+            audio->StopHorn();
+        }
+        *buttonPressed = 0;
+    }
+}
+
 void mmGameHandler::Install() {
     InstallPatch("Increases chat buffer size.", { 60 }, {
         0x4E68B5,
@@ -1499,6 +1558,15 @@ void mmGameHandler::Install() {
                 cbHook<CALL>(0x413EED),
                 cbHook<CALL>(0x413F29),
                 cbHook<CALL>(0x413F4C),
+            }
+        );
+    }
+
+    if (cfgGtaStyleHornSiren.Get()) {
+        InstallCallback("mmGame::UpdateHorn", "Implements GTA-style horn/siren",
+            &UpdateHorn, {
+                cbHook<CALL>(0x413F22),
+                cbHook<CALL>(0x414691),
             }
         );
     }

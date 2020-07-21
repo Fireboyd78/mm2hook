@@ -152,6 +152,7 @@ public:
     void SendChatMessage(char *message);
     void InitWeather(void);
     void UpdateSteeringBrakes(void);
+    void UpdateHorn(bool a1);
 
     static void Install();
 };
