@@ -212,6 +212,7 @@ public:
     void Splash();
     void Zoink();
     void Update();
+    void PlayExplosion();
     static void Install();
 };
 

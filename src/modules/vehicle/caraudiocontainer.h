@@ -56,6 +56,10 @@ namespace MM2
             ageHook::Thunk<0x4D1800>::Call<void>(this);
         }
 
+        AGE_API void SilenceEngine(int a1) {
+            ageHook::Thunk<0x4D1910>::Call<void>(this, a1);
+        }
+
         AGE_API vehPoliceCarAudio * GetPoliceCarAudioPtr() {
             return ageHook::Thunk<0x4D1790>::Call<vehPoliceCarAudio *>(this);
         };

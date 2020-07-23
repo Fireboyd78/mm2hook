@@ -2132,8 +2132,10 @@ void PUMainHandler::Install() {
 */
 static ConfigValue<bool> cfgEnableOutOfMapFix("OutOfMapFix", true);
 static ConfigValue<bool> cfgEnableWaterSplashSound("WaterSplashSound", true);
+static ConfigValue<bool> cfgEnableExplosionSound("ExplosionSound", false);
 bool enableOutOfMapFixCached = true;
 bool enableWaterSplashSoundCached = true;
+bool enableExplosionSoundCached = false;
 
 void mmPlayerHandler::Zoink() {
     Warningf("Player is out of the world, teleporting!");
@@ -2227,9 +2229,26 @@ void mmPlayerHandler::Splash() {
     impactAud->Play(vehicleMph, 22);
 }
 
+void mmPlayerHandler::PlayExplosion() {
+    auto player = reinterpret_cast<mmPlayer*>(this);
+    auto car = player->getCar();
+    auto policeAudio = car->getAudio()->GetPoliceCarAudioPtr();
+    auto explosionSound = *getPtr<AudSoundBase*>(policeAudio, 0x138);
+    if (explosionSound != nullptr) {
+        if (!explosionSound->IsPlaying())
+            explosionSound->PlayOnce(-1.f, -1.f);
+    }
+}
+
 void mmPlayerHandler::Update() {
     auto player = reinterpret_cast<mmPlayer*>(this);
     auto car = player->getCar();
+    auto audio = car->getAudio();
+    auto siren = car->getSiren();
+    auto engine = car->getCarSim()->getEngine();
+    auto curDamage = car->getCarDamage()->getCurDamage();
+    auto maxDamage = car->getCarDamage()->getMaxDamage();
+    byte *sirenLights = *getPtr<byte*>(this, 0xF4);
 
     //check if we're out of the level
     int playerRoom = car->GetInst()->getRoomId();
@@ -2246,6 +2265,24 @@ void mmPlayerHandler::Update() {
         prevSplashState = splashState;
     }
 
+    //check if we're damaged out 
+    if (enableExplosionSoundCached) {
+        if (curDamage >= maxDamage) {
+            //turn off engine
+            audio->SilenceEngine(1);
+            engine->setCurrentTorque(0.f);
+            //play explosion sound if siren is activated
+            if (siren != nullptr && siren->Active) {
+                sirenLights[1] = 0;
+                audio->StopSiren();
+                PlayExplosion();
+            }
+        }
+        if (curDamage < maxDamage) {
+            audio->SilenceEngine(0);
+        }
+    }
+
     //call original
     ageHook::Thunk<0x405760>::Call<void>(this);
 }
@@ -2253,8 +2290,10 @@ void mmPlayerHandler::Update() {
 void mmPlayerHandler::Install() {
     enableOutOfMapFixCached = cfgEnableOutOfMapFix.Get();
     enableWaterSplashSoundCached = cfgEnableWaterSplashSound.Get();
+    enableExplosionSoundCached = cfgEnableExplosionSound.Get();
 
-    if (enableOutOfMapFixCached || enableWaterSplashSoundCached) {
+    if (enableOutOfMapFixCached || enableWaterSplashSoundCached ||
+        enableExplosionSoundCached) {
         InstallVTableHook("mmPlayer::Update",
             &Update, {
                 0x5B03BC
