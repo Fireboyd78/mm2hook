@@ -2587,6 +2587,8 @@ void vehCarModelFeatureHandler::ModStaticDraw(modShader* a1) {
     }
 }
 
+static ConfigValue<bool> cfgMm1StyleTransmission("MM1StyleTransmission", false);
+
 void vehCarModelFeatureHandler::DrawGlow() {
     auto model = reinterpret_cast<vehCarModel*>(this);
     if (!model->GetVisible())
@@ -2660,9 +2662,22 @@ void vehCarModelFeatureHandler::DrawGlow() {
             blight->Draw(shaders);
     }
 
-    //draw rlight 
-    if (rlight != nullptr && gear == 0) {
-        rlight->Draw(shaders);
+    if (cfgMm1StyleTransmission.Get()) {
+        auto engine = carsim->getEngine();
+        auto speedMPH = carsim->getSpeedMPH();
+
+        //draw rlight
+        if (rlight != nullptr && gear == 0) {
+            if (engine->getThrottleInput() > 0.f || speedMPH >= 1.f)
+                rlight->Draw(shaders);
+        }
+    }
+
+    if (!cfgMm1StyleTransmission.Get()) {
+        //draw rlight 
+        if (rlight != nullptr && gear == 0) {
+            rlight->Draw(shaders);
+        }
     }
 
     //Draw siren and headlights
