@@ -1411,6 +1411,8 @@ void mmGameHandler::UpdateSteeringBrakes(void) {
     auto carsim = car->getCarSim();
     auto engine = carsim->getEngine();
     auto transmission = carsim->getTransmission();
+    auto curDamage = car->getCarDamage()->getCurDamage();
+    auto maxDamage = car->getCarDamage()->getMaxDamage();
     auto inst = mmReplayManager::Instance;
 
     void *gameInputPtr = *reinterpret_cast<void **>(0x6B1CF0); // pointer to mmInput
@@ -1466,6 +1468,9 @@ void mmGameHandler::UpdateSteeringBrakes(void) {
                 *pedalsSwapped = true;
             }
         }
+        // reset throttle and brake inputs when the vehicle is destroyed
+        if (curDamage >= maxDamage && *pedalsSwapped)
+            *pedalsSwapped = false;
     }
 }
 
