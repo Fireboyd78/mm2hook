@@ -517,7 +517,7 @@ void mmGearIndicatorHandler::Install() {
         0x75, 0x05,                      // jnz short loc_43F132
         0xB8, 0xE8, 0x52, 0x5C, 0x00,    // mov eax, offset aDigitac_gear_0
     }, {
-        0x43F126
+        0x43F126 // mmGearIndicator::Init
     });
 
     InstallPatch("Replace P letter with N", {
@@ -525,7 +525,7 @@ void mmGearIndicatorHandler::Install() {
         0x75, 0x05,                      // jnz short loc_43F1AF
         0xB8, 0x78, 0x52, 0x5C, 0x00,    // mov eax, offset aDigitac_gear_3
     }, {
-        0x43F1A3
+        0x43F1A3 // mmGearIndicator::Init
     });
 }
 
