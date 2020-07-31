@@ -1411,6 +1411,8 @@ void mmGameHandler::UpdateSteeringBrakes(void) {
     auto carsim = car->getCarSim();
     auto engine = carsim->getEngine();
     auto transmission = carsim->getTransmission();
+    auto curDamage = car->getCarDamage()->getCurDamage();
+    auto maxDamage = car->getCarDamage()->getMaxDamage();
     auto inst = mmReplayManager::Instance;
 
     void *gameInputPtr = *reinterpret_cast<void **>(0x6B1CF0); // pointer to mmInput
@@ -1466,6 +1468,68 @@ void mmGameHandler::UpdateSteeringBrakes(void) {
                 *pedalsSwapped = true;
             }
         }
+        // reset throttle and brake inputs when the vehicle is destroyed
+        if (curDamage >= maxDamage && *pedalsSwapped)
+            *pedalsSwapped = false;
+    }
+}
+
+static ConfigValue<bool> cfgGtaStyleHornSiren("GTAStyleHornSiren", false);
+
+void mmGameHandler::UpdateHorn(bool a1) {
+    auto game = reinterpret_cast<mmGame*>(this);
+    auto player = game->getPlayer();
+    auto car = player->getCar();
+    auto siren = car->getSiren();
+    auto audio = car->getAudio();
+    auto policeAudio = audio->GetPoliceCarAudioPtr();
+    char *vehName = car->getCarDamage()->GetName();
+    bool elapsedTime = fmod(datTimeManager::ElapsedTime, 1.f) > 0.75f;
+    byte *sirenLights = *getPtr<byte*>(player, 0xF4);
+    byte *buttonPressed = getPtr<byte>(this, 0x274);
+    if (audio->IsPolice(vehName)) {
+        auto hornSound = *getPtr<AudSoundBase*>(policeAudio, 0x10C);
+        if (a1) {
+            if (!*buttonPressed && elapsedTime) {
+                sirenLights[1] = sirenLights[1] == 0;
+                if (siren != nullptr && siren->Active) {
+                    audio->StartSiren();
+                    *buttonPressed = 1;
+                }
+                else {
+                    audio->StopSiren();
+                    *buttonPressed = 1;
+                }
+                return;
+            }
+            if (!*buttonPressed) {
+                if (hornSound != nullptr && !hornSound->IsPlaying()) {
+                    hornSound->SetPlayPosition(0);
+                    hornSound->PlayLoop(-1.f, -1.f);
+                }
+            }
+            *buttonPressed = 1;
+            return;
+        }
+        if (*buttonPressed) {
+            if (hornSound != nullptr && hornSound->IsPlaying()) {
+                hornSound->Stop();
+            }
+            *buttonPressed = 0;
+        }
+    }
+    if (!audio->IsPolice(vehName)) {
+        if (a1) {
+            if (!*buttonPressed) {
+                audio->PlayHorn();
+            }
+            *buttonPressed = 1;
+            return;
+        }
+        if (*buttonPressed) {
+            audio->StopHorn();
+        }
+        *buttonPressed = 0;
     }
 }
 
@@ -1499,6 +1563,15 @@ void mmGameHandler::Install() {
                 cbHook<CALL>(0x413EED),
                 cbHook<CALL>(0x413F29),
                 cbHook<CALL>(0x413F4C),
+            }
+        );
+    }
+
+    if (cfgGtaStyleHornSiren.Get()) {
+        InstallCallback("mmGame::UpdateHorn", "Implements GTA-style horn/siren",
+            &UpdateHorn, {
+                cbHook<CALL>(0x413F22),
+                cbHook<CALL>(0x414691),
             }
         );
     }
@@ -2064,8 +2137,10 @@ void PUMainHandler::Install() {
 */
 static ConfigValue<bool> cfgEnableOutOfMapFix("OutOfMapFix", true);
 static ConfigValue<bool> cfgEnableWaterSplashSound("WaterSplashSound", true);
+static ConfigValue<bool> cfgEnableExplosionSound("ExplosionSound", false);
 bool enableOutOfMapFixCached = true;
 bool enableWaterSplashSoundCached = true;
+bool enableExplosionSoundCached = false;
 
 void mmPlayerHandler::Zoink() {
     Warningf("Player is out of the world, teleporting!");
@@ -2159,9 +2234,26 @@ void mmPlayerHandler::Splash() {
     impactAud->Play(vehicleMph, 22);
 }
 
+void mmPlayerHandler::PlayExplosion() {
+    auto player = reinterpret_cast<mmPlayer*>(this);
+    auto car = player->getCar();
+    auto policeAudio = car->getAudio()->GetPoliceCarAudioPtr();
+    auto explosionSound = *getPtr<AudSoundBase*>(policeAudio, 0x138);
+    if (explosionSound != nullptr) {
+        if (!explosionSound->IsPlaying())
+            explosionSound->PlayOnce(-1.f, -1.f);
+    }
+}
+
 void mmPlayerHandler::Update() {
     auto player = reinterpret_cast<mmPlayer*>(this);
     auto car = player->getCar();
+    auto audio = car->getAudio();
+    auto siren = car->getSiren();
+    auto engine = car->getCarSim()->getEngine();
+    auto curDamage = car->getCarDamage()->getCurDamage();
+    auto maxDamage = car->getCarDamage()->getMaxDamage();
+    byte *sirenLights = *getPtr<byte*>(this, 0xF4);
 
     //check if we're out of the level
     int playerRoom = car->GetInst()->getRoomId();
@@ -2178,6 +2270,24 @@ void mmPlayerHandler::Update() {
         prevSplashState = splashState;
     }
 
+    //check if we're damaged out 
+    if (enableExplosionSoundCached) {
+        if (curDamage >= maxDamage) {
+            //turn off engine
+            audio->SilenceEngine(1);
+            engine->setCurrentTorque(0.f);
+            //play explosion sound if siren is activated
+            if (siren != nullptr && siren->Active) {
+                sirenLights[1] = 0;
+                audio->StopSiren();
+                PlayExplosion();
+            }
+        }
+        if (curDamage < maxDamage) {
+            audio->SilenceEngine(0);
+        }
+    }
+
     //call original
     ageHook::Thunk<0x405760>::Call<void>(this);
 }
@@ -2185,8 +2295,10 @@ void mmPlayerHandler::Update() {
 void mmPlayerHandler::Install() {
     enableOutOfMapFixCached = cfgEnableOutOfMapFix.Get();
     enableWaterSplashSoundCached = cfgEnableWaterSplashSound.Get();
+    enableExplosionSoundCached = cfgEnableExplosionSound.Get();
 
-    if (enableOutOfMapFixCached || enableWaterSplashSoundCached) {
+    if (enableOutOfMapFixCached || enableWaterSplashSoundCached ||
+        enableExplosionSoundCached) {
         InstallVTableHook("mmPlayer::Update",
             &Update, {
                 0x5B03BC
@@ -2480,6 +2592,8 @@ void vehCarModelFeatureHandler::ModStaticDraw(modShader* a1) {
     }
 }
 
+static ConfigValue<bool> cfgMm1StyleTransmission("MM1StyleTransmission", false);
+
 void vehCarModelFeatureHandler::DrawGlow() {
     auto model = reinterpret_cast<vehCarModel*>(this);
     if (!model->GetVisible())
@@ -2553,9 +2667,22 @@ void vehCarModelFeatureHandler::DrawGlow() {
             blight->Draw(shaders);
     }
 
-    //draw rlight 
-    if (rlight != nullptr && gear == 0) {
-        rlight->Draw(shaders);
+    if (cfgMm1StyleTransmission.Get()) {
+        auto engine = carsim->getEngine();
+        auto speedMPH = carsim->getSpeedMPH();
+
+        //draw rlight
+        if (rlight != nullptr && gear == 0) {
+            if (engine->getThrottleInput() > 0.f || speedMPH >= 1.f)
+                rlight->Draw(shaders);
+        }
+    }
+
+    if (!cfgMm1StyleTransmission.Get()) {
+        //draw rlight 
+        if (rlight != nullptr && gear == 0) {
+            rlight->Draw(shaders);
+        }
     }
 
     //Draw siren and headlights

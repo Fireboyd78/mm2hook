@@ -79,6 +79,14 @@ namespace MM2
             CurrentRPM = rpm;
         }
 
+        inline float getCurrentTorque() {
+            return CurrentTorque;
+        }
+
+        inline void setCurrentTorque(float torque) {
+            CurrentTorque = torque;
+        }
+
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<vehEngine, asNode>("vehEngine")
                 //properties

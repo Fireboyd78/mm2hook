@@ -451,13 +451,73 @@ void mmBillInstanceHandler::Install() {
     mmGearIndicatorHandler
 */
 
+void mmGearIndicatorHandler::Draw() {
+    int *gearIndicator = *getPtr<int*>(this, 0x3C);
+    int *vehCarPtr = *getPtr<int*>(gearIndicator, 0x284);
+    int reverse = *getPtr<int>(vehCarPtr, 0x304);
+    int autoTransmission = *getPtr<int>(vehCarPtr, 0x300);
+    int gearID = -1;
+    float speedMPH = *getPtr<float>(vehCarPtr, 0x24C);
+    float throttle = *getPtr<float>(vehCarPtr, 0x2BC);
+
+    if (autoTransmission) {
+        if (throttle > 0.f || speedMPH >= 1.f) {
+            if (!reverse)
+                gearID = 9;
+            else if (reverse == 1)
+                gearID = 10;
+            else
+                gearID = 11;
+        }
+        else {
+            gearID = 0;
+        }
+    }
+    if (!autoTransmission) {
+        if (!reverse)
+            gearID = 9;
+        else if (reverse == 1)
+            gearID = 10;
+        else
+            gearID = reverse - 1;
+    }
+
+    // get gfxPipeline::CopyBitmap stuff
+    int v1 = *getPtr<int>(this, 0x30);
+    int v2 = *getPtr<int>(this, 0x34);
+    int *v3 = *getPtr<int*>(this, 0x38);
+    int v4 = *getPtr<int>(v3, 0x20);
+    int v5 = *getPtr<int>(v3, 0x24);
+    auto *bitmap = *getPtr<gfxBitmap*>(this, gearID * 4);
+    int width = *getPtr<unsigned __int16>(bitmap, 4);
+    int height = *getPtr<unsigned __int16>(bitmap, 6);
+
+    return ageHook::StaticThunk<0x4AB4C0>::Call<void>(
+        v1 + v4,     // destX
+        v2 + v5,     // destY
+        bitmap,      // bitmap
+        0,           // srcX
+        0,           // srcY
+        width,       // width
+        height,      // height
+        true);       // srcColorKey
+}
+
 void mmGearIndicatorHandler::Install() {
+    if (cfgMm1StyleTransmission.Get()) {
+        InstallCallback("mmGearIndicatorHandler::Draw", "Adds the unused P gear indicator to the HUD.",
+            &Draw, {
+                cbHook<CALL>(0x431B26),
+            }
+        );
+    }
+
     InstallPatch("Replace N letter with P", {
         0xB8, 0xD4, 0x52, 0x5C, 0x00,    // mov eax, offset aDigitac_gear_p
         0x75, 0x05,                      // jnz short loc_43F132
         0xB8, 0xE8, 0x52, 0x5C, 0x00,    // mov eax, offset aDigitac_gear_0
     }, {
-        0x43F126
+        0x43F126 // mmGearIndicator::Init
     });
 
     InstallPatch("Replace P letter with N", {
@@ -465,7 +525,7 @@ void mmGearIndicatorHandler::Install() {
         0x75, 0x05,                      // jnz short loc_43F1AF
         0xB8, 0x78, 0x52, 0x5C, 0x00,    // mov eax, offset aDigitac_gear_3
     }, {
-        0x43F1A3
+        0x43F1A3 // mmGearIndicator::Init
     });
 }
 
