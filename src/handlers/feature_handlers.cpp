@@ -63,6 +63,8 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<fxTexelDamageHandler>("fxTexelDamage"),
 
     CreateHandler<pedestrianInstanceHandler>("pedestrianInstanceHandler"),
+
+    CreateHandler<aiVehicleInstanceFeatureHandler>("aiVehicleInstance"),
     
     CreateHandler<luaDrawableHandler>("luaDrawableHandler")
 };
@@ -2949,6 +2951,110 @@ void pedestrianInstanceHandler::Install()
             0x5B6340
         }
     );
+}
+
+/*
+    aiVehicleInstanceFeatureHandler
+*/
+Matrix34 aiVehicleMatrix = Matrix34();
+int ambientHeadlightStyle = 0;
+
+void aiVehicleInstanceFeatureHandler::DrawGlow() {
+    auto inst = reinterpret_cast<aiVehicleInstance*>(this);
+    auto geomID = inst->getGeomSetId() - 1;
+    auto geomSet = lvlInstance::GetGeomTableEntry(geomID);
+
+    //setup renderer
+    Matrix34 carMatrix = inst->GetMatrix(&aiVehicleMatrix);
+    Matrix44::Convert(gfxRenderState::sm_World, &carMatrix);
+    *(int*)0x685778 |= 0x88; //set m_Touched
+
+    //get our shader set
+    int shaderSet = inst->GetNumLightSources();
+    auto shaders = geomSet->pShaders[shaderSet];
+
+    //get objects
+    modStatic* hlight = lvlInstance::GetGeomTableEntry(geomID + 2)->getHighestLOD();
+    modStatic* tlight = lvlInstance::GetGeomTableEntry(geomID + 3)->getHighestLOD();
+    modStatic* slight0 = lvlInstance::GetGeomTableEntry(geomID + 4)->getHighestLOD();
+    modStatic* slight1 = lvlInstance::GetGeomTableEntry(geomID + 5)->getHighestLOD();
+
+    //get lights stuff
+    int *activate = *getPtr<int*>(this, 0x14);
+    float speed = *getPtr<float>(activate, 0xF4);
+    float brake = *getPtr<float>(activate, 0x54);
+    bool lightsActive = *(bool*)(0x6B2FA4);
+    byte signalClock = *(byte*)(0x6B31F4);
+    byte toggleSignal = *getPtr<byte>(this, 0x1A);
+    byte signalDelayTime = *getPtr<byte>(this, 0x18); // adjusts the delay time for signal lights among traffic vehicles
+
+    //draw tlight
+    if (tlight != nullptr) {
+        //draw brake copy
+        if (brake < 0.f || speed == 0.f)
+            tlight->Draw(shaders);
+        //draw headlight copy
+        if (lightsActive)
+            tlight->Draw(shaders);
+    }
+
+    //draw signals
+    if (toggleSignal & 1) {
+        if ((signalClock + signalDelayTime) & 8) {
+            if (slight0 != nullptr)
+                slight0->Draw(shaders);
+        }
+    }
+    if (toggleSignal & 2) {
+        if ((signalClock + signalDelayTime) & 8) {
+            if (slight1 != nullptr)
+                slight1->Draw(shaders);
+        }
+    }
+
+    //draw headlights
+    if (ambientHeadlightStyle < 3) {
+        if (ambientHeadlightStyle == 0 || ambientHeadlightStyle == 2) {
+            //MM2 headlights
+            if (lightsActive) {
+                //call original
+                ageHook::Thunk<0x552930>::Call<void>(this);
+            }
+        }
+        if (ambientHeadlightStyle == 1 || ambientHeadlightStyle == 2) {
+            //MM1 headlights
+            Matrix44::Convert(gfxRenderState::sm_World, &carMatrix);
+            *(int*)0x685778 |= 0x88; //set m_Touched
+
+            if (hlight != nullptr && lightsActive) {
+                hlight->Draw(shaders);
+            }
+        }
+    }
+}
+
+void aiVehicleInstanceFeatureHandler::Install() {
+    ambientHeadlightStyle = cfgAmbientHeadlightStyle.Get();
+    InstallVTableHook("aiVehicleInstance::DrawGlow",
+        &DrawGlow, {
+            0x5B5944
+        }
+    );
+
+    // remove Angels tlight
+    InstallPatch({ 0xEB }, {
+        0x552995,
+    });
+
+    // remove Angels slight0
+    InstallPatch({ 0xEB }, {
+        0x5529F2,
+    });
+
+    // remove Angels slight1
+    InstallPatch({ 0xEB }, {
+        0x552A2E,
+    });
 }
 
 #ifndef FEATURES_DECLARED

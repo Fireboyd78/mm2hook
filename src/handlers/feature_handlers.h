@@ -15,6 +15,7 @@ static ConfigValue<bool> cfgUseAllTrafficColors     ("UseAllTrafficColors",     
 static ConfigValue<bool> cfgAmbientSoundsWithMusic  ("AmbientSoundsWithMusic",  true);
 static ConfigValue<bool> cfgFlashingHeadlights      ("FlashingHeadlights",      true);
 static ConfigValue<bool> cfgEnableSignals           ("EnableSignalLights",      false);
+static ConfigValue<int> cfgAmbientHeadlightStyle    ("AmbientHeadlightStyle",   0);
 static ConfigValue<int> cfgHeadlightStyle           ("HeadlightStyle",          0);
 static ConfigValue<int> cfgSirenStyle               ("SirenStyle",              0);
 static ConfigValue<float> cfgSirenCycleRate         ("SirenCycle",    0.25f);
@@ -288,6 +289,12 @@ public:
     void aiMapClean();
     void aiMapInit(char* a1, char* a2, char* a3, const MM2::dgStatePack* a4, int a5, MM2::vehCar* a6, bool a7);
 
+    static void Install();
+};
+
+class aiVehicleInstanceFeatureHandler {
+public:
+    void DrawGlow();
     static void Install();
 };
 
