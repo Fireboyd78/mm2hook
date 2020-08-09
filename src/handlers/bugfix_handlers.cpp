@@ -275,7 +275,6 @@ void vehCarBugfixHandler::Update() {
     // fixes ai cops and opponents have no brakes if they're damaged out
     if (curDamage >= maxDamage) {
         carsim->setBrake(1.f);
-        transmission->SetNeutral();
     }
 
     // attach drive train if we just hit throttle
