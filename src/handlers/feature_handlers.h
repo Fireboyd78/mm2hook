@@ -8,6 +8,7 @@
 #include "..\events\dispatcher.h"
 
 static bool g_bConsoleOpen;
+static bool showMeCops;
 
 static ConfigValue<bool> cfgInstantReplay           ("InstantReplay",           true);
 static ConfigValue<bool> cfgUseAllParkedCars        ("UseAllParkedCars",        true);

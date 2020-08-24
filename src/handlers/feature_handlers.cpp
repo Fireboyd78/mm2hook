@@ -1390,6 +1390,12 @@ void mmGameHandler::SendChatMessage(char *message) {
                 }
             }
         }
+        if (!strcmp(message, "/fuzz")) {
+            if (showMeCops)
+                showMeCops = false;
+            else
+                showMeCops = true;
+        }
 
         //send to dispatcher
         GameEventDispatcher::onChatMessage(message);
@@ -1922,7 +1928,7 @@ void mmHudMapFeatureHandler::DrawCops() {
         WORD pursuitState = *getPtr<WORD>(cop, 0x977A);
 
         // check if the cop in pursuit
-        if (pursuitState != 0) {
+        if (pursuitState || showMeCops) {
             if (hudMapColorStyle < 5) {
                 // draw triangle outline
                 float triSize = *getPtr<float>(this, 0x64) * 1.3f;
@@ -1947,7 +1953,7 @@ void mmHudMapFeatureHandler::DrawCops() {
                         DrawIcon(1, copMtx);
                     if (elapsedTime2)
                         DrawIcon(-1, copMtx);
-                    if (pursuitState == 12)
+                    if (pursuitState == 12 || pursuitState == 0)
                         DrawIcon(-1, copMtx);
                 }
                 if (hudMapColorStyle == 3) {
@@ -1958,7 +1964,7 @@ void mmHudMapFeatureHandler::DrawCops() {
                         DrawIcon(1, copMtx);
                     if (elapsedTime2)
                         DrawIcon(-1, copMtx);
-                    if (pursuitState == 12)
+                    if (pursuitState == 12 || pursuitState == 0)
                         DrawIcon(4, copMtx);
                 }
                 if (hudMapColorStyle == 4) {
