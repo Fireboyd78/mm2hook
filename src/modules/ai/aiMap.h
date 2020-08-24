@@ -203,6 +203,8 @@ namespace MM2
         */
         AGE_API void Dump(void)                              { ageHook::Thunk<0x538840>::Call<void>(this); }
         AGE_API void TestProbes(BOOL a2)                     { ageHook::Thunk<0x53B870>::Call<void>(this, a2); }
+        AGE_API aiRouteRacer * Opponent(int num)             { return ageHook::Thunk<0x534940>::Call<aiRouteRacer *>(this, num); }
+        AGE_API aiPoliceOfficer * Police(int num)            { return ageHook::Thunk<0x5348F0>::Call<aiPoliceOfficer *>(this, num); }
         AGE_API aiVehicleAmbient * Vehicle(int num)          { return ageHook::Thunk<0x5348B0>::Call<aiVehicleAmbient *>(this, num); }
         AGE_API aiPedestrian * Pedestrian(int num)           { return ageHook::Thunk<0x534AB0>::Call<aiPedestrian *>(this, num); }
         AGE_API aiIntersection* Intersection(int num)        { return ageHook::Thunk<0x534880>::Call<aiIntersection*>(this, num); }
@@ -214,6 +216,8 @@ namespace MM2
                 .addFunction("TestProbes", &TestProbes, LUA_ARGS(bool))
                 .addFunction("Pedestrian", &Pedestrian)
                 .addFunction("Path", &Path)
+                .addFunction("Police", &Police)
+                .addFunction("Opponent", &Opponent)
                 .addFunction("Intersection", &Intersection)
                 .addFunction("Vehicle", &Vehicle)
                 .addPropertyReadOnly("Stats", &getStats)

@@ -28,6 +28,8 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<gizFerryHandler>("gizFerry"),
     CreateHandler<gizParkedCarMgrHandler>("gizParkedCarMgr"),
 
+    CreateHandler<mmHudMapFeatureHandler>("mmHudMapFeatureHandler"),
+    CreateHandler<mmIconsHandler>("mmIconsHandler"),
     CreateHandler<mmDashViewHandler>("mmDashView"),
     CreateHandler<mmDirSndHandler>("mmDirSnd"),
     CreateHandler<mmPlayerHandler>("mmPlayer"),
@@ -1698,6 +1700,501 @@ void BridgeFerryHandler::Install() {
         0x5B5FB8, // gizBridge::Draw
         0x5B61AC, // gizFerry::Draw
     });
+}
+
+/*
+    mmHudMapFeatureHandler
+*/
+int hudMapColorStyle = 0;
+int playerTriColor = 5;
+int playerTriOutlineColor = 0;
+int policeTriColor = 1;
+int policeTriOutlineColor = 0;
+int opponentTriColor = 7;
+int opponentTriOutlineColor = 0;
+
+static ConfigValue<int> cfgHudMapColorStyle          ("HudMapColorStyle",          0);
+static ConfigValue<int> cfgPlayerTriColor            ("PlayerTriColor",            5);
+static ConfigValue<int> cfgPlayerTriOutlineColor     ("PlayerTriOutlineColor",     0);
+static ConfigValue<int> cfgPoliceTriColor            ("PoliceTriColor",            1);
+static ConfigValue<int> cfgPoliceTriOutlineColor     ("PoliceTriOutlineColor",     0);
+static ConfigValue<int> cfgOpponentTriColor          ("OpponentTriColor",          7);
+static ConfigValue<int> cfgOpponentTriOutlineColor   ("OpponentTriOutlineColor",   0);
+
+void mmHudMapFeatureHandler::DrawColoredTri(unsigned int color, const Matrix34 *a2) {
+    rglEnableDisable(RGLTOKEN_TYPE1, 0);
+    Matrix44::Convert(gfxRenderState::sm_World, a2);
+    *(int*)0x685778 |= 0x88;
+    vglBindTexture(0);
+    vglBegin(DRAWMODE_TRIANGLELIST, 0);
+    vglCurrentColor = color;
+    vglVertex(0.f, 0.f, -1.f);
+    vglVertex(-0.69999999f, 0.f, 1.f);
+    vglVertex(0.69999999f, 0.f, 1.f);
+    vglEnd();
+    rglEnableDisable(RGLTOKEN_TYPE2, 1);
+}
+
+void mmHudMapFeatureHandler::DrawWhiteTri(const Matrix34 *a1) {
+    rglEnableDisable(RGLTOKEN_TYPE1, 0);
+    Matrix44::Convert(gfxRenderState::sm_World, a1);
+    *(int*)0x685778 |= 0x88;
+    vglBindTexture(0);
+    vglBegin(DRAWMODE_TRIANGLELIST, 0);
+    vglCurrentColor = 0xFFFFFFFF;
+    vglVertex(0.f, 0.f, -1.f);
+    vglVertex(-0.69999999f, 0.f, 1.f);
+    vglVertex(0.69999999f, 0.f, 1.f);
+    vglEnd();
+    rglEnableDisable(RGLTOKEN_TYPE2, 1);
+}
+
+void mmHudMapFeatureHandler::DrawLightOrangeTri(const Matrix34 *a1) {
+    rglEnableDisable(RGLTOKEN_TYPE1, 0);
+    Matrix44::Convert(gfxRenderState::sm_World, a1);
+    *(int*)0x685778 |= 0x88;
+    vglBindTexture(0);
+    vglBegin(DRAWMODE_TRIANGLELIST, 0);
+    vglCurrentColor = 0xFFFDBF72;
+    vglVertex(0.f, 0.f, -1.f);
+    vglVertex(-0.69999999f, 0.f, 1.f);
+    vglVertex(0.69999999f, 0.f, 1.f);
+    vglEnd();
+    rglEnableDisable(RGLTOKEN_TYPE2, 1);
+}
+
+void mmHudMapFeatureHandler::DrawLightGreenTri(const Matrix34 *a1) {
+    rglEnableDisable(RGLTOKEN_TYPE1, 0);
+    Matrix44::Convert(gfxRenderState::sm_World, a1);
+    *(int*)0x685778 |= 0x88;
+    vglBindTexture(0);
+    vglBegin(DRAWMODE_TRIANGLELIST, 0);
+    vglCurrentColor = 0xFFC0EC42;
+    vglVertex(0.f, 0.f, -1.f);
+    vglVertex(-0.69999999f, 0.f, 1.f);
+    vglVertex(0.69999999f, 0.f, 1.f);
+    vglEnd();
+    rglEnableDisable(RGLTOKEN_TYPE2, 1);
+}
+
+ageHook::Type<unsigned int> HudmapIconColors(0x5C4740);
+ageHook::Type<Vector3> YAXIS(0x6A3B28);
+
+void mmHudMapFeatureHandler::DrawIcon(int iconType, const Matrix34 *matrix) {
+    auto mtx = getPtr<Matrix34>(&matrix, 0x64);
+    mtx->Set(matrix);
+
+    mtx->m10 = YAXIS->X;
+    mtx->m11 = YAXIS->Y;
+    mtx->m12 = YAXIS->Z;
+    mtx->Normalize();
+
+    mtx->m31 += 15.f;
+    mtx->Scale(*getPtr<float>(this, 0x64));
+
+    uint color = *HudmapIconColors[iconType];
+
+    if (iconType >= 0)
+        DrawColoredTri(color, mtx);
+    if (iconType < 0)
+        DrawWhiteTri(mtx);
+}
+
+void mmHudMapFeatureHandler::DrawNfsMwPlayerIcon(const Matrix34 *matrix) {
+    auto mtx = getPtr<Matrix34>(&matrix, 0x64);
+    mtx->Set(matrix);
+
+    mtx->m10 = YAXIS->X;
+    mtx->m11 = YAXIS->Y;
+    mtx->m12 = YAXIS->Z;
+    mtx->Normalize();
+
+    mtx->m31 += 15.f;
+    mtx->Scale(*getPtr<float>(this, 0x64));
+
+    DrawLightOrangeTri(mtx);
+}
+
+void mmHudMapFeatureHandler::DrawNfsMwOpponentIcon(const Matrix34 *matrix) {
+    auto mtx = getPtr<Matrix34>(&matrix, 0x64);
+    mtx->Set(matrix);
+
+    mtx->m10 = YAXIS->X;
+    mtx->m11 = YAXIS->Y;
+    mtx->m12 = YAXIS->Z;
+    mtx->Normalize();
+
+    mtx->m31 += 15.f;
+    mtx->Scale(*getPtr<float>(this, 0x64));
+
+    DrawLightGreenTri(mtx);
+}
+
+void mmHudMapFeatureHandler::DrawPlayer() {
+    auto mgr = *mmGameManager::Instance;
+    auto game = mgr->getGame();
+    auto player = game->getPlayer();
+    auto car = player->getCar();
+    auto audio = car->getAudio();
+    auto siren = car->getSiren();
+    char *vehName = car->getCarDamage()->GetName();
+    bool elapsedTime1 = fmod(datTimeManager::ElapsedTime, 0.15f) > 0.1f;
+    bool elapsedTime2 = fmod(datTimeManager::ElapsedTime, 0.125f) > 0.1f;
+
+    if (hudMapColorStyle < 5) {
+        // draw triangle outline
+        auto playerMtx = *getPtr<Matrix34*>(this, 0x48);
+        float triSize = *getPtr<float>(this, 0x64) * 1.3f;
+        auto sizeHandler = *getPtr<Matrix34*>(this, 0x64);
+        *getPtr<float>(this, 0x64) = triSize;
+
+        if (hudMapColorStyle == 0) {
+            DrawIcon(0, playerMtx);
+            *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+            DrawIcon(5, playerMtx);
+        }
+        if (hudMapColorStyle == 1) {
+            if (audio->IsPolice(vehName)) {
+                DrawIcon(2, playerMtx);
+                *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+                DrawIcon(1, playerMtx);
+            }
+            if (!audio->IsPolice(vehName)) {
+                DrawIcon(0, playerMtx);
+                *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+                DrawIcon(-1, playerMtx);
+            }
+        }
+        if (hudMapColorStyle == 2) {
+            DrawIcon(0, playerMtx);
+            *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+            if (audio->IsPolice(vehName)) {
+                if (siren != nullptr && siren->Active) {
+                    DrawIcon(2, playerMtx);
+                    if (elapsedTime1)
+                        DrawIcon(1, playerMtx);
+                    if (elapsedTime2)
+                        DrawIcon(-1, playerMtx);
+                }
+                if (siren != nullptr && !siren->Active) {
+                    DrawIcon(-1, playerMtx);
+                }
+            }
+            if (!audio->IsPolice(vehName)) {
+                DrawNfsMwPlayerIcon(playerMtx);
+            }
+        }
+        if (hudMapColorStyle == 3) {
+            DrawIcon(0, playerMtx);
+            *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+            if (audio->IsPolice(vehName)) {
+                if (siren != nullptr && siren->Active) {
+                    DrawIcon(2, playerMtx);
+                    if (elapsedTime1)
+                        DrawIcon(1, playerMtx);
+                    if (elapsedTime2)
+                        DrawIcon(-1, playerMtx);
+                }
+                if (siren != nullptr && !siren->Active) {
+                    DrawIcon(4, playerMtx);
+                }
+            }
+            if (!audio->IsPolice(vehName)) {
+                DrawIcon(8, playerMtx);
+            }
+        }
+        if (hudMapColorStyle == 4) {
+            DrawIcon(playerTriOutlineColor, playerMtx);
+            *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+            DrawIcon(playerTriColor, playerMtx);
+        }
+    }
+}
+
+void mmHudMapFeatureHandler::DrawCops() {
+    auto AIMAP = &aiMap::Instance;
+    bool elapsedTime1 = fmod(datTimeManager::ElapsedTime, 0.15f) > 0.1f;
+    bool elapsedTime2 = fmod(datTimeManager::ElapsedTime, 0.125f) > 0.1f;
+
+    for (int i = 0; i < AIMAP->numCops; i++) {
+        auto cop = AIMAP->Police(i);
+        auto copMtx = getPtr<Matrix34>(*getPtr<Matrix34*>(cop, 0xCC), 0x6C);
+        WORD pursuitState = *getPtr<WORD>(cop, 0x977A);
+
+        // check if the cop in pursuit
+        if (pursuitState != 0) {
+            if (hudMapColorStyle < 5) {
+                // draw triangle outline
+                float triSize = *getPtr<float>(this, 0x64) * 1.3f;
+                auto sizeHandler = *getPtr<Matrix34*>(this, 0x64);
+                *getPtr<float>(this, 0x64) = triSize;
+
+                if (hudMapColorStyle == 0) {
+                    DrawIcon(0, copMtx);
+                    *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+                    DrawIcon(1, copMtx);
+                }
+                if (hudMapColorStyle == 1) {
+                    DrawIcon(2, copMtx);
+                    *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+                    DrawIcon(1, copMtx);
+                }
+                if (hudMapColorStyle == 2) {
+                    DrawIcon(0, copMtx);
+                    *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+                    DrawIcon(2, copMtx);
+                    if (elapsedTime1)
+                        DrawIcon(1, copMtx);
+                    if (elapsedTime2)
+                        DrawIcon(-1, copMtx);
+                    if (pursuitState == 12)
+                        DrawIcon(-1, copMtx);
+                }
+                if (hudMapColorStyle == 3) {
+                    DrawIcon(0, copMtx);
+                    *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+                    DrawIcon(2, copMtx);
+                    if (elapsedTime1)
+                        DrawIcon(1, copMtx);
+                    if (elapsedTime2)
+                        DrawIcon(-1, copMtx);
+                    if (pursuitState == 12)
+                        DrawIcon(4, copMtx);
+                }
+                if (hudMapColorStyle == 4) {
+                    DrawIcon(policeTriOutlineColor, copMtx);
+                    *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+                    DrawIcon(policeTriColor, copMtx);
+                }
+            }
+        }
+    }
+}
+
+void mmHudMapFeatureHandler::DrawOpponents() {
+    auto AIMAP = &aiMap::Instance;
+    int v1 = 0;
+
+    if (*getPtr<int>(this, 0xBC) > 0) {
+        for (int i = 0; i < *getPtr<__int16>(this, 0xBC); i++) {
+            int v2 = v1 + *getPtr<int>(this, 0x34);
+            auto oppMtx = *(Matrix34**)(v2 + 8);
+
+            if (*(int*)(v2 + 4)) {
+                // draw triangle outline
+                float triSize = *getPtr<float>(this, 0x64) * 1.3f;
+                auto sizeHandler = *getPtr<Matrix34*>(this, 0x64);
+                *getPtr<float>(this, 0x64) = triSize;
+
+                // check if we're in multiplayer
+                if (MMSTATE->unk_EC) {
+                    DrawIcon(0, oppMtx);
+                    *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+                    DrawIcon(i + 2, oppMtx);
+                }
+                if (!MMSTATE->unk_EC) {
+                    auto opp = AIMAP->Opponent(i);
+                    auto car = opp->getCar();
+                    auto curDamage = car->getCarDamage()->getCurDamage();
+                    auto maxDamage = car->getCarDamage()->getMaxDamage();
+
+                    if (hudMapColorStyle < 5) {
+                        if (curDamage < maxDamage) {
+                            if (hudMapColorStyle == 0) {
+                                DrawIcon(0, oppMtx);
+                                *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+                                DrawIcon(7, oppMtx);
+                            }
+                            if (hudMapColorStyle == 1) {
+                                DrawIcon(0, oppMtx);
+                                *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+                                DrawIcon(i + 2, oppMtx);
+                            }
+                            if (hudMapColorStyle == 2) {
+                                DrawIcon(0, oppMtx);
+                                *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+                                DrawNfsMwOpponentIcon(oppMtx);
+                            }
+                            if (hudMapColorStyle == 3) {
+                                DrawIcon(0, oppMtx);
+                                *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+                                DrawIcon(6, oppMtx);
+                            }
+                            if (hudMapColorStyle == 4) {
+                                DrawIcon(opponentTriOutlineColor, oppMtx);
+                                *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+                                DrawIcon(opponentTriColor, oppMtx);
+                            }
+                        }
+                        if (curDamage >= maxDamage) {
+                            DrawIcon(0, oppMtx);
+                            *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+                            DrawIcon(16, oppMtx);
+                        }
+                    }
+                }
+            }
+            v1 += 40;
+        }
+    }
+}
+
+void mmHudMapFeatureHandler::Install() {
+    hudMapColorStyle = cfgHudMapColorStyle.Get();
+    playerTriColor = cfgPlayerTriColor.Get();
+    playerTriOutlineColor = cfgPlayerTriOutlineColor.Get();
+    policeTriColor = cfgPoliceTriColor.Get();
+    policeTriOutlineColor = cfgPoliceTriOutlineColor.Get();
+    opponentTriColor = cfgOpponentTriColor.Get();
+    opponentTriOutlineColor = cfgOpponentTriOutlineColor.Get();
+
+    InstallCallback("mmHudMap::DrawPlayer",
+        &DrawPlayer, {
+            cbHook<CALL>(0x42F527),
+        }
+    );
+
+    InstallCallback("mmHudMap::DrawCops",
+        &DrawCops, {
+            cbHook<CALL>(0x42F519),
+        }
+    );
+
+    InstallCallback("mmHudMap::DrawOpponents",
+        &DrawOpponents, {
+            cbHook<CALL>(0x42F520),
+        }
+    );
+}
+
+/*
+    mmIconsHandler
+*/
+int opponentIconStyle = 0;
+int opponentIconColor = 5;
+int blitzIconColor = 6;
+bool blitzIconMultiColor = false;
+bool opponentIconTransparency = false;
+bool blitzIconTransparency = false;
+
+static ConfigValue<bool> cfgBlitzIconMultiColor        ("BlitzIconMultiColor",         false);
+static ConfigValue<bool> cfgOpponentIconTransparency   ("OpponentIconTransparency",    false);
+static ConfigValue<bool> cfgBlitzIconTransparency      ("BlitzIconTransparency",       false);
+static ConfigValue<int> cfgOpponentIconStyle           ("OpponentIconStyle",           0);
+static ConfigValue<int> cfgOpponentIconColor           ("OpponentIconColor",           5);
+static ConfigValue<int> cfgBlitzIconColor              ("BlitzIconColor",              6);
+
+unsigned int IconColors[8] = {
+    0xFF0000EF, // Blue
+    0xFF00EF00, // Green
+    0xFFEF0000, // Red
+    0xFFFFFF00, // Yellow
+    0xFFFF5A00, // Orange
+    0xFFB400FF, // Purple
+    0xFF00FFFF, // Aqua
+    0xFFFF0390, // Pink
+};
+
+unsigned int SemiTransIconColors[8] = {
+    0x800000EF, // Blue
+    0x8000EF00, // Green
+    0x80EF0000, // Red
+    0x80FFFF00, // Yellow
+    0x80FF5A00, // Orange
+    0x80B400FF, // Purple
+    0x8000FFFF, // Aqua
+    0x80FF0390, // Pink
+};
+
+void mmIconsHandler::RegisterOpponents(OppIconInfo *icons, int count, void *a3) {
+    for (int i = 0; i < count; i++) {
+        if (opponentIconTransparency) {
+            if (opponentIconStyle < 5) {
+                if (opponentIconStyle == 0) {
+                    icons[i].color = SemiTransIconColors[5];
+                }
+                if (opponentIconStyle == 1) {
+                    icons[i].color = SemiTransIconColors[i];
+                }
+                if (opponentIconStyle == 2) {
+                    icons[i].color = 0x80C0EC42; // semi-transparent Light Green
+                }
+                if (opponentIconStyle == 3) {
+                    icons[i].color = SemiTransIconColors[4];
+                }
+                if (opponentIconStyle == 4) {
+                    icons[i].color = SemiTransIconColors[opponentIconColor];
+                }
+            }
+        }
+        if (!opponentIconTransparency) {
+            if (opponentIconStyle < 5) {
+                if (opponentIconStyle == 0) {
+                    icons[i].color = IconColors[5];
+                }
+                if (opponentIconStyle == 1) {
+                    icons[i].color = IconColors[i];
+                }
+                if (opponentIconStyle == 2) {
+                    icons[i].color = 0xFFC0EC42; // Light Green
+                }
+                if (opponentIconStyle == 3) {
+                    icons[i].color = IconColors[4];
+                }
+                if (opponentIconStyle == 4) {
+                    icons[i].color = IconColors[opponentIconColor];
+                }
+            }
+        }
+    }
+
+    //call original
+    ageHook::Thunk<0x4322F0>::Call<void>(this, icons, count, a3);
+}
+
+void mmIconsHandler::RegisterOpponents_Blitz(OppIconInfo *icons, int count, void *a3) {
+    for (int i = 0; i < count; i++) {
+        if (blitzIconTransparency) {
+            if (blitzIconMultiColor) {
+                icons[i].color = SemiTransIconColors[i];
+            }
+            if (!blitzIconMultiColor) {
+                icons[i].color = SemiTransIconColors[blitzIconColor];
+            }
+        }
+        if (!blitzIconTransparency) {
+            if (blitzIconMultiColor) {
+                icons[i].color = IconColors[i];
+            }
+            if (!blitzIconMultiColor) {
+                icons[i].color = IconColors[blitzIconColor];
+            }
+        }
+    }
+
+    //call original
+    ageHook::Thunk<0x4322F0>::Call<void>(this, icons, count, a3);
+}
+
+void mmIconsHandler::Install() {
+    opponentIconStyle = cfgOpponentIconStyle.Get();
+    opponentIconColor = cfgOpponentIconColor.Get();
+    opponentIconTransparency = cfgOpponentIconTransparency.Get();
+    blitzIconColor = cfgBlitzIconColor.Get();
+    blitzIconMultiColor = cfgBlitzIconMultiColor.Get();
+    blitzIconTransparency = cfgBlitzIconTransparency.Get();
+
+    InstallCallback("mmIcons::RegisterOpponents",
+        &RegisterOpponents, {
+            cbHook<CALL>(0x412C40), // mmGame::Init
+        }
+    );
+
+    InstallCallback("mmIcons::RegisterOpponents [mmSingleBlitz]",
+        &RegisterOpponents_Blitz, {
+            cbHook<CALL>(0x41B065), // mmSingleBlitz::Init
+        }
+    );
 }
 
 /*
