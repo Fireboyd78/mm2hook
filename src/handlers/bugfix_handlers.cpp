@@ -29,7 +29,8 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<vehTrailerHandler>("vehTrailer"),
     CreateHandler<vehTrailerInstanceHandler>("vehTrailerInstance"),
     CreateHandler<vehPoliceCarAudioBugfixHandler>("vehPoliceCarAudio"),
-    CreateHandler <vehSemiCarAudioBugfixHandler>("vehSemiCarAudio"),
+    CreateHandler<vehSemiCarAudioBugfixHandler>("vehSemiCarAudio"),
+    CreateHandler<mmDashViewBugfixHandler>("mmDashViewBugfix"),
     CreateHandler<mmPlayerBugfixHandler>("mmPlayer"),
     CreateHandler<mmGearIndicatorHandler>("mmGearIndicator"),
     CreateHandler<mmSpeedIndicatorHandler>("mmSpeedIndicator"),
@@ -1295,6 +1296,32 @@ void modShaderHandler::Install()
         InstallPatch({ 0x03 }, {
             (0x4A4243 + 0x03),
         });
+    }
+}
+
+/*
+    mmDashViewBugfixHandler
+*/
+
+void mmDashViewBugfixHandler::Init(char *basename, mmPlayer *a2)
+{
+    //check if dashboard model is missing
+    string_buf<80> buffer("%s_dash", basename);
+    if (!datAssetManager::Exists("geometry", buffer, "pkg"))
+        basename = "vpcaddie"; //set vpcaddie's dash as a default dashboard
+
+    //call original
+    ageHook::Thunk<0x430890>::Call<void>(this, basename, a2);
+}
+
+void mmDashViewBugfixHandler::Install()
+{
+    if (cfgMissingDashboardFix.Get()) {
+        InstallCallback("mmDashView::Init", "Fixes missing dashboard",
+            &Init, {
+                cbHook<CALL>(0x42D60B),
+            }
+        );
     }
 }
 

@@ -6,6 +6,7 @@
 
 static ConfigValue<bool> cfgBoundSphereCalculation  ("BoundSphereCalculationFix", true);
 static ConfigValue<bool> cfgAirbrakeFix             ("AirbrakeFix",               true);
+static ConfigValue<bool> cfgMissingDashboardFix     ("MissingDashboardFix",       true);
 
 class gfxImageHandler
 {
@@ -228,6 +229,12 @@ public:
 class mmMirrorHandler {
 public:
     void Cull();
+    static void Install();
+};
+
+class mmDashViewBugfixHandler {
+public:
+    void Init(char *basename, MM2::mmPlayer *a2);
     static void Install();
 };
 
