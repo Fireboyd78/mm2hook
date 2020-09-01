@@ -272,6 +272,13 @@ namespace MM2
         gfxBitmap *Next;
     };
 
+    class gfxPipeline {
+    public:
+        static void CopyBitmap(int destX, int destY, gfxBitmap* bitmap, int srcX, int srcY, int width, int height, bool srcColorKey) {
+            ageHook::StaticThunk<0x4AB4C0>::Call<void>(destX, destY, bitmap, srcX, srcY, width, height, srcColorKey);
+        }
+    };
+
     // yes, this is actually how it is in MM2
     // seems like Angel moved everything to gfxPacket
 

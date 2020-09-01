@@ -492,7 +492,7 @@ void mmGearIndicatorHandler::Draw() {
     int width = *getPtr<unsigned __int16>(bitmap, 4);
     int height = *getPtr<unsigned __int16>(bitmap, 6);
 
-    return ageHook::StaticThunk<0x4AB4C0>::Call<void>(
+    gfxPipeline::CopyBitmap(
         v1 + v4,     // destX
         v2 + v5,     // destY
         bitmap,      // bitmap
