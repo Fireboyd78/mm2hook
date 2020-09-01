@@ -324,7 +324,7 @@ void vehCarAudioHandler::Update() {
     
     // grab only forward/sideways velocity, ignore vertical
     auto vehicleVelo = carSim->getInstance()->GetVelocity();
-    float vehicleMph = sqrt((vehicleVelo->X * vehicleVelo->X) + (vehicleVelo->Z * vehicleVelo->Z)) * 2.23694f;
+    float vehicleMph = sqrtf((vehicleVelo->X * vehicleVelo->X) + (vehicleVelo->Z * vehicleVelo->Z)) * 2.23694f;
 
     //update timer
     if (carSim->OnGround() || carSim->BottomedOut() || vehicleMph < carAirborneSpeedThreshold) 
@@ -1015,7 +1015,7 @@ static float pedAnimFPS         = (1000.0f / pedAnimFrameRate);
 void pedAnimationInstanceHandler::PreUpdate(float seconds) {
     FrameFraction -= (seconds * -pedAnimFPS);
 
-    float delta = floor(FrameFraction);
+    float delta = floorf(FrameFraction);
 
     FrameDelta = (int)delta;
     FrameFraction -= delta;
@@ -1384,13 +1384,13 @@ void phBoundBugfixHandler::CalculateSphereFromBoundingBox()
     }
 
     //calculate sphere
-    float sizeX = fmax(fabs(*centerXPtr - *bboxMaxXPtr), fabs(*centerXPtr - *bboxMinXPtr));
-    float sizeY = fmax(fabs(*centerYPtr - *bboxMaxYPtr), fabs(*centerYPtr - *bboxMinYPtr));
-    float sizeZ = fmax(fabs(*centerZPtr - *bboxMaxZPtr), fabs(*centerZPtr - *bboxMinZPtr));
+    float sizeX = fmaxf(fabsf(*centerXPtr - *bboxMaxXPtr), fabsf(*centerXPtr - *bboxMinXPtr));
+    float sizeY = fmaxf(fabsf(*centerYPtr - *bboxMaxYPtr), fabsf(*centerYPtr - *bboxMinYPtr));
+    float sizeZ = fmaxf(fabsf(*centerZPtr - *bboxMaxZPtr), fabsf(*centerZPtr - *bboxMinZPtr));
 
     //set original size multiplied by the value needed to *fully enclose* the bound in the worst case situations
     float* boundingSpherePtr = getPtr<float>(this, 0x34);
-    *boundingSpherePtr = sqrt(sizeZ * sizeZ + sizeY * sizeY + sizeX * sizeX) * 1.412f;
+    *boundingSpherePtr = sqrtf(sizeZ * sizeZ + sizeY * sizeY + sizeX * sizeX) * 1.412f;
 }
 
 void phBoundBugfixHandler::Install()

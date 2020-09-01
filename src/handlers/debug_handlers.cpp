@@ -86,7 +86,7 @@ void vehWheelDebugHandler::Cull()
     float slipAmt = *getPtr<float>(this, 0x220);
 
     wheelDebugPos.X = wheelMatrixPtr->m30;
-    wheelDebugPos.Y = wheelMatrixPtr->m31 + fabs(wheelRadius) + 0.5f;
+    wheelDebugPos.Y = wheelMatrixPtr->m31 + fabsf(wheelRadius) + 0.5f;
     wheelDebugPos.Z = wheelMatrixPtr->m32;
 
     vglDrawLabelf(wheelDebugPos, "s_travel %.2f\ns_rate %.2f\ns_forcea %.2f\ns_forceb %.2f\np_disp %.2f\np_fric %.2f\nw_slipping %s\nw_slipamt %.2f", targetTravel, compressRate, sforce1, sforce2, pbumpdisp, pfric, slipBool, slipAmt);

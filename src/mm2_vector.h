@@ -131,8 +131,8 @@ namespace MM2
 
         void MakeRotateZ(float angle) {
             this->m02 = 0.0;
-            float v2 = sin(angle);
-            float v3 = cos(angle);
+            float v2 = sinf(angle);
+            float v3 = cosf(angle);
             this->m00 = *(float*)&v3;
             this->m01 = v2;
             this->m10 = -v2;
@@ -144,9 +144,9 @@ namespace MM2
         }
 
         void MakeRotateY(float angle) {
-            float v2 = cos(angle);
+            float v2 = cosf(angle);
             this->m01 = 0.0;
-            float v3 = sin(angle);
+            float v3 = sinf(angle);
             this->m00 = v2;
             this->m02 = -v3;
             this->m10 = 0.0;
@@ -162,8 +162,8 @@ namespace MM2
             this->m01 = 0.0;
             this->m02 = 0.0;
             this->m10 = 0.0;
-            float v2 = sin(angle);
-            float v3 = cos(angle);
+            float v2 = sinf(angle);
+            float v3 = cosf(angle);
             this->m11 = v3;
             this->m12 = v2;
             this->m21 = -v2;
@@ -213,7 +213,7 @@ namespace MM2
             this->m01 = v16;
             this->m02 = v1 - v2;
             float v3 = this->m02 * this->m02 + v16 * v16 + v17 * v17;
-            float v4 = (v3 == 0.0f) ? 0.0f : 1.0f / sqrt(v3);
+            float v4 = (v3 == 0.0f) ? 0.0f : 1.0f / sqrtf(v3);
             float v5 = v4 * v17;
             this->m00 = v5;
             float v6 = v4 * v16;
@@ -228,12 +228,12 @@ namespace MM2
             this->m12 = v10 - v11;
             this->m10 = v8;
             float v12 = this->m10 * this->m10 + this->m11 * this->m11 + this->m12 * this->m12;
-            float v13 = (v12 == 0.0f) ? 0.0f : 1.0f / sqrt(v12);
+            float v13 = (v12 == 0.0f) ? 0.0f : 1.0f / sqrtf(v12);
             this->m10 = v13 * this->m10;
             this->m11 = v13 * this->m11;
             this->m12 = v13 * this->m12;
             float v14 = this->m20 * this->m20 + this->m21 * this->m21 + this->m22 * this->m22;
-            float v15 = (v14 == 0.0f) ? 0.0f : 1.0f / sqrt(v14);
+            float v15 = (v14 == 0.0f) ? 0.0f : 1.0f / sqrtf(v14);
             this->m20 = v15 * this->m20;
             this->m21 = v15 * this->m21;
             this->m22 = v15 * this->m22;

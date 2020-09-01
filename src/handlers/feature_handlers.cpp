@@ -261,7 +261,7 @@ void cityLevelHandler::SetObjectDetail(int lod) {
     sdl_MedThresh = sdlMedThresh;
 
     // By default the game doesn't set this based on the detail level
-    float pedDrawThreshold = pow(HookConfig::GetProperty("PedestrianLod", 35.5f), 2) * (lod + 1);
+    float pedDrawThreshold = powf(HookConfig::GetProperty("PedestrianLod", 35.5f), 2) * (lod + 1);
     ped_LodThreshold = pedDrawThreshold;
     
     LogFile::Format("[cityLevel::SetObjectDetail]: '%s'\n"
@@ -3333,7 +3333,7 @@ float vehWheelHandler::GetBumpDisplacement(float a1)
     }
 
     //calculate wobble factor
-    float wheelAngleAbs = fmod(fabs(totalWheelAngle), 6.28f);
+    float wheelAngleAbs = fmodf(fabsf(totalWheelAngle), 6.28f);
     float wheelAngleSub = wheelAngleAbs;
     if (wheelAngleAbs > 3.14f) {
         wheelAngleSub = 3.14f - (wheelAngleAbs - 3.14f);
@@ -3341,7 +3341,7 @@ float vehWheelHandler::GetBumpDisplacement(float a1)
     float wheelWobbleFactor = (wheelAngleSub / 3.14f) * wobbleLimit;
 
     //return displacement - wobble
-    float dispSubtraction = fabs(wheelWobble) * wheelWobbleFactor;
+    float dispSubtraction = fabsf(wheelWobble) * wheelWobbleFactor;
     return displacement - dispSubtraction;
 }
 
