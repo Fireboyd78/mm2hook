@@ -548,6 +548,7 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
             }
         } return true;
 
+        // '[{'
         case VK_OEM_4: {
             // toggle left signal
             leftSignal = !leftSignal;
@@ -555,6 +556,7 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
             rightSignal = false;
         } return true;
 
+        // '\|'
         case VK_OEM_5: {
             // toggle hazard lights
             hazardLights = !hazardLights;
@@ -562,6 +564,7 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
             rightSignal = false;
         } return true;
 
+        // ']}'
         case VK_OEM_6: {
             // toggle right signal
             rightSignal = !rightSignal;
@@ -1803,55 +1806,53 @@ void mmHudMapFeatureHandler::DrawLightGreenTri(const Matrix34 *a1) {
 
 ageHook::Type<unsigned int> HudmapIconColors(0x5C4740);
 ageHook::Type<Vector3> YAXIS(0x6A3B28);
+Matrix34 mtx;
 
 void mmHudMapFeatureHandler::DrawIcon(int iconType, const Matrix34 *matrix) {
-    auto mtx = getPtr<Matrix34>(&matrix, 0x64);
-    mtx->Set(matrix);
+    mtx.Set(matrix);
 
-    mtx->m10 = YAXIS->X;
-    mtx->m11 = YAXIS->Y;
-    mtx->m12 = YAXIS->Z;
-    mtx->Normalize();
+    mtx.m10 = YAXIS->X;
+    mtx.m11 = YAXIS->Y;
+    mtx.m12 = YAXIS->Z;
+    mtx.Normalize();
 
-    mtx->m31 += 15.f;
-    mtx->Scale(*getPtr<float>(this, 0x64));
+    mtx.m31 += 15.f;
+    mtx.Scale(*getPtr<float>(this, 0x64));
 
     uint color = *HudmapIconColors[iconType];
 
     if (iconType >= 0)
-        DrawColoredTri(color, mtx);
+        DrawColoredTri(color, &mtx);
     if (iconType < 0)
-        DrawWhiteTri(mtx);
+        DrawWhiteTri(&mtx);
 }
 
 void mmHudMapFeatureHandler::DrawNfsMwPlayerIcon(const Matrix34 *matrix) {
-    auto mtx = getPtr<Matrix34>(&matrix, 0x64);
-    mtx->Set(matrix);
+    mtx.Set(matrix);
 
-    mtx->m10 = YAXIS->X;
-    mtx->m11 = YAXIS->Y;
-    mtx->m12 = YAXIS->Z;
-    mtx->Normalize();
+    mtx.m10 = YAXIS->X;
+    mtx.m11 = YAXIS->Y;
+    mtx.m12 = YAXIS->Z;
+    mtx.Normalize();
 
-    mtx->m31 += 15.f;
-    mtx->Scale(*getPtr<float>(this, 0x64));
+    mtx.m31 += 15.f;
+    mtx.Scale(*getPtr<float>(this, 0x64));
 
-    DrawLightOrangeTri(mtx);
+    DrawLightOrangeTri(&mtx);
 }
 
 void mmHudMapFeatureHandler::DrawNfsMwOpponentIcon(const Matrix34 *matrix) {
-    auto mtx = getPtr<Matrix34>(&matrix, 0x64);
-    mtx->Set(matrix);
+    mtx.Set(matrix);
 
-    mtx->m10 = YAXIS->X;
-    mtx->m11 = YAXIS->Y;
-    mtx->m12 = YAXIS->Z;
-    mtx->Normalize();
+    mtx.m10 = YAXIS->X;
+    mtx.m11 = YAXIS->Y;
+    mtx.m12 = YAXIS->Z;
+    mtx.Normalize();
 
-    mtx->m31 += 15.f;
-    mtx->Scale(*getPtr<float>(this, 0x64));
+    mtx.m31 += 15.f;
+    mtx.Scale(*getPtr<float>(this, 0x64));
 
-    DrawLightGreenTri(mtx);
+    DrawLightGreenTri(&mtx);
 }
 
 void mmHudMapFeatureHandler::DrawPlayer() {
