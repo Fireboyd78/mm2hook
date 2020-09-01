@@ -26,7 +26,10 @@ namespace MM2
         ageHook::Field<0x2E0, vehTransmission> _transmission;
         ageHook::Field<0x25C, vehEngine> _engine;
         ageHook::Field<0x3D4, vehDrivetrain> _drivetrain;
-        ageHook::Field<0x4B8, vehWheel> _wheel;
+        ageHook::Field<0x4B8, vehWheel> _whl0;
+        ageHook::Field<0x724, vehWheel> _whl1;
+        ageHook::Field<0x990, vehWheel> _whl2;
+        ageHook::Field<0xBFC, vehWheel> _whl3;
         ageHook::Field<0x154C, float> _brake;
         ageHook::Field<0x1550, float> _handbrake;
         ageHook::Field<0x1554, float> _steering;
@@ -83,8 +86,18 @@ namespace MM2
             return _drivetrain.ptr(this);
         }
 
-        inline vehWheel * getWheel(void) const {
-            return _wheel.ptr(this);
+        inline vehWheel * getWheel(int num) const {
+            switch (num) {
+            case 0:
+                return _whl0.ptr(this);
+            case 1:
+                return _whl1.ptr(this);
+            case 2:
+                return _whl2.ptr(this);
+            case 3:
+                return _whl3.ptr(this);
+            }
+            return nullptr;
         }
 
         AGE_API vehCarSim()                                 { ageHook::Thunk<0x4CB660>::Call<void>(this); }
