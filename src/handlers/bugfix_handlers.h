@@ -241,7 +241,6 @@ public:
 class mmPlayerBugfixHandler {
 public:
     void Ctor();
-    void Reset();
     static void Install();
 };
 

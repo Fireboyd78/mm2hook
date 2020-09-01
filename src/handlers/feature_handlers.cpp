@@ -539,13 +539,34 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
         case VK_F7: {
             // TODO: make this a separate plugin
             // toggle vehicle headlights
-            //vehCar_bHeadlights = !vehCar_bHeadlights;
+            vehCar::sm_DrawHeadlights = !vehCar::sm_DrawHeadlights;
         } return true;
 
         case VK_F8: {
             if (HookConfig::Read()) {
                 LogFile::WriteLine("Configuration settings reloaded successfully.");
             }
+        } return true;
+
+        case VK_OEM_4: {
+            // toggle left signal
+            leftSignal = !leftSignal;
+            hazardLights = false;
+            rightSignal = false;
+        } return true;
+
+        case VK_OEM_5: {
+            // toggle hazard lights
+            hazardLights = !hazardLights;
+            leftSignal = false;
+            rightSignal = false;
+        } return true;
+
+        case VK_OEM_6: {
+            // toggle right signal
+            rightSignal = !rightSignal;
+            hazardLights = false;
+            leftSignal = false;
         } return true;
     }
 
@@ -1391,10 +1412,7 @@ void mmGameHandler::SendChatMessage(char *message) {
             }
         }
         if (!strcmp(message, "/fuzz")) {
-            if (showMeCops)
-                showMeCops = false;
-            else
-                showMeCops = true;
+            showMeCops = !showMeCops;
         }
 
         //send to dispatcher
@@ -2797,6 +2815,30 @@ void mmPlayerHandler::Update() {
     ageHook::Thunk<0x405760>::Call<void>(this);
 }
 
+void mmPlayerHandler::Reset() {
+    auto player = reinterpret_cast<mmPlayer*>(this);
+    auto car = player->getCar();
+    auto audio = car->getAudio();
+    auto siren = car->getSiren();
+    byte *sirenLights = *getPtr<byte*>(this, 0xF4);
+    if (siren != nullptr && siren->Active) {
+        // deactivate siren lights
+        sirenLights[1] = 0;
+        // deactivate siren sounds
+        audio->StopSiren();
+    }
+
+    // deactivate signal lights if they're active
+    if (hazardLights || leftSignal || rightSignal) {
+        hazardLights = false;
+        leftSignal = false;
+        rightSignal = false;
+    }
+
+    // call original
+    ageHook::Thunk<0x404A60>::Call<void>(this);
+}
+
 void mmPlayerHandler::Install() {
     enableOutOfMapFixCached = cfgEnableOutOfMapFix.Get();
     enableWaterSplashSoundCached = cfgEnableWaterSplashSound.Get();
@@ -2815,6 +2857,12 @@ void mmPlayerHandler::Install() {
             0x404044,
         });
     }
+
+    InstallVTableHook("mmPlayer::Reset",
+        &Reset, {
+            0x5B03C0,
+        }
+    );
 }
 
 /*
@@ -3132,28 +3180,21 @@ void vehCarModelFeatureHandler::DrawGlow() {
     modStatic* slight1 = lvlInstance::GetGeomTableEntry(geomID + 6)->getHighestLOD();
 
     //draw signals
-    if (enableSignals && carsim->getSpeedMPH() <= 15.f) {
+    if (enableSignals) {
         //check signal clock
         bool drawSignal = fmod(datTimeManager::ElapsedTime, 1.f) > 0.5f;
-
-        //get signal index
-        int slightIndex = -1;
-        if (carsim->getSteering() < -0.5f)
-            slightIndex = 0;
-        if (carsim->getSteering() > 0.5f)
-            slightIndex = 1;
-
         //draw stuff!
-        if (drawSignal && slightIndex >= 0) {
-            if (slight0 != nullptr && slightIndex == 0) {
-                slight0->Draw(shaders);
+        if (drawSignal) {
+            if (leftSignal || hazardLights) {
+                if (slight0 != nullptr)
+                    slight0->Draw(shaders);
             }
-            else if (slight1 != nullptr && slightIndex == 1) {
-                slight1->Draw(shaders);
+            if (rightSignal || hazardLights) {
+                if (slight1 != nullptr)
+                    slight1->Draw(shaders);
             }
         }
     }
-
 
     //draw tlight
     if (tlight != nullptr) {

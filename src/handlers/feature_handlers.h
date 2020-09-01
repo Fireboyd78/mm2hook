@@ -9,6 +9,9 @@
 
 static bool g_bConsoleOpen;
 static bool showMeCops;
+static bool hazardLights;
+static bool leftSignal;
+static bool rightSignal;
 
 static ConfigValue<bool> cfgInstantReplay           ("InstantReplay",           true);
 static ConfigValue<bool> cfgUseAllParkedCars        ("UseAllParkedCars",        true);
@@ -245,6 +248,7 @@ public:
     void Splash();
     void Zoink();
     void Update();
+    void Reset();
     void PlayExplosion();
     static void Install();
 };
