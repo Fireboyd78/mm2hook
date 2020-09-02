@@ -152,6 +152,7 @@ namespace MM2
 
     template<>
     void luaAddModule<module_vehicle>(LuaState L) {
+        luaBind<vehAero>(L);
         luaBind<vehSiren>(L);
         luaBind<vehBreakable>(L);
         luaBind<vehBreakableMgr>(L);

@@ -42,6 +42,8 @@ namespace MM2
         }
     };
 
+    ASSERT_SIZEOF(vehWheelPtx, 0x78);
+
     // Lua initialization
 
 }

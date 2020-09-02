@@ -5,6 +5,7 @@
 #include "engine.h"
 #include "drivetrain.h"
 #include "wheel.h"
+#include "aero.h"
 
 namespace MM2
 {
@@ -14,7 +15,7 @@ namespace MM2
     // External declarations
     extern class datParser;
     extern class lvlInstance;
-
+    
     // Class definitions
 
     class vehCarSim : public asNode {
@@ -33,6 +34,7 @@ namespace MM2
         ageHook::Field<0x154C, float> _brake;
         ageHook::Field<0x1550, float> _handbrake;
         ageHook::Field<0x1554, float> _steering;
+        ageHook::Field<0x14F0, vehAero> _aero;
     public:
         inline float getSteering(void) {
             return _steering.get(this);
@@ -100,6 +102,10 @@ namespace MM2
             return nullptr;
         }
 
+        inline vehAero* getAero(void) const {
+            return _aero.ptr(this);
+        }
+
         AGE_API vehCarSim()                                 { ageHook::Thunk<0x4CB660>::Call<void>(this); }
         AGE_API ~vehCarSim()                                { ageHook::Thunk<0x4CB8E0>::Call<void>(this); }
 
@@ -123,6 +129,7 @@ namespace MM2
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<vehCarSim, asNode>("vehCarSim")
+                .addPropertyReadOnly("Aero", &getAero)
                 .addPropertyReadOnly("Transmission", &getTransmission)
                 .addPropertyReadOnly("ResetPosition", &getResetPosition)
                 .addPropertyReadOnly("Engine", &getEngine)
@@ -130,6 +137,8 @@ namespace MM2
                 .addProperty("Steering", &getSteering, &setSteering)
                 .addProperty("Brake", &getBrake, &setBrake)
                 .addProperty("Handbrake", &getHandbrake, &setHandbrake)
+
+                .addFunction("GetWheel", &getWheel)
 
                 .addFunction("BottomedOut", &BottomedOut)
                 .addFunction("OnGround", &OnGround)
