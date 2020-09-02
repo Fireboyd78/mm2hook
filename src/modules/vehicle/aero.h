@@ -4,7 +4,7 @@
 namespace MM2
 {
     // Forward declarations
-
+    class vehAero;
 
     // External declarations
 

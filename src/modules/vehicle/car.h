@@ -18,6 +18,7 @@ namespace MM2
     extern class vehSplash;
     extern class vehTrailer;
     extern class vehSiren;
+    extern class vehGyro;
     extern class vehWheelPtx;
 
     // Class definitions
@@ -33,6 +34,7 @@ namespace MM2
         ageHook::Field<0xD8, vehTrailer *> _trailer;
         ageHook::Field<0xC8, vehSiren *> _siren;
         ageHook::Field<0xC4, vehWheelPtx *> _wheelPtx;
+        ageHook::Field<0xD0, vehGyro *> _gyro;
     public:
         AGE_API vehCar(BOOL a1)                             { ageHook::Thunk<0x42BAB0>::Call<void>(this, a1); }
         AGE_API ~vehCar()                                   { ageHook::Thunk<0x42BCC0>::Call<void>(this); }
@@ -71,6 +73,10 @@ namespace MM2
             return _wheelPtx.get(this);
         }
 
+        inline vehGyro * getGyro(void) const {
+            return _gyro.get(this);
+        }
+
         AGE_API void Reset()                                { ageHook::Thunk<0x42C330>::Call<void>(this); }
 
         AGE_API void ClearDamage()                          { ageHook::Thunk<0x42C450>::Call<void>(this); }
@@ -104,6 +110,7 @@ namespace MM2
                 .addPropertyReadOnly("Trailer", &getTrailer)
                 .addPropertyReadOnly("Siren", &getSiren)
                 .addPropertyReadOnly("WheelPtx", &getWheelPtx)
+                .addPropertyReadOnly("Gyro", &getGyro)
 
                 //functions
                 .addFunction("Init", &Init)

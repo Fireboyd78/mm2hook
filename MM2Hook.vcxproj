@@ -291,6 +291,7 @@
     <ClInclude Include="src\modules\vehicle\drivetrain.h" />
     <ClInclude Include="src\modules\vehicle\engine.h" />
     <ClInclude Include="src\modules\vehicle\engineaudio.h" />
+    <ClInclude Include="src\modules\vehicle\gyro.h" />
     <ClInclude Include="src\modules\vehicle\hornaudio.h" />
     <ClInclude Include="src\modules\vehicle\nitrocaraudio.h" />
     <ClInclude Include="src\modules\vehicle\policecaraudio.h" />

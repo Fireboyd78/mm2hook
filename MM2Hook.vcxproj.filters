@@ -875,6 +875,9 @@
     <ClInclude Include="src\mm2_replay.h">
       <Filter>Source Files\mm2</Filter>
     </ClInclude>
+    <ClInclude Include="src\modules\vehicle\gyro.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">

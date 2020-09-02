@@ -38,6 +38,7 @@
 #include "vehicle\wheelcheap.h"
 #include "vehicle\aicablecaraudiodata.h"
 #include "vehicle\car.h"
+#include "vehicle\gyro.h"
 
 namespace MM2
 {
