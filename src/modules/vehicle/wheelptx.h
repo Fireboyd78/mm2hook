@@ -1,5 +1,6 @@
 #pragma once
 #include <modules\vehicle.h>
+#include <..\mm2_particle.h>
 
 namespace MM2
 {
@@ -10,9 +11,14 @@ namespace MM2
     extern class asBirthRule;
     extern class asParticles;
     extern class vehWheel;
+    extern class vehCarSim;
 
     // Class definitions
     class vehWheelPtx : public asNode {
+    private:
+        vehCarSim* m_CarSimPtr;
+        asParticles m_Particles;
+        float m_PtxTimers[2];
     public:
         AGE_API vehWheelPtx()                                  { ageHook::Thunk<0x4D1C00>::Call<void>(this); }
         AGE_API ~vehWheelPtx()                                 { ageHook::Thunk<0x4D1C60>::Call<void>(this); }
