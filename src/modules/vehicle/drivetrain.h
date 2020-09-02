@@ -9,20 +9,59 @@ namespace MM2
     // External declarations
     extern class vehCarSim;
     extern class vehEngine;
+    extern class vehWheel;
+    extern class vehTransmission;
 
     // Class definitions
     class vehDrivetrain : public asNode {
     private:
-        vehCarSim *VehCarSimPtr;
-        vehEngine *VehEnginePtr;
-        byte _buffer[0x4C - 0x2C];
+        vehCarSim *m_CarSimPtr;
+        vehEngine *m_AttachedEngine;
+        vehTransmission *m_AttachedTransmission;
+        int WheelCount;
+        vehWheel *Wheels[4];
+        float DynamicAmount;
+        float unknown60;
         float AngInertia;
         float BrakeDynamicCoef;
         float BrakeStaticCoef;
+    private:
+        //lua helpers
+        inline bool addWheelLua(vehWheel* wheel) {
+            return this->AddWheel(wheel) == TRUE;
+        }
     public:
+        inline vehEngine * getAttachedEngine(void) {
+            return this->m_AttachedEngine;
+        }
+
+        inline vehTransmission * getAttachedTransmission(void) {
+            return this->m_AttachedTransmission;
+        }
+
+        inline vehWheel * getWheel(int num) {
+            if (num > 3)
+                return nullptr;
+            if (num >= this->WheelCount)
+                return nullptr;
+            return this->Wheels[num];
+        }
+
+        inline int getWheelCount(void) {
+            return this->WheelCount;
+        }
+    public:
+        AGE_API BOOL AddWheel(vehWheel *wheel)             { return ageHook::Thunk<0x4D9E50>::Call<BOOL>(this, wheel); }
+        
+        AGE_API void CopyVars(vehDrivetrain *copyFrom)     { ageHook::Thunk<0x4D9DE0>::Call<void>(this, copyFrom); }
+
         AGE_API void Attach()                              { ageHook::Thunk<0x4D9E20>::Call<void>(this); }
         AGE_API void Detach()                              { ageHook::Thunk<0x4D9E40>::Call<void>(this); }
 
+        AGE_API void Init(vehCarSim *carSim)               { ageHook::Thunk<0x4D9DD0>::Call<void>(this, carSim); }
+        
+        
+        
         /*
             asNode virtuals
         */
@@ -36,11 +75,17 @@ namespace MM2
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<vehDrivetrain, asNode>("vehDrivetrain")
                 //properties
+                .addPropertyReadOnly("AttachedEngine", &getAttachedEngine)
+                .addPropertyReadOnly("AttachedTransmission", &getAttachedTransmission)
+                .addPropertyReadOnly("WheelCount", &getWheelCount)
+
                 .addVariableRef("AngInertia", &vehDrivetrain::AngInertia)
                 .addVariableRef("BrakeDynamicCoef", &vehDrivetrain::BrakeDynamicCoef)
                 .addVariableRef("BrakeStaticCoef", &vehDrivetrain::BrakeStaticCoef)
 
                 //functions
+                .addFunction("GetWheel", &getWheel)
+                .addFunction("AddWheel", &addWheelLua)
                 .addFunction("Attach", &Attach)
                 .addFunction("Detach", &Detach)
             .endClass();

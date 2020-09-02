@@ -27,6 +27,8 @@ namespace MM2
         ageHook::Field<0x2E0, vehTransmission> _transmission;
         ageHook::Field<0x25C, vehEngine> _engine;
         ageHook::Field<0x3D4, vehDrivetrain> _drivetrain;
+        ageHook::Field<0x420, vehDrivetrain> _freetrainLeft;
+        ageHook::Field<0x46C, vehDrivetrain> _freetrainRight;
         ageHook::Field<0x4B8, vehWheel> _whl0;
         ageHook::Field<0x724, vehWheel> _whl1;
         ageHook::Field<0x990, vehWheel> _whl2;
@@ -88,6 +90,14 @@ namespace MM2
             return _drivetrain.ptr(this);
         }
 
+        inline vehDrivetrain * getLeftFreetrain(void) const {
+            return _freetrainLeft.ptr(this);
+        }
+
+        inline vehDrivetrain * getRightFreetrain(void) const {
+            return _freetrainRight.ptr(this);
+        }
+
         inline vehWheel * getWheel(int num) const {
             switch (num) {
             case 0:
@@ -129,6 +139,10 @@ namespace MM2
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<vehCarSim, asNode>("vehCarSim")
+                .addPropertyReadOnly("Drivetrain", &getDrivetrain)
+                .addPropertyReadOnly("LeftFreetrain", &getLeftFreetrain)
+                .addPropertyReadOnly("RightFreetrain", &getRightFreetrain)
+
                 .addPropertyReadOnly("Aero", &getAero)
                 .addPropertyReadOnly("Transmission", &getTransmission)
                 .addPropertyReadOnly("ResetPosition", &getResetPosition)
