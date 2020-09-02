@@ -80,6 +80,8 @@ namespace MM2
                 .addVariableRef("Pitch", &vehGyro::Pitch)
                 .addVariableRef("Roll", &vehGyro::Roll)
 
+                .addFunction("Init", &Init)
+
                 .endClass();
         }
     };
