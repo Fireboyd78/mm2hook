@@ -36,6 +36,8 @@ namespace MM2
     public:
         AGE_API vehWheel()                                     { ageHook::Thunk<0x4D2190>::Call<void>(this); }
 
+        AGE_API void CopyVars(vehWheel *copyFrom)              { ageHook::Thunk<0x4D4110>::Call<void>(this, copyFrom); }
+
         AGE_API void ComputeConstants()                        { ageHook::Thunk<0x4D23F0>::Call<void>(this); }
         AGE_API void AddNormalLoad(float a1)                   { ageHook::Thunk<0x4D2490>::Call<void>(this, a1); }
         AGE_API void SetNormalLoad(float a1)                   { ageHook::Thunk<0x4D24C0>::Call<void>(this, a1); }
