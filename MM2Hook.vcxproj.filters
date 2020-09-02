@@ -878,6 +878,9 @@
     <ClInclude Include="src\modules\vehicle\gyro.h">
       <Filter>Source Files\modules\vehicle</Filter>
     </ClInclude>
+    <ClInclude Include="src\modules\vehicle\stuck.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">

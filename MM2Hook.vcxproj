@@ -298,6 +298,7 @@
     <ClInclude Include="src\modules\vehicle\semicaraudio.h" />
     <ClInclude Include="src\modules\vehicle\siren.h" />
     <ClInclude Include="src\modules\vehicle\splash.h" />
+    <ClInclude Include="src\modules\vehicle\stuck.h" />
     <ClInclude Include="src\modules\vehicle\surfaceaudio.h" />
     <ClInclude Include="src\modules\vehicle\surfaceaudiodata.h" />
     <ClInclude Include="src\modules\vehicle\suspension.h" />

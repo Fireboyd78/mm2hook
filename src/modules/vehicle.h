@@ -39,6 +39,7 @@
 #include "vehicle\aicablecaraudiodata.h"
 #include "vehicle\car.h"
 #include "vehicle\gyro.h"
+#include "vehicle\stuck.h"
 
 namespace MM2
 {
