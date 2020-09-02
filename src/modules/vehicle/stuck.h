@@ -24,8 +24,9 @@ namespace MM2
         float Turn;
         float Rotation;
         float Translation;
-        phInertialCS* m_InertialCSPtr;
-        vehCarSim* m_CarSimPtr;
+        phInertialCS *m_InertialCSPtr;
+        vehCarSim *m_CarSimPtr;
+    private:
     public:
         AGE_API vehStuck()                              { ageHook::Thunk<0x4D5FB0>::Call<void>(this); }
 
@@ -43,7 +44,7 @@ namespace MM2
         AGE_API void Update() override                  { ageHook::Thunk<0x4D6140>::Call<void>(this); }
         AGE_API void FileIO(datParser& parser) override { ageHook::Thunk<0x4D6510>::Call<void>(this); }
         AGE_API const char* GetDirName() override       { return ageHook::Thunk<0x4D6080>::Call<const char*>(this); }
-        AGE_API char* GetClassName() override           { return ageHook::Thunk<0x4D65F0>::Call<char*>(this); }
+        AGE_API char * GetClassName() override          { return ageHook::Thunk<0x4D65F0>::Call<char*>(this); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<vehStuck, asNode>("vehStuck")
