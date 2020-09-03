@@ -94,7 +94,7 @@ namespace MM2
         }
 
         static void BindLua(LuaState L) {
-            LuaBinding(L).beginClass<vehCarDamage>("vehCarDamage")
+            LuaBinding(L).beginExtendClass<vehCarDamage, asNode>("vehCarDamage")
                 .addFunction("Reset", &Reset)
                 .addFunction("AddDamage", &AddDamage)
                 .addFunction("ClearDamage", &ClearDamage)
