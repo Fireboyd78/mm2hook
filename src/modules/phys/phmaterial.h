@@ -22,6 +22,10 @@ namespace MM2
         float Elasticity;
         float Friction;
     public:
+        inline const char* getName() {
+            return (const char*)&this->Name;
+        }
+    public:
         AGE_API phMaterial() {
             scoped_vtable x(this);
             ageHook::Thunk<0x492FF0>::Call<void>(this);
@@ -35,6 +39,19 @@ namespace MM2
         virtual AGE_API void Copy(const phMaterial *material)   { ageHook::Thunk<0x493270>::Call<void>(this, material);}
         virtual AGE_API void Save(datAsciiTokenizer *writer)    { ageHook::Thunk<0x493160>::Call<void>(this, writer);}
         virtual AGE_API void SaveBinary(Stream *stream)         { ageHook::Thunk<0x493340>::Call<void>(this, stream); }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<phMaterial>("phMaterial")
+                //properties
+                .addVariableRef("EffectIndex", &phMaterial::EffectIndex)
+                .addVariableRef("SoundIndex", &phMaterial::SoundIndex)
+                .addVariableRef("Elasticity", &phMaterial::Elasticity)
+                .addVariableRef("Friction", &phMaterial::Friction)
+                
+                .addProperty("Name", &getName, &SetName)
+
+                .endClass();
+        }
     };
 
     ASSERT_SIZEOF(phMaterial, 0x30);

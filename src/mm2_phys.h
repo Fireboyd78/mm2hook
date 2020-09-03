@@ -6,6 +6,8 @@
 namespace MM2
 {
     // External declarations
+    extern class phMaterial;
+    extern class lvlMaterial;
     extern class dgPhysEntity;
     extern class dgPhysManager;
     extern class dgTrailerJoint;
@@ -13,6 +15,8 @@ namespace MM2
 
     template<>
     void luaAddModule<module_phys>(LuaState L) {
+        luaBind<phMaterial>(L);
+        luaBind<lvlMaterial>(L);
         luaBind<phInertialCS>(L);
         luaBind<dgPhysManager>(L);
         luaBind<phJoint>(L);
