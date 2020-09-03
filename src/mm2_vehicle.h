@@ -154,6 +154,7 @@ namespace MM2
     void luaAddModule<module_vehicle>(LuaState L) {
         luaBind<vehAero>(L);
         luaBind<vehGyro>(L);
+        luaBind<vehWheel>(L);
         luaBind<vehStuck>(L);
         luaBind<vehDrivetrain>(L);
         luaBind<vehSiren>(L);

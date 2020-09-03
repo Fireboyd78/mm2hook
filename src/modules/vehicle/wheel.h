@@ -1,5 +1,6 @@
 #pragma once
 #include <modules\vehicle.h>
+#include <modules\phys.h>
 
 namespace MM2
 {
@@ -8,31 +9,106 @@ namespace MM2
 
     // External declarations
     extern class vehCarSim;
+    extern class lvlMaterial;
 
     // Class definitions
     class vehWheel : public asNode {
     private:
-        vehCarSim *VehCarSimPtr;
-        byte _buffer[0x204];
-        float SuspensionExtent;
-        float SuspensionLimit;
-        float SuspensionFactor;
-        float SuspensionDampCoef;
+        vehCarSim *m_CarSimPtr;
+        phInertialCS *m_InertialCSPtr;
+        int WheelFlags;
+        Matrix34 WheelMatrix;
+        float TireDispLimitLat;
+        float TireDispLimitLong;
+        float TireDampCoefLat;
+        float TireDampCoefLong;
+        float TireDragCoefLat;
+        float TireDragCoefLong;
         float SteeringLimit;
-        float SteeringOffset;
-        float BrakeCoef;
-        float HandbrakeCoef;
         float CamberLimit;
         float WobbleLimit;
-        float TireDispLimitLong;
-        float TireDampCoefLong;
-        float TireDragCoefLong;
-        float TireDispLimitLat;
-        float TireDampCoefLat;
-        float TireDragCoefLat;
+        float BrakeCoef;
+        float HandbrakeCoef;
+        float SteeringOffset;
+        float SuspensionLimit;
+        float SuspensionExtent;
+        float SuspensionFactor;
+        float SuspensionDampCoef;
+        byte _buffer0[0xD8];
+        BOOL IsGrounded;
+        byte _buffer1[0x34];
+        Vector3 LastHitPosition;
+        Vector3 Center;
+        float Radius;
+        float Width;
+        float NormalLoad;
+        float BumpDisplacement;
+        float MaterialDrag;
+        float MaterialFriction;
+        float MaterialDepth;
+        float MaterialHeight;
+        float MaterialWidth;
+        byte _buffer2[0x4];
+        float AccumulatedRotation;
+        float InputBrakeAmount;
+        float BrakeCoefLoaded;
+        float HandbrakeCoefLoaded;
+        float SteerAmount;
+        float TargetSuspensionTravel;
+        float CurrentSuspensionForce;
+        byte _buffer3[0x4];
+        float SuspensionCompressionRate;
+        float SuspensionForceTwo_;
+        float SuspensionMaxForce;
+        float SuspensionRestingPosition;
+        float SuspensionDampForce;
+        float WobbleAmount;
+        float CamberAmount;
+        float LastSlippage;
+        __int16 MajorlySlipping;
+        __int8 LastGroundedStatus;
+        bool BottomedOut;
+        float CurrentTireDispLat;
+        float CurrentTireDispLong;
+        float DispLatRate;
+        float DispLongRate;
+        float DispLongRateScaled;
+        float RotationRate;
+        byte _buffer4[0x4];
+        float SlipPercent;
+        float DispLimitLongLoaded;
+        float DampCoefLongLoaded;
         float OptimumSlipPercent;
         float StaticFric;
         float SlidingFric;
+        float DispLimitLatLoaded;
+        float DampCoefLatLoaded;
+        byte _buffer5[0x4];
+        lvlMaterial *CurrentPhysicsMaterial;
+    public:
+        inline bool isGrounded() {
+            return this->IsGrounded == TRUE;
+        }
+
+        inline lvlMaterial * getCurrentPhysicsMaterial() {
+            return this->CurrentPhysicsMaterial;
+        }
+
+        inline float getRadius(void) {
+            return this->Radius;
+        }
+
+        inline void setRadius(float radius) {
+            this->Radius = radius;
+        }
+        
+        inline float getWidth(void) {
+            return this->Width;
+        }
+
+        inline void setWidth(float width) {
+            this->Width = width;
+        }
     public:
         AGE_API vehWheel()                                     { ageHook::Thunk<0x4D2190>::Call<void>(this); }
 
@@ -80,6 +156,11 @@ namespace MM2
                 .addVariableRef("StaticFric", &vehWheel::StaticFric)
                 .addVariableRef("SlidingFric", &vehWheel::SlidingFric)
 
+                .addProperty("Radius", &getRadius, &setRadius)
+                .addProperty("Width", &getWidth, &setWidth)
+                
+                .addPropertyReadOnly("CurrentPhysicsMaterial", &getCurrentPhysicsMaterial)
+                
                 //functions
                 .addFunction("CopyVars", &CopyVars)
                 .addFunction("ComputeConstants", &ComputeConstants)
