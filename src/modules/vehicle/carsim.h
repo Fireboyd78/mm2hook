@@ -6,6 +6,7 @@
 #include "drivetrain.h"
 #include "wheel.h"
 #include "aero.h"
+#include "axle.h"
 
 namespace MM2
 {
@@ -34,6 +35,8 @@ namespace MM2
         ageHook::Field<0x724, vehWheel> _whl1;
         ageHook::Field<0x990, vehWheel> _whl2;
         ageHook::Field<0xBFC, vehWheel> _whl3;
+        ageHook::Field<0xE68, vehAxle> _frontAxle;
+        ageHook::Field<0xF04, vehAxle> _rearAxle;
         ageHook::Field<0x154C, float> _brake;
         ageHook::Field<0x1550, float> _handbrake;
         ageHook::Field<0x1554, float> _steering;
@@ -124,8 +127,16 @@ namespace MM2
             return nullptr;
         }
 
-        inline vehAero* getAero(void) const {
+        inline vehAero * getAero(void) const {
             return _aero.ptr(this);
+        }
+
+        inline vehAxle * getFrontAxle(void) const {
+            return _frontAxle.ptr(this);
+        }
+
+        inline vehAxle * getRearAxle(void) const {
+            return _rearAxle.ptr(this);
         }
 
         AGE_API vehCarSim()                                 { ageHook::Thunk<0x4CB660>::Call<void>(this); }
@@ -156,6 +167,8 @@ namespace MM2
                 .addPropertyReadOnly("RightFreetrain", &getRightFreetrain)
 
                 .addPropertyReadOnly("Aero", &getAero)
+                .addPropertyReadOnly("FrontAxle", &getFrontAxle)
+                .addPropertyReadOnly("RearAxle", &getRearAxle)
                 .addPropertyReadOnly("Transmission", &getTransmission)
                 .addPropertyReadOnly("ResetPosition", &getResetPosition)
                 .addPropertyReadOnly("Engine", &getEngine)

@@ -152,9 +152,10 @@ namespace MM2
 
     template<>
     void luaAddModule<module_vehicle>(LuaState L) {
+        luaBind<vehWheel>(L);
         luaBind<vehAero>(L);
         luaBind<vehGyro>(L);
-        luaBind<vehWheel>(L);
+        luaBind<vehAxle>(L);
         luaBind<vehStuck>(L);
         luaBind<vehDrivetrain>(L);
         luaBind<vehSiren>(L);
