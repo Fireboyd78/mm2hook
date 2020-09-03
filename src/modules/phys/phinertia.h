@@ -15,7 +15,10 @@ namespace MM2
     private:
         byte _buffer[0x1B4];
     protected:
+        ageHook::Field<0xC, float> _mass;
         ageHook::Field<0x54, Matrix34> _matrix;
+        ageHook::Field<0x9C, Vector3> _force;
+        ageHook::Field<0xA8, Vector3> _torque;
     public:
         AGE_API phInertialCS() {
             scoped_vtable x(this);
@@ -23,6 +26,18 @@ namespace MM2
         }
 
         //props
+        inline float getMass(void) const {
+            return _mass.get(this);
+        }
+
+        inline Vector3 getTorque(void) const {
+            return _torque.get(this);
+        }
+
+        inline Vector3 getForce(void) const {
+            return _force.get(this);
+        }
+
         inline Vector3 getPosition(void) const {
             auto mtx = getMatrix();
             return Vector3(mtx->m30, mtx->m31, mtx->m32);
@@ -39,8 +54,30 @@ namespace MM2
             mtx->m32 = position->Z;
         }
 
+        inline void setTorque(Vector3 torque) const {
+            _torque.set(this, torque);
+        }
+
+        inline void setForce(Vector3 torque) const {
+            _force.set(this, torque);
+        }
+
         inline void setMatrix(Matrix34 *matrix) const {
             getMatrix()->Set(matrix);
+        }
+
+        inline void addForce(Vector3 force) {
+            auto current = getForce();
+            setForce(Vector3(current.X + force.X, current.Y + force.Y, current.Z + force.Z));
+        }
+
+        inline void addTorque(Vector3 force) {
+            auto current = getTorque();
+            setTorque(Vector3(current.X + force.X, current.Y + force.Y, current.Z + force.Z));
+        }
+
+        inline void setMass(float mass) {
+            _mass.set(this, mass);
         }
 
         //members (not all here yet!)
@@ -70,6 +107,12 @@ namespace MM2
                 .addFunction("ClearInertialValues", &ClearInertialValues)
                 .addFunction("MoveICS", &MoveICS)
 
+                .addFunction("AddForce", &addForce)
+                .addFunction("AddTorque", &addTorque)
+
+                .addProperty("Mass", &getMass, &setMass)
+                .addProperty("Force", &getForce, &setForce)
+                .addProperty("Torque", &getTorque, &setTorque)
                 .addProperty("Position", &getPosition, &setPosition)
                 .addProperty("Matrix", &getMatrix, &setMatrix)
             .endClass();
