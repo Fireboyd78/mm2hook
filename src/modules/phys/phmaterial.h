@@ -23,7 +23,7 @@ namespace MM2
         float Friction;
     public:
         inline const char* getName() {
-            return (const char*)&this->Name;
+            return this->Name;
         }
     public:
         AGE_API phMaterial() {
