@@ -84,6 +84,7 @@ namespace MM2
                 .addVariableRef("BrakeStaticCoef", &vehDrivetrain::BrakeStaticCoef)
 
                 //functions
+                .addFunction("CopyVars", &CopyVars)
                 .addFunction("GetWheel", &getWheel)
                 .addFunction("AddWheel", &addWheelLua)
                 .addFunction("Attach", &Attach)

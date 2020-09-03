@@ -81,6 +81,7 @@ namespace MM2
                 .addVariableRef("SlidingFric", &vehWheel::SlidingFric)
 
                 //functions
+                .addFunction("CopyVars", &CopyVars)
                 .addFunction("ComputeConstants", &ComputeConstants)
                 .addFunction("AddNormalLoad", &AddNormalLoad)
                 .addFunction("SetNormalLoad", &SetNormalLoad)
