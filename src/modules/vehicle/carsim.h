@@ -22,6 +22,7 @@ namespace MM2
     protected:
         ageHook::Field<0x24C, float> _speedMPH;
         ageHook::Field<0x248, float> _speed;
+        ageHook::Field<0x254, int> _drivetrainType;
         ageHook::Field<0x210, const Vector3> _resetPosition;
         ageHook::Field<0x1D0, lvlInstance *> _instance;
         ageHook::Field<0x2E0, vehTransmission> _transmission;
@@ -38,6 +39,17 @@ namespace MM2
         ageHook::Field<0x1554, float> _steering;
         ageHook::Field<0x14F0, vehAero> _aero;
     public:
+        inline int getDrivetrainType(void) {
+            return _drivetrainType.get(this);
+        }
+
+        inline void setDrivetrainType(int type) {
+            if (type < 0 || type > 2) //0 = RWD, 1 = FWD, 2 = 4WD
+                return;
+            _drivetrainType.set(this, type);
+        }
+
+
         inline float getSteering(void) {
             return _steering.get(this);
         }
@@ -148,6 +160,8 @@ namespace MM2
                 .addPropertyReadOnly("ResetPosition", &getResetPosition)
                 .addPropertyReadOnly("Engine", &getEngine)
                 .addPropertyReadOnly("Speed", &getSpeedMPH)
+
+                .addProperty("DrivetrainType", &getDrivetrainType, &setDrivetrainType)
                 .addProperty("Steering", &getSteering, &setSteering)
                 .addProperty("Brake", &getBrake, &setBrake)
                 .addProperty("Handbrake", &getHandbrake, &setHandbrake)
