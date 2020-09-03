@@ -192,6 +192,7 @@
     <ClInclude Include="src\modules\data\token.h" />
     <ClInclude Include="src\modules\data\__template__.h" />
     <ClInclude Include="src\modules\effects.h" />
+    <ClInclude Include="src\modules\effects\linespark.h" />
     <ClInclude Include="src\modules\effects\shard.h" />
     <ClInclude Include="src\modules\effects\__template__.h" />
     <ClInclude Include="src\modules\input.h" />

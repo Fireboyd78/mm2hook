@@ -5,6 +5,7 @@
 #include <..\mm2_model.h>
 
 #include <modules\effects\shard.h>
+#include <modules\effects\linespark.h>
 
 namespace MM2
 {

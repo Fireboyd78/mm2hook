@@ -881,6 +881,9 @@
     <ClInclude Include="src\modules\vehicle\stuck.h">
       <Filter>Source Files\modules\vehicle</Filter>
     </ClInclude>
+    <ClInclude Include="src\modules\effects\linespark.h">
+      <Filter>Source Files\modules\effects</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
