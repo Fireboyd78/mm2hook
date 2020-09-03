@@ -74,8 +74,8 @@ namespace MM2
         float DispLongRate;
         float DispLongRateScaled;
         float RotationRate;
-        byte _buffer4[0x4];
-        float SlipPercent;
+        float LatSlipPercent;
+        float LongSlipPercent;
         float DispLimitLongLoaded;
         float DampCoefLongLoaded;
         float OptimumSlipPercent;
@@ -108,6 +108,14 @@ namespace MM2
 
         inline void setWidth(float width) {
             this->Width = width;
+        }
+        
+        inline float getLatSlipPercent(void) {
+            return this->LatSlipPercent;
+        }
+
+        inline float getLongSlipPercent(void) {
+            return this->LongSlipPercent;
         }
     public:
         AGE_API vehWheel()                                     { ageHook::Thunk<0x4D2190>::Call<void>(this); }
@@ -160,6 +168,8 @@ namespace MM2
                 .addProperty("Width", &getWidth, &setWidth)
                 
                 .addPropertyReadOnly("CurrentPhysicsMaterial", &getCurrentPhysicsMaterial)
+                .addPropertyReadOnly("LatSlipPercent", &getLatSlipPercent)
+                .addPropertyReadOnly("LongSlipPercent", &getLongSlipPercent)
                 
                 //functions
                 .addFunction("CopyVars", &CopyVars)
