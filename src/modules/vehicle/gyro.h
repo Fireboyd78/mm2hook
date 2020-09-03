@@ -21,15 +21,15 @@ namespace MM2
         float Roll;
     public:
         inline bool getDriftEnabled(void) {
-            return this->flags & 0x20000;
+            return (this->flags & 0x20000) != 0;
         }
 
         inline bool getSpinReverseEnabled(void) {
-            return this->flags & 0x10000;
+            return (this->flags & 0x10000) != 0;
         }
 
         inline bool getPitchRollEnabled(void) {
-            return this->flags & 0x40000;
+            return (this->flags & 0x40000) != 0;
         }
 
         inline void setDriftEnabled(bool enabled) {
