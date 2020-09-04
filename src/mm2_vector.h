@@ -255,7 +255,18 @@ namespace MM2
         }
 
 		void Dot(Matrix34* rhs) {
-			ageHook::Thunk<0x4BC400>::Call(this, rhs);
+            this->m02 = rhs->m12 * this->m01 + rhs->m22 * this->m02 + rhs->m02 * this->m00;
+            this->m00 = (rhs->m10 * this->m01 + rhs->m00 * this->m00) + (this->m02 * rhs->m20);
+            this->m01 = rhs->m11 * this->m01 + this->m02 * rhs->m21 + rhs->m01 * this->m00;;
+            this->m10 = rhs->m10 * this->m11 + this->m12 * rhs->m20 + this->m10 * rhs->m00;
+            this->m11 = rhs->m11 * this->m11 + this->m12 * rhs->m21 + rhs->m01 * this->m10;
+            this->m12 = rhs->m12 * this->m11 + rhs->m02 * this->m10 + rhs->m22 * this->m12;
+            this->m20 = rhs->m10 * this->m21 + this->m20 * rhs->m00 + rhs->m20 * this->m22;
+            this->m21 = rhs->m11 * this->m21 + rhs->m01 * this->m20 + rhs->m21 * this->m22;
+            this->m22 = rhs->m22 * this->m22 + rhs->m12 * this->m21 + rhs->m02 * this->m20;
+            this->m30 = rhs->m10 * this->m31 + this->m30 * rhs->m00 + this->m32 * rhs->m20 + rhs->m30;
+            this->m31 = rhs->m11 * this->m31 + rhs->m01 * this->m30 + this->m32 * rhs->m21 + rhs->m31;
+            this->m32 = rhs->m22 * this->m32 + rhs->m12 * this->m31 + rhs->m02 * this->m30 + rhs->m32;
 		}
 
         void Scale(float amount) {
@@ -384,6 +395,7 @@ namespace MM2
                 .addFunction("Identity3x3", &Matrix34::Identity3x3)
                 .addFunction("Scale", static_cast<void(Matrix34::*)(float, float, float)>(&Matrix34::Scale))
                 .addFunction("Normalize", &Matrix34::Normalize)
+                .addFunction("Dot", &Matrix34::Dot)
 
                 .addFunction("Zero", &Matrix34::Zero)
                 .addFunction("MakeRotateX", &Matrix34::MakeRotateX)
