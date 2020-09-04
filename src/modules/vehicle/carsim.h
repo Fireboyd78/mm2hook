@@ -16,15 +16,21 @@ namespace MM2
     // External declarations
     extern class datParser;
     extern class lvlInstance;
-    
+    extern class phInertialCS;
+
     // Class definitions
 
     class vehCarSim : public asNode {
     protected:
+        ageHook::Field<0x18, phInertialCS> _inertialCS;
+        ageHook::Field<0x1D4, Matrix34> _worldMatrix;
+        ageHook::Field<0x204, Vector3> _centerOfGravity;
+        ageHook::Field<0x210, const Vector3> _resetPosition;
+        ageHook::Field<0x228, Vector3> _inertiaBox;
         ageHook::Field<0x24C, float> _speedMPH;
+        ageHook::Field<0x244, float> _mass;
         ageHook::Field<0x248, float> _speed;
         ageHook::Field<0x254, int> _drivetrainType;
-        ageHook::Field<0x210, const Vector3> _resetPosition;
         ageHook::Field<0x1D0, lvlInstance *> _instance;
         ageHook::Field<0x2E0, vehTransmission> _transmission;
         ageHook::Field<0x25C, vehEngine> _engine;
@@ -42,6 +48,52 @@ namespace MM2
         ageHook::Field<0x1554, float> _steering;
         ageHook::Field<0x14F0, vehAero> _aero;
     public:
+        inline Vector3 getCenterOfGravity(void) {
+            return _centerOfGravity.get(this);
+        }
+
+        inline void setCenterOfGravity(Vector3 centerOfGravity) {
+            _centerOfGravity.set(this, centerOfGravity);
+        }
+
+        inline Vector3 getInertiaBox(void) {
+            return _inertiaBox.get(this);
+        }
+
+        inline void setInertiaBox(Vector3 inertiaBox) {
+            _inertiaBox.set(this, inertiaBox);
+        }
+
+        inline void setAndApplyInertiaBox(Vector3 inertiaBox) {
+            this->setInertiaBox(inertiaBox);
+            
+            auto box = this->getInertiaBox();
+            this->getICS()->InitBoxMass(this->getMass(), box.X, box.Y, box.Z);
+        }
+
+        inline phInertialCS * getICS(void) {
+            return _inertialCS.ptr(this);
+        }
+
+        inline Matrix34 * getWorldMatrix(void) {
+            return _worldMatrix.ptr(this);
+        }
+
+        inline float getMass(void) {
+            return _mass.get(this);
+        }
+
+        inline void setMass(float mass) {
+            _mass.set(this, mass);
+        }
+
+        inline void setAndApplyMass(float mass) {
+            this->setMass(mass);
+            
+            auto box = this->getInertiaBox();
+            this->getICS()->InitBoxMass(this->getMass(), box.X, box.Y, box.Z);
+        }
+
         inline int getDrivetrainType(void) {
             return _drivetrainType.get(this);
         }
@@ -51,7 +103,6 @@ namespace MM2
                 return;
             _drivetrainType.set(this, type);
         }
-
 
         inline float getSteering(void) {
             return _steering.get(this);
@@ -174,6 +225,11 @@ namespace MM2
                 .addPropertyReadOnly("Engine", &getEngine)
                 .addPropertyReadOnly("Speed", &getSpeedMPH)
 
+                .addPropertyReadOnly("WorldMatrix", &getWorldMatrix)
+
+                .addProperty("Mass", &getMass, &setAndApplyMass)
+                .addProperty("InertiaBox", &getInertiaBox, &setAndApplyInertiaBox)
+                .addProperty("CenterOfGravity", &getCenterOfGravity, &setCenterOfGravity)
                 .addProperty("DrivetrainType", &getDrivetrainType, &setDrivetrainType)
                 .addProperty("Steering", &getSteering, &setSteering)
                 .addProperty("Brake", &getBrake, &setBrake)
