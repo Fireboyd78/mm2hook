@@ -48,6 +48,7 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<vehBreakableMgrHandler>("vehBreakableMgr"),
     CreateHandler<vehCarModelFeatureHandler>("vehCarModel"),
     CreateHandler<vehWheelHandler>("vehWheel"),
+    CreateHandler<vehTrailerInstanceFeatureHandler>("vehTrailerInstance"),
 
     CreateHandler<Dialog_NewPlayerHandler>("New player dialog"),
 
@@ -3600,6 +3601,133 @@ void aiVehicleInstanceFeatureHandler::Install() {
     InstallPatch({ 0xEB }, {
         0x552A2E,
     });
+}
+
+/*
+    vehTrailerInstanceFeatureHandler
+*/
+Matrix34 trailerMatrix = Matrix34();
+
+void vehTrailerInstanceFeatureHandler::DrawGlow() {
+    auto inst = reinterpret_cast<vehTrailerInstance*>(this);
+    //don't draw trailer lights if it's broken
+    if (inst->getTrailer()->getJoint()->IsBroken())
+        return;
+
+    //get vars
+    auto carsim = inst->getTrailer()->getCarSim();
+    float brakeInput = carsim->getBrake();
+    int gear = carsim->getTransmission()->getGear();
+    int geomSet = inst->getGeomSetId() - 1;
+
+    //setup renderer
+    *(int*)0x685778 |= 0x88; //set m_Touched
+    inst->GetMatrix(&trailerMatrix);
+    Matrix44::Convert(gfxRenderState::sm_World, &trailerMatrix);
+
+    //get our shader set
+    int shaderSet = *getPtr<int>(this, 24);
+    auto shaders = lvlInstance::GetGeomTableEntry(geomSet)->pShaders[shaderSet];
+
+    //get lights
+    modStatic* tlight = lvlInstance::GetGeomTableEntry(geomSet + 2)->getHighestLOD();
+    modStatic* rlight = lvlInstance::GetGeomTableEntry(geomSet + 8)->getHighestLOD();
+    modStatic* blight = lvlInstance::GetGeomTableEntry(geomSet + 9)->getHighestLOD();
+    modStatic* hlight = lvlInstance::GetGeomTableEntry(geomSet + 10)->getHighestLOD();
+    modStatic* slight0 = lvlInstance::GetGeomTableEntry(geomSet + 11)->getHighestLOD();
+    modStatic* slight1 = lvlInstance::GetGeomTableEntry(geomSet + 12)->getHighestLOD();
+    modStatic* siren0 = lvlInstance::GetGeomTableEntry(geomSet + 13)->getHighestLOD();
+    modStatic* siren1 = lvlInstance::GetGeomTableEntry(geomSet + 14)->getHighestLOD();
+
+    //draw rlight
+    if (rlight != nullptr && gear == 0) {
+        rlight->Draw(shaders);
+    }
+
+    //draw blight
+    if (blight != nullptr && brakeInput > 0.1) {
+        blight->Draw(shaders);
+    }
+
+    //draw tlight
+    if (tlight != nullptr) {
+        //draw night copy
+        if (vehCar::sm_DrawHeadlights)
+            tlight->Draw(shaders);
+
+        //draw brake input copy
+        if (brakeInput > 0.1) {
+            tlight->Draw(shaders);
+        }
+    }
+
+    //draw hlight
+    if (hlight != nullptr) {
+        if (vehCar::sm_DrawHeadlights)
+            hlight->Draw(shaders);
+    }
+
+    //draw signals
+    if (enableSignals) {
+        //check signal clock
+        bool drawSignal = fmod(datTimeManager::ElapsedTime, 1.f) > 0.5f;
+        //draw stuff!
+        if (drawSignal) {
+            if (leftSignal || hazardLights) {
+                if (slight0 != nullptr)
+                    slight0->Draw(shaders);
+            }
+            if (rightSignal || hazardLights) {
+                if (slight1 != nullptr)
+                    slight1->Draw(shaders);
+            }
+        }
+    }
+
+    //get vehSiren since vehTrailer doesn't have one by default
+    auto mgr = *mmGameManager::Instance;
+    auto game = mgr->getGame();
+    auto player = game->getPlayer();
+    auto car = player->getCar();
+    auto siren = car->getSiren();
+
+    //draw siren
+    if (siren != nullptr && siren->Active) {
+        int sirenStage = fmod(datTimeManager::ElapsedTime, 2 * sirenCycle) >= sirenCycle ? 1 : 0;
+        if (sirenStage == 0 && siren0 != nullptr) {
+            siren0->Draw(shaders);
+        }
+        else if (sirenStage == 1 && siren1 != nullptr) {
+            siren1->Draw(shaders);
+        }
+    }
+}
+
+void vehTrailerInstanceFeatureHandler::AddGeomHook(const char* pkgName, const char* name, int flags) {
+    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, name, flags);
+    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, "rlight", flags);
+    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, "blight", flags);
+    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, "hlight", flags);
+    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, "slight0", flags);
+    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, "slight1", flags);
+    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, "siren0", flags);
+    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, "siren1", flags);
+}
+
+void vehTrailerInstanceFeatureHandler::Install() {
+    InstallCallback("vehTrailerInstance::Init", "Adds more lights geometries.",
+        &AddGeomHook, {
+            cbHook<CALL>(0x4D7E79),
+        }
+    );
+
+    // adds custom light rendering, which adds proper brake lights,
+    // reverse lights, signal lights, siren lights and night lights
+    InstallVTableHook("vehTrailerInstance::DrawGlow",
+        &DrawGlow, {
+            0x5B2FBC,
+        }
+    );
 }
 
 #ifndef FEATURES_DECLARED

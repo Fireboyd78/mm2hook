@@ -334,6 +334,13 @@ public:
     static void Install();
 };
 
+class vehTrailerInstanceFeatureHandler {
+public:
+    void DrawGlow();
+    void AddGeomHook(const char* pkgName, const char* name, int flags);
+    static void Install();
+};
+
 struct MultiTireTrackContainer {
 public:
     MM2::gfxTexture* TrackTexture;
