@@ -184,9 +184,7 @@ public:
 };
 
 class vehTrailerInstanceHandler {
-public :
-    void DrawGlow();
-    void AddGeomHook(const char* pkgName, const char* name, int flags);
+public:
     static void Install();
 };
 
