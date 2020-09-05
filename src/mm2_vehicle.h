@@ -156,6 +156,7 @@ namespace MM2
         luaBind<vehAero>(L);
         luaBind<vehGyro>(L);
         luaBind<vehAxle>(L);
+        luaBind<vehSuspension>(L);
         luaBind<vehStuck>(L);
         luaBind<vehDrivetrain>(L);
         luaBind<vehSiren>(L);

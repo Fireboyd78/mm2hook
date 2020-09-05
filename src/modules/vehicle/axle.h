@@ -45,7 +45,7 @@ namespace MM2
 
         AGE_API void Update() override                      { ageHook::Thunk<0x4D9B20>::Call<void>(this); }
         AGE_API void FileIO(datParser& parser) override     { ageHook::Thunk<0x4D9CA0>::Call<void>(this); }
-        AGE_API char * GetClassName() override               { return ageHook::Thunk<0x4D9D20>::Call<char*>(this); }
+        AGE_API char * GetClassName() override              { return ageHook::Thunk<0x4D9D20>::Call<char*>(this); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<vehAxle, asNode>("vehAxle")
