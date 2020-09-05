@@ -9,10 +9,10 @@ namespace MM2
 
     /* Types currently unknown */
     enum rglToken {
-        RGLTOKEN_TYPE1 = 0,
-        RGLTOKEN_TYPE2 = 1,
-        RGLTOKEN_TYPE3 = 2,
-        RGLTOKEN_TYPE4 = 3,
+        ZSorting = 0,
+        BackfaceCulling = 1,
+        Lighting = 2,
+        Alpha = 3,
     };
 
     /* Custom implementation of D3D[T]LVERTEX */
@@ -130,6 +130,9 @@ namespace MM2
             .addFunction("vglDrawLabel", &vglDrawLabel)
 
             .addFunction("mkfrgba", &mkfrgba)
+
+            .addFunction("rglIsEnabled", &rglIsEnabled)
+            .addFunction("rglEnableDisable", &rglEnableDisable)
 
             .addFunction("rglWorldMatrix", &rglWorldMatrix)
             .addFunction("rglWorldIdentity", &rglWorldIdentity)
