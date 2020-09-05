@@ -217,6 +217,12 @@ public:
     static void Install();
 };
 
+class aiRouteRacerHandler {
+public:
+    void Update();
+    static void Install();
+};
+
 class modShaderHandler {
 public:
     static void EndEnvMap();

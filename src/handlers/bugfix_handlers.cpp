@@ -10,6 +10,7 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<aiVehicleAmbientHandler>("aiVehicleAmbient"),
     CreateHandler<aiVehicleInstanceHandler>("aiVehicleInstance"),
     CreateHandler<aiGoalAvoidPlayerHandler>("aiGoalAvoidPlayer"),
+    CreateHandler<aiRouteRacerHandler>("aiRouteRacer"),
 
     CreateHandler<asMeshCardInfoHandler>("asMeshCardInfo"),
 
@@ -1171,6 +1172,28 @@ void aiGoalAvoidPlayerHandler::Install() {
     InstallPatch({ 0x90, 0x90, 0x90 }, {
         0x56B235,
     });
+}
+
+/*
+    aiRouteRacerHandler
+*/
+
+void aiRouteRacerHandler::Update() {
+    auto opponent = reinterpret_cast<aiRouteRacer*>(this);
+
+    if (opponent->Finished())
+        *getPtr<int>(this, 0x27C) = 3;
+
+    //call original
+    ageHook::Thunk<0x53D3B0>::Call<void>(this);
+}
+
+void aiRouteRacerHandler::Install() {
+    InstallCallback("aiRouteRacer::Update", "Fixes opponents fight each other for their spots at the finish line",
+        &Update, {
+            cbHook<CALL>(0x53705B), // aiMap::Update
+        }
+    );
 }
 
 /*
