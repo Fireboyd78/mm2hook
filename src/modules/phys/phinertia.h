@@ -13,7 +13,7 @@ namespace MM2
 
     class phInertialCS {
     private:
-        byte _buffer[0x1B4];
+        byte _buffer[0x1B0];
     protected:
         ageHook::Field<0xC, float> _mass;
         ageHook::Field<0x54, Matrix34> _matrix;
@@ -119,6 +119,7 @@ namespace MM2
         }
     };
 
+    ASSERT_SIZEOF(phInertialCS, 0x1B4);
 
     // Lua initialization
 
