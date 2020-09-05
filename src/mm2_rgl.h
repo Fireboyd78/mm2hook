@@ -7,12 +7,11 @@ namespace MM2
     // External declarations
     extern class gfxTexture;
 
-    /* Types currently unknown */
     enum rglToken {
-        ZSorting = 0,
-        BackfaceCulling = 1,
-        Lighting = 2,
-        Alpha = 3,
+        RGL_DEPTH_TEST = 0,
+        RGL_CULL_FACE = 1,
+        RGL_LIGHTING = 2,
+        RGL_BLEND = 3,
     };
 
     /* Custom implementation of D3D[T]LVERTEX */
