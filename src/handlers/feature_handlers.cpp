@@ -1750,7 +1750,7 @@ static ConfigValue<int> cfgOpponentTriColor          ("OpponentTriColor",       
 static ConfigValue<int> cfgOpponentTriOutlineColor   ("OpponentTriOutlineColor",   0);
 
 void mmHudMapFeatureHandler::DrawColoredTri(unsigned int color, const Matrix34 *a2) {
-    rglEnableDisable(RGLTOKEN_TYPE1, 0);
+    rglEnableDisable(RGL_DEPTH_TEST, false);
     Matrix44::Convert(gfxRenderState::sm_World, a2);
     *(int*)0x685778 |= 0x88;
     vglBindTexture(0);
@@ -1760,11 +1760,11 @@ void mmHudMapFeatureHandler::DrawColoredTri(unsigned int color, const Matrix34 *
     vglVertex(-0.69999999f, 0.f, 1.f);
     vglVertex(0.69999999f, 0.f, 1.f);
     vglEnd();
-    rglEnableDisable(RGLTOKEN_TYPE2, 1);
+    rglEnableDisable(RGL_DEPTH_TEST, true);
 }
 
 void mmHudMapFeatureHandler::DrawWhiteTri(const Matrix34 *a1) {
-    rglEnableDisable(RGLTOKEN_TYPE1, 0);
+    rglEnableDisable(RGL_DEPTH_TEST, false);
     Matrix44::Convert(gfxRenderState::sm_World, a1);
     *(int*)0x685778 |= 0x88;
     vglBindTexture(0);
@@ -1774,11 +1774,11 @@ void mmHudMapFeatureHandler::DrawWhiteTri(const Matrix34 *a1) {
     vglVertex(-0.69999999f, 0.f, 1.f);
     vglVertex(0.69999999f, 0.f, 1.f);
     vglEnd();
-    rglEnableDisable(RGLTOKEN_TYPE2, 1);
+    rglEnableDisable(RGL_DEPTH_TEST, true);
 }
 
 void mmHudMapFeatureHandler::DrawLightOrangeTri(const Matrix34 *a1) {
-    rglEnableDisable(RGLTOKEN_TYPE1, 0);
+    rglEnableDisable(RGL_DEPTH_TEST, false);
     Matrix44::Convert(gfxRenderState::sm_World, a1);
     *(int*)0x685778 |= 0x88;
     vglBindTexture(0);
@@ -1788,11 +1788,11 @@ void mmHudMapFeatureHandler::DrawLightOrangeTri(const Matrix34 *a1) {
     vglVertex(-0.69999999f, 0.f, 1.f);
     vglVertex(0.69999999f, 0.f, 1.f);
     vglEnd();
-    rglEnableDisable(RGLTOKEN_TYPE2, 1);
+    rglEnableDisable(RGL_DEPTH_TEST, true);
 }
 
 void mmHudMapFeatureHandler::DrawLightGreenTri(const Matrix34 *a1) {
-    rglEnableDisable(RGLTOKEN_TYPE1, 0);
+    rglEnableDisable(RGL_DEPTH_TEST, false);
     Matrix44::Convert(gfxRenderState::sm_World, a1);
     *(int*)0x685778 |= 0x88;
     vglBindTexture(0);
@@ -1802,7 +1802,7 @@ void mmHudMapFeatureHandler::DrawLightGreenTri(const Matrix34 *a1) {
     vglVertex(-0.69999999f, 0.f, 1.f);
     vglVertex(0.69999999f, 0.f, 1.f);
     vglEnd();
-    rglEnableDisable(RGLTOKEN_TYPE2, 1);
+    rglEnableDisable(RGL_DEPTH_TEST, true);
 }
 
 ageHook::Type<unsigned int> HudmapIconColors(0x5C4740);
@@ -2728,7 +2728,7 @@ void mmPlayerHandler::Zoink() {
     // move player to the closest intersection if we can
     auto carsim = car->getCarSim();
     if (closestIntersection >= 0) {
-        auto oldResetPos = Vector3(carsim->getResetPosition());
+        auto oldResetPos = carsim->getResetPosition();
 
         // set to closest intersection
         carsim->SetResetPos(&AIMAP->intersections[closestIntersection]->center);
