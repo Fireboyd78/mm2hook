@@ -2001,7 +2001,7 @@ void mmHudMapFeatureHandler::DrawOpponents() {
     auto AIMAP = &aiMap::Instance;
     int v1 = 0;
 
-    if (getPtr<int>(this, 0x178) > 0) {
+    if (*getPtr<int>(this, 0xBC) > 0) {
         for (int i = 0; i < *getPtr<__int16>(this, 0xBC); i++) {
             int v2 = v1 + *getPtr<int>(this, 0x34);
             auto oppMtx = *(Matrix34**)(v2 + 8);
