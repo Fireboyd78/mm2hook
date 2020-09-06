@@ -1383,6 +1383,8 @@ void memSafeHeapHandler::Install() {
     mmGameHandler
 */
 
+ageHook::Type<float> gravity(0x5C6C1C);
+
 void mmGameHandler::SendChatMessage(char *message) {
     if (g_bConsoleOpen) {
         if (MM2Lua::IsEnabled())
@@ -1417,6 +1419,12 @@ void mmGameHandler::SendChatMessage(char *message) {
         }
         if (!strcmp(message, "/fuzz")) {
             showMeCops = !showMeCops;
+        }
+        if (!strcmp(message, "/gravity")) {
+            if (gravity == -19.6f)
+                gravity = -9.8f;
+            else
+                gravity = -19.6f;
         }
 
         //send to dispatcher
