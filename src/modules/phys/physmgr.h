@@ -14,6 +14,7 @@ namespace MM2
     class dgPhysManager {
     public:
         static ageHook::Type<dgPhysManager *> Instance;
+        static ageHook::Type<float> Gravity;
 
         void IgnoreMover(lvlInstance* instance)                  { ageHook::Thunk<0x468860>::Call<void>(this, instance); }
         void DeclareMover(lvlInstance* instance, int a2, int a3) { ageHook::Thunk<0x468370>::Call<void>(this, instance, a2, a3); }
