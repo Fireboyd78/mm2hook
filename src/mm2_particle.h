@@ -180,6 +180,8 @@ namespace MM2
         }
     };
 
+    ASSERT_SIZEOF(asBirthRule, 0xB4);
+
     class asParticles {
     public:
         uint dword4;

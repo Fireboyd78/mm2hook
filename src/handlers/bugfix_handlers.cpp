@@ -490,9 +490,9 @@ void mmGearIndicatorHandler::Draw() {
     int v4 = *getPtr<int>(v3, 0x20);
     int v5 = *getPtr<int>(v3, 0x24);
     auto *bitmap = *getPtr<gfxBitmap*>(this, gearID * 4);
-    int width = *getPtr<unsigned __int16>(bitmap, 4);
-    int height = *getPtr<unsigned __int16>(bitmap, 6);
-
+    int width = bitmap->Width;
+    int height = bitmap ->Height;
+    
     gfxPipeline::CopyBitmap(
         v1 + v4,     // destX
         v2 + v5,     // destY

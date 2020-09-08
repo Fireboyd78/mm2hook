@@ -100,7 +100,7 @@ namespace MM2
             .addFunction("Load", &Load)
             .addFunction("GetClassName", &GetClassName)
             .addFunction("GetDirName", &GetDirName)
-                .endClass();
+            .endClass();
         }
     };
 
