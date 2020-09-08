@@ -1,4 +1,5 @@
 local M = {}
+local imgui = require("imgui")
 
 --exposed vars
 M.useCache = false
@@ -16,6 +17,7 @@ local function loadMod(path)
         package.loaded[convertedPath] = nil
     end
 
+    Displayf("Loading mod " .. path)
     local loadedMod = require(convertedPath)
     if loadedMod == nil then
         Errorf("Failed to load mod: " .. convertedPath .. ".")
@@ -60,7 +62,9 @@ local function init()
     if attrib == nil or attrib.mode ~= "directory" then
         Errorf("modsystem: cannot load mods because mods isn't a directory??")
     else
+        Warningf("modsystem.init: loading mods")
         loadMods(modsPath)
+        Warningf("modsystem.init: loading mods complete")
     end
 end
 
@@ -119,6 +123,21 @@ local function onReset()
     end
 end
 
+local function onRenderUi()
+    --Render the main bar
+    if imgui.BeginMainMenuBar() then
+      for _, mod in ipairs(mods) do
+          if mod.drawMenuBar ~= nil then mod.drawMenuBar() end
+      end
+      imgui.EndMainMenuBar()
+    end
+
+    --Render mod windows etc
+    for _, mod in ipairs(mods) do
+        if mod.onRenderUi ~= nil then mod.onRenderUi() end
+    end
+end
+
 local function restart()
     for _, mod in ipairs(mods) do
         if mod.restart ~= nil then mod.restart() end
@@ -136,6 +155,7 @@ M.init = init
 
 M.initMods = initMods
 M.onChatMessage = onChatMessage
+M.onRenderUi = onRenderUi
 M.tick = tick
 M.onGameInit = onGameInit
 M.onGameEnd = onGameEnd

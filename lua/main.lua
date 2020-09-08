@@ -6,11 +6,16 @@ function init()
     local vms, massagems = pcall(modsystem.init)
     if not vms then Errorf(massagems) end
 
+    --Init modsystem
     modsystem.initMods()
 end
 
 function tick()
     modsystem.tick()
+end
+
+function onRenderUi()
+  modsystem.onRenderUi()
 end
 
 function onChatMessage(message)
@@ -48,3 +53,7 @@ end
 function shutdown()
     modsystem.shutdown()
 end
+
+--Testing, TODO: Make this work in the C++ side so we don't leak global functions
+local M = {}
+return M
