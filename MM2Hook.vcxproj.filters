@@ -84,6 +84,24 @@
     <Filter Include="Source Files\modules\effects">
       <UniqueIdentifier>{c056a17a-1c1e-4b69-915a-b28dd4c155ba}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\imgui">
+      <UniqueIdentifier>{df207dd0-af3f-4a25-8cc5-040927f10590}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\imgui\impl">
+      <UniqueIdentifier>{e7c0ddad-aa1e-4329-ae6e-b1cf57aff66e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\imgui\luabindings">
+      <UniqueIdentifier>{bf690c2f-b6cd-42ee-bde7-8ac7f68b8583}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\imgui\misc">
+      <UniqueIdentifier>{d5a719d3-d9c2-480d-9af9-e2adb07c6a6c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\imgui\misc\cpp">
+      <UniqueIdentifier>{f69455ef-0e04-43bf-ad74-05eb60b6c99b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\imgui\renderer">
+      <UniqueIdentifier>{28b01d55-9318-4d0f-812c-2a4f55fb56dc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\lua\lapi.h">
@@ -884,6 +902,36 @@
     <ClInclude Include="src\modules\effects\linespark.h">
       <Filter>Source Files\modules\effects</Filter>
     </ClInclude>
+    <ClInclude Include="src\imgui\imgui_internal.h">
+      <Filter>Source Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imgui\imstb_rectpack.h">
+      <Filter>Source Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imgui\imstb_textedit.h">
+      <Filter>Source Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imgui\imstb_truetype.h">
+      <Filter>Source Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imgui\imconfig.h">
+      <Filter>Source Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imgui\imgui.h">
+      <Filter>Source Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imgui\impl\imgui_impl_age.h">
+      <Filter>Source Files\imgui\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imgui\impl\imgui_impl_win32.h">
+      <Filter>Source Files\imgui\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imgui\misc\cpp\imgui_stdlib.h">
+      <Filter>Source Files\imgui\misc\cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="src\imgui\renderer\imgui_age_rendernode.h">
+      <Filter>Source Files\imgui\renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
@@ -1167,6 +1215,33 @@
     </ClCompile>
     <ClCompile Include="src\mm2_replay.cpp">
       <Filter>Source Files\mm2</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\imgui_demo.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\imgui_draw.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\imgui_widgets.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\imgui.cpp">
+      <Filter>Source Files\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\impl\imgui_impl_age.cpp">
+      <Filter>Source Files\imgui\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\impl\imgui_impl_win32.cpp">
+      <Filter>Source Files\imgui\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\luabindings\imgui_lua_bindings.cpp">
+      <Filter>Source Files\imgui\luabindings</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\misc\cpp\imgui_stdlib.cpp">
+      <Filter>Source Files\imgui\misc\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\imgui\renderer\imgui_age_rendernode.cpp">
+      <Filter>Source Files\imgui\renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,7 @@
 #include "feature_handlers.h"
 #include "lua_drawable.h"
+#include <imgui\impl\imgui_impl_age.h>
+#include <imgui\impl\imgui_impl_win32.h>
 
 using namespace MM2;
 
@@ -577,7 +579,12 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
     return false;
 }
 
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT APIENTRY gfxPipelineHandler::gfxWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    //IMGUI
+    ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
+
+    //
     switch (uMsg)
     {
     case WM_ACTIVATEAPP:

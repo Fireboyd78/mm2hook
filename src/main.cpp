@@ -8,6 +8,8 @@
 #include <discord-presence.h>
 #include <events\dispatcher.h>
 
+#include <imgui\renderer\imgui_age_rendernode.h>
+
 using namespace MM2;
 
 static ConfigValue<int> cfgRandomSeed           ("RandomSeed",          "seed",             0);
@@ -774,6 +776,13 @@ public:
 
             MM2Lua::Reset();
         }
+
+        if (!restarting) 
+        {
+            auto imguiNode = new mmImGuiManager();
+            imguiNode->Init();
+            MM2::ROOT->AddChild(imguiNode);
+        }
     }
 
     // TODO: fix this horrible logic
@@ -797,6 +806,11 @@ public:
         // we can now safely close everything else
         if (MM2Lua::IsEnabled())
             MM2Lua::OnShutdown(); // release Lua
+
+        // shutdown imgui
+        if (mmImGuiManager::Instance != nullptr) {
+            mmImGuiManager::Instance->Shutdown();
+        }
 
         // close this stuff as late as possible
         atexit([](){

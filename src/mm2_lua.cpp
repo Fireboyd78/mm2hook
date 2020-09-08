@@ -2,6 +2,7 @@
 #include "mm2_lua.h"
 #include "mm2_network.h"
 #include "luafilesystem/lfs.h"
+#include <imgui\luabindings\imgui_lua_bindings.cpp>
 
 using namespace LuaIntf;
 using namespace MM2;
@@ -179,6 +180,8 @@ void MM2Lua::Initialize() {
         L.require("lfs", luaopen_lfs);
         L.pop();
 
+        ImguiBindLua(L);
+
         //set LFS path
         LogFile::WriteLine("Setting lfs path...");
         char execPath[MAX_PATH];
@@ -277,6 +280,13 @@ void MM2Lua::OnShutdown()
     }
 
     L.close();
+}
+
+void MM2Lua::OnRenderUi()
+{
+    LuaRef func(L, "onRenderUi");
+    if (func.isFunction())
+        func.call();
 }
 
 void MM2Lua::OnKeyPress(DWORD vKey)
