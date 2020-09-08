@@ -15,7 +15,39 @@ namespace MM2
 
     class gfxViewport
     {
-
+    private:  
+        Matrix44 m_Projection;
+        Matrix44 m_ViewModel;
+        Matrix44 Camera;
+        Matrix44 World;
+        int field_100;
+        int field_104;
+        int field_108;
+        int field_10C;
+        int field_110;
+        int field_114;
+        int field_118;
+        int field_11C;
+        int Flags;
+        float DefaultAspect;
+        int field_128;
+        float Near;
+        float Far;
+        float field_134;
+        float field_138;
+        float field_13C;
+        float float140;
+        float float144;
+        float float148;
+        float float14C;
+        float float150;
+        float float154;
+        float float158;
+        D3DVIEWPORT7 m_Viewport;
+        float Fov;
+        float Aspect;
+    public:
+        void Ortho(float a1, float a2, float a3, float a4, float a5, float a6) { ageHook::Thunk<0x4B1800>::Call<void>(this, a1, a2, a3, a4, a5, a6); }
     };
 
     class cltLight
@@ -118,14 +150,44 @@ namespace MM2
         };
     };
 
+    class gfxImage {
+    public:
+        enum gfxImageFormat {
+            NONE = 0,
+            ARGB_8888 = 1,
+            RGB_0888  = 2,
+            ARGB_1555 = 3,
+            RGB_0555  = 4,
+            Palette8  = 5,
+            Palette4  = 6,
+        };
+
+
+        uint16_t Width;
+        uint16_t Height;
+        uint16_t Size;
+        uint8_t Type;
+        uint8_t PaletteType;
+        uint32_t TexEnv;
+        void *pImageData;
+        void *pPaletteData;
+        uint32_t RefCount;
+        gfxImage *Next;
+
+        void Scale(int a1, int a2)                          { ageHook::Thunk<0x4AEDC0>::Call<void>(this, a1, a2); }
+
+        static gfxImage * Create(int width, int height, gfxImageFormat format, gfxImageFormat paletteType, int mipCount)
+                                                            { return ageHook::StaticThunk<0x4AE920>::Call<gfxImage*>(width, height, format, paletteType, mipCount); }
+    };
+    
     class gfxTexture;
 
     class gfxTextureCacheEntry {
     public:
-        gfxTexture *pTexture;
-        IDirectDrawSurface7 *pSurface;
+        gfxTexture* pTexture;
+        IDirectDrawSurface7* pSurface;
         uint32_t LastAccessTime;
-        gfxTextureCacheEntry *Next;
+        gfxTextureCacheEntry* Next;
     };
 
     class gfxTextureCachePool {
@@ -136,8 +198,8 @@ namespace MM2
         uint16_t TextureCount;
         uint16_t EntryCount;
         uint16_t HasNoSurface;
-        gfxTextureCacheEntry *First;
-        gfxTextureCachePool *Next;
+        gfxTextureCacheEntry* First;
+        gfxTextureCachePool* Next;
         DDPIXELFORMAT PixelFormat;
     };
 
@@ -169,41 +231,31 @@ namespace MM2
 
         static ageHook::Type<bool> sm_EnableSetLOD;
         static ageHook::Type<bool> sm_Allow32;
+    public:
+        AGE_API gfxTexture()
+        {
+            ageHook::Thunk<0x4AC8E0>::Call<void>(this);
+        }
 
-        gfxTexture* Clone()
+        AGE_API ~gfxTexture()
+        {
+            ageHook::Thunk<0x4AC910>::Call<void>(this);
+        }
+
+        AGE_API gfxTexture * Clone()
         {
             return ageHook::Thunk<0x4AE250>::Call<gfxTexture*>(this);
         }
 
-        void Blit(int destX, int destY, gfxTexture *src, int srcX, int srcY, int width, int height)
+        AGE_API void Blit(int destX, int destY, gfxTexture *src, int srcX, int srcY, int width, int height)
         {
             return ageHook::Thunk<0x4AE1E0>::Call<void>(this, destX, destY, src, srcX, srcY, width, height);
         }
-    };
 
-    class gfxImage {
-    public:
-        enum gfxImageFormat {
-            ARGB_8888 = 1,
-            RGB_0888  = 2,
-            ARGB_1555 = 3,
-            RGB_0555  = 4,
-            Palette8  = 5,
-            Palette4  = 6,
-        };
-
-        uint16_t Width;
-        uint16_t Height;
-        uint16_t Size;
-        uint8_t Type;
-        uint8_t PaletteType;
-        uint32_t TexEnv;
-        void *pImageData;
-        void *pPaletteData;
-        uint32_t RefCount;
-        gfxImage *Next;
-
-        void Scale(int a1, int a2)                          { ageHook::Thunk<0x4AEDC0>::Call<void>(this, a1, a2); }
+        AGE_API static gfxTexture * Create(gfxImage* img, bool lastMip) 
+        {
+            return ageHook::StaticThunk<0x4AD090>::Call<gfxTexture*>(img, lastMip);
+        }
     };
 
     class gfxPacket {
@@ -274,6 +326,14 @@ namespace MM2
 
     class gfxPipeline {
     public:
+        static gfxViewport * CreateViewport() {
+            return ageHook::StaticThunk<0x4A90B0>::Call<gfxViewport*>();
+        }
+
+        static void ForceSetViewport(gfxViewport* viewport) {
+            ageHook::StaticThunk<0x4B2EE0>::Call<void>(viewport);
+        }
+
         static void CopyBitmap(int destX, int destY, gfxBitmap* bitmap, int srcX, int srcY, int width, int height, bool srcColorKey) {
             ageHook::StaticThunk<0x4AB4C0>::Call<void>(destX, destY, bitmap, srcX, srcY, width, height, srcColorKey);
         }
@@ -355,6 +415,8 @@ namespace MM2
 
         // educated guess -- applied to view?
         static ageHook::TypeProxy<Matrix44> sm_Transform;
+    public:
+        static void SetCamera(Matrix44 * mtx)   { ageHook::StaticThunk<0x4B2A20>::Call<void>(mtx); }
     };
 
     class ltLight {
@@ -527,6 +589,8 @@ namespace MM2
 
     declhook(0x6B0454, _Type<uint>, mmCpuSpeed);
     
+    declhook(0x683124, _Type<gfxViewport*>, gfxCurrentViewport);
+
     declhook(0x6830F4, _Type<float>, window_fWidth);
     declhook(0x683120, _Type<float>, window_fHeight);
 
