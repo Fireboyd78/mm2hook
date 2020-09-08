@@ -1746,6 +1746,8 @@ void BridgeFerryHandler::Install() {
 int hudMapColorStyle = 0;
 int playerTriColor = 5;
 int playerTriOutlineColor = 0;
+int playerCopTriColor = 1;
+int playerCopTriOutlineColor = 0;
 int policeTriColor = 1;
 int policeTriOutlineColor = 0;
 int opponentTriColor = 7;
@@ -1754,6 +1756,8 @@ int opponentTriOutlineColor = 0;
 static ConfigValue<int> cfgHudMapColorStyle          ("HudMapColorStyle",          0);
 static ConfigValue<int> cfgPlayerTriColor            ("PlayerTriColor",            5);
 static ConfigValue<int> cfgPlayerTriOutlineColor     ("PlayerTriOutlineColor",     0);
+static ConfigValue<int> cfgPlayerCopTriColor         ("PlayerCopTriColor",         1);
+static ConfigValue<int> cfgPlayerCopTriOutlineColor  ("PlayerCopTriOutlineColor",  0);
 static ConfigValue<int> cfgPoliceTriColor            ("PoliceTriColor",            1);
 static ConfigValue<int> cfgPoliceTriOutlineColor     ("PoliceTriOutlineColor",     0);
 static ConfigValue<int> cfgOpponentTriColor          ("OpponentTriColor",          7);
@@ -1885,9 +1889,16 @@ void mmHudMapFeatureHandler::DrawPlayer() {
         *getPtr<float>(this, 0x64) = triSize;
 
         if (hudMapColorStyle == 0) {
-            DrawIcon(0, playerMtx);
-            *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-            DrawIcon(5, playerMtx);
+            if (audio->IsPolice(vehName)) {
+                DrawIcon(0, playerMtx);
+                *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+                DrawIcon(1, playerMtx);
+            }
+            if (!audio->IsPolice(vehName)) {
+                DrawIcon(0, playerMtx);
+                *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+                DrawIcon(5, playerMtx);
+            }
         }
         if (hudMapColorStyle == 1) {
             if (audio->IsPolice(vehName)) {
@@ -1940,9 +1951,16 @@ void mmHudMapFeatureHandler::DrawPlayer() {
             }
         }
         if (hudMapColorStyle == 4) {
-            DrawIcon(playerTriOutlineColor, playerMtx);
-            *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-            DrawIcon(playerTriColor, playerMtx);
+            if (audio->IsPolice(vehName)) {
+                DrawIcon(playerCopTriOutlineColor, playerMtx);
+                *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+                DrawIcon(playerCopTriColor, playerMtx);
+            }
+            if (!audio->IsPolice(vehName)) {
+                DrawIcon(playerTriOutlineColor, playerMtx);
+                *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+                DrawIcon(playerTriColor, playerMtx);
+            }
         }
     }
 }
@@ -2079,6 +2097,8 @@ void mmHudMapFeatureHandler::Install() {
     hudMapColorStyle = cfgHudMapColorStyle.Get();
     playerTriColor = cfgPlayerTriColor.Get();
     playerTriOutlineColor = cfgPlayerTriOutlineColor.Get();
+    playerCopTriColor = cfgPlayerCopTriColor.Get();
+    playerCopTriOutlineColor = cfgPlayerCopTriOutlineColor.Get();
     policeTriColor = cfgPoliceTriColor.Get();
     policeTriOutlineColor = cfgPoliceTriOutlineColor.Get();
     opponentTriColor = cfgOpponentTriColor.Get();
