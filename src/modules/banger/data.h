@@ -1,12 +1,12 @@
 #pragma once
 #include <modules\banger.h>
-
 #include <mm2_particle.h>
 
 namespace MM2
 {
     // Forward declarations
     class dgBangerData;
+    class dgBangerDataManager;
 
     // External declarations
     extern class asNode;
@@ -16,33 +16,66 @@ namespace MM2
 
     class dgBangerData : public asNode
     {
-        uint32_t Index;
-        Vector3 vector31C;
-        Vector3 vector328;
+    private:
+        uint Index;
+        Vector3 CG;
+        Vector3 Size;
         int dword34;
         int dword38;
         int dword3C;
-        Vector3 *Positions;
-        short PositionCount;
-        Vector3 dword48;
-        int dword54;
-        int dword58;
-        int dword5C;
+        Vector3* GlowOffsets;
+        short NumGlows;
+        short word46;
+        float Mass;
+        float Elasticity;
+        float Friction;
+        float ImpulseLimit2;
+        float YRadius;
+        int ColliderId;
         asBirthRule BirthRule;
-        int dword114;
-        int Flags2;
-        short word11C;
-        byte byte11E;
-        byte byte11F;
-        byte Flags;
-        byte byte121;
-        int dword124;
-        short word128;
-        int dword12C;
-        int dword130;
-        int dword134;
-        char pad138[28];
+        int unknown272;
+        int TexNumber;
+        int BillFlags;
+        short SpinAxis;
+        short Flash;
+        byte CollisionType;
+        byte CollisionPrim;
+        short unknown290;
+        int BoundPtr;
+        short NumParts;
+        short unknown298;
+        int unknown300;
+        int AudioId;
+        int GeomSet;
+        char pad138[24];
+    public:
     };
+    
+    ASSERT_SIZEOF(dgBangerData, 0x154);
+
+    class dgBangerDataManager : public asNode 
+    {
+    private:
+        int dataCount;
+        dgBangerData datas[512];
+        gfxTexture* ParticleSheetTextures[20];
+        byte buffer[0x58];
+    public:
+        inline int getDataCount()
+        {
+            return dataCount;
+        }
+
+        inline dgBangerData* getData(int id) 
+        {
+            if (id >= dataCount || id < 0)
+                return nullptr;
+            return &datas[id];
+        }
+    public:
+    };
+
+    ASSERT_SIZEOF(dgBangerDataManager, 0x2A8C4);
 
     // Lua initialization
 
