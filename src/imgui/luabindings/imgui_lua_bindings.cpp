@@ -5,6 +5,7 @@
 
 #include "..\imgui.h"
 #include "..\misc\cpp\imgui_stdlib.h"
+#include <mm2_gfx.h>
 
 using namespace LuaIntf;
 
@@ -391,6 +392,10 @@ static void ImGuiProgressBar(float fraction, const ImVec2& size, const char* ove
     ImGui::ProgressBar(fraction, size, ProcessNullableString(overlay));
 }
 
+static void ImGuiImageLua(MM2::gfxTexture* texture, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& tintColor, const ImVec4& borderColor) {
+    ImGui::Image((void*)texture, size, uv0, uv1, tintColor, borderColor);
+}
+
 //Helpers copied from the demo
 static void CenterNextWindow()
 {
@@ -480,6 +485,8 @@ static void ImguiBindLua(LuaState L) {
         .addFunction("InputText", &ImGuiInputTextLua)
         .addFunction("InputTextMultiline", &ImGuiInputTextMultilineLua)
         .addFunction("InputTextWithHint", &ImGuiInputTextWithHintLua)
+
+        .addFunction("Image", &ImGuiImageLua)
 
         .addFunction("ListBox", &ImGuiListBoxLua)
         .addFunction("Combo", &ImGuiComboLua)

@@ -533,6 +533,14 @@ M.ProgressBar = function(fraction, size, overlay)
   imgui.ProgressBar(fraction, size, overlay)
 end
 
+M.Image = function(texture, size, uv0, uv1, tintColor, borderColor)
+  uv0 = uv0 or ImVec2(0, 0)
+  uv1 = uv1 or ImVec2(1, 1)
+  tintColor = tintColor or ImVec4(1, 1, 1, 1)
+  borderColor = borderColor or ImVec4(0, 0, 0, 0)
+  imgui.Image(texture, size, uv0, uv1, tintColor, borderColor)
+end
+
 --Demo window. Draw this for cool examples
 M.ShowDemoWindow = function(show) 
   show = boolDefault(show, true)
