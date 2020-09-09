@@ -49,6 +49,7 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<vehPoliceCarAudioHandler>("vehPoliceCarAudio"),
     CreateHandler<vehBreakableMgrHandler>("vehBreakableMgr"),
     CreateHandler<vehCarModelFeatureHandler>("vehCarModel"),
+    CreateHandler<vehCarSimHandler>("vehCarSim"),
     CreateHandler<vehWheelHandler>("vehWheel"),
     CreateHandler<vehTrailerInstanceFeatureHandler>("vehTrailerInstance"),
 
@@ -3154,6 +3155,40 @@ bool flashingHeadlights = true;
 
 static ConfigValue<bool> cfgPartReflections("ReflectionsOnCarParts", false);
 
+void vehCarModelFeatureHandler::DrawWhl4(int a2, int a3, Matrix34* a4, int a5) {
+    auto mod = reinterpret_cast<vehCarModel*>(this);
+    auto carsim = mod->getCar()->getCarSim();
+
+    a4->Set(&carsim->getWheel(2)->getMatrix());
+    auto carMatrix = carsim->getWorldMatrix();
+
+    float offsetX = carsim->BackBackLeftWheelPosDiff.Y * carMatrix->m10 + carsim->BackBackLeftWheelPosDiff.Z * carMatrix->m20 + carsim->BackBackLeftWheelPosDiff.X * carMatrix->m00;
+    float offsetY = carsim->BackBackLeftWheelPosDiff.Y * carMatrix->m11 + carsim->BackBackLeftWheelPosDiff.Z * carMatrix->m21 + carsim->BackBackLeftWheelPosDiff.X * carMatrix->m01;
+    float offsetZ = carsim->BackBackLeftWheelPosDiff.Y * carMatrix->m12 + carsim->BackBackLeftWheelPosDiff.Z * carMatrix->m22 + carsim->BackBackLeftWheelPosDiff.X * carMatrix->m02;
+    a4->m30 += offsetX;
+    a4->m31 += offsetY;
+    a4->m32 += offsetZ;
+
+    ageHook::Thunk<0x4CE840>::Call<void>(this, a2, a3, a4, a5);
+}
+
+void vehCarModelFeatureHandler::DrawWhl5(int a2, int a3, Matrix34* a4, int a5) {
+    auto mod = reinterpret_cast<vehCarModel*>(this);
+    auto carsim = mod->getCar()->getCarSim();
+
+    a4->Set(&carsim->getWheel(3)->getMatrix());
+    auto carMatrix = carsim->getWorldMatrix();
+
+    float offsetX = carsim->BackBackRightWheelPosDiff.Y * carMatrix->m10 + carsim->BackBackRightWheelPosDiff.Z * carMatrix->m20 + carsim->BackBackRightWheelPosDiff.X * carMatrix->m00;
+    float offsetY = carsim->BackBackRightWheelPosDiff.Y * carMatrix->m11 + carsim->BackBackRightWheelPosDiff.Z * carMatrix->m21 + carsim->BackBackRightWheelPosDiff.X * carMatrix->m01;
+    float offsetZ = carsim->BackBackRightWheelPosDiff.Y * carMatrix->m12 + carsim->BackBackRightWheelPosDiff.Z * carMatrix->m22 + carsim->BackBackRightWheelPosDiff.X * carMatrix->m02;
+    a4->m30 += offsetX;
+    a4->m31 += offsetY;
+    a4->m32 += offsetZ;
+
+    ageHook::Thunk<0x4CE840>::Call<void>(this, a2, a3, a4, a5);
+}
+
 void vehCarModelFeatureHandler::ModStaticDraw(modShader* a1) {
     auto mod = reinterpret_cast<modStatic*>(this);
     ageHook::Type<gfxTexture *> g_ReflectionMap = 0x628914;
@@ -3321,6 +3356,19 @@ void vehCarModelFeatureHandler::DrawGlow() {
 }
 
 void vehCarModelFeatureHandler::Install() {
+    InstallCallback("vehCarModel::DrawPart", "Use extra wheel matrices.",
+        &DrawWhl4, {
+            cbHook<CALL>(0x4CE631), // vehCarModel::Draw
+        }
+    );
+
+    InstallCallback("vehCarModel::DrawPart", "Use extra wheel matrices.",
+        &DrawWhl5, {
+            cbHook<CALL>(0x4CE6CF), // vehCarModel::Draw
+        }
+    );
+
+
     if (cfgPartReflections.Get())
     {
         InstallCallback("vehCarModel::DrawPart", "Draws reflections on car parts.",
@@ -3758,6 +3806,27 @@ void vehTrailerInstanceFeatureHandler::Install() {
     );
 }
 
+/*
+    vehCarSimHandler
+*/
+void vehCarSimHandler::Install()
+{
+    InstallPatch({0x78}, {
+            0x42BB4B + 1, // Change size of vehCarSim on allocation
+        });
+
+    InstallCallback("vehCarSim::Init", "Use our own init function.",
+        &vehCarSim::Init, {
+            cbHook<CALL>(0x403C21),
+            cbHook<CALL>(0x42BE75),
+            cbHook<CALL>(0x43C573),
+            cbHook<CALL>(0x43C6DF),
+        }
+    );
+}
+
+
 #ifndef FEATURES_DECLARED
 #define FEATURES_DECLARED
 #endif
+

@@ -86,6 +86,10 @@ namespace MM2
         byte _buffer5[0x4];
         lvlMaterial *CurrentPhysicsMaterial;
     public:
+        inline Matrix34 getMatrix() {
+            return this->WheelMatrix;
+        }
+
         inline bool isGrounded() {
             return this->IsGrounded == TRUE;
         }
@@ -108,6 +112,14 @@ namespace MM2
 
         inline void setWidth(float width) {
             this->Width = width;
+        }
+
+        inline Vector3 getCenter(void) {
+            return this->Center;
+        }
+
+        inline void setCenter(Vector3 center) {
+            this->Center = center;
         }
         
         inline float getLatSlipPercent(void) {

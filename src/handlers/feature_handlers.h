@@ -299,6 +299,8 @@ public:
 
 class vehCarModelFeatureHandler {
 public: 
+    void DrawWhl4(int a2, int a3, MM2::Matrix34* a4, int a5);
+    void DrawWhl5(int a2, int a3, MM2::Matrix34* a4, int a5);
     void DrawGlow();
     void ModStaticDraw(MM2::modShader * a1);
     static void Install();
@@ -349,5 +351,10 @@ public:
 
 class multiTireTrackHandler {
     void UpdateTrack(void* lvlTrackManagerPtr, void* wheel);
+    static void Install();
+};
+
+class vehCarSimHandler {
+public:
     static void Install();
 };

@@ -17,7 +17,7 @@ void modConvertModel(LPCSTR filename, LPCSTR newFilename, bool a3) {
     return ageHook::StaticThunk<0x597BD0>::Call<void>(filename, newFilename, a3);
 }
 
-bool GetPivot(Matrix34 &mtx, LPCSTR basename, LPCSTR file) {
+bool MM2::GetPivot(Matrix34 &mtx, LPCSTR basename, LPCSTR file) {
     return ageHook::StaticThunk<0x4A5280>::Call<bool>(&mtx, basename, file);
 }
 

@@ -1,5 +1,6 @@
 #pragma once
 #include <modules\vehicle.h>
+#include <mm2_model.h>
 
 #include "transmission.h"
 #include "engine.h"
@@ -19,6 +20,7 @@ namespace MM2
     extern class lvlInstance;
     extern class phInertialCS;
     extern class phCollider;
+    extern class vehCarModel;
 
     // Class definitions
 
@@ -73,6 +75,12 @@ namespace MM2
         float SteeringInput;
         float SSSValue;
         float SSSThreshold;
+
+    public:
+        //EXTRA FIELDS. The hook expands on this class, this is only possible because it's only used like a pointer in the original MM code
+        //These are the position differences from (WHL5-WHL3) and (WHL4-WHL2)
+        Vector3 BackBackLeftWheelPosDiff;
+        Vector3 BackBackRightWheelPosDiff;
     public:
         inline float getBoundFriction(void) {
             return this->BoundFriction;
@@ -230,6 +238,27 @@ namespace MM2
         AGE_API vehCarSim()                                 { ageHook::Thunk<0x4CB660>::Call<void>(this); }
         AGE_API ~vehCarSim()                                { ageHook::Thunk<0x4CB8E0>::Call<void>(this); }
 
+        AGE_API void Init(const char* basename, int colliderPtr, vehCarModel* carModelPtr)
+        {
+            //Call original 
+            ageHook::Thunk<0x4CBB80>::Call<void>(this, basename, colliderPtr, carModelPtr);
+
+            //We've expanded this class. Now for *our new stuff*
+            Matrix34 diffMatrix;
+            
+            if (GetPivot(diffMatrix, basename, "whl4")) {
+                BackBackLeftWheelPosDiff.X = diffMatrix.m30 - getWheel(2)->getCenter().X;
+                BackBackLeftWheelPosDiff.Y = diffMatrix.m31 - getWheel(2)->getCenter().Y;
+                BackBackLeftWheelPosDiff.Z = diffMatrix.m32 - getWheel(2)->getCenter().Z;
+            }
+
+            if (GetPivot(diffMatrix, basename, "whl5")) {
+                BackBackRightWheelPosDiff.X = diffMatrix.m30 - getWheel(3)->getCenter().X;
+                BackBackRightWheelPosDiff.Y = diffMatrix.m31 - getWheel(3)->getCenter().Y;
+                BackBackRightWheelPosDiff.Z = diffMatrix.m32 - getWheel(3)->getCenter().Z;
+            }
+        }
+
         AGE_API int BottomedOut()                           { return ageHook::Thunk<0x4CBB40>::Call<int>(this); }
         AGE_API int OnGround()                              { return ageHook::Thunk<0x4CBB00>::Call<int>(this); }
         AGE_API void ReconfigureDrivetrain()                { ageHook::Thunk<0x4CC0B0>::Call<void>(this); }
@@ -290,7 +319,7 @@ namespace MM2
         }
     };
 
-    ASSERT_SIZEOF(vehCarSim, 0x1560);
+    ASSERT_SIZEOF(vehCarSim, 0x1560 + 0xC + 0xC); //+2 extra fields
 
     // Lua initialization
 
