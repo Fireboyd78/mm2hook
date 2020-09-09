@@ -188,6 +188,22 @@ namespace MM2
         IDirectDrawSurface7* pSurface;
         uint32_t LastAccessTime;
         gfxTextureCacheEntry* Next;
+    public:
+        inline gfxTexture * getTexture() {
+            return this->pTexture;
+        }
+
+        inline gfxTextureCacheEntry * getNext() {
+            return this->Next;
+        }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<gfxTextureCacheEntry>("gfxTextureCacheEntry")
+                .addPropertyReadOnly("NextEntry", &getNext)
+                .addPropertyReadOnly("Texture", &getTexture)
+
+                .endClass();
+        }
     };
 
     class gfxTextureCachePool {
@@ -201,6 +217,52 @@ namespace MM2
         gfxTextureCacheEntry* First;
         gfxTextureCachePool* Next;
         DDPIXELFORMAT PixelFormat;
+    public:
+        inline int getMipMapCount() {
+            return this->MipMapCount;
+        }
+
+        inline int getWidth() {
+            return this->Width;
+        }
+
+        inline int getHeight() {
+            return this->Height;
+        }
+
+        inline int getTextureCount() {
+            return this->TextureCount;
+        }
+
+        inline int getEntryCount() {
+            return this->EntryCount;
+        }
+
+        inline gfxTextureCachePool * getNext() {
+            return this->Next;
+        }
+
+        inline gfxTextureCacheEntry* getFirst() {
+            return this->First;
+        }
+
+        static ageHook::Type<gfxTextureCachePool*> sm_FirstPool;
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<gfxTextureCachePool>("gfxTextureCachePool")
+                .addStaticProperty("FirstPool", [] { return sm_FirstPool.get(); })
+
+                .addPropertyReadOnly("FirstEntry", &getFirst)
+                .addPropertyReadOnly("NextPool", &getNext)
+
+                .addPropertyReadOnly("Width", &getWidth)
+                .addPropertyReadOnly("Height", &getHeight)
+                .addPropertyReadOnly("MipMapCount", &getMipMapCount)
+                .addPropertyReadOnly("EntryCount", &getEntryCount)
+                .addPropertyReadOnly("TextureCount", &getTextureCount)
+
+                .endClass();
+        }
     };
 
     class gfxTexture {
@@ -231,6 +293,28 @@ namespace MM2
 
         static ageHook::Type<bool> sm_EnableSetLOD;
         static ageHook::Type<bool> sm_Allow32;
+        static ageHook::Type<gfxTexture*> sm_First;
+        static ageHook::Type<bool> sm_UseInternalCache;
+    public:
+        inline const char * getName() {
+            return this->Name;
+        }
+
+        inline int getWidth() {
+            return this->Width;
+        }
+
+        inline int getHeight() {
+            return this->Height;
+        }
+
+        inline gfxTextureCachePool * getPool() {
+            return this->CachePool;
+        }
+
+        inline gfxTextureCacheEntry * getCacheEntry() {
+            return this->CacheEntry;
+        }
     public:
         AGE_API gfxTexture()
         {
@@ -255,6 +339,21 @@ namespace MM2
         AGE_API static gfxTexture * Create(gfxImage* img, bool lastMip) 
         {
             return ageHook::StaticThunk<0x4AD090>::Call<gfxTexture*>(img, lastMip);
+        }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<gfxTexture>("gfxTexture")
+                .addStaticProperty("First", [] { return sm_First.get(); })
+                .addStaticProperty("UseInternalCache", [] { return sm_UseInternalCache.get(); })
+
+                .addPropertyReadOnly("Name", &getName)
+
+                .addPropertyReadOnly("Width", &getWidth)
+                .addPropertyReadOnly("Height", &getHeight)
+                .addPropertyReadOnly("CacheEntry", &getCacheEntry)
+                .addPropertyReadOnly("CachePool", &getPool)
+
+                .endClass();
         }
     };
 
@@ -527,8 +626,12 @@ namespace MM2
     };
     ASSERT_SIZEOF(ltLight, 0x4C);
 
-    declhook(0x4B30F0, _Func<gfxTexture *>, $gfxGetTexture);
+    // Statically available functions
+    static gfxTexture * gfxGetTexture(const char *a1, bool a2 = true) {
+        return ageHook::StaticThunk<0x4B30F0>::Call<gfxTexture*>(a1, a2);
+    }
 
+    //
     declhook(0x4ABE00, _Func<bool>, $gfxAutoDetect);
     declhook(0x4A8CE0, _Func<void>, $gfxPipeline_SetRes);
 
@@ -609,6 +712,11 @@ namespace MM2
     template<>
     void luaAddModule<module_gfx>(LuaState L) {
         luaBind<ltLight>(L);
+        luaBind<gfxTexture>(L);
+        luaBind<gfxTextureCacheEntry>(L);
+        luaBind<gfxTextureCachePool>(L);
+
+        LuaBinding(L).addFunction("gfxGetTexture", &gfxGetTexture);
     }
 
     ASSERT_SIZEOF(gfxRenderStateData, 0x50);

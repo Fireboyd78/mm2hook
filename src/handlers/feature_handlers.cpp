@@ -373,10 +373,10 @@ struct TimeWeatherInfo {
         }
 
         if (!useSoftware)
-            g_ReflectionMap = $gfxGetTexture(ReflectionMap);
+            g_ReflectionMap = gfxGetTexture(ReflectionMap);
 
         if (ShowLightGlows)
-            g_GlowTexture = $gfxGetTexture(GlowName);
+            g_GlowTexture = gfxGetTexture(GlowName);
 
         vglSetCloudMap(ShadowMap);
     }
@@ -2977,7 +2977,7 @@ void dgBangerInstanceHandler::DrawGlow()
 {
     //first time texture load
     if (!glowLoaded) {
-        redGlowTexture = $gfxGetTexture("s_red_glow", true);
+        redGlowTexture = gfxGetTexture("s_red_glow", true);
         glowLoaded = true;
     }
 

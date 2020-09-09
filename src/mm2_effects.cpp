@@ -67,7 +67,7 @@ namespace MM2
 
                     DamageTextures[shaderIndex] = cleanShader->Texture;
 
-                    gfxTexture* cleanTexture = $gfxGetTexture(textureName, 1);
+                    gfxTexture* cleanTexture = gfxGetTexture(textureName, 1);
 
                     if (cleanTexture)
                     {
@@ -80,7 +80,7 @@ namespace MM2
                 {
                     strcat_s(textureName, "_dmg");
 
-                    gfxTexture* damageTexture = $gfxGetTexture(textureName, 1);
+                    gfxTexture* damageTexture = gfxGetTexture(textureName, 1);
 
                     DamageTextures[shaderIndex] = damageTexture;
 
