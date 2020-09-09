@@ -87,16 +87,6 @@ namespace MM2
     class asBirthRule : public asNode
     {
     public:
-        AGE_API asBirthRule(void) {
-            scoped_vtable x(this);
-            ageHook::Thunk<0x45ECE0>::Call<void>(this);
-        }
-
-        AGE_API virtual ~asBirthRule(void) {
-            scoped_vtable x(this);
-            ageHook::Thunk<0x45FBF0>::Call<void>(this);
-        }
-
         Vector3 Position;
         Vector3 PositionVar;
         Vector3 Velocity;
@@ -127,19 +117,29 @@ namespace MM2
         int TexFrameEnd;
         int InitialBlast;
         int BirthFlags;
-        void(__cdecl *OnSparkAdded)(struct asSparkInfo *, struct asSparkPos *);
+        void(__cdecl* OnSparkAdded)(struct asSparkInfo*, struct asSparkPos*);
+    public:
+        AGE_API asBirthRule(void) {
+            scoped_vtable x(this);
+            ageHook::Thunk<0x45ECE0>::Call<void>(this);
+        }
+
+        AGE_API virtual ~asBirthRule(void) {
+            scoped_vtable x(this);
+            ageHook::Thunk<0x45FBF0>::Call<void>(this);
+        }
 
         //helpers
         inline std::tuple<byte, byte, byte, byte> getColorTuple(void) {
-            return std::make_tuple(Color.a, Color.r, Color.g, Color.b);
+            return std::make_tuple(Color.r, Color.g, Color.b, Color.a);
         }
 
-        inline void setColorTuple(std::tuple<byte, byte, byte, byte> color) {
+        inline void setColorTuple(std::tuple<byte, byte, byte, byte> setColor) {
             auto myColor = &this->Color;
-            myColor->a = std::get<0>(color);
-            myColor->r = std::get<1>(color);
-            myColor->g = std::get<2>(color);
-            myColor->b = std::get<3>(color);
+            myColor->a = std::get<3>(setColor);
+            myColor->r = std::get<0>(setColor);
+            myColor->g = std::get<1>(setColor);
+            myColor->b = std::get<2>(setColor);
         }
 
         //lua
@@ -202,6 +202,8 @@ namespace MM2
         uint dword4C;
         float dword50;
     public:
+        ANGEL_ALLOCATOR;
+
         AGE_API asParticles(void) {
             scoped_vtable x(this);
             ageHook::Thunk<0x460EB0>::Call<void>(this);
