@@ -17,6 +17,7 @@ namespace MM2
         byte _buffer[0x177A4 - sizeof(asNode)];
     public:
         static ageHook::Type<aiVehicleManager *> Instance;
+        static ageHook::Type<int> SignalClock;
 
         AGE_API aiVehicleManager(void) {
             scoped_vtable x(this);
