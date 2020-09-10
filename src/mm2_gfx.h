@@ -267,7 +267,7 @@ namespace MM2
 
     class gfxTexture {
     public:
-        /*0x00*/uint VglBindIndex;
+        /*0x00*/uint BindIndex;
 
         /*0x04*/const char *Name;
 
@@ -275,7 +275,7 @@ namespace MM2
         /*0x0A*/ushort Height;
 
         /*0x0C*/uint TexEnv;
-        /*0x10*/uint Color;
+        /*0x10*/uint DominantColor;
 
         /*0x14*/IDirectDrawSurface7 *DirectDrawSurface;
         /*0x18*/IDirectDrawPalette *DirectDrawPalette;
@@ -285,11 +285,11 @@ namespace MM2
 
         /*0x24*/uint RefCount;
 
-        /*0x28*/gfxTexture *PrevLOD;
+        /*0x28*/gfxTexture *Next;
         /*0x2C*/gfxTexture *NextLOD;
 
-        /*0x30*/byte MaxLODCount;
-        /*0x31*/byte LODCount;
+        /*0x30*/byte LOD;
+        /*0x31*/byte MaxLOD;
 
         static ageHook::Type<bool> sm_EnableSetLOD;
         static ageHook::Type<bool> sm_Allow32;
@@ -314,6 +314,14 @@ namespace MM2
 
         inline gfxTextureCacheEntry * getCacheEntry() {
             return this->CacheEntry;
+        }
+
+        inline gfxTexture * getNext() {
+            return this->Next;
+        }
+
+        inline gfxTexture * getNextLOD() {
+            return this->NextLOD;
         }
     public:
         AGE_API gfxTexture()
@@ -347,6 +355,8 @@ namespace MM2
                 .addStaticProperty("UseInternalCache", [] { return sm_UseInternalCache.get(); })
 
                 .addPropertyReadOnly("Name", &getName)
+                .addPropertyReadOnly("Next", &getNext)
+                .addPropertyReadOnly("NextLOD", &getNextLOD)
 
                 .addPropertyReadOnly("Width", &getWidth)
                 .addPropertyReadOnly("Height", &getHeight)
@@ -435,6 +445,14 @@ namespace MM2
 
         static void CopyBitmap(int destX, int destY, gfxBitmap* bitmap, int srcX, int srcY, int width, int height, bool srcColorKey) {
             ageHook::StaticThunk<0x4AB4C0>::Call<void>(destX, destY, bitmap, srcX, srcY, width, height, srcColorKey);
+        }
+
+        static void StartFade(uint color, float time) {
+            ageHook::StaticThunk<0x4B2CE0>::Call<void>(color, time);
+        }
+
+        static void SetFade(uint color) {
+            ageHook::StaticThunk<0x4B2D20>::Call<void>(color);
         }
     };
 

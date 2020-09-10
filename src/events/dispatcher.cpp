@@ -54,6 +54,10 @@ void GameEventDispatcher::onReset() {
     if (MM2Lua::IsEnabled())
         MM2Lua::OnReset();
 
+    //do fade (maybe move this eventually)
+    gfxPipeline::SetFade(0xFF000000);
+    gfxPipeline::StartFade(0x00000000, 1.f);
+
     //call original
     auto game = mmGameManager::Instance->getGame();
     ageHook::Thunk<0x413D40>::ThisCall<void>(game);
