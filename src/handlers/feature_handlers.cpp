@@ -1478,7 +1478,7 @@ void mmGameHandler::UpdateSteeringBrakes(void) {
     carsim->setHandbrake(handbrakes);
     player->SetSteering(steering);
 
-    if (&asNetwork::SessionOpen && reverse >= 2) {
+    if (NETMGR->SessionOpen && reverse >= 2) {
         if (throttle >= 0.f) {
             if (throttle > v1)
                 throttle = v1;
