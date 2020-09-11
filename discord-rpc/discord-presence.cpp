@@ -421,44 +421,44 @@ void discordHandler::Install() {
     {
         InstallCallback("mmGame::Init", "Updates Discord Rich Presence when entering a race.",
             &GameInit, {
-                cb::hook<JMP>(0x433AA0),      //mmGameSingle::Init
-                cb::hook<CALL>(0x438F81),     //mmGameMulti::Init
+                cb::jmp(0x433AA0),      //mmGameSingle::Init
+                cb::call(0x438F81),     //mmGameMulti::Init
             }
         );
         InstallCallback("mmGame::BeDone", "Updates Discord Rich Presence when exiting a race.",
             &GameBeDone, {
-                cb::hook<JMP>(0x414DF1),      //end of mmGame::BeDone
+                cb::jmp(0x414DF1),      //end of mmGame::BeDone
             }
         );
         InstallCallback("asNetwork::CreateSession", "Update the multiplayer status to on when creating the lobby.",
             &DetectHostMPLobby, {
-                cb::hook<CALL>(0x4117C5),     //mmInterface::CreateSession
+                cb::call(0x4117C5),     //mmInterface::CreateSession
             }
         );
         InstallCallback("asNetwork::JoinSession", "Update the multiplayer status to on when joining the lobby.",
             &DetectJoinMPLobby, {
-                cb::hook<CALL>(0x572782),     //asNetwork::JoinSession(int, char *)
+                cb::call(0x572782),     //asNetwork::JoinSession(int, char *)
             }
         );
         InstallCallback("asNetwork::JoinLobbySession", "Update the multiplayer status to on when joining the lobby session.",
             &DetectJoinMPLobbySession, {
-                cb::hook<CALL>(0x409C6F),     //mmInterface::MessageCallback
-                cb::hook<CALL>(0x410126),     //mmInterface::InitLobby
+                cb::call(0x409C6F),     //mmInterface::MessageCallback
+                cb::call(0x410126),     //mmInterface::InitLobby
             }
         );
         InstallCallback("asNetwork::Disconnect", "Update the multiplayer status to off when exiting the lobby.",
             &DetectDisconnectMPLobby, {
-                cb::hook<CALL>(0x40D394),     //mmInterface::Switch
+                cb::call(0x40D394),     //mmInterface::Switch
             }
         );
         InstallCallback("asNetwork::CloseSession", "Update the multiplayer status to off when exiting the current game.",
             &DetectDisconnectMPGame, {
-                cb::hook<CALL>(0x43B159),     //mmGameMulti::QuitNetwork
+                cb::call(0x43B159),     //mmGameMulti::QuitNetwork
             }
         );
         InstallCallback("asNetwork::GetNumPlayers", "Updates the number of players in a lobby",
             &RefreshNumPlayersLobby, {
-                cb::hook<CALL>(0x4111B1),     //mmInterface::RefreshPlayers
+                cb::call(0x4111B1),     //mmInterface::RefreshPlayers
             }
         );
 

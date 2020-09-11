@@ -78,14 +78,14 @@ void luaDrawableHandler::Install()
 {
     InstallCallback("lvlLevel::CallCallbacks", "Hook for lua callbacks",
         &CallCallbacks, {
-            cb::hook<CALL>(0x446217),
-            cb::hook<CALL>(0x445D6F),
+            cb::call(0x446217),
+            cb::call(0x445D6F),
         }
     );
 
     InstallCallback("lvlLevel::ResetCallbacks", "Allows for control over when to clear callbacks.",
         &ResetCallbacks, {
-            cb::hook<JMP>(0x465460),
+            cb::jmp(0x465460),
         }
     );
 }

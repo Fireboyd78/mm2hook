@@ -190,7 +190,7 @@ void aiMapDebugHandler::Install()
     if (cfgAiDebug.Get()) {
         InstallCallback("aiMap::Update (Debug Hook)", "Call from mmGame",
             &Update, {
-                cb::hook<CALL>(0x4141CF),
+                cb::call(0x4141CF),
             }
         );
 

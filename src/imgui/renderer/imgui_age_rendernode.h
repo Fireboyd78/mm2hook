@@ -124,34 +124,34 @@ public:
         //ioEventQueue:: hooks the rest. Ex. mouse clicking used in menus
         InstallCallback("mmInput::ProcessMouseEvents", "Rewire input through the imGuiManager",
             &mmImGuiManager::PutMouseEventInQueue, {
-                cb::hook<CALL>(0x52CC4A),
+                cb::call(0x52CC4A),
             }
         );
 
         InstallCallback("mmInput::ProcessKeyboardEvents", "Rewire input through the imGuiManager",
             &mmImGuiManager::PutKeyboardEventInQueue, {
-                cb::hook<CALL>(0x52CC9F),
+                cb::call(0x52CC9F),
             }
         );
 
         InstallCallback("ioInput::Update", "Rewire input through the imGuiManager",
             &mmImGuiManager::IOInputHook, {
-                cb::hook<CALL>(0x4A916A),
+                cb::call(0x4A916A),
             }
         );
 
         InstallCallback("ioEventQueue::Queue", "Rewire input through the imGuiManager",
             &mmImGuiManager::EventQueueQueue, {
-                cb::hook<CALL>(0x4BAA5D),
-                cb::hook<CALL>(0x4BAD72),
-                cb::hook<CALL>(0x4BAD93),
-                cb::hook<CALL>(0x4BADDB),
-                cb::hook<CALL>(0x4BAE3D),
-                cb::hook<CALL>(0x4BAE89),
-                cb::hook<CALL>(0x4BAEDB),
-                cb::hook<CALL>(0x4BAF4E),
-                cb::hook<CALL>(0x4BAFA7),
-                cb::hook<CALL>(0x4BB044),
+                cb::call(0x4BAA5D),
+                cb::call(0x4BAD72),
+                cb::call(0x4BAD93),
+                cb::call(0x4BADDB),
+                cb::call(0x4BAE3D),
+                cb::call(0x4BAE89),
+                cb::call(0x4BAEDB),
+                cb::call(0x4BAF4E),
+                cb::call(0x4BAFA7),
+                cb::call(0x4BB044),
             }
         );
 
