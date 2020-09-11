@@ -1,6 +1,25 @@
 #pragma once
 #include "common.h"
 
+class cb {
+public:
+    enum class type : int { jmp, call, push, _count };
+
+    struct info {
+        auto_ptr addr;
+        type type;
+    };
+
+    template <type _Type>
+    struct hook : info {
+        constexpr hook(const DWORD addr) : info{ addr, _Type } {};
+    };
+
+    using jmp = hook<type::jmp>;
+    using call = hook<type::call>;
+    using push = hook<type::push>;
+};
+
 template <typename TRet, typename... TArgs>
 using MethodCall = TRet(*)(TArgs...);
 

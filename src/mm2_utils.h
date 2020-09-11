@@ -5,32 +5,15 @@
     Game patching functions
 */
 
-enum hookType : unsigned int
-{
-    JMP,
-    CALL,
-    PUSH,
+using hookType = cb::type;
+using cbInfo = cb::info;
 
-    COUNT,
-};
+#define CALL hookType::call
+#define JMP hookType::jmp
+#define PUSH hookType::push
 
-struct cbInfo
-{
-    auto_ptr addr;
-    hookType type;
-};
-
-template<hookType type>
-struct cbHook
-{
-    cbInfo info;
-
-    constexpr cbHook(const DWORD addrs) : info { addrs, type } {};
-
-    constexpr operator cbInfo() const {
-        return info;
-    };
-};
+template <hookType type>
+using cbHook = cb::hook<type>;
 
 void Installf(LPCSTR format, ...);
 

@@ -1,7 +1,7 @@
 #include "mm2_utils.h"
 #include "patch.h"
 
-LPCSTR hook_types[hookType::COUNT] = {
+LPCSTR hook_types[int(hookType::_count)] = {
     "jmp",
     "call",
     "push"
@@ -73,7 +73,7 @@ void InstallCallback(auto_ptr lpAddr, cbInfo callback)
 
     switch (type)
     {
-        case hookType::CALL:
+        case hookType::call:
         {
             if (mem::read<byte>(addr) == 0xFF) {
                 mem::write<byte, uint, byte>(addr, 0xE8, dwRVA, 0x90);
@@ -82,7 +82,7 @@ void InstallCallback(auto_ptr lpAddr, cbInfo callback)
             }
         } break;
 
-        case hookType::JMP:
+        case hookType::jmp:
         {
             if (mem::read<byte>(addr) == 0xFF) {
                 mem::write<byte, uint, byte>(addr, 0xE9, dwRVA, 0x90);
@@ -91,7 +91,7 @@ void InstallCallback(auto_ptr lpAddr, cbInfo callback)
             }
         } break;
 
-        case hookType::PUSH:
+        case hookType::push:
         {
             mem::write<byte, uint>(addr, 0x68, lpAddr);
         } break;
@@ -117,7 +117,7 @@ void InstallCallback(LPCSTR name,
 
     for (auto cb : callbacks)
     {
-        Installf("   => [%s] %08X", hook_types[cb.type], cb.addr);
+        Installf("   => [%s] %08X", hook_types[int(cb.type)], cb.addr);
 
         InstallCallback(lpAddr, cb);
     }
