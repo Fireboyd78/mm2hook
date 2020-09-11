@@ -1107,8 +1107,8 @@ void vglHandler::Install() {
         auto begin = pair.begin;
         auto end = pair.end;
 
-        InstallCallback(vglBeginCB, { begin, CALL });
-        InstallCallback(vglEndCB, { end,   CALL });
+        InstallCallback(vglBeginCB, cb::call(begin));
+        InstallCallback(vglEndCB, cb::call(end));
 
         Installf("   - { vglBegin: %08X, vglEnd: %08X }\n", begin, end);
     }
