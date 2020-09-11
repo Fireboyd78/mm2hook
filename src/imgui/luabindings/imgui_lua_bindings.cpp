@@ -256,7 +256,12 @@ static void ImGuiOpenPopupLua(const char* str_id, ImGuiPopupFlags flags)
     ImGui::OpenPopup(str_id, flags);
 }
 
-static void ImGuiPushStyleVarLua(ImGuiStyleVar idx, const ImVec2& val)
+static void ImGuiPushStyleVarLuaVec2(ImGuiStyleVar idx, const ImVec2& val)
+{
+    ImGui::PushStyleVar(idx, val);
+}
+
+static void ImGuiPushStyleVarLuaFloat(ImGuiStyleVar idx, float val)
 {
     ImGui::PushStyleVar(idx, val);
 }
@@ -421,6 +426,12 @@ static bool ImGuiBeginTabItemLua(const char* label, ImGuiTabItemFlags flags)
     return ImGui::BeginTabItem(label, NULL, flags);
 }
 
+static ImVec2 ImGuiCalcTextSizeLua(const char* text, const char* text_end, bool hide_text_after_double_hash, float wrap_width)
+{
+    text_end = ProcessNullableString(text_end);
+    return ImGui::CalcTextSize(text, text_end, hide_text_after_double_hash, wrap_width);
+}
+
 //
 static void ImguiBindLua(LuaState L) {
     LuaBinding(L).beginClass<ImVec2>("ImVec2")
@@ -512,6 +523,7 @@ static void ImguiBindLua(LuaState L) {
         .addFunction("Selectable", &ImGuiSelectableLua)
         .addFunction("MenuItem", &ImGuiMenuItemLua)
 
+        .addFunction("CalcTextSize", &ImGuiCalcTextSizeLua)
         .addFunction("GetItemRectMax", &ImGui::GetItemRectMax)
         .addFunction("GetItemRectMin", &ImGui::GetItemRectMin)
         .addFunction("GetItemRectSize", &ImGui::GetItemRectSize)
@@ -588,9 +600,22 @@ static void ImguiBindLua(LuaState L) {
         .addFunction("SetNextWindowPos", &ImGui::SetNextWindowPos)
         .addFunction("SetNextWindowContentSize", &ImGui::SetNextWindowContentSize)
         .addFunction("CenterNextWindow", &CenterNextWindow)
+
         .addFunction("PushButtonRepeat", &ImGui::PushButtonRepeat)
         .addFunction("PopButtonRepeat", &ImGui::PopButtonRepeat)
+
+        .addFunction("GetCursorPos", &ImGui::GetCursorPos)
+        .addFunction("GetCursorPosX", &ImGui::GetCursorPosX)
+        .addFunction("GetCursorPosY", &ImGui::GetCursorPosY)
+        .addFunction("SetCursorPos", &ImGui::SetCursorPos)
+        .addFunction("SetCursorPosX", &ImGui::SetCursorPosX)
+        .addFunction("SetCursorPosY", &ImGui::SetCursorPosY)
         
+        .addFunction("PushTextWrapPos", &ImGui::PushTextWrapPos)
+        .addFunction("PopTextWrapPos", &ImGui::PopTextWrapPos)
+
+        .addFunction("GetCursorScreenPos", &ImGui::GetCursorScreenPos)
+        .addFunction("GetCursorScreenPos", &ImGui::GetCursorStartPos)
         .addFunction("SetScrollHereX", &ImGui::SetScrollHereX)
         .addFunction("SetScrollHereY", &ImGui::SetScrollHereY)
         .addFunction("SetScrollX", &ImGui::SetScrollX)
@@ -602,7 +627,6 @@ static void ImguiBindLua(LuaState L) {
         .addFunction("GetScrollMaxX", &ImGui::GetScrollMaxX)
         .addFunction("GetScrollMaxY", &ImGui::GetScrollMaxY)
 
-        .addFunction("GetCursorScreenPos", &ImGui::GetCursorScreenPos)
         .addFunction("GetMousePos", &ImGui::GetMousePos)
         .addFunction("IsMouseDown", &ImGui::IsMouseDown)
         .addFunction("IsMouseReleased", &ImGui::IsMouseReleased)
@@ -612,7 +636,8 @@ static void ImguiBindLua(LuaState L) {
         .addFunction("GetMouseDragDelta", &ImGui::GetMouseDragDelta)
         .addFunction("IsMouseDragging", &ImGui::IsMouseDragging)
 
-        .addFunction("PushStyleVar", &ImGuiPushStyleVarLua)
+        .addFunction("PushStyleVarFloat", &ImGuiPushStyleVarLuaFloat)
+        .addFunction("PushStyleVarVec2", &ImGuiPushStyleVarLuaVec2)
         .addFunction("PopStyleVar", &ImGui::PopStyleVar)
 
         .addFunction("PushStyleColor", &ImGuiPushStyleColorLua)

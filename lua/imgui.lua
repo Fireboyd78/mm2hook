@@ -61,7 +61,6 @@ M.TextColored =                       function(color, text)    imgui.TextColored
 M.LabelText =                         function(label, text)    imgui.LabelText(label, text)                            end
 M.BulletText =                        function(text)           imgui.BulletText(text)                                  end
         
-M.GetCursorScreenPos =                function()               return imgui.GetCursorScreenPos()                       end
 M.GetMousePos =                       function()               return imgui.GetMousePos()                              end        
 M.GetMousePosOnOpeningCurrentPopup =  function()               return imgui.GetMousePosOnOpeningCurrentPopup()         end        
 M.IsMouseDown =                       function(btn)            return imgui.IsMouseDown(btn)                           end
@@ -106,10 +105,6 @@ M.TreeNode =                          function(label)          return imgui.Tree
 M.PopButtonRepeat =                   function()               imgui.PopButtonRepeat()                                 end
 M.PushButtonRepeat =                  function(rp)             imgui.PushButtonRepeat(boolDefault(rp, true))           end
           
-M.PushStyleVar =                      function(id, val)        imgui.PushStyleVar(id, val)                             end
-M.PopStyleVar =                       function(c)              imgui.PopStyleVar(c or 1)                               end
-                    
-                    
 M.PushItemWidth =                     function(val)            imgui.PushItemWidth(val)                                end
 M.PopItemWidth =                      function()               imgui.PopItemWidth()                                    end
                               
@@ -123,7 +118,47 @@ M.SetItemDefaultFocus =               function()               imgui.SetItemDefa
 M.SetNextItemWidth =                  function(width)          imgui.SetNextItemWidth(width)                           end
 M.SetNextWindowBgAlpha =              function(alpha)          imgui.SetNextWindowBgAlpha(alpha)                       end
 M.SetNextWindowContentSize =          function(sz)             imgui.SetNextWindowContentSize(sz)                      end
+
+M.GetCursorStartPos =                 function()               return imgui.GetCursorStartPos()                        end
+M.GetCursorScreenPos =                function()               return imgui.GetCursorScreenPos()                       end
+M.GetCursorPos =                      function()               return imgui.GetCursorPos()                             end
+M.GetCursorPosX =                     function()               return imgui.GetCursorPosX()                            end
+M.GetCursorPosY =                     function()               return imgui.GetCursorPosY()                            end
+M.SetCursorPos =                      function(pos)            imgui.SetCursorPos(pos)                                 end
+M.SetCursorPosX =                     function(x)              imgui.SetCursorPosX(x)                                  end
+M.SetCursorPosY =                     function(y)              imgui.SetCursorPosY(y)                                  end
+
 --
+M.CalcTextSize = function(text, text_end, hide_text_after_double_hash, wrap_width)
+  text_end = nullableString(text_end)
+  hide_text_after_double_hash = boolDefault(hide_text_after_double_hash, false)
+  wrap_width = wrap_width or -1.0
+  return imgui.CalcTextSize(text, text_end, hide_text_after_double_hash, wrap_width)
+end
+
+
+M.PopTextWrapPos = function()
+  imgui.PopTextWrapPos()
+end
+
+M.PushTextWrapPos = function(wrap_local_pos_x)
+  wrap_local_pos_x = wrap_local_pos_x or 0
+  imgui.PushTextWrapPos(wrap_local_pos_x)
+end
+
+M.PushStyleVar = function(id, val)  
+  --check what variant of the function to use
+  if type(val) == 'number' then
+    imgui.PushStyleVarFloat(id, val)
+  else
+    imgui.PushStyleVarVec2(id, val)
+  end
+end
+
+M.PopStyleVar = function(c)
+  imgui.PopStyleVar(c or 1)                               
+end
+
 M.BeginTabItem = function(label ,flags)
   flags = flags or 0
   return imgui.BeginTabItem(label, flags)
@@ -315,7 +350,7 @@ end
 
 M.RadioButton = function(label, selectedId, id)
   if M.radioButtonGroupOpen then
-    id = M.radioButtonGroupId
+    id = id or M.radioButtonGroupId
     M.radioButtonGroupId = M.radioButtonGroupId + 1
     
     M.radioButtonGroupSid = imgui.RadioButton(label, M.radioButtonGroupSid, id)
@@ -669,6 +704,7 @@ ImGuiWindowFlags_AlwaysUseWindowPadding     = 1 << 16
 ImGuiWindowFlags_NoNavInputs                = 1 << 18
 ImGuiWindowFlags_NoNavFocus                 = 1 << 19
 ImGuiWindowFlags_UnsavedDocument            = 1 << 20
+ImGuiWindowFlags_NoDocking                  = 1 << 21
 ImGuiWindowFlags_NoNav                      = ImGuiWindowFlags_NoNavInputs | ImGuiWindowFlags_NoNavFocus
 ImGuiWindowFlags_NoDecoration               = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse
 ImGuiWindowFlags_NoInputs                   = ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoNavInputs | ImGuiWindowFlags_NoNavFocus
