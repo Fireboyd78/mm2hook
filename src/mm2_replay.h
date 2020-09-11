@@ -17,30 +17,30 @@ namespace MM2
     public:
         ANGEL_ALLOCATOR
 
-            static ageHook::Type<mmReplayManager *> Instance;
+            static hook::Type<mmReplayManager *> Instance;
 
         AGE_API mmReplayManager(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x406870>::Call<void>(this);
+            hook::Thunk<0x406870>::Call<void>(this);
         }
 
         virtual AGE_API ~mmReplayManager(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x406930>::Call<void>(this);
+            hook::Thunk<0x406930>::Call<void>(this);
         }
 
-        AGE_API float GetBrakes()                                      { return ageHook::Thunk<0x4072D0>::Call<float>(this); }
-        AGE_API float GetHandBrakes()                                  { return ageHook::Thunk<0x407300>::Call<float>(this); }
-        AGE_API float GetSteering()                                    { return ageHook::Thunk<0x407330>::Call<float>(this); }
-        AGE_API float GetThrottle()                                    { return ageHook::Thunk<0x407360>::Call<float>(this); }
+        AGE_API float GetBrakes()                                      { return hook::Thunk<0x4072D0>::Call<float>(this); }
+        AGE_API float GetHandBrakes()                                  { return hook::Thunk<0x407300>::Call<float>(this); }
+        AGE_API float GetSteering()                                    { return hook::Thunk<0x407330>::Call<float>(this); }
+        AGE_API float GetThrottle()                                    { return hook::Thunk<0x407360>::Call<float>(this); }
 
         /*
             asNode virtuals
         */
 
-        AGE_API void Reset() override                                  { ageHook::Thunk<0x406990>::Call<void>(this); }
-        AGE_API void Update() override                                 { ageHook::Thunk<0x4069E0>::Call<void>(this); }
-        AGE_API void Cull() override                                   { ageHook::Thunk<0x406DF0>::Call<void>(this); }
+        AGE_API void Reset() override                                  { hook::Thunk<0x406990>::Call<void>(this); }
+        AGE_API void Update() override                                 { hook::Thunk<0x4069E0>::Call<void>(this); }
+        AGE_API void Cull() override                                   { hook::Thunk<0x406DF0>::Call<void>(this); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<mmReplayManager, asNode>("mmReplayManager")

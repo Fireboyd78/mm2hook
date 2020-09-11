@@ -33,7 +33,7 @@ namespace MM2
     private:
         byte _buffer[0x976C];
     protected:
-        static ageHook::Field<0x10, vehCar> _vehCar;
+        static hook::Field<0x10, vehCar> _vehCar;
     public:
         aiVehiclePhysics(void)                              DONOTCALL;
         aiVehiclePhysics(const aiVehiclePhysics &&)         DONOTCALL;

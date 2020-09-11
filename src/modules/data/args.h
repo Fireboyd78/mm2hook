@@ -26,8 +26,8 @@ namespace MM2
 
     class datArgParser {
     public:
-        static ageHook::Type<int> Argc;
-        static ageHook::Type<char **> Argv;
+        static hook::Type<int> Argc;
+        static hook::Type<char **> Argv;
 
         AGE_API static bool Get(LPCSTR arg) {
             return $::datArgParser::Get_Any(arg);

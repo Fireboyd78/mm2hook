@@ -15,14 +15,14 @@ namespace MM2
     private:
         byte _buffer[0x1B0];
     protected:
-        ageHook::Field<0xC, float> _mass;
-        ageHook::Field<0x54, Matrix34> _matrix;
-        ageHook::Field<0x9C, Vector3> _force;
-        ageHook::Field<0xA8, Vector3> _torque;
+        hook::Field<0xC, float> _mass;
+        hook::Field<0x54, Matrix34> _matrix;
+        hook::Field<0x9C, Vector3> _force;
+        hook::Field<0xA8, Vector3> _torque;
     public:
         AGE_API phInertialCS() {
             scoped_vtable x(this);
-            ageHook::Thunk<0x475DE0>::Call<void>(this);
+            hook::Thunk<0x475DE0>::Call<void>(this);
         }
 
         //props
@@ -81,18 +81,18 @@ namespace MM2
         }
 
         //members (not all here yet!)
-        AGE_API void Zero()                     { ageHook::Thunk<0x475DED>::Call<void>(this); }
-        AGE_API void Reset()                    { ageHook::Thunk<0x475E10>::Call<void>(this); }
-        AGE_API void Freeze()                   { ageHook::Thunk<0x475E20>::Call<void>(this); }
-        AGE_API void ZeroForces()               { ageHook::Thunk<0x475E60>::Call<void>(this); }
+        AGE_API void Zero()                     { hook::Thunk<0x475DED>::Call<void>(this); }
+        AGE_API void Reset()                    { hook::Thunk<0x475E10>::Call<void>(this); }
+        AGE_API void Freeze()                   { hook::Thunk<0x475E20>::Call<void>(this); }
+        AGE_API void ZeroForces()               { hook::Thunk<0x475E60>::Call<void>(this); }
         AGE_API void Init(float mass, float inertiaTensorX, float inertiaTensorY, float inertiaTensorZ)
-                                                { ageHook::Thunk<0x475FC0>::Call<void>(this, mass, inertiaTensorX, inertiaTensorY, inertiaTensorZ); }
+                                                { hook::Thunk<0x475FC0>::Call<void>(this, mass, inertiaTensorX, inertiaTensorY, inertiaTensorZ); }
         AGE_API void InitBoxMass(float mass, float inertiaBoxX, float inertiaBoxY, float inertiaBoxZ)
-                                                { ageHook::Thunk<0x4760D0>::Call<void>(this, mass, inertiaBoxX, inertiaBoxY, inertiaBoxZ); }
-        AGE_API void Rotate(Vector3 *angles)    { ageHook::Thunk<0x476A00>::Call<void>(this, angles); }
-        AGE_API void ClearInertialValues()      { ageHook::Thunk<0x476B20>::Call<void>(this); }
+                                                { hook::Thunk<0x4760D0>::Call<void>(this, mass, inertiaBoxX, inertiaBoxY, inertiaBoxZ); }
+        AGE_API void Rotate(Vector3 *angles)    { hook::Thunk<0x476A00>::Call<void>(this, angles); }
+        AGE_API void ClearInertialValues()      { hook::Thunk<0x476B20>::Call<void>(this); }
         
-        AGE_API void MoveICS()                  { ageHook::Thunk<0x478680>::Call<void>(this); }
+        AGE_API void MoveICS()                  { hook::Thunk<0x478680>::Call<void>(this); }
 
         //lua
         static void BindLua(LuaState L) {

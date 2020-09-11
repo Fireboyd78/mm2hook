@@ -27,21 +27,21 @@ namespace MM2
     class vehCar : public dgPhysEntity {
         byte _buffer[0x25C];
     protected:
-        ageHook::Field<0xC0, vehCarDamage *> _damage;
-        ageHook::Field<0xB8, vehCarSim *> _sim; // size: ~0x1560
-        ageHook::Field<0xBC, vehCarModel *> _model;
-        ageHook::Field<0xE0, vehSplash *> _splash;
-        ageHook::Field<0x254, vehCarAudioContainer *> _audio;
-        ageHook::Field<0xD8, vehTrailer *> _trailer;
-        ageHook::Field<0xC8, vehSiren *> _siren;
-        ageHook::Field<0xC4, vehWheelPtx *> _wheelPtx;
-        ageHook::Field<0xD0, vehGyro *> _gyro;
-        ageHook::Field<0xCC, vehStuck*> _stuck;
+        hook::Field<0xC0, vehCarDamage *> _damage;
+        hook::Field<0xB8, vehCarSim *> _sim; // size: ~0x1560
+        hook::Field<0xBC, vehCarModel *> _model;
+        hook::Field<0xE0, vehSplash *> _splash;
+        hook::Field<0x254, vehCarAudioContainer *> _audio;
+        hook::Field<0xD8, vehTrailer *> _trailer;
+        hook::Field<0xC8, vehSiren *> _siren;
+        hook::Field<0xC4, vehWheelPtx *> _wheelPtx;
+        hook::Field<0xD0, vehGyro *> _gyro;
+        hook::Field<0xCC, vehStuck*> _stuck;
     public:
-        AGE_API vehCar(BOOL a1)                             { ageHook::Thunk<0x42BAB0>::Call<void>(this, a1); }
-        AGE_API ~vehCar()                                   { ageHook::Thunk<0x42BCC0>::Call<void>(this); }
+        AGE_API vehCar(BOOL a1)                             { hook::Thunk<0x42BAB0>::Call<void>(this, a1); }
+        AGE_API ~vehCar()                                   { hook::Thunk<0x42BCC0>::Call<void>(this); }
 
-        static ageHook::Type<bool> sm_DrawHeadlights;
+        static hook::Type<bool> sm_DrawHeadlights;
 
         inline vehCarDamage * getCarDamage(void) const {
             return _damage.get(this);
@@ -83,26 +83,26 @@ namespace MM2
             return _stuck.get(this);
         }
 
-        AGE_API void Reset()                                { ageHook::Thunk<0x42C330>::Call<void>(this); }
+        AGE_API void Reset()                                { hook::Thunk<0x42C330>::Call<void>(this); }
 
-        AGE_API void ClearDamage()                          { ageHook::Thunk<0x42C450>::Call<void>(this); }
-        AGE_API bool IsPlayer()                             { return ageHook::Thunk<0x42C890>::Call<bool>(this); }
+        AGE_API void ClearDamage()                          { hook::Thunk<0x42C450>::Call<void>(this); }
+        AGE_API bool IsPlayer()                             { return hook::Thunk<0x42C890>::Call<bool>(this); }
         AGE_API void Init(char const *a1, int a2, int a3, bool a4, bool a5)
-                                                            { ageHook::Thunk<0x42BE10>::Call<void>(this, a1, a2, a3, a4, a5); }
-        AGE_API void InitAudio(char const *a1, int a2)      { ageHook::Thunk<0x42C1F0>::Call<void>(this, a1, a2); }
-        AGE_API void SetDrivable(BOOL a1, int a2)           { ageHook::Thunk<0x42C2C0>::Call<void>(this, a1, a2); }
+                                                            { hook::Thunk<0x42BE10>::Call<void>(this, a1, a2, a3, a4, a5); }
+        AGE_API void InitAudio(char const *a1, int a2)      { hook::Thunk<0x42C1F0>::Call<void>(this, a1, a2); }
+        AGE_API void SetDrivable(BOOL a1, int a2)           { hook::Thunk<0x42C2C0>::Call<void>(this, a1, a2); }
 
         /*
             dgPhysEntity virtuals
         */
 
         AGE_API bool RequiresTerrainCollision() override
-                                                            { return ageHook::Thunk<0x42CA90>::Call<bool>(this); }
-        AGE_API lvlInstance* GetInst() override             { return ageHook::Thunk<0x42CA80>::Call<lvlInstance *>(this); }
-        AGE_API phInertialCS* GetICS()                      { return ageHook::Thunk<0x42CA70>::Call<phInertialCS *>(this); }
-        AGE_API void PostUpdate() override                  { ageHook::Thunk<0x42C8B0>::Call<void>(this); }
-        AGE_API void Update() override                      { ageHook::Thunk<0x42C690>::Call<void>(this); }
-        AGE_API void PreUpdate() override                   { ageHook::Thunk<0x42C480>::Call<void>(this); }
+                                                            { return hook::Thunk<0x42CA90>::Call<bool>(this); }
+        AGE_API lvlInstance* GetInst() override             { return hook::Thunk<0x42CA80>::Call<lvlInstance *>(this); }
+        AGE_API phInertialCS* GetICS()                      { return hook::Thunk<0x42CA70>::Call<phInertialCS *>(this); }
+        AGE_API void PostUpdate() override                  { hook::Thunk<0x42C8B0>::Call<void>(this); }
+        AGE_API void Update() override                      { hook::Thunk<0x42C690>::Call<void>(this); }
+        AGE_API void PreUpdate() override                   { hook::Thunk<0x42C480>::Call<void>(this); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<vehCar, dgPhysEntity>("vehCar")

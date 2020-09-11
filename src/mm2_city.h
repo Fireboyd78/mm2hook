@@ -51,19 +51,19 @@ namespace MM2
     class cityLevel : public lvlLevel {
     public:
         int FindRoomId(const Vector3* position, int a2) {
-            return ageHook::Thunk<0x446A60>::Call<int>(this, position, a2);
+            return hook::Thunk<0x446A60>::Call<int>(this, position, a2);
         }
 
         int GetRoomPerimeter(int room, const Vector3* output, int outputLength) {
-            return ageHook::Thunk<0x446FA0>::Call<int>(this, room, output, outputLength);
+            return hook::Thunk<0x446FA0>::Call<int>(this, room, output, outputLength);
         }
 
         void SetObjectDetail(int a1) {
-            ageHook::Thunk<0x443E50>::Call<void>(this, a1);
+            hook::Thunk<0x443E50>::Call<void>(this, a1);
         }
 
         void DrawRooms(const MM2::gfxViewport* a1, unsigned int a2, const void* a3, int a4) {
-            ageHook::Thunk<0x445820>::Call<void>(this, a1, a2, a3, a4);
+            hook::Thunk<0x445820>::Call<void>(this, a1, a2, a3, a4);
         }
     };
 
@@ -90,7 +90,7 @@ namespace MM2
         /*0x48*/int Ambient; // looks like the alpha is ignored
 
         void ComputeAmbientLightLevels() {
-            ageHook::Thunk<0x443300>::Call<void>(this);
+            hook::Thunk<0x443300>::Call<void>(this);
         }
     };
 
@@ -98,9 +98,9 @@ namespace MM2
 
     class sdlCommon {
     public:
-        static ageHook::Type<int> sm_RoomCount;
-        static ageHook::Type<Vector3> sm_CamPos;
-        static ageHook::Type<uint> sm_LightTable;
+        static hook::Type<int> sm_RoomCount;
+        static hook::Type<Vector3> sm_CamPos;
+        static hook::Type<uint> sm_LightTable;
 
         AGE_API static void UpdateLighting(void) {
             $::sdlCommon::UpdateLighting();
@@ -221,12 +221,12 @@ namespace MM2
     public:
         AGE_API mmCityInfo(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x52A540>::Call<void>(this);
+            hook::Thunk<0x52A540>::Call<void>(this);
         }
 
         virtual AGE_API ~mmCityInfo(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x52A560>::Call<void>(this);
+            hook::Thunk<0x52A560>::Call<void>(this);
         }
 
         inline char * GetLocalisedName(void) {
@@ -261,24 +261,24 @@ namespace MM2
     public:
         AGE_API mmCityList(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x524160>::Call<void>(this);
+            hook::Thunk<0x524160>::Call<void>(this);
         }
 
         virtual AGE_API ~mmCityList(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x524180>::Call<void>(this);
+            hook::Thunk<0x524180>::Call<void>(this);
         }
 
-        AGE_API void LoadAll()                              { ageHook::Thunk<0x5244F0>::Call<void>(this); }
-        AGE_API void Load(char* cinfoName)                  { ageHook::Thunk<0x524330>::Call<void>(this, cinfoName); }
-        AGE_API int GetCityID(char *city)                   { return ageHook::Thunk<0x524270>::Call<int>(this, city); }
+        AGE_API void LoadAll()                              { hook::Thunk<0x5244F0>::Call<void>(this); }
+        AGE_API void Load(char* cinfoName)                  { hook::Thunk<0x524330>::Call<void>(this, cinfoName); }
+        AGE_API int GetCityID(char *city)                   { return hook::Thunk<0x524270>::Call<int>(this, city); }
 
-        AGE_API mmCityInfo * GetCityInfo(int city)          { return ageHook::Thunk<0x5241F0>::Call<mmCityInfo *>(this, city); }
-        AGE_API mmCityInfo * GetCityInfo(char *city)        { return ageHook::Thunk<0x524220>::Call<mmCityInfo *>(this, city); }
+        AGE_API mmCityInfo * GetCityInfo(int city)          { return hook::Thunk<0x5241F0>::Call<mmCityInfo *>(this, city); }
+        AGE_API mmCityInfo * GetCityInfo(char *city)        { return hook::Thunk<0x524220>::Call<mmCityInfo *>(this, city); }
 
-        AGE_API mmCityInfo * GetCurrentCity(void)           { return ageHook::Thunk<0x524320>::Call<mmCityInfo *>(this); }
+        AGE_API mmCityInfo * GetCurrentCity(void)           { return hook::Thunk<0x524320>::Call<mmCityInfo *>(this); }
 
-        AGE_API void SetCurrentCity(char* city)             { ageHook::Thunk<0x5242C0>::Call<void>(this, city); }
+        AGE_API void SetCurrentCity(char* city)             { hook::Thunk<0x5242C0>::Call<void>(this, city); }
     };
 
     declhook(0x6B1CA0, _Type<mmCityList *>, CityListPtr);

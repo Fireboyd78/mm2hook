@@ -19,7 +19,7 @@ namespace MM2
     private:
         byte _buffer[0x14];
     protected:
-        ageHook::Field<0x18, pedAnimationInstance> _animationInstance;
+        hook::Field<0x18, pedAnimationInstance> _animationInstance;
     public:
         inline pedAnimationInstance* getAnimationInstance() const {
             return _animationInstance.ptr(this);
@@ -32,8 +32,8 @@ namespace MM2
             lvlInstance virtuals
         */
 
-        virtual AGE_API dgPhysEntity * AttachEntity(void)   { return ageHook::Thunk<0x57B730>::Call<dgPhysEntity *>(this); }
-        virtual AGE_API bool IsCollidable(void)             { return ageHook::Thunk<0x57B780>::Call<bool>(this); }
+        virtual AGE_API dgPhysEntity * AttachEntity(void)   { return hook::Thunk<0x57B730>::Call<dgPhysEntity *>(this); }
+        virtual AGE_API bool IsCollidable(void)             { return hook::Thunk<0x57B780>::Call<bool>(this); }
     };
 
     // Lua initialization

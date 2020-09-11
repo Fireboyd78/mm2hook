@@ -47,7 +47,7 @@ namespace MM2
         float Fov;
         float Aspect;
     public:
-        void Ortho(float a1, float a2, float a3, float a4, float a5, float a6) { ageHook::Thunk<0x4B1800>::Call<void>(this, a1, a2, a3, a4, a5, a6); }
+        void Ortho(float a1, float a2, float a3, float a4, float a5, float a6) { hook::Thunk<0x4B1800>::Call<void>(this, a1, a2, a3, a4, a5, a6); }
     };
 
     class cltLight
@@ -146,7 +146,7 @@ namespace MM2
         ColorARGB Color; // 32-bit diffuse color
 
         AGE_API void Reset(void) {
-            ageHook::Thunk<0x4B1BB0>::Call<void>(this);
+            hook::Thunk<0x4B1BB0>::Call<void>(this);
         };
     };
 
@@ -174,10 +174,10 @@ namespace MM2
         uint32_t RefCount;
         gfxImage *Next;
 
-        void Scale(int a1, int a2)                          { ageHook::Thunk<0x4AEDC0>::Call<void>(this, a1, a2); }
+        void Scale(int a1, int a2)                          { hook::Thunk<0x4AEDC0>::Call<void>(this, a1, a2); }
 
         static gfxImage * Create(int width, int height, gfxImageFormat format, gfxImageFormat paletteType, int mipCount)
-                                                            { return ageHook::StaticThunk<0x4AE920>::Call<gfxImage*>(width, height, format, paletteType, mipCount); }
+                                                            { return hook::StaticThunk<0x4AE920>::Call<gfxImage*>(width, height, format, paletteType, mipCount); }
     };
     
     class gfxTexture;
@@ -246,7 +246,7 @@ namespace MM2
             return this->First;
         }
 
-        static ageHook::Type<gfxTextureCachePool*> sm_FirstPool;
+        static hook::Type<gfxTextureCachePool*> sm_FirstPool;
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<gfxTextureCachePool>("gfxTextureCachePool")
@@ -291,10 +291,10 @@ namespace MM2
         /*0x30*/byte LOD;
         /*0x31*/byte MaxLOD;
 
-        static ageHook::Type<bool> sm_EnableSetLOD;
-        static ageHook::Type<bool> sm_Allow32;
-        static ageHook::Type<gfxTexture*> sm_First;
-        static ageHook::Type<bool> sm_UseInternalCache;
+        static hook::Type<bool> sm_EnableSetLOD;
+        static hook::Type<bool> sm_Allow32;
+        static hook::Type<gfxTexture*> sm_First;
+        static hook::Type<bool> sm_UseInternalCache;
     public:
         inline const char * getName() {
             return this->Name;
@@ -326,27 +326,27 @@ namespace MM2
     public:
         AGE_API gfxTexture()
         {
-            ageHook::Thunk<0x4AC8E0>::Call<void>(this);
+            hook::Thunk<0x4AC8E0>::Call<void>(this);
         }
 
         AGE_API ~gfxTexture()
         {
-            ageHook::Thunk<0x4AC910>::Call<void>(this);
+            hook::Thunk<0x4AC910>::Call<void>(this);
         }
 
         AGE_API gfxTexture * Clone()
         {
-            return ageHook::Thunk<0x4AE250>::Call<gfxTexture*>(this);
+            return hook::Thunk<0x4AE250>::Call<gfxTexture*>(this);
         }
 
         AGE_API void Blit(int destX, int destY, gfxTexture *src, int srcX, int srcY, int width, int height)
         {
-            return ageHook::Thunk<0x4AE1E0>::Call<void>(this, destX, destY, src, srcX, srcY, width, height);
+            return hook::Thunk<0x4AE1E0>::Call<void>(this, destX, destY, src, srcX, srcY, width, height);
         }
 
         AGE_API static gfxTexture * Create(gfxImage* img, bool lastMip) 
         {
-            return ageHook::StaticThunk<0x4AD090>::Call<gfxTexture*>(img, lastMip);
+            return hook::StaticThunk<0x4AD090>::Call<gfxTexture*>(img, lastMip);
         }
 
         static void BindLua(LuaState L) {
@@ -385,26 +385,26 @@ namespace MM2
 
         void DoLock()
         {
-            ageHook::Thunk<0x4B4720>::Call<void>(this);
+            hook::Thunk<0x4B4720>::Call<void>(this);
         }
 
         void DoUnlock()
         {
-            ageHook::Thunk<0x4B4740>::Call<void>(this);
+            hook::Thunk<0x4B4740>::Call<void>(this);
         }
 
         void GetPosition(Vector3* out, int index)
         {
-            ageHook::Thunk<0x4B3C10>::Call<void>(this, out, index);
+            hook::Thunk<0x4B3C10>::Call<void>(this, out, index);
         }
 
         void GetNormal(Vector3* out, int index) {
-            ageHook::Thunk<0x4B3CF0>::Call<void>(this, out, index);
+            hook::Thunk<0x4B3CF0>::Call<void>(this, out, index);
         }
 
         void GetTexCoord(Vector2* out, int index)
         {
-            ageHook::Thunk<0x4B3E20>::Call<void>(this, out, index);
+            hook::Thunk<0x4B3E20>::Call<void>(this, out, index);
         }
 
         void GetTri(int* out, int index)
@@ -415,11 +415,11 @@ namespace MM2
         }
 
         void SetNormal(const Vector3& normal, int index) {
-            ageHook::Thunk<0x4B3D90>::Call<void>(this, &normal, index);
+            hook::Thunk<0x4B3D90>::Call<void>(this, &normal, index);
         }
 
         void SetPosition(const Vector3& position, int index) {
-            ageHook::Thunk<0x4B3C70>::Call<void>(this, &position, index);
+            hook::Thunk<0x4B3C70>::Call<void>(this, &position, index);
         }
     };
 
@@ -436,23 +436,23 @@ namespace MM2
     class gfxPipeline {
     public:
         static gfxViewport * CreateViewport() {
-            return ageHook::StaticThunk<0x4A90B0>::Call<gfxViewport*>();
+            return hook::StaticThunk<0x4A90B0>::Call<gfxViewport*>();
         }
 
         static void ForceSetViewport(gfxViewport* viewport) {
-            ageHook::StaticThunk<0x4B2EE0>::Call<void>(viewport);
+            hook::StaticThunk<0x4B2EE0>::Call<void>(viewport);
         }
 
         static void CopyBitmap(int destX, int destY, gfxBitmap* bitmap, int srcX, int srcY, int width, int height, bool srcColorKey) {
-            ageHook::StaticThunk<0x4AB4C0>::Call<void>(destX, destY, bitmap, srcX, srcY, width, height, srcColorKey);
+            hook::StaticThunk<0x4AB4C0>::Call<void>(destX, destY, bitmap, srcX, srcY, width, height, srcColorKey);
         }
 
         static void StartFade(uint color, float time) {
-            ageHook::StaticThunk<0x4B2CE0>::Call<void>(color, time);
+            hook::StaticThunk<0x4B2CE0>::Call<void>(color, time);
         }
 
         static void SetFade(uint color) {
-            ageHook::StaticThunk<0x4B2D20>::Call<void>(color);
+            hook::StaticThunk<0x4B2D20>::Call<void>(color);
         }
     };
 
@@ -521,19 +521,19 @@ namespace MM2
         gfxRenderStateData Data;
         gfxMaterial Material;
 
-        static ageHook::TypeProxy<Matrix44> sm_Camera;
-        static ageHook::TypeProxy<Matrix44> sm_World;
+        static hook::TypeProxy<Matrix44> sm_Camera;
+        static hook::TypeProxy<Matrix44> sm_World;
 
-        static ageHook::TypeProxy<Matrix44> sm_Composite;
-        static ageHook::TypeProxy<Matrix44> sm_FullComposite;
+        static hook::TypeProxy<Matrix44> sm_Composite;
+        static hook::TypeProxy<Matrix44> sm_FullComposite;
 
-        static ageHook::TypeProxy<Matrix44> sm_View;
-        static ageHook::TypeProxy<Matrix44> sm_Modelview;
+        static hook::TypeProxy<Matrix44> sm_View;
+        static hook::TypeProxy<Matrix44> sm_Modelview;
 
         // educated guess -- applied to view?
-        static ageHook::TypeProxy<Matrix44> sm_Transform;
+        static hook::TypeProxy<Matrix44> sm_Transform;
     public:
-        static void SetCamera(Matrix44 * mtx)   { ageHook::StaticThunk<0x4B2A20>::Call<void>(mtx); }
+        static void SetCamera(Matrix44 * mtx)   { hook::StaticThunk<0x4B2A20>::Call<void>(mtx); }
     };
 
     class ltLight {
@@ -555,51 +555,51 @@ namespace MM2
         int ShadowMode;
         int unk_48;
 
-        AGE_API ltLight() { ageHook::Thunk<0x59AB80>::Call<void>(this); }
-        AGE_API ~ltLight() { ageHook::Thunk<0x59ABC0>::Call<void>(this); }
+        AGE_API ltLight() { hook::Thunk<0x59AB80>::Call<void>(this); }
+        AGE_API ~ltLight() { hook::Thunk<0x59ABC0>::Call<void>(this); }
 
         //static funcs
-        static AGE_API void ShutdownLights() { ageHook::StaticThunk<0x59ABD0>::Call<void>(); }
-        static AGE_API void DrawGlowBegin() { ageHook::StaticThunk<0x59AE30>::Call<void>(); }
-        static AGE_API void DrawGlowEnd() { ageHook::StaticThunk<0x59AEF0>::Call<void>(); }
+        static AGE_API void ShutdownLights() { hook::StaticThunk<0x59ABD0>::Call<void>(); }
+        static AGE_API void DrawGlowBegin() { hook::StaticThunk<0x59AE30>::Call<void>(); }
+        static AGE_API void DrawGlowEnd() { hook::StaticThunk<0x59AEF0>::Call<void>(); }
         static AGE_API void SetUpGfxLightBegin(Vector3 const* a1)
         {
-            ageHook::StaticThunk<0x59B390>::Call<void>(a1);
+            hook::StaticThunk<0x59B390>::Call<void>(a1);
         }
-        static AGE_API void SetUpGfxLightEnd() { ageHook::StaticThunk<0x59B460>::Call<void>(); }
-        static AGE_API int GetNumPointLights() { return ageHook::StaticThunk<0x59B3E0>::Call<int>(); }
-        static AGE_API ltLight* GetPointLight(int a1) { return ageHook::StaticThunk<0x59B3F0>::Call<ltLight*>(a1); }
-        static AGE_API ltLight* GetClosestLight() { return ageHook::StaticThunk<0x59B410>::Call<ltLight*>(); }
+        static AGE_API void SetUpGfxLightEnd() { hook::StaticThunk<0x59B460>::Call<void>(); }
+        static AGE_API int GetNumPointLights() { return hook::StaticThunk<0x59B3E0>::Call<int>(); }
+        static AGE_API ltLight* GetPointLight(int a1) { return hook::StaticThunk<0x59B3F0>::Call<ltLight*>(a1); }
+        static AGE_API ltLight* GetClosestLight() { return hook::StaticThunk<0x59B410>::Call<ltLight*>(); }
 
 
         //member funcs
-        AGE_API void Default() { ageHook::Thunk<0x59ABF0>::Call<void>(this); }
-        AGE_API void Random() { ageHook::Thunk<0x59AC40>::Call<void>(this); }
-        AGE_API void Draw(float scale) { ageHook::Thunk<0x59ACB0>::Call<void>(this, scale); }
-        AGE_API void DrawGlow(Vector3* position) { ageHook::Thunk<0x59AD90>::Call<void>(this, position); }
+        AGE_API void Default() { hook::Thunk<0x59ABF0>::Call<void>(this); }
+        AGE_API void Random() { hook::Thunk<0x59AC40>::Call<void>(this); }
+        AGE_API void Draw(float scale) { hook::Thunk<0x59ACB0>::Call<void>(this, scale); }
+        AGE_API void DrawGlow(Vector3* position) { hook::Thunk<0x59AD90>::Call<void>(this, position); }
         AGE_API void DrawHighlight(Vector3* a1, Matrix34* a2)
         {
-            ageHook::Thunk<0x59AFB0>::Call<void>(this, a1, a2);
+            hook::Thunk<0x59AFB0>::Call<void>(this, a1, a2);
         }
-        AGE_API void SetUpGfxLight() { ageHook::Thunk<0x59B5B0>::Call<void>(this); }
+        AGE_API void SetUpGfxLight() { hook::Thunk<0x59B5B0>::Call<void>(this); }
         AGE_API bool SetGfxLight(gfxLight* a1, Vector3* a2)
         {
-            return ageHook::Thunk<0x59B740>::Call<bool>(this, a1, a2);
+            return hook::Thunk<0x59B740>::Call<bool>(this, a1, a2);
         }
         AGE_API void Illuminate(Vector3* outColor, Vector3* a2, Vector3* a3)
         {
-            ageHook::Thunk<0x59B990>::Call<void>(this, outColor, a2, a3);
+            hook::Thunk<0x59B990>::Call<void>(this, outColor, a2, a3);
         }
         AGE_API float ComputeIntensity(Vector3* a1, float a2)
         {
-            return ageHook::Thunk<0x59BA50>::Call<float>(this, a1, a2);
+            return hook::Thunk<0x59BA50>::Call<float>(this, a1, a2);
         }
-        AGE_API float ComputeDistance(Vector3* a1) { return ageHook::Thunk<0x59BB70>::Call<float>(this, a1); }
+        AGE_API float ComputeDistance(Vector3* a1) { return hook::Thunk<0x59BB70>::Call<float>(this, a1); }
 
         //TODO
-        /*AGE_API void SetUpProjection(ltProjection* a1)  { ageHook::Thunk<0x59BBB0 >::Call<void>(this, a1); }*/
+        /*AGE_API void SetUpProjection(ltProjection* a1)  { hook::Thunk<0x59BBB0 >::Call<void>(this, a1); }*/
 
-        AGE_API void FileIO(datParser* a1) { ageHook::Thunk<0x59BCA0>::Call<void>(this, a1); }
+        AGE_API void FileIO(datParser* a1) { hook::Thunk<0x59BCA0>::Call<void>(this, a1); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<ltLight>("ltLight")
@@ -646,7 +646,7 @@ namespace MM2
 
     // Statically available functions
     static gfxTexture * gfxGetTexture(const char *a1, bool a2 = true) {
-        return ageHook::StaticThunk<0x4B30F0>::Call<gfxTexture*>(a1, a2);
+        return hook::StaticThunk<0x4B30F0>::Call<gfxTexture*>(a1, a2);
     }
 
     //

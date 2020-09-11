@@ -33,9 +33,9 @@ namespace MM2
         lvlInstance *Next;
     protected:
         static AGE_API int GetGeomSet(char const * a1, char const * a2, int a3)
-                                                            { return ageHook::StaticThunk<0x4632C0>::Call<int>(a1, a2, a3); }
-        static AGE_API void CreateTempBounds()              { ageHook::StaticThunk<0x464680>::Call<void>(); }
-        static AGE_API void DeleteTempBounds()              { ageHook::StaticThunk<0x4647E0>::Call<void>(); }
+                                                            { return hook::StaticThunk<0x4632C0>::Call<int>(a1, a2, a3); }
+        static AGE_API void CreateTempBounds()              { hook::StaticThunk<0x464680>::Call<void>(); }
+        static AGE_API void DeleteTempBounds()              { hook::StaticThunk<0x4647E0>::Call<void>(); }
     public:
         struct GeomTableEntry
         {
@@ -141,33 +141,33 @@ namespace MM2
             return GeomSet;
         }
 
-        static AGE_API void ResetInstanceHeap()             { ageHook::StaticThunk<0x4631A0>::Call<void>(); }
-        static AGE_API void ResetAll()                      { ageHook::StaticThunk<0x4631E0>::Call<void>(); }
+        static AGE_API void ResetInstanceHeap()             { hook::StaticThunk<0x4631A0>::Call<void>(); }
+        static AGE_API void ResetAll()                      { hook::StaticThunk<0x4631E0>::Call<void>(); }
         static AGE_API void SetShadowBillboardMtx(Matrix44 &a1)
-                                                            { ageHook::StaticThunk<0x463290>::Call<void>(&a1); }
+                                                            { hook::StaticThunk<0x463290>::Call<void>(&a1); }
 
-        static AGE_API int AddSphere(float a1)              { return ageHook::StaticThunk<0x463D50>::Call<int>(a1); }
+        static AGE_API int AddSphere(float a1)              { return hook::StaticThunk<0x463D50>::Call<int>(a1); }
 
-        AGE_API bool LoadBoundOnLastEntry(const char *a1)   { return ageHook::Thunk<0x463940>::Call<bool>(this, a1); }
-        AGE_API Vector4 * GetBoundSphere(Vector4 *a1)       { return ageHook::Thunk<0x463A40>::Call<Vector4 *>(this, a1); }
+        AGE_API bool LoadBoundOnLastEntry(const char *a1)   { return hook::Thunk<0x463940>::Call<bool>(this, a1); }
+        AGE_API Vector4 * GetBoundSphere(Vector4 *a1)       { return hook::Thunk<0x463A40>::Call<Vector4 *>(this, a1); }
 
         AGE_API bool BeginGeom(const char *a1, const char *a2, int a3)
-                                                            { return ageHook::Thunk<0x463A80>::Call<bool>(this, a1, a2, a3); }
+                                                            { return hook::Thunk<0x463A80>::Call<bool>(this, a1, a2, a3); }
         AGE_API int AddGeom(const char *a1, const char *a2, int a3)
-                                                            { return ageHook::Thunk<0x463BA0>::Call<int>(this, a1, a2, a3); }
-        AGE_API void EndGeom()                              { ageHook::Thunk<0x463BC0>::Call<void>(this); }
+                                                            { return hook::Thunk<0x463BA0>::Call<int>(this, a1, a2, a3); }
+        AGE_API void EndGeom()                              { hook::Thunk<0x463BC0>::Call<void>(this); }
 
-        AGE_API bool InitBoundTerrain(const char *a1)       { return ageHook::Thunk<0x463DA0>::Call<bool>(this, a1); }
-        AGE_API bool InitBoundTerrainLocal(const char *a1)  { return ageHook::Thunk<0x463F50>::Call<bool>(this, a1); }
+        AGE_API bool InitBoundTerrain(const char *a1)       { return hook::Thunk<0x463DA0>::Call<bool>(this, a1); }
+        AGE_API bool InitBoundTerrainLocal(const char *a1)  { return hook::Thunk<0x463F50>::Call<bool>(this, a1); }
         AGE_API bool NeedGhostBound(const Vector3 *a1, int a2)
-                                                            { return ageHook::Thunk<0x4641A0>::Call<bool>(this, a1, a2); }
+                                                            { return hook::Thunk<0x4641A0>::Call<bool>(this, a1, a2); }
         AGE_API bool InitGhostBound(phBound *a1, const Vector3 *a2, int a3)
-                                                            { return ageHook::Thunk<0x464200>::Call<bool>(this, a1, a2, a3); }
+                                                            { return hook::Thunk<0x464200>::Call<bool>(this, a1, a2, a3); }
         AGE_API int InitGhost(const char *a1, const Matrix34 &a2)
-                                                            { return ageHook::Thunk<0x464330>::Call<int>(this, a1, &a2); }
+                                                            { return hook::Thunk<0x464330>::Call<int>(this, a1, &a2); }
 
-        AGE_API void PreLoadShader(int a1)                  { ageHook::Thunk<0x464B00>::Call<void>(this, a1); }
-        AGE_API void Optimize(int a1)                       { ageHook::Thunk<0x464B70>::Call<void>(this, a1); }
+        AGE_API void PreLoadShader(int a1)                  { hook::Thunk<0x464B00>::Call<void>(this, a1); }
+        AGE_API void Optimize(int a1)                       { hook::Thunk<0x464B70>::Call<void>(this, a1); }
 
         /*
             lvlInstance virtuals
@@ -176,39 +176,39 @@ namespace MM2
         virtual AGE_API void Reset()                        PURE;
         virtual AGE_API const Vector3 & GetPosition()       PURE;
         virtual AGE_API int IsVisible(const gfxViewport *a1)
-                                                            { return ageHook::Thunk<0x4649F0>::Call<int>(this, a1); }
+                                                            { return hook::Thunk<0x4649F0>::Call<int>(this, a1); }
 
         virtual AGE_API const Matrix34 & GetMatrix(Matrix34 *a1)
                                                             PURE;
         virtual AGE_API void SetMatrix(const Matrix34 *a1)  PURE;
         
-        virtual AGE_API void SetVariant(int a1)             { ageHook::Thunk<0x4643D0>::Call<void>(this, a1); }
-        virtual AGE_API const float GetRadius()             { return ageHook::Thunk<0x4643E0>::Call<float>(this); }
-        virtual AGE_API dgPhysEntity * GetEntity()          { return ageHook::Thunk<0x4643B0>::Call<dgPhysEntity *>(this); }
-        virtual AGE_API dgPhysEntity * AttachEntity()       { return ageHook::Thunk<0x4643C0>::Call<dgPhysEntity *>(this); }
-        virtual AGE_API const Vector3 * GetVelocity()       { return ageHook::Thunk<0x4643A0>::Call<const Vector3 *>(this); }
-        virtual AGE_API void Detach()                       { ageHook::Thunk<0x43FC30>::Call<void>(this); }
+        virtual AGE_API void SetVariant(int a1)             { hook::Thunk<0x4643D0>::Call<void>(this, a1); }
+        virtual AGE_API const float GetRadius()             { return hook::Thunk<0x4643E0>::Call<float>(this); }
+        virtual AGE_API dgPhysEntity * GetEntity()          { return hook::Thunk<0x4643B0>::Call<dgPhysEntity *>(this); }
+        virtual AGE_API dgPhysEntity * AttachEntity()       { return hook::Thunk<0x4643C0>::Call<dgPhysEntity *>(this); }
+        virtual AGE_API const Vector3 * GetVelocity()       { return hook::Thunk<0x4643A0>::Call<const Vector3 *>(this); }
+        virtual AGE_API void Detach()                       { hook::Thunk<0x43FC30>::Call<void>(this); }
         
         virtual AGE_API void Draw(int)                      PURE;
-        virtual AGE_API void DrawShadow()                   { ageHook::Thunk<0x4643F0>::Call<void>(this); }
-        virtual AGE_API void DrawShadowMap()                { ageHook::Thunk<0x464400>::Call<void>(this); }
-        virtual AGE_API void DrawGlow()                     { ageHook::Thunk<0x464410>::Call<void>(this); }
-        virtual AGE_API void DrawReflected(float a1)        { ageHook::Thunk<0x464420>::Call<void>(this, a1); }
-        virtual AGE_API void DrawReflectedParts(int a1)     { ageHook::Thunk<0x4648B0>::Call<void>(this, a1); }
+        virtual AGE_API void DrawShadow()                   { hook::Thunk<0x4643F0>::Call<void>(this); }
+        virtual AGE_API void DrawShadowMap()                { hook::Thunk<0x464400>::Call<void>(this); }
+        virtual AGE_API void DrawGlow()                     { hook::Thunk<0x464410>::Call<void>(this); }
+        virtual AGE_API void DrawReflected(float a1)        { hook::Thunk<0x464420>::Call<void>(this, a1); }
+        virtual AGE_API void DrawReflectedParts(int a1)     { hook::Thunk<0x4648B0>::Call<void>(this, a1); }
         virtual AGE_API int Init(const char *a1, const Matrix34 &a2, int a3)
-                                                            {return ageHook::Thunk<0x463D90>::Call<int>(this, a1, &a2, a3); }
+                                                            {return hook::Thunk<0x463D90>::Call<int>(this, a1, &a2, a3); }
 
         virtual AGE_API unsigned int SizeOf(void)           PURE;
 
-        virtual AGE_API bool IsLandmark()                   { return ageHook::Thunk<0x463180>::Call<bool>(this); }
-        virtual AGE_API bool IsCollidable()                 { return ageHook::Thunk<0x43FC40>::Call<bool>(this); }
-        virtual AGE_API bool IsTerrainCollidable()          { return ageHook::Thunk<0x43FC50>::Call<bool>(this); }
-        virtual AGE_API int GetNumLightSources()            { return ageHook::Thunk<0x4632B0>::Call<int>(this); }
+        virtual AGE_API bool IsLandmark()                   { return hook::Thunk<0x463180>::Call<bool>(this); }
+        virtual AGE_API bool IsCollidable()                 { return hook::Thunk<0x43FC40>::Call<bool>(this); }
+        virtual AGE_API bool IsTerrainCollidable()          { return hook::Thunk<0x43FC50>::Call<bool>(this); }
+        virtual AGE_API int GetNumLightSources()            { return hook::Thunk<0x4632B0>::Call<int>(this); }
         virtual AGE_API void GetLightInfo(int a1, cltLight *a2)
-                                                            { ageHook::Thunk<0x4630B0>::Call<void>(this); }
+                                                            { hook::Thunk<0x4630B0>::Call<void>(this); }
         virtual AGE_API int SetupGfxLights(const Matrix34 &a1)
-                                                            { return ageHook::Thunk<0x464670>::Call<int>(this, &a1); }
-        virtual AGE_API phBound * GetBound(int a1)          { return ageHook::Thunk<0x4648C0>::Call<phBound *>(this, a1); };
+                                                            { return hook::Thunk<0x464670>::Call<int>(this, &a1); }
+        virtual AGE_API phBound * GetBound(int a1)          { return hook::Thunk<0x4648C0>::Call<phBound *>(this, a1); };
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<lvlInstance>("lvlInstance")

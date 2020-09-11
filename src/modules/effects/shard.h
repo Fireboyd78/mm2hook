@@ -22,7 +22,7 @@ namespace MM2
         float TexVCoord;
         int dword_58;
     public:
-        AGE_API void Draw(modShader* shader)                { ageHook::Thunk<0x45FE30>::Call<void>(this, shader); }
+        AGE_API void Draw(modShader* shader)                { hook::Thunk<0x45FE30>::Call<void>(this, shader); }
     };
 
     class fxShardManager : public asNode {

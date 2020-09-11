@@ -121,12 +121,12 @@ namespace MM2
     public:
         AGE_API asBirthRule(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x45ECE0>::Call<void>(this);
+            hook::Thunk<0x45ECE0>::Call<void>(this);
         }
 
         AGE_API virtual ~asBirthRule(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x45FBF0>::Call<void>(this);
+            hook::Thunk<0x45FBF0>::Call<void>(this);
         }
 
         //helpers
@@ -206,12 +206,12 @@ namespace MM2
 
         AGE_API asParticles(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x460EB0>::Call<void>(this);
+            hook::Thunk<0x460EB0>::Call<void>(this);
         }
 
         AGE_API virtual ~asParticles(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x4619E0>::Call<void>(this);
+            hook::Thunk<0x4619E0>::Call<void>(this);
         }
 
         void InitLua(int count, int wt, int ht) {
@@ -219,12 +219,12 @@ namespace MM2
         }
 
         AGE_API void Init(int nParticles, int nTilesW, int nTilesH, int nVertices, asMeshCardVertex *mesh)
-                                                            { ageHook::Thunk<0x460FB0>::Call<void>(this, nParticles, nTilesW, nTilesH, nVertices, mesh); }
-        AGE_API void Blast(int a1, asBirthRule *rule)       { ageHook::Thunk<0x461490>::Call<void>(this, a1, rule); }
-        AGE_API void Reset()                                { ageHook::Thunk<0x461040>::Call<void>(this); }
-        AGE_API void Update()                               { ageHook::Thunk<0x4610F0>::Call<void>(this); }
-        AGE_API void SetTexture(const char *tex)            { ageHook::Thunk<0x461090>::Call<void>(this, tex); }
-        AGE_API void SetTexture(gfxTexture *tex)            { ageHook::Thunk<0x461050>::Call<void>(this, tex); }
+                                                            { hook::Thunk<0x460FB0>::Call<void>(this, nParticles, nTilesW, nTilesH, nVertices, mesh); }
+        AGE_API void Blast(int a1, asBirthRule *rule)       { hook::Thunk<0x461490>::Call<void>(this, a1, rule); }
+        AGE_API void Reset()                                { hook::Thunk<0x461040>::Call<void>(this); }
+        AGE_API void Update()                               { hook::Thunk<0x4610F0>::Call<void>(this); }
+        AGE_API void SetTexture(const char *tex)            { hook::Thunk<0x461090>::Call<void>(this, tex); }
+        AGE_API void SetTexture(gfxTexture *tex)            { hook::Thunk<0x461050>::Call<void>(this, tex); }
 
         //member hlepers
         inline asBirthRule * getBirthRule(void) {
@@ -238,7 +238,7 @@ namespace MM2
         /*
             asParticles Virtuals
         */
-        virtual AGE_API void Cull()                         { ageHook::Thunk<0x4615A0>::Call<void>(this); }
+        virtual AGE_API void Cull()                         { hook::Thunk<0x4615A0>::Call<void>(this); }
 
         //lua
         static void BindLua(LuaState L) {

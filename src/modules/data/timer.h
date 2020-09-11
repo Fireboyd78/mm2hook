@@ -14,7 +14,7 @@ namespace MM2
         uint ticks;
     public:
         Timer() {
-            ageHook::Thunk<0x4C7840>::ThisCall<void>(this);
+            hook::Thunk<0x4C7840>::ThisCall<void>(this);
         }
 
         constexpr operator uint() const {
@@ -26,11 +26,11 @@ namespace MM2
         }
 
         static uint Ticks() {
-            return ageHook::StaticThunk<0x4C77E0>::Call<uint>();
+            return hook::StaticThunk<0x4C77E0>::Call<uint>();
         }
 
         static uint QuickTicks() {
-            return ageHook::StaticThunk<0x4C7810>::Call<uint>();
+            return hook::StaticThunk<0x4C7810>::Call<uint>();
         }
     };
 

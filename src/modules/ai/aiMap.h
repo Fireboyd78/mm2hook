@@ -176,39 +176,39 @@ namespace MM2
         }
     private:
         //profiling hooks
-        static ageHook::Type<float> _fSubwayUpdate;
-        static ageHook::Type<float> _fCableCarUpdate;
-        static ageHook::Type<float> _fCTFOppUpdate;
-        static ageHook::Type<float> _fPedUpdate;
-        static ageHook::Type<float> _fAmbientUpdate;
-        static ageHook::Type<float> _fCopUpdate;
-        static ageHook::Type<int>   _nPedQty;
-        static ageHook::Type<float> _fOppUpdate;
-        static ageHook::Type<int>   _nAmbientQty;
-        static ageHook::Type<float> _fTotUpdate;
+        static hook::Type<float> _fSubwayUpdate;
+        static hook::Type<float> _fCableCarUpdate;
+        static hook::Type<float> _fCTFOppUpdate;
+        static hook::Type<float> _fPedUpdate;
+        static hook::Type<float> _fAmbientUpdate;
+        static hook::Type<float> _fCopUpdate;
+        static hook::Type<int>   _nPedQty;
+        static hook::Type<float> _fOppUpdate;
+        static hook::Type<int>   _nAmbientQty;
+        static hook::Type<float> _fTotUpdate;
     public:
-        static ageHook::Type<aiMap> Instance;
+        static hook::Type<aiMap> Instance;
 
         /*
             asNode virtuals
         */
 
-        AGE_API void Cull() override                { ageHook::Thunk<0x5374F0>::Call<void>(this); }
-        AGE_API void Update() override              { ageHook::Thunk<0x536E50>::Call<void>(this); }
-        AGE_API void UpdatePaused() override        { ageHook::Thunk<0x5374E0>::Call<void>(this); }
-        AGE_API void Reset() override               { ageHook::Thunk<0x536A30>::Call<void>(this); }
+        AGE_API void Cull() override                { hook::Thunk<0x5374F0>::Call<void>(this); }
+        AGE_API void Update() override              { hook::Thunk<0x536E50>::Call<void>(this); }
+        AGE_API void UpdatePaused() override        { hook::Thunk<0x5374E0>::Call<void>(this); }
+        AGE_API void Reset() override               { hook::Thunk<0x536A30>::Call<void>(this); }
         
         /*
             aiMap
         */
-        AGE_API void Dump(void)                              { ageHook::Thunk<0x538840>::Call<void>(this); }
-        AGE_API void TestProbes(BOOL a2)                     { ageHook::Thunk<0x53B870>::Call<void>(this, a2); }
-        AGE_API aiRouteRacer * Opponent(int num)             { return ageHook::Thunk<0x534940>::Call<aiRouteRacer *>(this, num); }
-        AGE_API aiPoliceOfficer * Police(int num)            { return ageHook::Thunk<0x5348F0>::Call<aiPoliceOfficer *>(this, num); }
-        AGE_API aiVehicleAmbient * Vehicle(int num)          { return ageHook::Thunk<0x5348B0>::Call<aiVehicleAmbient *>(this, num); }
-        AGE_API aiPedestrian * Pedestrian(int num)           { return ageHook::Thunk<0x534AB0>::Call<aiPedestrian *>(this, num); }
-        AGE_API aiIntersection* Intersection(int num)        { return ageHook::Thunk<0x534880>::Call<aiIntersection*>(this, num); }
-        AGE_API aiPath* Path(int num)                        { return ageHook::Thunk<0x534850>::Call<aiPath*>(this, num); }
+        AGE_API void Dump(void)                              { hook::Thunk<0x538840>::Call<void>(this); }
+        AGE_API void TestProbes(BOOL a2)                     { hook::Thunk<0x53B870>::Call<void>(this, a2); }
+        AGE_API aiRouteRacer * Opponent(int num)             { return hook::Thunk<0x534940>::Call<aiRouteRacer *>(this, num); }
+        AGE_API aiPoliceOfficer * Police(int num)            { return hook::Thunk<0x5348F0>::Call<aiPoliceOfficer *>(this, num); }
+        AGE_API aiVehicleAmbient * Vehicle(int num)          { return hook::Thunk<0x5348B0>::Call<aiVehicleAmbient *>(this, num); }
+        AGE_API aiPedestrian * Pedestrian(int num)           { return hook::Thunk<0x534AB0>::Call<aiPedestrian *>(this, num); }
+        AGE_API aiIntersection* Intersection(int num)        { return hook::Thunk<0x534880>::Call<aiIntersection*>(this, num); }
+        AGE_API aiPath* Path(int num)                        { return hook::Thunk<0x534850>::Call<aiPath*>(this, num); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<aiMap, asNode>("aiMap")

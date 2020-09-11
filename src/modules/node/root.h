@@ -21,12 +21,12 @@ namespace MM2
     public:
         AGE_API asRoot(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x4A0B70>::Call<void>(this);
+            hook::Thunk<0x4A0B70>::Call<void>(this);
         }
 
         AGE_API virtual ~asRoot(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x4A0C90>::Call<void>(this);
+            hook::Thunk<0x4A0C90>::Call<void>(this);
         }
 
         inline Matrix34 & getMatrix(void) {
@@ -37,19 +37,19 @@ namespace MM2
             memcpy(&matrix, &mtx, sizeof(Matrix34));
         }
 
-        AGE_API void Init(bool)                             { ageHook::Thunk<0x4A0BE0>::Call<void>(this);  }
-        AGE_API void Quit(void)                             { ageHook::Thunk<0x4A0C50>::Call<void>(this);  }
-        AGE_API bool IsPaused(void)                         { return ageHook::Thunk<0x4A0C60>::Call<bool>(this); }
-        AGE_API void TogglePause(void)                      { ageHook::Thunk<0x4A0C70>::Call<void>(this); }
-        AGE_API void SetPause(bool paused)                  { ageHook::Thunk<0x4A0C80>::Call<void>(this, paused); }
+        AGE_API void Init(bool)                             { hook::Thunk<0x4A0BE0>::Call<void>(this);  }
+        AGE_API void Quit(void)                             { hook::Thunk<0x4A0C50>::Call<void>(this);  }
+        AGE_API bool IsPaused(void)                         { return hook::Thunk<0x4A0C60>::Call<bool>(this); }
+        AGE_API void TogglePause(void)                      { hook::Thunk<0x4A0C70>::Call<void>(this); }
+        AGE_API void SetPause(bool paused)                  { hook::Thunk<0x4A0C80>::Call<void>(this, paused); }
 
         /*
             asNode virtuals
         */
 
-        virtual AGE_API void Update(void) override          { ageHook::Thunk<0x4A0C00>::Call<void>(this); };
-        virtual AGE_API void Reset(void) override           { ageHook::Thunk<0x4A0C40>::Call<void>(this); };
-        virtual AGE_API char * GetClassName(void) override  { return ageHook::Thunk<0x4A0CD0>::Call<char *>(this); };
+        virtual AGE_API void Update(void) override          { hook::Thunk<0x4A0C00>::Call<void>(this); };
+        virtual AGE_API void Reset(void) override           { hook::Thunk<0x4A0C40>::Call<void>(this); };
+        virtual AGE_API char * GetClassName(void) override  { return hook::Thunk<0x4A0CD0>::Call<char *>(this); };
 
         //lua
         static void BindLua(LuaState L) {

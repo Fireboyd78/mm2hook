@@ -19,13 +19,13 @@ Multiple declarations will cause compiler errors!
 
 #define declfield(t) decltype(t) t
 
-#define VIRTUAL_THUNK(addr, rtype, ...) { return ageHook::Thunk<addr>::Call<rtype> WRAP(this, __VA_ARGS__); }
+#define VIRTUAL_THUNK(addr, rtype, ...) { return hook::Thunk<addr>::Call<rtype> WRAP(this, __VA_ARGS__); }
 
 //
 // Allocator
 // Calls MM2's internal operator new
 //
-#define ANGEL_ALLOCATOR void* operator new(size_t size) { return ageHook::StaticThunk<0x577360>::Call<void*>(size); }
+#define ANGEL_ALLOCATOR void* operator new(size_t size) { return hook::StaticThunk<0x577360>::Call<void*>(size); }
 
 //
 // MM2 uses DirectX 7
@@ -34,24 +34,7 @@ Multiple declarations will cause compiler errors!
 
 #include "common.h"
 #include "AGE.h"
-
-template <typename TType>
-using _Type = ageHook::Type<TType>;
-
-template <typename TType>
-using _TypeProxy = ageHook::TypeProxy<TType>;
-
-template <typename ...TArgs>
-using _Func = ageHook::Func<TArgs...>;
-
-template <typename ...TArgs>
-using _MemberFunc = ageHook::MemberFunc<TArgs...>;
-
-template <int address>
-using _Thunk = ageHook::Thunk<address>;
-
-template <int address>
-using _StaticThunk = ageHook::StaticThunk<address>;
+#include "hook.h"
 
 #include "mm2_utils.h"
 #include "mm2_vector.h"
@@ -117,25 +100,25 @@ namespace MM2 {
 
     class string {
     public:
-        AGE_API string(const char *str)                     { ageHook::Thunk<0x505070>::Call<void>(this, str); }
+        AGE_API string(const char *str)                     { hook::Thunk<0x505070>::Call<void>(this, str); }
 
         AGE_API string(char *str, int len) {
             buffer = str;
             length = len;
         }
 
-        AGE_API void operator+=(char c)                     { ageHook::Thunk<0x49F4C0>::Call<void>(this, c); }
-        AGE_API void operator+=(const char *str)            { ageHook::Thunk<0x49F3E0>::Call<void>(this, str); }
-        AGE_API void operator-=(const char *str)            { ageHook::Thunk<0x49F6D0>::Call<void>(this, str); }
-        AGE_API void operator=(const char *str)             { ageHook::Thunk<0x4A0A90>::Call<void>(this, str); }
+        AGE_API void operator+=(char c)                     { hook::Thunk<0x49F4C0>::Call<void>(this, c); }
+        AGE_API void operator+=(const char *str)            { hook::Thunk<0x49F3E0>::Call<void>(this, str); }
+        AGE_API void operator-=(const char *str)            { hook::Thunk<0x49F6D0>::Call<void>(this, str); }
+        AGE_API void operator=(const char *str)             { hook::Thunk<0x4A0A90>::Call<void>(this, str); }
 
-        AGE_API string operator+(const string &str) const   { return ageHook::Thunk<0x4A0B00>::Call<string>(this, &str); }
-        AGE_API string operator+(const char *str) const     { return ageHook::Thunk<0x49F180>::Call<string>(this, str); }
-        AGE_API string operator-(const char *str) const     { return ageHook::Thunk<0x49F560>::Call<string>(this, str); }
+        AGE_API string operator+(const string &str) const   { return hook::Thunk<0x4A0B00>::Call<string>(this, &str); }
+        AGE_API string operator+(const char *str) const     { return hook::Thunk<0x49F180>::Call<string>(this, str); }
+        AGE_API string operator-(const char *str) const     { return hook::Thunk<0x49F560>::Call<string>(this, str); }
 
-        AGE_API int NumSubStrings(void) const               { return ageHook::Thunk<0x4A0A20>::Call<int>(this); }
+        AGE_API int NumSubStrings(void) const               { return hook::Thunk<0x4A0A20>::Call<int>(this); }
         
-        AGE_API string SubString(int index) const           { return ageHook::Thunk<0x4A0910>::Call<string>(this, index); }
+        AGE_API string SubString(int index) const           { return hook::Thunk<0x4A0910>::Call<string>(this, index); }
 
         inline operator char *(void) const {
             return buffer;
@@ -154,22 +137,22 @@ namespace MM2 {
 
         DWORD StartTime;
 
-        AGE_API Timer()                                     { ageHook::Thunk<0x4C7840>::Call<void>(this); }
+        AGE_API Timer()                                     { hook::Thunk<0x4C7840>::Call<void>(this); }
 
-        AGE_API void BeginBenchmark()                       { ageHook::Thunk<0x4C7980>::Call<void>(this); }
-        AGE_API void EndBenchmark()                         { ageHook::Thunk<0x4C79F0>::Call<void>(this); }
-        AGE_API uint QuickTicks()                           { return ageHook::Thunk<0x4C7810>::Call<uint>(this); }
-        AGE_API ulong Ticks()                               { return ageHook::Thunk<0x4C77E0>::Call<ulong>(this); }
+        AGE_API void BeginBenchmark()                       { hook::Thunk<0x4C7980>::Call<void>(this); }
+        AGE_API void EndBenchmark()                         { hook::Thunk<0x4C79F0>::Call<void>(this); }
+        AGE_API uint QuickTicks()                           { return hook::Thunk<0x4C7810>::Call<uint>(this); }
+        AGE_API ulong Ticks()                               { return hook::Thunk<0x4C77E0>::Call<ulong>(this); }
     };
 
     class NetStartArray {
         ulong Slots[10];
     public:
-        AGE_API void Clear(void)                            { return ageHook::Thunk<0x5235C0>::Call<void>(this); }
-        AGE_API int GetIndex(ulong playerId)                { return ageHook::Thunk<0x5235D0>::Call<int>(this, playerId); }
-        AGE_API void ClearIndex(ulong playerId)             { return ageHook::Thunk<0x5235F0>::Call<void>(this, playerId); }
-        AGE_API int AssignOpenIndex(ulong playerId)         { return ageHook::Thunk<0x523610>::Call<int>(this, playerId); }
-        AGE_API void Init(ulong *playerIds)                 { return ageHook::Thunk<0x523650>::Call<void>(this, playerIds); }
+        AGE_API void Clear(void)                            { return hook::Thunk<0x5235C0>::Call<void>(this); }
+        AGE_API int GetIndex(ulong playerId)                { return hook::Thunk<0x5235D0>::Call<int>(this, playerId); }
+        AGE_API void ClearIndex(ulong playerId)             { return hook::Thunk<0x5235F0>::Call<void>(this, playerId); }
+        AGE_API int AssignOpenIndex(ulong playerId)         { return hook::Thunk<0x523610>::Call<int>(this, playerId); }
+        AGE_API void Init(ulong *playerIds)                 { return hook::Thunk<0x523650>::Call<void>(this, playerIds); }
     };
 
     enum dgGameMode {
@@ -233,16 +216,16 @@ namespace MM2 {
         //FUNCS
         AGE_API dgStatePack(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x443110>::Call<void>(this);
+            hook::Thunk<0x443110>::Call<void>(this);
         }
 
         AGE_API ~dgStatePack(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x443180>::Call<void>(this);
+            hook::Thunk<0x443180>::Call<void>(this);
         }
 
         //FIELDS
-        static ageHook::Type<dgStatePack *> Instance;
+        static hook::Type<dgStatePack *> Instance;
 
         dgGameMode GameMode;
 

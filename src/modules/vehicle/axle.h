@@ -33,19 +33,19 @@ namespace MM2
             return this->RightWheel;
         }
     public:
-        AGE_API vehAxle()                                   { ageHook::Thunk<0x4D9990>::Call<void>(this); }
+        AGE_API vehAxle()                                   { hook::Thunk<0x4D9990>::Call<void>(this); }
 
         AGE_API void Init(vehCarSim *carSim, const char *vehicleBasename, const char *axleName, vehWheel *wheelL, vehWheel *wheelR)                     
-                                                            { ageHook::Thunk<0x4D9A50>::Call<void>(this, carSim, vehicleBasename, axleName, wheelL, wheelR); }
-        AGE_API void ComputeConstants()                     { ageHook::Thunk<0x4D9A20>::Call<void>(this); }
+                                                            { hook::Thunk<0x4D9A50>::Call<void>(this, carSim, vehicleBasename, axleName, wheelL, wheelR); }
+        AGE_API void ComputeConstants()                     { hook::Thunk<0x4D9A20>::Call<void>(this); }
 
         /*
             asNode virtuals
         */
 
-        AGE_API void Update() override                      { ageHook::Thunk<0x4D9B20>::Call<void>(this); }
-        AGE_API void FileIO(datParser& parser) override     { ageHook::Thunk<0x4D9CA0>::Call<void>(this); }
-        AGE_API char * GetClassName() override              { return ageHook::Thunk<0x4D9D20>::Call<char*>(this); }
+        AGE_API void Update() override                      { hook::Thunk<0x4D9B20>::Call<void>(this); }
+        AGE_API void FileIO(datParser& parser) override     { hook::Thunk<0x4D9CA0>::Call<void>(this); }
+        AGE_API char * GetClassName() override              { return hook::Thunk<0x4D9D20>::Call<char*>(this); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<vehAxle, asNode>("vehAxle")

@@ -14,7 +14,7 @@ namespace MM2
     //TODO
     class dgRagdoll {
     public:
-        AGE_API Matrix34* GetMatrix()                       { return ageHook::Thunk<0x5A7D70>::Call<Matrix34*>(this); }
+        AGE_API Matrix34* GetMatrix()                       { return hook::Thunk<0x5A7D70>::Call<Matrix34*>(this); }
     };
 
 

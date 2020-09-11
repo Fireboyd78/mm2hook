@@ -14,11 +14,11 @@ namespace MM2
 
     class lvlAiMap {
     public:
-        AGE_API static void SetRoad(lvlSDL const * a1, int a2, bool a3) { ageHook::StaticThunk<0x45D720>::Call<void>(a1, a2, a3); }
-        AGE_API static lvlAiRoad* GetRoad(int a1) { return ageHook::StaticThunk<0x45D840>::Call<lvlAiRoad*>(a1); }
-        AGE_API static int GetRoom(int a1) { return ageHook::StaticThunk<0x45DA00>::Call<int>(a1); }
-        AGE_API static int GetNumRoads() { return ageHook::StaticThunk<0x45D860>::Call<int>(); }
-        AGE_API static int GetNumRooms() { return ageHook::StaticThunk<0x45DA58>::Call<int>(); }
+        AGE_API static void SetRoad(lvlSDL const * a1, int a2, bool a3) { hook::StaticThunk<0x45D720>::Call<void>(a1, a2, a3); }
+        AGE_API static lvlAiRoad* GetRoad(int a1) { return hook::StaticThunk<0x45D840>::Call<lvlAiRoad*>(a1); }
+        AGE_API static int GetRoom(int a1) { return hook::StaticThunk<0x45DA00>::Call<int>(a1); }
+        AGE_API static int GetNumRoads() { return hook::StaticThunk<0x45D860>::Call<int>(); }
+        AGE_API static int GetNumRooms() { return hook::StaticThunk<0x45DA58>::Call<int>(); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<lvlAiMap>("lvlAiMap")
@@ -33,7 +33,7 @@ namespace MM2
 
     class lvlAiRoad {
     public:
-        AGE_API void LoadBinary(Stream *a1) { ageHook::Thunk<0x45D870>::Call<void>(this, a1); }
+        AGE_API void LoadBinary(Stream *a1) { hook::Thunk<0x45D870>::Call<void>(this, a1); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<lvlAiRoad>("lvlAiRoad")

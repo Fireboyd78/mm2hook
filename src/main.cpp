@@ -43,7 +43,7 @@ bool bAgeDebug = false;
 // ==========================
 // Pointer hooks
 // ==========================
-ageHook::Type<asNode> ROOT                              = 0x661738;
+hook::Type<asNode> ROOT                              = 0x661738;
 
 /*
     ===========================================================================
@@ -790,7 +790,7 @@ public:
         Reset(false);
 
         // GameLoop
-        ageHook::StaticThunk<0x401A00>::Call<void>(parsedStateArgs);
+        hook::StaticThunk<0x401A00>::Call<void>(parsedStateArgs);
 
         Reset(true);
     }
@@ -801,7 +801,7 @@ public:
         discordHandler::Release();
 
         // gfxPipeline::EndGfx2D
-        ageHook::StaticThunk<0x4AAA10>::Call<void>();
+        hook::StaticThunk<0x4AAA10>::Call<void>();
 
         // we can now safely close everything else
         if (MM2Lua::IsEnabled())

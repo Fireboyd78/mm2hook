@@ -28,7 +28,7 @@ private:
         bool isGuiShowing = mmImGuiManager::Instance != nullptr && mmImGuiManager::Instance->IsShowing();
 
         if (!isGuiShowing || !io.WantCaptureMouse)
-            ageHook::Thunk<0x52D5E0>::Call<void>(this, a1);
+            hook::Thunk<0x52D5E0>::Call<void>(this, a1);
     }
 
     //mmInput::PutEventInQueue called from mmInput::ProcessKeyboardEvents
@@ -38,7 +38,7 @@ private:
         bool isGuiShowing = mmImGuiManager::Instance != nullptr && mmImGuiManager::Instance->IsShowing();
 
         if (!isGuiShowing || !io.WantCaptureKeyboard)
-            ageHook::Thunk<0x52D5E0>::Call<void>(this, a1);
+            hook::Thunk<0x52D5E0>::Call<void>(this, a1);
     }
 
     //ioEventQueue::Queue hook
@@ -56,7 +56,7 @@ private:
             return;
         }
 
-        ageHook::StaticThunk<0x4BA9D0>::Call<void>(a1, a2, a3, a4);
+        hook::StaticThunk<0x4BA9D0>::Call<void>(a1, a2, a3, a4);
     }
 
     //ioInput::Update hook (Currently doesn't respect useJoystick but that always seems to be 0 anyways?)
@@ -78,7 +78,7 @@ private:
             ioKeyboard::ClearStates();
 
         //update pad
-        ageHook::StaticThunk<0x4BB7A0>::Call<void>(); //ioPad::UpdateAll
+        hook::StaticThunk<0x4BB7A0>::Call<void>(); //ioPad::UpdateAll
     }
 public:
     bool IsShowing() {

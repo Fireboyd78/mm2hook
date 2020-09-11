@@ -81,17 +81,17 @@ static init_handler g_feature_handlers[] = {
 
 static float ped_LodThreshold = 1225.f;
 
-ageHook::Type<float> obj_NoDrawThresh       ( 0x5C571C ); // default: 300.0
+hook::Type<float> obj_NoDrawThresh       ( 0x5C571C ); // default: 300.0
 
-ageHook::Type<float> obj_VLowThresh         ( 0x5C6658 ); // default: 200.0
-ageHook::Type<float> obj_LowThresh          ( 0x5C665C ); // default: 100.0
-ageHook::Type<float> obj_MedThresh          ( 0x5C6660 ); // default: 40.0
+hook::Type<float> obj_VLowThresh         ( 0x5C6658 ); // default: 200.0
+hook::Type<float> obj_LowThresh          ( 0x5C665C ); // default: 100.0
+hook::Type<float> obj_MedThresh          ( 0x5C6660 ); // default: 40.0
 
-ageHook::Type<float> sdl_VLowThresh         ( 0x5C5708 );  // default: 300.0
-ageHook::Type<float> sdl_LowThresh          ( 0x5C570C );  // default: 100.0
-ageHook::Type<float> sdl_MedThresh          ( 0x5C5710 );  // default: 50.0
+hook::Type<float> sdl_VLowThresh         ( 0x5C5708 );  // default: 300.0
+hook::Type<float> sdl_LowThresh          ( 0x5C570C );  // default: 100.0
+hook::Type<float> sdl_MedThresh          ( 0x5C5710 );  // default: 50.0
 
-ageHook::Type<int> timeOfDay                ( 0x62B068 );
+hook::Type<int> timeOfDay                ( 0x62B068 );
 
 /*
     asCullManagerHandler
@@ -106,7 +106,7 @@ void asCullManagerHandler::Init(int maxCullables, int maxCullables2D) {
 
     LogFile::Format("[asCullManager::Init]: Max Cullables = %d, %d\n", maxCullables, maxCullables2D);
 
-    ageHook::Thunk<0x4A1290>::Call<void>(this, maxCullables, maxCullables2D);
+    hook::Thunk<0x4A1290>::Call<void>(this, maxCullables, maxCullables2D);
 }
 
 void asCullManagerHandler::Install() {
@@ -356,11 +356,11 @@ struct TimeWeatherInfo {
     }
 
     void Apply() {
-        static ageHook::Type<gfxTexture *> g_GlowTexture    = 0x62767C;
-        static ageHook::Type<gfxTexture *> g_ReflectionMap  = 0x628914;
+        static hook::Type<gfxTexture *> g_GlowTexture    = 0x62767C;
+        static hook::Type<gfxTexture *> g_ReflectionMap  = 0x628914;
 
-        static ageHook::Type<float> g_FlatColorIntensity    = 0x5C9DA0;
-        static ageHook::Type<float> g_WeatherFriction       = 0x5CF6B8;
+        static hook::Type<float> g_FlatColorIntensity    = 0x5C9DA0;
+        static hook::Type<float> g_WeatherFriction       = 0x5CF6B8;
 
         aiMap::Instance->drawHeadlights = ShowHeadlights;
         vehCar::sm_DrawHeadlights = ShowHeadlights;
@@ -370,7 +370,7 @@ struct TimeWeatherInfo {
 
         if (MMSTATE->WeatherType == 3) {
             // jump to the part of mmGame::InitWeather that sets up birth rules
-            ageHook::StaticThunk<0x4133D6>::Call<void>();
+            hook::StaticThunk<0x4133D6>::Call<void>();
         }
 
         if (!useSoftware)
@@ -383,7 +383,7 @@ struct TimeWeatherInfo {
     }
 
     void ApplyFlatColor() {
-        static ageHook::Type<float> g_FlatColorIntensity = 0x5C9DA0;
+        static hook::Type<float> g_FlatColorIntensity = 0x5C9DA0;
 
         g_FlatColorIntensity = FlatColorIntensity;
     }
@@ -392,7 +392,7 @@ struct TimeWeatherInfo {
 static TimeWeatherInfo g_TimeWeathers[NUM_TIMEWEATHERS];
 static TimeWeatherInfo *TimeWeather = nullptr;
 
-static ageHook::Type<int> TimeWeatherIdx = 0x62B068;
+static hook::Type<int> TimeWeatherIdx = 0x62B068;
 
 // cannot be 'bool' or else EAX will be corrupted!
 BOOL CanDrawNightTrafficGlows() {
@@ -434,7 +434,7 @@ void cityTimeWeatherLightingHandler::LoadCityTimeWeatherLighting() {
     InitTimeWeathers();
 
     // LoadCityTimeWeatherLighting
-    ageHook::StaticThunk<0x443530>::Call<void>();
+    hook::StaticThunk<0x443530>::Call<void>();
 
     TimeWeather = &g_TimeWeathers[TimeWeatherIdx];
     TimeWeather->Apply();
@@ -442,7 +442,7 @@ void cityTimeWeatherLightingHandler::LoadCityTimeWeatherLighting() {
 
 void cityTimeWeatherLightingHandler::FileIO(datParser &parser) {
     // cityTimeWeatherLighting::FileIO
-    ageHook::Thunk<0x443440>::Call<void>(this, &parser);
+    hook::Thunk<0x443440>::Call<void>(this, &parser);
 
     // apply to the active TimeWeatherInfo
     if (TimeWeather != nullptr)
@@ -1129,7 +1129,7 @@ void Aud3DObjectManagerHandler::InitAmbObjContainer(LPCSTR name) {
     LogFile::Format("AmbientContainer: %s\n", szAmbientSFX);
 
     //call original
-    ageHook::Thunk<0x50F650>::Call<void>(this, szAmbientSFX);
+    hook::Thunk<0x50F650>::Call<void>(this, szAmbientSFX);
 }
 
 void Aud3DObjectManagerHandler::Install() {
@@ -1211,7 +1211,7 @@ void vehPoliceCarAudioHandler::InitSirenAudio(vehCarSim *a1, vehCarDamage *a2, L
         sirenCsvFile = buffer;
 
     // vehPoliceCarAudio::Init
-    ageHook::Thunk<0x4D46F0>::Call<void>(this, a1, a2, basename, sirenCsvFile, a5);
+    hook::Thunk<0x4D46F0>::Call<void>(this, a1, a2, basename, sirenCsvFile, a5);
 }
 
 void vehPoliceCarAudioHandler::Install() {
@@ -1374,7 +1374,7 @@ void memSafeHeapHandler::Init(void *memAllocator, unsigned int heapSize, bool p3
     heapSize = (g_heapSize << 20);
 
     LogFile::Format("[memSafeHeap::Init]: Allocating %dMB heap (%d bytes)\n", g_heapSize, heapSize);
-    return ageHook::Thunk<0x577210>::Call<void>(this, memAllocator, heapSize, p3, p4, checkAlloc); //TODO: move to own class
+    return hook::Thunk<0x577210>::Call<void>(this, memAllocator, heapSize, p3, p4, checkAlloc); //TODO: move to own class
 }
 
 void memSafeHeapHandler::Install() {
@@ -1435,7 +1435,7 @@ void mmGameHandler::SendChatMessage(char *message) {
     }
 }
 
-ageHook::Type<float> wheelFriction(0x5CF6B8);
+hook::Type<float> wheelFriction(0x5CF6B8);
 
 void mmGameHandler::InitWeather(void) {
     // should've already been initialized, but juuuust in case...
@@ -1654,7 +1654,7 @@ void mmDirSndHandler::Install() {
 void gizFerryHandler::SetSpeed(float value) {
     value *= cfgFerrySpeedMultiplier;
 
-    ageHook::Thunk<0x579520>::Call<void>(this, value);
+    hook::Thunk<0x579520>::Call<void>(this, value);
 }
 
 void gizFerryHandler::Install() {
@@ -1676,15 +1676,15 @@ void gizParkedCarMgrHandler::EnumeratePath(LPCSTR a1, const Matrix34* a2, bool a
     //only apply car scaling in cruise
     if (dgStatePack::Instance->GameMode == Cruise) {
         int oldRandomSeed = gRandSeed;
-        float rand = ageHook::StaticThunk<0x4BBE30>::Call<float>();
+        float rand = hook::StaticThunk<0x4BBE30>::Call<float>();
 
         if (dgStatePack::Instance->TrafficDensity > rand) {
             gRandSeed = oldRandomSeed;
-            ageHook::StaticThunk<0x579BD0>::Call<void>(a1, a2, a3); //gizParkedCarMgr_EnumeratePath
+            hook::StaticThunk<0x579BD0>::Call<void>(a1, a2, a3); //gizParkedCarMgr_EnumeratePath
         }
     }
     else {
-        ageHook::StaticThunk<0x579BD0>::Call<void>(a1, a2, a3); //gizParkedCarMgr_EnumeratePath
+        hook::StaticThunk<0x579BD0>::Call<void>(a1, a2, a3); //gizParkedCarMgr_EnumeratePath
     }
 }
 
@@ -1819,8 +1819,8 @@ void mmHudMapFeatureHandler::DrawLightGreenTri(const Matrix34 *a1) {
     rglEnableDisable(RGL_DEPTH_TEST, true);
 }
 
-ageHook::Type<unsigned int> HudmapIconColors(0x5C4740);
-ageHook::Type<Vector3> YAXIS(0x6A3B28);
+hook::Type<unsigned int> HudmapIconColors(0x5C4740);
+hook::Type<Vector3> YAXIS(0x6A3B28);
 Matrix34 mtx;
 
 void mmHudMapFeatureHandler::DrawIcon(int iconType, const Matrix34 *matrix) {
@@ -2205,7 +2205,7 @@ void mmIconsHandler::RegisterOpponents(OppIconInfo *icons, int count, void *a3) 
     }
 
     //call original
-    ageHook::Thunk<0x4322F0>::Call<void>(this, icons, count, a3);
+    hook::Thunk<0x4322F0>::Call<void>(this, icons, count, a3);
 }
 
 void mmIconsHandler::RegisterOpponents_Blitz(OppIconInfo *icons, int count, void *a3) {
@@ -2229,7 +2229,7 @@ void mmIconsHandler::RegisterOpponents_Blitz(OppIconInfo *icons, int count, void
     }
 
     //call original
-    ageHook::Thunk<0x4322F0>::Call<void>(this, icons, count, a3);
+    hook::Thunk<0x4322F0>::Call<void>(this, icons, count, a3);
 }
 
 void mmIconsHandler::Install() {
@@ -2300,12 +2300,12 @@ void mmDashViewHandler::UpdateCS() {
     dashCam->m31 += (headBobY * cfgHeadBobMultiplierY);
     dashCam->m32 += (headBobZ * cfgHeadBobMultiplierZ);
 
-    ageHook::Thunk<0x4A3370>::Call<void>(this);
+    hook::Thunk<0x4A3370>::Call<void>(this);
 }
 
 void mmDashViewHandler::FileIO(datParser* parser) {
     //call original FileIO
-    ageHook::Thunk<0x4315D0>::Call<void>(this, parser);
+    hook::Thunk<0x4315D0>::Call<void>(this, parser);
 
     //add missing things
     parser->AddValue("MaxSpeed", getPtr<float>(this, 0x5D0), 1);
@@ -2356,7 +2356,7 @@ Stream * StreamHandler::Open(const char *filename, bool readOnly)
         return nullptr;
 
     // Stream::AllocStream
-    return ageHook::StaticThunk<0x4C98D0>::Call<Stream *>(filename, handle, fileMethods);
+    return hook::StaticThunk<0x4C98D0>::Call<Stream *>(filename, handle, fileMethods);
 }
 
 void StreamHandler::Install()
@@ -2383,8 +2383,8 @@ bool desaturateDefaultTextures = false;
 static gfxImage * (*DefaultLoadImage)(const char *, bool);
 static gfxImage * (*DefaultPrepareImage)(gfxImage*, const char *, bool);
 
-ageHook::Type<bool> EnableTextureVariantHandler(0x6276EC);
-ageHook::Type<bool> AllowDesaturatedTextureVariants(0x6276ED);
+hook::Type<bool> EnableTextureVariantHandler(0x6276EC);
+hook::Type<bool> AllowDesaturatedTextureVariants(0x6276ED);
 
 
 std::vector<std::string> split(std::string str, std::string token) {
@@ -2476,13 +2476,13 @@ void TextureVariantHandler::InitVariantData() {
     }
 
     //call vehCarAudioContainer::InitStatics, which we hooked
-    ageHook::StaticThunk<0x4D0FF0>::Call<void>();
+    hook::StaticThunk<0x4D0FF0>::Call<void>();
 }
 
 static void Desaturate(gfxImage* result) {
     for (gfxImage *image = result; image != nullptr; image = image->Next) {
         // DesaturateTextureVariant
-        ageHook::StaticThunk<0x442FB0>::Call<void>(image);
+        hook::StaticThunk<0x442FB0>::Call<void>(image);
     }
 }
 
@@ -2711,7 +2711,7 @@ void mmPlayerHandler::Zoink() {
     //if we're in CNR, drop the gold!
     if (dgStatePack::Instance->GameMode == dgGameMode::CnR) {
         auto game = mmGameManager::Instance->getGame();
-        ageHook::Thunk<0x425460>::ThisCall<void>(game); // mmMultiCR::DropThruCityHandler
+        hook::Thunk<0x425460>::ThisCall<void>(game); // mmMultiCR::DropThruCityHandler
     }
 
     // if the aimap doesn't exist, reset back to spawn
@@ -2844,7 +2844,7 @@ void mmPlayerHandler::Update() {
     }
 
     //call original
-    ageHook::Thunk<0x405760>::Call<void>(this);
+    hook::Thunk<0x405760>::Call<void>(this);
 }
 
 void mmPlayerHandler::Reset() {
@@ -2868,7 +2868,7 @@ void mmPlayerHandler::Reset() {
     }
 
     // call original
-    ageHook::Thunk<0x404A60>::Call<void>(this);
+    hook::Thunk<0x404A60>::Call<void>(this);
 }
 
 void mmPlayerHandler::Install() {
@@ -2964,7 +2964,7 @@ void mmSingleRaceHandler::Install() {
 /*
     dgBangerInstanceHandler
 */
-ageHook::Type<gfxTexture*> glowTexture = 0x62767C;
+hook::Type<gfxTexture*> glowTexture = 0x62767C;
 gfxTexture* redGlowTexture;
 bool glowLoaded = false;
 
@@ -2982,7 +2982,7 @@ void dgBangerInstanceHandler::DrawGlow()
     }
 
     //prepare glow texture
-    dgBangerData* data = ageHook::Thunk<0x441AB0>::Call<dgBangerData *>(this);
+    dgBangerData* data = hook::Thunk<0x441AB0>::Call<dgBangerData *>(this);
     gfxTexture* lastTexture = (gfxTexture*)glowTexture;
     bool swappedTexture = false;
 
@@ -2993,7 +2993,7 @@ void dgBangerInstanceHandler::DrawGlow()
 
     //draw glows
     ltLight::DrawGlowBegin();
-    ageHook::Thunk<0x441840>::Call<void>(this); // call original
+    hook::Thunk<0x441840>::Call<void>(this); // call original
     ltLight::DrawGlowEnd();
 
     //reset glow texture
@@ -3038,7 +3038,7 @@ void vehCarHandler::InitCar(LPCSTR vehName, int a2, int a3, bool a4, bool a5) {
 }
 
 const phBound * vehCarHandler::GetModelBound(int a1) {
-    auto result = ageHook::Thunk<0x4648C0>::Call<const phBound *>(this, a1);
+    auto result = hook::Thunk<0x4648C0>::Call<const phBound *>(this, a1);
 
     if (result == NULL)
         Errorf(">>> COULD NOT RETRIEVE VEHICLE BOUND (%d) !!! <<<", a1);
@@ -3113,7 +3113,7 @@ static ConfigValue<bool> cfgBreakReflections("ReflectionsOnBreakables", true);
 
 void vehBreakableMgrHandler::ModStaticDraw(modShader* a1) {
     auto mod = reinterpret_cast<modStatic*>(this);
-    ageHook::Type<gfxTexture *> g_ReflectionMap = 0x628914;
+    hook::Type<gfxTexture *> g_ReflectionMap = 0x628914;
     bool isSoftware = *(bool*)0x6830D4;
 
     //convert world matrix for reflection drawing
@@ -3169,7 +3169,7 @@ void vehCarModelFeatureHandler::DrawWhl4(int a2, int a3, Matrix34* a4, int a5) {
     a4->m31 += offsetY;
     a4->m32 += offsetZ;
 
-    ageHook::Thunk<0x4CE840>::Call<void>(this, a2, a3, a4, a5);
+    hook::Thunk<0x4CE840>::Call<void>(this, a2, a3, a4, a5);
 }
 
 void vehCarModelFeatureHandler::DrawWhl5(int a2, int a3, Matrix34* a4, int a5) {
@@ -3186,12 +3186,12 @@ void vehCarModelFeatureHandler::DrawWhl5(int a2, int a3, Matrix34* a4, int a5) {
     a4->m31 += offsetY;
     a4->m32 += offsetZ;
 
-    ageHook::Thunk<0x4CE840>::Call<void>(this, a2, a3, a4, a5);
+    hook::Thunk<0x4CE840>::Call<void>(this, a2, a3, a4, a5);
 }
 
 void vehCarModelFeatureHandler::ModStaticDraw(modShader* a1) {
     auto mod = reinterpret_cast<modStatic*>(this);
-    ageHook::Type<gfxTexture *> g_ReflectionMap = 0x628914;
+    hook::Type<gfxTexture *> g_ReflectionMap = 0x628914;
     bool isSoftware = *(bool*)0x6830D4;
 
     //convert world matrix for reflection drawing
@@ -3399,7 +3399,7 @@ static ConfigValue<bool> cfgWheelWobble("PhysicalWheelWobble", false);
 float vehWheelHandler::GetBumpDisplacement(float a1)
 {
     //call original
-    float displacement = ageHook::Thunk<0x4D3440>::Call<float>(this, a1);
+    float displacement = hook::Thunk<0x4D3440>::Call<float>(this, a1);
 
     //get vars
     float wheelWobble = *getPtr<float>(this, 0x218);
@@ -3476,7 +3476,7 @@ static ConfigValue<bool> cfgRagdolls("Ragdolls", true);
 void pedestrianInstanceHandler::aiMapClean()
 {
     //clean aimap
-    ageHook::Thunk<0x534C10>::Call<void>(this);
+    hook::Thunk<0x534C10>::Call<void>(this);
 
     //destroy pedRagdollMgr
     delete pedRagdollMgr::Instance;
@@ -3485,7 +3485,7 @@ void pedestrianInstanceHandler::aiMapClean()
 void pedestrianInstanceHandler::aiMapInit(char * a1, char * a2, char * a3, const dgStatePack * a4, int a5, vehCar * a6, bool a7)
 {
     //init aimap
-    ageHook::Thunk<0x534FC0>::Call<void>(this, a1, a2, a3, a4, a5, a6, a7);
+    hook::Thunk<0x534FC0>::Call<void>(this, a1, a2, a3, a4, a5, a6, a7);
     
     //init pedRagdollMgr
     pedRagdollMgr::Instance = new pedRagdollMgr();
@@ -3533,7 +3533,7 @@ void pedestrianInstanceHandler::Draw(int a1) {
 
     //if we have no ragdoll, call the original function
     if (inst->GetEntity() == nullptr) {
-        ageHook::Thunk<0x57B5F0>::Call<void>(this, a1);
+        hook::Thunk<0x57B5F0>::Call<void>(this, a1);
         return;
     }else{
         this->DrawRagdoll();
@@ -3640,7 +3640,7 @@ void aiVehicleInstanceFeatureHandler::DrawGlow() {
             //MM2 headlights
             if (AIMAP->drawHeadlights) {
                 //call original
-                ageHook::Thunk<0x552930>::Call<void>(this);
+                hook::Thunk<0x552930>::Call<void>(this);
             }
         }
         if (ambientHeadlightStyle == 1 || ambientHeadlightStyle == 2) {
@@ -3780,14 +3780,14 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
 }
 
 void vehTrailerInstanceFeatureHandler::AddGeomHook(const char* pkgName, const char* name, int flags) {
-    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, name, flags);
-    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, "rlight", flags);
-    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, "blight", flags);
-    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, "hlight", flags);
-    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, "slight0", flags);
-    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, "slight1", flags);
-    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, "siren0", flags);
-    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, "siren1", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, name, flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "rlight", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "blight", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "hlight", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "slight0", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "slight1", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "siren0", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "siren1", flags);
 }
 
 void vehTrailerInstanceFeatureHandler::Install() {

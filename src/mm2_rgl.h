@@ -38,23 +38,23 @@ namespace MM2
         Type declarations
     */
 
-    extern ageHook::Type<uint>              vglCloudMapEnable;
+    extern hook::Type<uint>              vglCloudMapEnable;
 
-    extern ageHook::Type<void(*)(float, float, float)>
+    extern hook::Type<void(*)(float, float, float)>
                                             vglVertex;
 
-    extern ageHook::Type<uint>              vglCurrentColor;
-    extern ageHook::Type<vglVCT1_t *>       vglVCT1;
-    extern ageHook::Type<float>             vglCurrentNZ;
-    extern ageHook::Type<float>             vglCurrentNX;
-    extern ageHook::Type<float>             vglCurrentNY;
-    extern ageHook::Type<int>               vglCount;
-    extern ageHook::Type<float>             vglCurrentT;
-    extern ageHook::Type<float>             vglCurrentS;
-    extern ageHook::Type<vglVNT1_t *>       vglVNT1;
-    extern ageHook::Type<gfxTexture *>      vglCloudMapTexture;
+    extern hook::Type<uint>              vglCurrentColor;
+    extern hook::Type<vglVCT1_t *>       vglVCT1;
+    extern hook::Type<float>             vglCurrentNZ;
+    extern hook::Type<float>             vglCurrentNX;
+    extern hook::Type<float>             vglCurrentNY;
+    extern hook::Type<int>               vglCount;
+    extern hook::Type<float>             vglCurrentT;
+    extern hook::Type<float>             vglCurrentS;
+    extern hook::Type<vglVNT1_t *>       vglVNT1;
+    extern hook::Type<gfxTexture *>      vglCloudMapTexture;
 
-    extern ageHook::Type<Matrix44 *>        mtxstack;
+    extern hook::Type<Matrix44 *>        mtxstack;
 
     /*
         Lua helper

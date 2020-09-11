@@ -13,7 +13,7 @@ namespace MM2
 
     class vehPoliceCarAudio {
     public:
-        static ageHook::Type<int> iNumCopsPursuingPlayer;
+        static hook::Type<int> iNumCopsPursuingPlayer;
     };
 
     // Lua initialization

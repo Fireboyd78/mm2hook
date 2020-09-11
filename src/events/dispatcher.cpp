@@ -60,7 +60,7 @@ void GameEventDispatcher::onReset() {
 
     //call original
     auto game = mmGameManager::Instance->getGame();
-    ageHook::Thunk<0x413D40>::ThisCall<void>(game);
+    hook::Thunk<0x413D40>::ThisCall<void>(game);
 }
 
 void GameEventDispatcher::Install() {

@@ -15,8 +15,8 @@ namespace MM2
 
     class aiPedestrian {
     protected:
-        ageHook::Field<0xC0, aiPedAudio> _audio;
-        ageHook::Field<0x9C, aiPedestrianInstance *> _instance;
+        hook::Field<0xC0, aiPedAudio> _audio;
+        hook::Field<0x9C, aiPedestrianInstance *> _instance;
     public:
         inline aiPedestrianInstance * getInstance(void) const {
             return _instance.get(this);

@@ -51,14 +51,14 @@ namespace MM2
             return this->WheelCount;
         }
     public:
-        AGE_API BOOL AddWheel(vehWheel *wheel)             { return ageHook::Thunk<0x4D9E50>::Call<BOOL>(this, wheel); }
+        AGE_API BOOL AddWheel(vehWheel *wheel)             { return hook::Thunk<0x4D9E50>::Call<BOOL>(this, wheel); }
         
-        AGE_API void CopyVars(vehDrivetrain *copyFrom)     { ageHook::Thunk<0x4D9DE0>::Call<void>(this, copyFrom); }
+        AGE_API void CopyVars(vehDrivetrain *copyFrom)     { hook::Thunk<0x4D9DE0>::Call<void>(this, copyFrom); }
 
-        AGE_API void Attach()                              { ageHook::Thunk<0x4D9E20>::Call<void>(this); }
-        AGE_API void Detach()                              { ageHook::Thunk<0x4D9E40>::Call<void>(this); }
+        AGE_API void Attach()                              { hook::Thunk<0x4D9E20>::Call<void>(this); }
+        AGE_API void Detach()                              { hook::Thunk<0x4D9E40>::Call<void>(this); }
 
-        AGE_API void Init(vehCarSim *carSim)               { ageHook::Thunk<0x4D9DD0>::Call<void>(this, carSim); }
+        AGE_API void Init(vehCarSim *carSim)               { hook::Thunk<0x4D9DD0>::Call<void>(this, carSim); }
         
         
         
@@ -66,11 +66,11 @@ namespace MM2
             asNode virtuals
         */
 
-        AGE_API void Reset() override                      { ageHook::Thunk<0x4D9E00>::Call<void>(this); }
-        AGE_API void Update() override                     { ageHook::Thunk<0x4D9E90>::Call<void>(this); }
+        AGE_API void Reset() override                      { hook::Thunk<0x4D9E00>::Call<void>(this); }
+        AGE_API void Update() override                     { hook::Thunk<0x4D9E90>::Call<void>(this); }
         AGE_API void FileIO(datParser &parser) override
-                                                           { ageHook::Thunk<0x4DA570>::Call<void>(this); }
-        AGE_API char * GetClassName() override             { return ageHook::Thunk<0x4DA600>::Call<char *>(this); }
+                                                           { hook::Thunk<0x4DA570>::Call<void>(this); }
+        AGE_API char * GetClassName() override             { return hook::Thunk<0x4DA600>::Call<char *>(this); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<vehDrivetrain, asNode>("vehDrivetrain")

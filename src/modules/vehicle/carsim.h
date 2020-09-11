@@ -235,13 +235,13 @@ namespace MM2
             return &this->AxleRear;
         }
 
-        AGE_API vehCarSim()                                 { ageHook::Thunk<0x4CB660>::Call<void>(this); }
-        AGE_API ~vehCarSim()                                { ageHook::Thunk<0x4CB8E0>::Call<void>(this); }
+        AGE_API vehCarSim()                                 { hook::Thunk<0x4CB660>::Call<void>(this); }
+        AGE_API ~vehCarSim()                                { hook::Thunk<0x4CB8E0>::Call<void>(this); }
 
         AGE_API void Init(const char* basename, int colliderPtr, vehCarModel* carModelPtr)
         {
             //Call original 
-            ageHook::Thunk<0x4CBB80>::Call<void>(this, basename, colliderPtr, carModelPtr);
+            hook::Thunk<0x4CBB80>::Call<void>(this, basename, colliderPtr, carModelPtr);
 
             //We've expanded this class. Now for *our new stuff*
             Matrix34 diffMatrix;
@@ -259,23 +259,23 @@ namespace MM2
             }
         }
 
-        AGE_API int BottomedOut()                           { return ageHook::Thunk<0x4CBB40>::Call<int>(this); }
-        AGE_API int OnGround()                              { return ageHook::Thunk<0x4CBB00>::Call<int>(this); }
-        AGE_API void ReconfigureDrivetrain()                { ageHook::Thunk<0x4CC0B0>::Call<void>(this); }
-        AGE_API void SetHackedImpactParams()                { ageHook::Thunk<0x4CC080>::Call<void>(this); }
-        AGE_API void RestoreImpactParams()                  { ageHook::Thunk<0x4CC050>::Call<void>(this); }
-        AGE_API void SetResetPos(Vector3 * a1)              { ageHook::Thunk<0x4CC830>::Call<void>(this, a1); }
+        AGE_API int BottomedOut()                           { return hook::Thunk<0x4CBB40>::Call<int>(this); }
+        AGE_API int OnGround()                              { return hook::Thunk<0x4CBB00>::Call<int>(this); }
+        AGE_API void ReconfigureDrivetrain()                { hook::Thunk<0x4CC0B0>::Call<void>(this); }
+        AGE_API void SetHackedImpactParams()                { hook::Thunk<0x4CC080>::Call<void>(this); }
+        AGE_API void RestoreImpactParams()                  { hook::Thunk<0x4CC050>::Call<void>(this); }
+        AGE_API void SetResetPos(Vector3 * a1)              { hook::Thunk<0x4CC830>::Call<void>(this, a1); }
         
         /*
             asNode virtuals
         */
 
-        AGE_API void Update() override                      { ageHook::Thunk<0x4CC8E0>::Call<void>(this); }
-        AGE_API void Reset() override                       { ageHook::Thunk<0x4CBA70>::Call<void>(this); }
+        AGE_API void Update() override                      { hook::Thunk<0x4CC8E0>::Call<void>(this); }
+        AGE_API void Reset() override                       { hook::Thunk<0x4CBA70>::Call<void>(this); }
         AGE_API void FileIO(datParser &parser)  override
-                                                            { ageHook::Thunk<0x4CCC70>::Call<void>(this); }
-        AGE_API char* GetClassName() override               { return ageHook::Thunk<0x4CCF10>::Call<char*>(this); }
-        AGE_API char const* GetDirName() override           { return ageHook::Thunk<0x4CBAF0>::Call<char const*>(this); }
+                                                            { hook::Thunk<0x4CCC70>::Call<void>(this); }
+        AGE_API char* GetClassName() override               { return hook::Thunk<0x4CCF10>::Call<char*>(this); }
+        AGE_API char const* GetDirName() override           { return hook::Thunk<0x4CBAF0>::Call<char const*>(this); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<vehCarSim, asNode>("vehCarSim")
