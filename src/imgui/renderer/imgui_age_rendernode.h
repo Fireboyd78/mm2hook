@@ -106,8 +106,10 @@ public:
         Displayf("Initializing ImGui");
 
         ImGui::CreateContext();
-        auto io = ImGui::GetIO();
-
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
+        
         // Make the background a little more transparent
         auto style = &ImGui::GetStyle();
         ImVec4* colors = style->Colors;
@@ -177,6 +179,14 @@ public:
         //
         ImGui::Render();
         ImGui_ImplAGE_RenderDrawData(ImGui::GetDrawData());
+
+        // Update and Render additional Platform Windows
+        ImGuiIO& io = ImGui::GetIO();
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+        }
 	}
 
 	virtual void Update() override {

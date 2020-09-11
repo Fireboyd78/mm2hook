@@ -108,7 +108,6 @@ void ImGui_ImplAGE_RenderDrawData(ImDrawData* draw_data)
         }
             
         // Render command lists
-        ImVec2 clip_off = draw_data->DisplayPos;
         for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
         {
             const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
@@ -163,7 +162,7 @@ bool ImGui_ImplAGE_CreateDeviceObjects()
 
     // Convert software texture to hardware texture.
     auto tex = gfxTexture::Create(img, true);
-
+    
     // Store our identifier
     io.Fonts->TexID = (void*)tex;
     g_Texture = tex;
