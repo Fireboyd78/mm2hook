@@ -66,8 +66,8 @@ void GameEventDispatcher::onReset() {
 void GameEventDispatcher::Install() {
     InstallCallback("mmGame::Reset", "Register onGameReset with dispatcher.",
         &GameEventDispatcher::onReset, {
-            cbHook<CALL>(0x433B3C),      //mmGameSingle::Reset
-            cbHook<CALL>(0x43A6B7),     //mmGameMulti::Reset
+            cb::hook<CALL>(0x433B3C),      //mmGameSingle::Reset
+            cb::hook<CALL>(0x43A6B7),     //mmGameMulti::Reset
         }
     );
 }

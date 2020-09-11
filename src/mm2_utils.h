@@ -9,9 +9,6 @@
 #define JMP cb::type::jmp
 #define PUSH cb::type::push
 
-template <cb::type type>
-using cbHook = cb::hook<type>;
-
 void Installf(LPCSTR format, ...);
 
 typedef void (*InitFn)();
