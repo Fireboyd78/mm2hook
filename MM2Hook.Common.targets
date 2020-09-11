@@ -50,9 +50,9 @@
     <Error Text="Couldn't find compiled DLL/PDB files!" Condition="'@(DITargetFiles)' == ''" />
     <Message Text="Copying DirectInput8 DLL/PDB files:" Importance="High" />
     <Copy SourceFiles="@(DITargetFiles)" DestinationFiles="@(DITargetFiles->'$(DITargetDir)$(DITargetName)%(Extension)')">
-      <Output ItemName="Changed" TaskParameter="CopiedFiles" />
+      <Output ItemName="DIFile" TaskParameter="CopiedFiles" />
     </Copy>
-    <Message Text="  - %(Changed.Identity)" Importance="High" />
+    <Message Text="  - %(DIFile.Identity)" Importance="High" />
   </Target>
   <!-- Lua target settings -->
   <Target Name="CopyLuaScripts" AfterTargets="CopyDInputFiles">
@@ -66,19 +66,28 @@
     <Error Text="Couldn't find any Lua scripts!" Condition="'@(LuaTargetFiles)' == ''" />
     <Message Text="Copying Lua scripts:" Importance="High" />
     <Copy SourceFiles="@(LuaTargetFiles)" DestinationFiles="@(LuaTargetFiles->'$(LuaTargetDir)%(RecursiveDir)%(Filename)%(Extension)')">
-      <Output ItemName="Changed" TaskParameter="CopiedFiles" />
+      <Output ItemName="LuaFile" TaskParameter="CopiedFiles" />
     </Copy>
-    <Message Text="  - %(Changed.Identity)" Importance="High" />
+    <Message Text="  - %(LuaFile.Identity)" Importance="High" />
+  </Target>
+  <!-- Dependency target settings -->
+  <Target Name="CopyHookFiles" AfterTargets="CopyLuaScripts">
+    <ItemGroup>
+      <HookTargetFiles Include="$(TargetDir)mm2hook.ini" />
+    </ItemGroup>
+    <Error Text="Couldn't find any dependency files!" Condition="'@(HookTargetFiles)' == ''" />
+    <Message Text="Copying dependencies:" Importance="High" />
+    <Copy SourceFiles="@(HookTargetFiles)" DestinationFiles="@(HookTargetFiles->'$(DITargetDir)%(Filename)%(Extension)')">
+      <Output ItemName="HookFile" TaskParameter="CopiedFiles" />
+    </Copy>
+    <Message Text="  - %(HookFile.Identity)" Importance="High" />
   </Target>
   <!-- Move compiled files to MM2 directory (if applicable) -->
-  <Target Name="CopyFilesToMM2" AfterTargets="CopyLuaScripts" Condition="'$(MM2Directory)' != '' and Exists('$(MM2Directory)')">
+  <Target Name="CopyFilesToMM2" AfterTargets="CopyHookFiles" Condition="'$(MM2Directory)' != '' and Exists('$(MM2Directory)')">
     <ItemGroup>
-      <MM2TargetFiles Include="$(DITargetDir)*.*" />
-      <MM2TargetFiles Include="$(TargetDir)mm2hook.ini" />
-      <LuaScriptFiles Include="$(LuaTargetDir)**\*.*" />
+      <MM2TargetFiles Include="$(DITargetDir)\**\*.*" />
     </ItemGroup>
-    <Copy SourceFiles="@(MM2TargetFiles)" DestinationFiles="@(MM2TargetFiles->'$(MM2Directory)%(Filename)%(Extension)')" />
-    <Copy SourceFiles="@(LuaScriptFiles)" DestinationFiles="@(LuaScriptFiles->'$(MM2Directory)lua\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(MM2TargetFiles)" DestinationFiles="@(MM2TargetFiles->'$(MM2Directory)%(RecursiveDir)%(Filename)%(Extension)')" />
     <Message Text="Sucessfully copied files to Midtown Madness 2 directory ($(MM2Directory))" Importance="High" />
   </Target>
 </Project>
