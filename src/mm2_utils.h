@@ -6,7 +6,6 @@
 */
 
 using hookType = cb::type;
-using cbInfo = cb::info;
 
 #define CALL hookType::call
 #define JMP hookType::jmp
@@ -88,7 +87,7 @@ inline void InstallPatch(std::initializer_list<unsigned char> bytes,
     InstallPatch(NULL, bytes, addresses);
 }
 
-void InstallCallback(auto_ptr lpAddr, cbInfo callback);
+void InstallCallback(auto_ptr lpAddr, const cb::info &callback);
 
 void InstallCallback(LPCSTR name,
                      LPCSTR description,

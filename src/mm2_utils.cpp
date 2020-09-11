@@ -63,7 +63,7 @@ void InstallPatch(LPCSTR description,
     }
 }
 
-void InstallCallback(auto_ptr lpAddr, cbInfo callback)
+void InstallCallback(auto_ptr lpAddr, const cb::info &callback)
 {
     auto addr = callback.addr;
     auto type = callback.type;
@@ -115,7 +115,7 @@ void InstallCallback(LPCSTR name,
     if (description != NULL)
         Installf(" - Description: %s", description);
 
-    for (auto cb : callbacks)
+    for (const auto cb : callbacks)
     {
         Installf("   => [%s] %08X", hook_types[int(cb.type)], cb.addr);
 
