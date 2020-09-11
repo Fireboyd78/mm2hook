@@ -6,6 +6,8 @@ public:
     enum class type : int { jmp, call, push, _count };
 
     struct info {
+        using list = std::initializer_list<info>;
+
         auto_ptr addr;
         type type;
     };

@@ -101,7 +101,7 @@ void InstallCallback(auto_ptr lpAddr, cbInfo callback)
 void InstallCallback(LPCSTR name,
                      LPCSTR description,
                      auto_ptr lpAddr,
-                     std::initializer_list<cbInfo> callbacks)
+                     cb::info::list callbacks)
 {
     if (name != NULL)
     {
