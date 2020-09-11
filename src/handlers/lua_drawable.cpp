@@ -42,7 +42,7 @@ void luaDrawableHandler::RegisterCallback(LuaRef self, LuaRef function, int phas
 void luaDrawableHandler::CallCallbacks(int phase)
 {
     //call original
-    ageHook::Thunk<0x465630>::Call<void>(this, phase);
+    hook::Thunk<0x465630>::Call<void>(this, phase);
 
     //call lua callbacks
     int callbackOffset = phase * 128;
@@ -67,7 +67,7 @@ void luaDrawableHandler::ResetCallbacks()
         return;
 
     //call original resetcallbacks
-    ageHook::Thunk<0x465680>::Call<void>(this);
+    hook::Thunk<0x465680>::Call<void>(this);
 
     //reset our callbacks
     callbacksCount0 = 0;
@@ -78,14 +78,14 @@ void luaDrawableHandler::Install()
 {
     InstallCallback("lvlLevel::CallCallbacks", "Hook for lua callbacks",
         &CallCallbacks, {
-            cbHook<CALL>(0x446217),
-            cbHook<CALL>(0x445D6F),
+            cb::call(0x446217),
+            cb::call(0x445D6F),
         }
     );
 
     InstallCallback("lvlLevel::ResetCallbacks", "Allows for control over when to clear callbacks.",
         &ResetCallbacks, {
-            cbHook<JMP>(0x465460),
+            cb::jmp(0x465460),
         }
     );
 }

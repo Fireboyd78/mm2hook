@@ -13,11 +13,11 @@ namespace MM2
 
     class dgPhysManager {
     public:
-        static ageHook::Type<dgPhysManager *> Instance;
-        static ageHook::Type<float> Gravity;
+        static hook::Type<dgPhysManager *> Instance;
+        static hook::Type<float> Gravity;
 
-        void IgnoreMover(lvlInstance* instance)                  { ageHook::Thunk<0x468860>::Call<void>(this, instance); }
-        void DeclareMover(lvlInstance* instance, int a2, int a3) { ageHook::Thunk<0x468370>::Call<void>(this, instance, a2, a3); }
+        void IgnoreMover(lvlInstance* instance)                  { hook::Thunk<0x468860>::Call<void>(this, instance); }
+        void DeclareMover(lvlInstance* instance, int a2, int a3) { hook::Thunk<0x468370>::Call<void>(this, instance, a2, a3); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<dgPhysManager>("dgPhysManager")

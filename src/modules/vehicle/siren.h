@@ -59,12 +59,12 @@ namespace MM2
         }
 
         //member funcs
-        AGE_API bool Init()                          { return ageHook::Thunk<0x4D6680>::Call<bool>(this); }
+        AGE_API bool Init()                          { return hook::Thunk<0x4D6680>::Call<bool>(this); }
         AGE_API bool AddLight(Vector3* position, Vector3* color)                    
-                                                     { return ageHook::Thunk<0x4D6740>::Call<bool>(this, position, color); }
-        AGE_API void Reset()                         { ageHook::Thunk<0x4D6820>::Call<void>(this); }
-        AGE_API void Update()                        { ageHook::Thunk<0x4D6830>::Call<void>(this); }
-        AGE_API void Draw(Matrix34* a1)              { ageHook::Thunk<0x4D6880>::Call<void>(this, a1); }
+                                                     { return hook::Thunk<0x4D6740>::Call<bool>(this, position, color); }
+        AGE_API void Reset()                         { hook::Thunk<0x4D6820>::Call<void>(this); }
+        AGE_API void Update()                        { hook::Thunk<0x4D6830>::Call<void>(this); }
+        AGE_API void Draw(Matrix34* a1)              { hook::Thunk<0x4D6880>::Call<void>(this, a1); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<vehSiren>("vehSiren")

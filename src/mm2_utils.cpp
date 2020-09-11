@@ -1,7 +1,7 @@
 #include "mm2_utils.h"
 #include "patch.h"
 
-LPCSTR hook_types[hookType::COUNT] = {
+LPCSTR hook_types[int(cb::type::_count)] = {
     "jmp",
     "call",
     "push"
@@ -63,7 +63,7 @@ void InstallPatch(LPCSTR description,
     }
 }
 
-void InstallCallback(auto_ptr lpAddr, cbInfo callback)
+void InstallCallback(auto_ptr lpAddr, const cb::info &callback)
 {
     auto addr = callback.addr;
     auto type = callback.type;
@@ -73,7 +73,7 @@ void InstallCallback(auto_ptr lpAddr, cbInfo callback)
 
     switch (type)
     {
-        case hookType::CALL:
+        case cb::type::call:
         {
             if (mem::read<byte>(addr) == 0xFF) {
                 mem::write<byte, uint, byte>(addr, 0xE8, dwRVA, 0x90);
@@ -82,7 +82,7 @@ void InstallCallback(auto_ptr lpAddr, cbInfo callback)
             }
         } break;
 
-        case hookType::JMP:
+        case cb::type::jmp:
         {
             if (mem::read<byte>(addr) == 0xFF) {
                 mem::write<byte, uint, byte>(addr, 0xE9, dwRVA, 0x90);
@@ -91,7 +91,7 @@ void InstallCallback(auto_ptr lpAddr, cbInfo callback)
             }
         } break;
 
-        case hookType::PUSH:
+        case cb::type::push:
         {
             mem::write<byte, uint>(addr, 0x68, lpAddr);
         } break;
@@ -101,7 +101,7 @@ void InstallCallback(auto_ptr lpAddr, cbInfo callback)
 void InstallCallback(LPCSTR name,
                      LPCSTR description,
                      auto_ptr lpAddr,
-                     std::initializer_list<cbInfo> callbacks)
+                     cb::info::list callbacks)
 {
     if (name != NULL)
     {
@@ -115,9 +115,9 @@ void InstallCallback(LPCSTR name,
     if (description != NULL)
         Installf(" - Description: %s", description);
 
-    for (auto cb : callbacks)
+    for (const auto cb : callbacks)
     {
-        Installf("   => [%s] %08X", hook_types[cb.type], cb.addr);
+        Installf("   => [%s] %08X", hook_types[int(cb.type)], cb.addr);
 
         InstallCallback(lpAddr, cb);
     }

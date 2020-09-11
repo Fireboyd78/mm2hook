@@ -112,19 +112,19 @@ namespace MM2
         uint32_t dword64;
         mmToolTip *pTooltip;
 
-        virtual AGE_API void Disable(void)                  { ageHook::Thunk<0x4E7330>::Call<void>(this); }
-        virtual AGE_API void Enable(void)                   { ageHook::Thunk<0x4E7340>::Call<void>(this); }
-        virtual AGE_API void TurnOn(void)                   { ageHook::Thunk<0x4E7350>::Call<void>(this); }
-        virtual AGE_API void TurnOff(void)                  { ageHook::Thunk<0x4E7370>::Call<void>(this); }
-        virtual AGE_API void SetReadOnly(BOOL readonly)     { ageHook::Thunk<0x4E7380>::Call<void>(this, readonly); }
-        virtual AGE_API void Action(eqEvent event)          { ageHook::Thunk<0x4E73A0>::Call<void>(this, event); }
-        virtual AGE_API void CaptureAction(eqEvent event)   { ageHook::Thunk<0x4E73B0>::Call<void>(this, event); }
-        virtual AGE_API void Switch(int a1)                 { ageHook::Thunk<0x4E7480>::Call<void>(this, a1); }
-        virtual AGE_API void EvalMouseX(float x)            { ageHook::Thunk<0x4E73C0>::Call<void>(this, x); }
-        virtual AGE_API char * ReturnDescription(void)      { return ageHook::Thunk<0x4E73D0>::Call<char *>(this); }
+        virtual AGE_API void Disable(void)                  { hook::Thunk<0x4E7330>::Call<void>(this); }
+        virtual AGE_API void Enable(void)                   { hook::Thunk<0x4E7340>::Call<void>(this); }
+        virtual AGE_API void TurnOn(void)                   { hook::Thunk<0x4E7350>::Call<void>(this); }
+        virtual AGE_API void TurnOff(void)                  { hook::Thunk<0x4E7370>::Call<void>(this); }
+        virtual AGE_API void SetReadOnly(BOOL readonly)     { hook::Thunk<0x4E7380>::Call<void>(this, readonly); }
+        virtual AGE_API void Action(eqEvent event)          { hook::Thunk<0x4E73A0>::Call<void>(this, event); }
+        virtual AGE_API void CaptureAction(eqEvent event)   { hook::Thunk<0x4E73B0>::Call<void>(this, event); }
+        virtual AGE_API void Switch(int a1)                 { hook::Thunk<0x4E7480>::Call<void>(this, a1); }
+        virtual AGE_API void EvalMouseX(float x)            { hook::Thunk<0x4E73C0>::Call<void>(this, x); }
+        virtual AGE_API char * ReturnDescription(void)      { return hook::Thunk<0x4E73D0>::Call<char *>(this); }
         virtual AGE_API void SetPosition(float x, float y)
-                                                            { ageHook::Thunk<0x4E73E0>::Call<void>(this, x, y); }
-        virtual AGE_API float GetScreenHeight(void)         { return ageHook::Thunk<0x4E73F0>::Call<float>(this); }
+                                                            { hook::Thunk<0x4E73E0>::Call<void>(this, x, y); }
+        virtual AGE_API float GetScreenHeight(void)         { return hook::Thunk<0x4E73F0>::Call<float>(this); }
     };
 
     class UIButton : public uiWidget {
@@ -139,23 +139,23 @@ namespace MM2
         uint32_t Flags;
         datCallback Callback;
 
-        AGE_API void SetType(int type)                      { ageHook::Thunk<0x4ED140>::Call<void>(this, type); }
+        AGE_API void SetType(int type)                      { hook::Thunk<0x4ED140>::Call<void>(this, type); }
 
         /*
             asNode virtuals
         */
 
-        virtual AGE_API void Update(void)                   { ageHook::Thunk<0x4A0DB0>::Call<void>(this); };
+        virtual AGE_API void Update(void)                   { hook::Thunk<0x4A0DB0>::Call<void>(this); };
 
         /*
             uiWidget virtuals
         */
 
-        virtual AGE_API void Disable(void)                  { ageHook::Thunk<0x4ED1F0>::Call<void>(this); }
-        virtual AGE_API void Enable(void)                   { ageHook::Thunk<0x4ED1D0>::Call<void>(this); }
-        virtual AGE_API void SetReadOnly(BOOL readOnly)     { ageHook::Thunk<0x4ED090>::Call<void>(this, readOnly); }
-        virtual AGE_API void Action(eqEvent event)          { ageHook::Thunk<0x4ED040>::Call<void>(this, event); }
-        virtual AGE_API void Switch(int a1)                 { ageHook::Thunk<0x4ED0D0>::Call<void>(this, a1); }
+        virtual AGE_API void Disable(void)                  { hook::Thunk<0x4ED1F0>::Call<void>(this); }
+        virtual AGE_API void Enable(void)                   { hook::Thunk<0x4ED1D0>::Call<void>(this); }
+        virtual AGE_API void SetReadOnly(BOOL readOnly)     { hook::Thunk<0x4ED090>::Call<void>(this, readOnly); }
+        virtual AGE_API void Action(eqEvent event)          { hook::Thunk<0x4ED040>::Call<void>(this, event); }
+        virtual AGE_API void Switch(int a1)                 { hook::Thunk<0x4ED0D0>::Call<void>(this, a1); }
     };
 
 
@@ -178,11 +178,11 @@ namespace MM2
         float ElapsedTime;
 
         AGE_API void SetText(char* text) {
-            ageHook::Thunk<0x4ED3A0>::Call<void>(this, text);
+            hook::Thunk<0x4ED3A0>::Call<void>(this, text);
         }
 
         AGE_API void SetBlink(bool blink) {
-            ageHook::Thunk<0x4ED400>::Call<void>(this, blink);
+            hook::Thunk<0x4ED400>::Call<void>(this, blink);
         }
     };
 
@@ -229,16 +229,16 @@ namespace MM2
     private:
         byte _buffer[0x60];
     protected:
-        ageHook::Field<0x18, mmGame *> _game;
+        hook::Field<0x18, mmGame *> _game;
     public:
         inline mmGame* getGame(void) const {
             return _game.get(this);
         };
 
-        AGE_API int IsEnabled(void)                         { return ageHook::Thunk<0x42A280>::Call<int>(this); };
-        AGE_API void Lock(void)                             { ageHook::Thunk<0x42B4F0>::Call<void>(this); };
-        AGE_API void Unlock(void)                           { ageHook::Thunk<0x42B500>::Call<void>(this); };
-        AGE_API void ProcessChat(void)                      { ageHook::Thunk<0x42A400>::Call<void>(this); };
+        AGE_API int IsEnabled(void)                         { return hook::Thunk<0x42A280>::Call<int>(this); };
+        AGE_API void Lock(void)                             { hook::Thunk<0x42B4F0>::Call<void>(this); };
+        AGE_API void Unlock(void)                           { hook::Thunk<0x42B500>::Call<void>(this); };
+        AGE_API void ProcessChat(void)                      { hook::Thunk<0x42A400>::Call<void>(this); };
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<mmPopup>("mmPopup")

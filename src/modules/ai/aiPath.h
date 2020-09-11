@@ -30,14 +30,14 @@ namespace MM2
         /*
             aiPath
         */
-        AGE_API void ClearAmbients()                        { ageHook::Thunk<0x547C00>::Call<void>(this); }
-        AGE_API void ClearPeds()                            { ageHook::Thunk<0x547BD0>::Call<void>(this); }
-        AGE_API bool HasCableCarLine(int roadSide)          { return ageHook::Thunk<0x549980>::Call<bool>(this, roadSide); }
-        AGE_API bool HasSubwayLine(int roadSide)            { return ageHook::Thunk<0x5499B0>::Call<bool>(this, roadSide); }
+        AGE_API void ClearAmbients()                        { hook::Thunk<0x547C00>::Call<void>(this); }
+        AGE_API void ClearPeds()                            { hook::Thunk<0x547BD0>::Call<void>(this); }
+        AGE_API bool HasCableCarLine(int roadSide)          { return hook::Thunk<0x549980>::Call<bool>(this, roadSide); }
+        AGE_API bool HasSubwayLine(int roadSide)            { return hook::Thunk<0x5499B0>::Call<bool>(this, roadSide); }
         AGE_API int IsPosOnRoad(Vector3* pos, float margin, float* outDistanceFromCenter)
-                                                            { return ageHook::Thunk<0x548370>::Call<int>(this, pos, margin, outDistanceFromCenter); }
-        AGE_API int Lane(Vector3 *pos, int roadSide)        { return ageHook::Thunk<0x547900>::Call<int>(this, pos, roadSide); }
-        AGE_API void UpdatePedestrians()                    { ageHook::Thunk<0x544150>::Call<void>(this); }
+                                                            { return hook::Thunk<0x548370>::Call<int>(this, pos, margin, outDistanceFromCenter); }
+        AGE_API int Lane(Vector3 *pos, int roadSide)        { return hook::Thunk<0x547900>::Call<int>(this, pos, roadSide); }
+        AGE_API void UpdatePedestrians()                    { hook::Thunk<0x544150>::Call<void>(this); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<aiPath>("aiPath")

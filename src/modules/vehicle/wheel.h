@@ -130,28 +130,28 @@ namespace MM2
             return this->LongSlipPercent;
         }
     public:
-        AGE_API vehWheel()                                     { ageHook::Thunk<0x4D2190>::Call<void>(this); }
+        AGE_API vehWheel()                                     { hook::Thunk<0x4D2190>::Call<void>(this); }
 
-        AGE_API void CopyVars(vehWheel *copyFrom)              { ageHook::Thunk<0x4D4110>::Call<void>(this, copyFrom); }
+        AGE_API void CopyVars(vehWheel *copyFrom)              { hook::Thunk<0x4D4110>::Call<void>(this, copyFrom); }
 
-        AGE_API void ComputeConstants()                        { ageHook::Thunk<0x4D23F0>::Call<void>(this); }
-        AGE_API void AddNormalLoad(float a1)                   { ageHook::Thunk<0x4D2490>::Call<void>(this, a1); }
-        AGE_API void SetNormalLoad(float a1)                   { ageHook::Thunk<0x4D24C0>::Call<void>(this, a1); }
+        AGE_API void ComputeConstants()                        { hook::Thunk<0x4D23F0>::Call<void>(this); }
+        AGE_API void AddNormalLoad(float a1)                   { hook::Thunk<0x4D2490>::Call<void>(this, a1); }
+        AGE_API void SetNormalLoad(float a1)                   { hook::Thunk<0x4D24C0>::Call<void>(this, a1); }
         AGE_API void SetInputs(float a1, float a2, float a3)
-                                                               { ageHook::Thunk<0x4D3F80>::Call<void>(this, a1, a2, a3); }
-        AGE_API int GetSurfaceSound()                          { return ageHook::Thunk<0x4D3F60>::Call<int>(this); }
-        AGE_API float GetVisualDispVert()                      { return ageHook::Thunk<0x4D4030>::Call<float>(this); }
-        AGE_API float GetVisualDispLat()                       { return ageHook::Thunk<0x4D4090>::Call<float>(this); }
-        AGE_API float GetVisualDispLong()                      { return ageHook::Thunk<0x4D40D0>::Call<float>(this); }
+                                                               { hook::Thunk<0x4D3F80>::Call<void>(this, a1, a2, a3); }
+        AGE_API int GetSurfaceSound()                          { return hook::Thunk<0x4D3F60>::Call<int>(this); }
+        AGE_API float GetVisualDispVert()                      { return hook::Thunk<0x4D4030>::Call<float>(this); }
+        AGE_API float GetVisualDispLat()                       { return hook::Thunk<0x4D4090>::Call<float>(this); }
+        AGE_API float GetVisualDispLong()                      { return hook::Thunk<0x4D40D0>::Call<float>(this); }
 
         /*
             asNode virtuals
         */
 
-        AGE_API void Reset() override                          { ageHook::Thunk<0x4D22E0>::Call<void>(this); }
-        AGE_API void Update() override                         { ageHook::Thunk<0x4D34E0>::Call<void>(this); }
-        AGE_API void FileIO(datParser &parser) override        { ageHook::Thunk<0x4D41C0>::Call<void>(this); }
-        AGE_API char * GetClassName() override                 { return ageHook::Thunk<0x4D43C0>::Call<char *>(this); }
+        AGE_API void Reset() override                          { hook::Thunk<0x4D22E0>::Call<void>(this); }
+        AGE_API void Update() override                         { hook::Thunk<0x4D34E0>::Call<void>(this); }
+        AGE_API void FileIO(datParser &parser) override        { hook::Thunk<0x4D41C0>::Call<void>(this); }
+        AGE_API char * GetClassName() override                 { return hook::Thunk<0x4D43C0>::Call<char *>(this); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<vehWheel, asNode>("vehWheel")

@@ -34,9 +34,9 @@ namespace MM2
 
     public:
         //overrides
-        AGE_API char* GetClassName() override           { return ageHook::Thunk<0x56F940>::Call<char*>(this); }
-        AGE_API const char* GetDirName() override       { return ageHook::Thunk<0x56F950>::Call<const char*>(this); }
-        AGE_API void FileIO(datParser &parser) override { ageHook::Thunk<0x56F7C0>::Call<void>(this, &parser); }
+        AGE_API char* GetClassName() override           { return hook::Thunk<0x56F940>::Call<char*>(this); }
+        AGE_API const char* GetDirName() override       { return hook::Thunk<0x56F950>::Call<const char*>(this); }
+        AGE_API void FileIO(datParser &parser) override { hook::Thunk<0x56F7C0>::Call<void>(this, &parser); }
 
         //lua helpers
         Vector3* GetWheelPosition(int id) {

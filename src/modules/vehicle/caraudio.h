@@ -15,7 +15,7 @@ namespace MM2
     private:
         byte _buffer[0x130];
     protected:
-        ageHook::Field<0x118, vehCarSim *> _sim;
+        hook::Field<0x118, vehCarSim *> _sim;
     public:
         inline vehCarSim * getCarSim(void) const {
             return _sim.get(this);

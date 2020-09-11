@@ -62,32 +62,32 @@ namespace MM2
             return this->MaxDamage;
         }
     public:
-        AGE_API vehCarDamage()                              { ageHook::Thunk<0x4CA380>::Call<void>(this); }
-        AGE_API ~vehCarDamage()                             { ageHook::Thunk<0x4CA530>::Call<void>(this); }
+        AGE_API vehCarDamage()                              { hook::Thunk<0x4CA380>::Call<void>(this); }
+        AGE_API ~vehCarDamage()                             { hook::Thunk<0x4CA530>::Call<void>(this); }
 
-        AGE_API void AddDamage(float a1)                    { ageHook::Thunk<0x4CAEC0>::Call<void>(this, a1); }
-        AGE_API void ClearDamage()                          { ageHook::Thunk<0x4CAE80>::Call<void>(this); }
+        AGE_API void AddDamage(float a1)                    { hook::Thunk<0x4CAEC0>::Call<void>(this, a1); }
+        AGE_API void ClearDamage()                          { hook::Thunk<0x4CAE80>::Call<void>(this); }
 
         /*
             vehCarDamage virtuals
         */
 
         virtual AGE_API float GetDamageModifier(phCollider* a1) 
-                                                            { return ageHook::Thunk<0x4CB650>::Call<float>(this, a1); }
+                                                            { return hook::Thunk<0x4CB650>::Call<float>(this, a1); }
         
         /*
             asNode virtuals
         */
 
-        AGE_API void Update() override                      { ageHook::Thunk<0x5B2C30>::Call<void>(this); }
-        AGE_API void Reset() override                       { ageHook::Thunk<0x4CAE60>::Call<void>(this); }
+        AGE_API void Update() override                      { hook::Thunk<0x5B2C30>::Call<void>(this); }
+        AGE_API void Reset() override                       { hook::Thunk<0x4CAE60>::Call<void>(this); }
         AGE_API void FileIO(datParser &parser) override
-                                                            { ageHook::Thunk<0x4CB400>::Call<void>(this); }
-        AGE_API char* GetClassName() override               { return ageHook::Thunk<0x4CB640>::Call<char*>(this); }
-        AGE_API char const* GetDirName() override           { return ageHook::Thunk<0x4CA5F0>::Call<char const*>(this); }
+                                                            { hook::Thunk<0x4CB400>::Call<void>(this); }
+        AGE_API char* GetClassName() override               { return hook::Thunk<0x4CB640>::Call<char*>(this); }
+        AGE_API char const* GetDirName() override           { return hook::Thunk<0x4CA5F0>::Call<char const*>(this); }
         
         //fields
-        static ageHook::Type<asBirthRule*> EngineSmokeRule;
+        static hook::Type<asBirthRule*> EngineSmokeRule;
 
         inline asParticles* getParticles(void) {
             return this->Particles;

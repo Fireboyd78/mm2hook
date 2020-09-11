@@ -70,7 +70,7 @@ namespace MM2
         }
 
     public:
-        static ageHook::TypeProxy<datCallback> NullCallback;
+        static hook::TypeProxy<datCallback> NullCallback;
 
         inline unsigned int ptr() const {
             return _callback & ~ParamCountFlags;

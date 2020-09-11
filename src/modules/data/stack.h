@@ -26,11 +26,11 @@ namespace MM2
     public:
        
         AGE_API static char const* GetTimestamp() {
-            return ageHook::StaticThunk<0x4C7120>::Call<char const*>();
+            return hook::StaticThunk<0x4C7120>::Call<char const*>();
         };
 
         AGE_API static void LookupAddress(char* buf, int address) {
-            ageHook::StaticThunk<0x4C7470>::Call<void>(buf, address);
+            hook::StaticThunk<0x4C7470>::Call<void>(buf, address);
         };
         
         AGE_API static void DoTraceback(int length, DWORD* contextRecordEbpPtr, FILE* output, char const* lineSeperator) {
@@ -51,7 +51,7 @@ namespace MM2
         };
 
         AGE_API static void Traceback(int length, FILE* output) {
-            ageHook::StaticThunk<0x4C75C0>::Call<void>(length, output);
+            hook::StaticThunk<0x4C75C0>::Call<void>(length, output);
         };
 
         //custom extension for exception filter

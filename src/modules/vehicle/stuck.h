@@ -28,23 +28,23 @@ namespace MM2
         vehCarSim *m_CarSimPtr;
     private:
     public:
-        AGE_API vehStuck()                              { ageHook::Thunk<0x4D5FB0>::Call<void>(this); }
+        AGE_API vehStuck()                              { hook::Thunk<0x4D5FB0>::Call<void>(this); }
 
         AGE_API void Init(vehCarSim *carSim, const char *name) 
-                                                        { ageHook::Thunk<0x4D6090>::Call<void>(this, carSim, name); }
+                                                        { hook::Thunk<0x4D6090>::Call<void>(this, carSim, name); }
         
         AGE_API static void ComputeConstantsStatic(vehStuck* stuck)
-                                                        { ageHook::StaticThunk<0x4D6040>::Call<void>(stuck); }
+                                                        { hook::StaticThunk<0x4D6040>::Call<void>(stuck); }
         void ComputeConstants()                         { vehStuck::ComputeConstantsStatic(this); }
 
         /*
             asNode virtuals
         */
-        AGE_API void Reset() override                   { ageHook::Thunk<0x4D6060>::Call<void>(this); }
-        AGE_API void Update() override                  { ageHook::Thunk<0x4D6140>::Call<void>(this); }
-        AGE_API void FileIO(datParser& parser) override { ageHook::Thunk<0x4D6510>::Call<void>(this); }
-        AGE_API const char* GetDirName() override       { return ageHook::Thunk<0x4D6080>::Call<const char*>(this); }
-        AGE_API char * GetClassName() override          { return ageHook::Thunk<0x4D65F0>::Call<char*>(this); }
+        AGE_API void Reset() override                   { hook::Thunk<0x4D6060>::Call<void>(this); }
+        AGE_API void Update() override                  { hook::Thunk<0x4D6140>::Call<void>(this); }
+        AGE_API void FileIO(datParser& parser) override { hook::Thunk<0x4D6510>::Call<void>(this); }
+        AGE_API const char* GetDirName() override       { return hook::Thunk<0x4D6080>::Call<const char*>(this); }
+        AGE_API char * GetClassName() override          { return hook::Thunk<0x4D65F0>::Call<char*>(this); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<vehStuck, asNode>("vehStuck")

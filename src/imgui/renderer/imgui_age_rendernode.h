@@ -28,7 +28,7 @@ private:
         bool isGuiShowing = mmImGuiManager::Instance != nullptr && mmImGuiManager::Instance->IsShowing();
 
         if (!isGuiShowing || !io.WantCaptureMouse)
-            ageHook::Thunk<0x52D5E0>::Call<void>(this, a1);
+            hook::Thunk<0x52D5E0>::Call<void>(this, a1);
     }
 
     //mmInput::PutEventInQueue called from mmInput::ProcessKeyboardEvents
@@ -38,7 +38,7 @@ private:
         bool isGuiShowing = mmImGuiManager::Instance != nullptr && mmImGuiManager::Instance->IsShowing();
 
         if (!isGuiShowing || !io.WantCaptureKeyboard)
-            ageHook::Thunk<0x52D5E0>::Call<void>(this, a1);
+            hook::Thunk<0x52D5E0>::Call<void>(this, a1);
     }
 
     //ioEventQueue::Queue hook
@@ -56,7 +56,7 @@ private:
             return;
         }
 
-        ageHook::StaticThunk<0x4BA9D0>::Call<void>(a1, a2, a3, a4);
+        hook::StaticThunk<0x4BA9D0>::Call<void>(a1, a2, a3, a4);
     }
 
     //ioInput::Update hook (Currently doesn't respect useJoystick but that always seems to be 0 anyways?)
@@ -78,7 +78,7 @@ private:
             ioKeyboard::ClearStates();
 
         //update pad
-        ageHook::StaticThunk<0x4BB7A0>::Call<void>(); //ioPad::UpdateAll
+        hook::StaticThunk<0x4BB7A0>::Call<void>(); //ioPad::UpdateAll
     }
 public:
     bool IsShowing() {
@@ -124,34 +124,34 @@ public:
         //ioEventQueue:: hooks the rest. Ex. mouse clicking used in menus
         InstallCallback("mmInput::ProcessMouseEvents", "Rewire input through the imGuiManager",
             &mmImGuiManager::PutMouseEventInQueue, {
-                cbHook<CALL>(0x52CC4A),
+                cb::call(0x52CC4A),
             }
         );
 
         InstallCallback("mmInput::ProcessKeyboardEvents", "Rewire input through the imGuiManager",
             &mmImGuiManager::PutKeyboardEventInQueue, {
-                cbHook<CALL>(0x52CC9F),
+                cb::call(0x52CC9F),
             }
         );
 
         InstallCallback("ioInput::Update", "Rewire input through the imGuiManager",
             &mmImGuiManager::IOInputHook, {
-                cbHook<CALL>(0x4A916A),
+                cb::call(0x4A916A),
             }
         );
 
         InstallCallback("ioEventQueue::Queue", "Rewire input through the imGuiManager",
             &mmImGuiManager::EventQueueQueue, {
-                cbHook<CALL>(0x4BAA5D),
-                cbHook<CALL>(0x4BAD72),
-                cbHook<CALL>(0x4BAD93),
-                cbHook<CALL>(0x4BADDB),
-                cbHook<CALL>(0x4BAE3D),
-                cbHook<CALL>(0x4BAE89),
-                cbHook<CALL>(0x4BAEDB),
-                cbHook<CALL>(0x4BAF4E),
-                cbHook<CALL>(0x4BAFA7),
-                cbHook<CALL>(0x4BB044),
+                cb::call(0x4BAA5D),
+                cb::call(0x4BAD72),
+                cb::call(0x4BAD93),
+                cb::call(0x4BADDB),
+                cb::call(0x4BAE3D),
+                cb::call(0x4BAE89),
+                cb::call(0x4BAEDB),
+                cb::call(0x4BAF4E),
+                cb::call(0x4BAFA7),
+                cb::call(0x4BB044),
             }
         );
 

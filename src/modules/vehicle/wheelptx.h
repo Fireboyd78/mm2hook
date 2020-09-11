@@ -20,18 +20,18 @@ namespace MM2
         asParticles m_Particles;
         float m_PtxTimers[2];
     public:
-        AGE_API vehWheelPtx()                                  { ageHook::Thunk<0x4D1C00>::Call<void>(this); }
-        AGE_API ~vehWheelPtx()                                 { ageHook::Thunk<0x4D1C60>::Call<void>(this); }
+        AGE_API vehWheelPtx()                                  { hook::Thunk<0x4D1C00>::Call<void>(this); }
+        AGE_API ~vehWheelPtx()                                 { hook::Thunk<0x4D1C60>::Call<void>(this); }
 
-        AGE_API void UpdateWheel(vehWheel *a1)                 { ageHook::Thunk<0x4D1E90>::Call<void>(this, a1); }
+        AGE_API void UpdateWheel(vehWheel *a1)                 { hook::Thunk<0x4D1E90>::Call<void>(this, a1); }
         AGE_API void Blast(vehWheel *a1, float a2, int a3, int a4)
-                                                               { ageHook::Thunk<0x4D1EF0>::Call<void>(this, a1, a2, a3, a4); }
+                                                               { hook::Thunk<0x4D1EF0>::Call<void>(this, a1, a2, a3, a4); }
         /*
             asNode virtuals
         */
 
-        AGE_API void Reset() override                          { ageHook::Thunk<0x4D1DC0>::Call<void>(this); }
-        AGE_API void Update() override                         { ageHook::Thunk<0x4D1E40>::Call<void>(this); }
+        AGE_API void Reset() override                          { hook::Thunk<0x4D1DC0>::Call<void>(this); }
+        AGE_API void Update() override                         { hook::Thunk<0x4D1E40>::Call<void>(this); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<vehWheelPtx, asNode>("vehWheelPtx")

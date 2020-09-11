@@ -121,6 +121,7 @@
     Lua 5.3.2 files
   -->
   <ItemGroup>
+    <ClInclude Include="src\hook.h" />
     <ClInclude Include="src\handlers\debug_handlers.h" />
     <ClInclude Include="src\handlers\lua_drawable.h" />
     <ClInclude Include="src\imgui\imconfig.h" />
@@ -351,6 +352,7 @@
     <ClInclude Include="src\lua\lzio.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\hook.cpp" />
     <ClCompile Include="src\handlers\debug_handlers.cpp" />
     <ClCompile Include="src\handlers\lua_drawable.cpp" />
     <ClCompile Include="src\imgui\imgui.cpp" />

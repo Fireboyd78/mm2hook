@@ -108,8 +108,8 @@ namespace MM2
         //general api
         void setPointCount(int count) {
             if (this->Points)
-                ageHook::StaticThunk<0x577380>::Call<void>(this->Points); //angel delete operator
-            this->Points = (dgPathPoint*)ageHook::StaticThunk<0x577360>::Call<void*>(sizeof(dgPathPoint) * count); //angel new operator
+                hook::StaticThunk<0x577380>::Call<void>(this->Points); //angel delete operator
+            this->Points = (dgPathPoint*)hook::StaticThunk<0x577360>::Call<void*>(sizeof(dgPathPoint) * count); //angel new operator
             this->NumPoints = count;
             this->NumPoints2 = count;
         }
@@ -123,13 +123,13 @@ namespace MM2
         /*
             dgPath
         */
-        AGE_API dgPath(LPCSTR name)                         { ageHook::Thunk<0x466B40>::Call<void>(this, name); }
-        AGE_API ~dgPath()                                   { ageHook::Thunk<0x466BC0>::Call<void>(this); }
+        AGE_API dgPath(LPCSTR name)                         { hook::Thunk<0x466B40>::Call<void>(this, name); }
+        AGE_API ~dgPath()                                   { hook::Thunk<0x466BC0>::Call<void>(this); }
 
-        static dgPath* Load(Stream *stream)                 { return ageHook::StaticThunk<0x466BD0>::Call<dgPath*>(stream); }
-        void SetName(LPCSTR name)                           { ageHook::Thunk<0x466B80>::Call<void>(this, name); }
+        static dgPath* Load(Stream *stream)                 { return hook::StaticThunk<0x466BD0>::Call<dgPath*>(stream); }
+        void SetName(LPCSTR name)                           { hook::Thunk<0x466B80>::Call<void>(this, name); }
         void Enumerate(void(* a2)(LPCSTR const, Matrix34 const*, bool), float a3, float a4)
-                                                            { ageHook::Thunk<0x466D40>::Call<void>(this, a2, a3, a4); }
+                                                            { hook::Thunk<0x466D40>::Call<void>(this, a2, a3, a4); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<dgPath>("dgPath")
@@ -186,18 +186,18 @@ namespace MM2
         AGE_API dgPathSet()                         
         {
             scoped_vtable x(this);
-            ageHook::Thunk<0x467150>::Call<void>(this); 
+            hook::Thunk<0x467150>::Call<void>(this); 
         }
 
         AGE_API virtual ~dgPathSet()
         {
             scoped_vtable x(this);
-            ageHook::Thunk<0x467170>::Call<void>(this); 
+            hook::Thunk<0x467170>::Call<void>(this); 
         }
 
         AGE_API bool Load(LPCSTR dirName, LPCSTR pathsetName)
-                                                            { return ageHook::Thunk<0x467210>::Call<bool>(this, dirName, pathsetName); }
-        AGE_API void Kill()                                 { return ageHook::Thunk<0x4671C0>::Call<void>(this); }
+                                                            { return hook::Thunk<0x467210>::Call<bool>(this, dirName, pathsetName); }
+        AGE_API void Kill()                                 { return hook::Thunk<0x4671C0>::Call<void>(this); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<dgPathSet>("dgPathSet")

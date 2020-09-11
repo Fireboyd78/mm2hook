@@ -5,33 +5,6 @@
     Game patching functions
 */
 
-enum hookType : unsigned int
-{
-    JMP,
-    CALL,
-    PUSH,
-
-    COUNT,
-};
-
-struct cbInfo
-{
-    auto_ptr addr;
-    hookType type;
-};
-
-template<hookType type>
-struct cbHook
-{
-    cbInfo info;
-
-    constexpr cbHook(const DWORD addrs) : info { addrs, type } {};
-
-    constexpr operator cbInfo() const {
-        return info;
-    };
-};
-
 void Installf(LPCSTR format, ...);
 
 typedef void (*InitFn)();
@@ -105,26 +78,26 @@ inline void InstallPatch(std::initializer_list<unsigned char> bytes,
     InstallPatch(NULL, bytes, addresses);
 }
 
-void InstallCallback(auto_ptr lpAddr, cbInfo callback);
+void InstallCallback(auto_ptr lpAddr, const cb::info &callback);
 
 void InstallCallback(LPCSTR name,
                      LPCSTR description,
                      auto_ptr lpAddr,
-                     std::initializer_list<cbInfo> callbacks);
+                     cb::info::list callbacks);
 
-inline void InstallCallback(LPCSTR name, auto_ptr lpAddr, std::initializer_list<cbInfo> callbacks) {
+inline void InstallCallback(LPCSTR name, auto_ptr lpAddr, cb::info::list callbacks) {
     InstallCallback(name, NULL, lpAddr, callbacks);
 }
 
-inline void InstallCallback(auto_ptr lpAddr, LPCSTR description, std::initializer_list<cbInfo> callbacks) {
+inline void InstallCallback(auto_ptr lpAddr, LPCSTR description, cb::info::list callbacks) {
     InstallCallback(NULL, description, lpAddr, callbacks);
 }
 
-inline void InstallCallback(auto_ptr lpAddr, std::initializer_list<cbInfo> callbacks, LPCSTR description) {
+inline void InstallCallback(auto_ptr lpAddr, cb::info::list callbacks, LPCSTR description) {
     InstallCallback(NULL, description, lpAddr, callbacks);
 }
 
-inline void InstallCallback(auto_ptr lpAddr, std::initializer_list<cbInfo> callbacks) {
+inline void InstallCallback(auto_ptr lpAddr, cb::info::list callbacks) {
     InstallCallback(NULL, NULL, lpAddr, callbacks);
 }
 

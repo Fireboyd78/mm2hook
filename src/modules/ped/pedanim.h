@@ -50,8 +50,8 @@ namespace MM2
 
     class pedAnimationInstance {
     protected:
-        ageHook::Field<0x4, pedAnimation *> _animation;
-        ageHook::Field<0x8, int> _variant;
+        hook::Field<0x4, pedAnimation *> _animation;
+        hook::Field<0x8, int> _variant;
     public:
         inline pedAnimation * getAnimation() const {
             return _animation.get(this);

@@ -27,12 +27,12 @@ namespace MM2
     public:
         AGE_API asCamera(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x4A2340>::Call<void>(this);
+            hook::Thunk<0x4A2340>::Call<void>(this);
         };
 
         virtual AGE_API ~asCamera(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x4A22E0>::Call<void>(this);
+            hook::Thunk<0x4A22E0>::Call<void>(this);
         };
     };
     
@@ -55,12 +55,12 @@ namespace MM2
     public:
         AGE_API camBaseCS(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x521D60>::Call<void>(this);
+            hook::Thunk<0x521D60>::Call<void>(this);
         }
 
         virtual AGE_API ~camBaseCS(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x521DF0>::Call<void>(this);
+            hook::Thunk<0x521DF0>::Call<void>(this);
         }
 
         //fields
@@ -71,14 +71,14 @@ namespace MM2
         inline void setFOV(float fov)                       { CameraFOV = fov; }
 
         //virtuals
-        virtual AGE_API void MakeActive()                   { ageHook::Thunk<0x521520>::Call<void>(this); }
-        virtual AGE_API void UpdateInput()                  { ageHook::Thunk<0x520410>::Call<void>(this); }
+        virtual AGE_API void MakeActive()                   { hook::Thunk<0x521520>::Call<void>(this); }
+        virtual AGE_API void UpdateInput()                  { hook::Thunk<0x520410>::Call<void>(this); }
         virtual AGE_API void ForceMatrixDelta(const Vector3 &a1)
-                                                            { ageHook::Thunk<0x521E60>::Call<void>(this, &a1); }
-        virtual AGE_API void SetST(float *a1)               { ageHook::Thunk<0x51D750>::Call<void>(this, a1); }
+                                                            { hook::Thunk<0x521E60>::Call<void>(this, &a1); }
+        virtual AGE_API void SetST(float *a1)               { hook::Thunk<0x51D750>::Call<void>(this, a1); }
 
         //members
-        AGE_API void UpdateView()                           { ageHook::Thunk<0x521E30>::Call<void>(this); }
+        AGE_API void UpdateView()                           { hook::Thunk<0x521E30>::Call<void>(this); }
 
         //lua
         static void BindLua(LuaState L) {
@@ -123,21 +123,21 @@ namespace MM2
         // approach stuff?
         Matrix34 unk_D8;
     protected:
-        AGE_API void ApproachIt()                           { ageHook::Thunk<0x522060>::Call<void>(this); }
+        AGE_API void ApproachIt()                           { hook::Thunk<0x522060>::Call<void>(this); }
 
     public:
         AGE_API camAppCS(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x521F70>::Call<void>(this);
+            hook::Thunk<0x521F70>::Call<void>(this);
         }
 
         virtual AGE_API ~camAppCS(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x522050>::Call<void>(this);
+            hook::Thunk<0x522050>::Call<void>(this);
         }
 
         //overrides
-        AGE_API void FileIO(datParser &parser) override     { ageHook::Thunk<0x5229D0>::Call<void>(this, &parser); }
+        AGE_API void FileIO(datParser &parser) override     { hook::Thunk<0x5229D0>::Call<void>(this, &parser); }
     
         //lua
         static void BindLua(LuaState L) {
@@ -156,18 +156,18 @@ namespace MM2
     public:
         AGE_API camCarCS(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x521470>::Call<void>(this);
+            hook::Thunk<0x521470>::Call<void>(this);
         }
 
         virtual AGE_API ~camCarCS(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x521490>::Call<void>(this);
+            hook::Thunk<0x521490>::Call<void>(this);
         }
 
-        AGE_API void Init(vehCar *car, char *name)          { ageHook::Thunk<0x5214A0>::Call<void>(this, car, name); }
+        AGE_API void Init(vehCar *car, char *name)          { hook::Thunk<0x5214A0>::Call<void>(this, car, name); }
 
         //overrides
-        AGE_API void FileIO(datParser &parser) override     { ageHook::Thunk<0x5214E0>::Call<void>(this, &parser); }
+        AGE_API void FileIO(datParser &parser) override     { hook::Thunk<0x5214E0>::Call<void>(this, &parser); }
 
         //lua
         static void BindLua(LuaState L) {
@@ -192,27 +192,27 @@ namespace MM2
     public:
         AGE_API camPointCS(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x520610>::Call<void>(this);
+            hook::Thunk<0x520610>::Call<void>(this);
         }
 
         virtual AGE_API ~camPointCS(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x406820>::Call<void>(this);
+            hook::Thunk<0x406820>::Call<void>(this);
         }
 
-        AGE_API void SetAppRate(float rate)                 { ageHook::Thunk<0x520730>::Call<void>(this, rate); }
-        AGE_API void SetMaxDist(float dist)                 { ageHook::Thunk<0x5206F0>::Call<void>(this, dist); }
-        AGE_API void SetMinDist(float dist)                 { ageHook::Thunk<0x520710>::Call<void>(this, dist); }
-        AGE_API void SetPos(Vector3 *pos)                   { ageHook::Thunk<0x5206B0>::Call<void>(this, pos); }
-        AGE_API void SetVel(Vector3 *vel)                   { ageHook::Thunk<0x520740>::Call<void>(this, vel); }
+        AGE_API void SetAppRate(float rate)                 { hook::Thunk<0x520730>::Call<void>(this, rate); }
+        AGE_API void SetMaxDist(float dist)                 { hook::Thunk<0x5206F0>::Call<void>(this, dist); }
+        AGE_API void SetMinDist(float dist)                 { hook::Thunk<0x520710>::Call<void>(this, dist); }
+        AGE_API void SetPos(Vector3 *pos)                   { hook::Thunk<0x5206B0>::Call<void>(this, pos); }
+        AGE_API void SetVel(Vector3 *vel)                   { hook::Thunk<0x520740>::Call<void>(this, vel); }
 
         //camBaseCS overrides
-        AGE_API void MakeActive() override                  { ageHook::Thunk<0x5206A0>::Call<void>(this); }
+        AGE_API void MakeActive() override                  { hook::Thunk<0x5206A0>::Call<void>(this); }
 
         //asNode overrides
-        AGE_API void Reset() override                       { ageHook::Thunk<0x520690>::Call<void>(this); }
-        AGE_API void Update() override                      { ageHook::Thunk<0x520790>::Call<void>(this); }
-        AGE_API char * GetClassName() override              { return ageHook::Thunk<0x520A20>::Call<char*>(this); }
+        AGE_API void Reset() override                       { hook::Thunk<0x520690>::Call<void>(this); }
+        AGE_API void Update() override                      { hook::Thunk<0x520790>::Call<void>(this); }
+        AGE_API char * GetClassName() override              { return hook::Thunk<0x520A20>::Call<char*>(this); }
 
         //lua
         static void BindLua(LuaState L) {
@@ -243,28 +243,28 @@ namespace MM2
         float Pitch;
         float unk_144; // yaw? (roates matrix if != 0)
     private:
-        AGE_API void UpdatePOV()                            { ageHook::Thunk<0x51D5A0>::Call<void>(this); }
+        AGE_API void UpdatePOV()                            { hook::Thunk<0x51D5A0>::Call<void>(this); }
     public:
         AGE_API camPovCS(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x51D410>::Call<void>(this);
+            hook::Thunk<0x51D410>::Call<void>(this);
         }
 
         virtual AGE_API ~camPovCS(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x51D520>::Call<void>(this);
+            hook::Thunk<0x51D520>::Call<void>(this);
         }
 
         //camBaseCS overrides
-        AGE_API void MakeActive() override                  { ageHook::Thunk<0x51D530>::Call<void>(this); }
-        AGE_API void UpdateInput() override                 { ageHook::Thunk<0x51D590>::Call<void>(this); }
+        AGE_API void MakeActive() override                  { hook::Thunk<0x51D530>::Call<void>(this); }
+        AGE_API void UpdateInput() override                 { hook::Thunk<0x51D590>::Call<void>(this); }
 
         //asNode overrides
-        AGE_API void Reset() override                       { ageHook::Thunk<0x51D540>::Call<void>(this); }
-        AGE_API void Update() override                      { ageHook::Thunk<0x51D570>::Call<void>(this); }
-        AGE_API void FileIO(datParser &parser) override     { ageHook::Thunk<0x51D690>::Call<void>(this, &parser); }
-        AGE_API void AfterLoad() override                   { ageHook::Thunk<0x51D710>::Call<void>(this); }
-        AGE_API char * GetClassName() override              { return ageHook::Thunk<0x51D760>::Call<char*>(this); }
+        AGE_API void Reset() override                       { hook::Thunk<0x51D540>::Call<void>(this); }
+        AGE_API void Update() override                      { hook::Thunk<0x51D570>::Call<void>(this); }
+        AGE_API void FileIO(datParser &parser) override     { hook::Thunk<0x51D690>::Call<void>(this, &parser); }
+        AGE_API void AfterLoad() override                   { hook::Thunk<0x51D710>::Call<void>(this); }
+        AGE_API char * GetClassName() override              { return hook::Thunk<0x51D760>::Call<char*>(this); }
 
         //lua
         static void BindLua(LuaState L) {
@@ -277,38 +277,38 @@ namespace MM2
     ASSERT_SIZEOF(camPovCS, 0x148);
 
     class camTrackCS : public camCarCS {
-        AGE_API void Collide(Vector3 a1)                    { ageHook::Thunk<0x51EED0>::Call<void>(this, a1); }
-        AGE_API void Front(float a1)                        { ageHook::Thunk<0x51F980>::Call<void>(this, a1); }
-        AGE_API void MinMax(Matrix34 a1)                    { ageHook::Thunk<0x51ECC0>::Call<void>(this, a1); }
-        AGE_API void PreApproach()                          { ageHook::Thunk<0x51EB40>::Call<void>(this); }
-        AGE_API void Rear(float a1)                         { ageHook::Thunk<0x51FA00>::Call<void>(this, a1); }
+        AGE_API void Collide(Vector3 a1)                    { hook::Thunk<0x51EED0>::Call<void>(this, a1); }
+        AGE_API void Front(float a1)                        { hook::Thunk<0x51F980>::Call<void>(this, a1); }
+        AGE_API void MinMax(Matrix34 a1)                    { hook::Thunk<0x51ECC0>::Call<void>(this, a1); }
+        AGE_API void PreApproach()                          { hook::Thunk<0x51EB40>::Call<void>(this); }
+        AGE_API void Rear(float a1)                         { hook::Thunk<0x51FA00>::Call<void>(this, a1); }
 
-        AGE_API void UpdateCar()                            { ageHook::Thunk<0x51DC70>::Call<void>(this); }
-        AGE_API void UpdateHill()                           { ageHook::Thunk<0x51DEE0>::Call<void>(this); }
-        AGE_API void UpdateTrack()                          { ageHook::Thunk<0x51E400>::Call<void>(this); }
+        AGE_API void UpdateCar()                            { hook::Thunk<0x51DC70>::Call<void>(this); }
+        AGE_API void UpdateHill()                           { hook::Thunk<0x51DEE0>::Call<void>(this); }
+        AGE_API void UpdateTrack()                          { hook::Thunk<0x51E400>::Call<void>(this); }
     public:
         AGE_API camTrackCS(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x51D770>::Call<void>(this);
+            hook::Thunk<0x51D770>::Call<void>(this);
         }
 
         virtual AGE_API ~camTrackCS(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x51DA80>::Call<void>(this);
+            hook::Thunk<0x51DA80>::Call<void>(this);
         }
 
-        AGE_API void SwingToRear()                          { ageHook::Thunk<0x51F920>::Call<void>(this); }
+        AGE_API void SwingToRear()                          { hook::Thunk<0x51F920>::Call<void>(this); }
 
         //asNode overrides
-        AGE_API void AfterLoad() override                   { ageHook::Thunk<0x51DAF0>::Call<void>(this); }
-        AGE_API void FileIO(datParser &parser) override     { ageHook::Thunk<0x51FA80>::Call<void>(this, &parser); }
-        AGE_API char * GetClassName() override              { return ageHook::Thunk<0x51FD60>::Call<char*>(this); }
-        AGE_API void Reset() override                       { ageHook::Thunk<0x51DB00>::Call<void>(this); }
-        AGE_API void Update() override                      { ageHook::Thunk<0x51DB50>::Call<void>(this); }
+        AGE_API void AfterLoad() override                   { hook::Thunk<0x51DAF0>::Call<void>(this); }
+        AGE_API void FileIO(datParser &parser) override     { hook::Thunk<0x51FA80>::Call<void>(this, &parser); }
+        AGE_API char * GetClassName() override              { return hook::Thunk<0x51FD60>::Call<char*>(this); }
+        AGE_API void Reset() override                       { hook::Thunk<0x51DB00>::Call<void>(this); }
+        AGE_API void Update() override                      { hook::Thunk<0x51DB50>::Call<void>(this); }
 
         //camBaseCS overrides
-        AGE_API void MakeActive() override                  { ageHook::Thunk<0x51DAE0>::Call<void>(this); }
-        AGE_API void UpdateInput() override                 { ageHook::Thunk<0x51DC60>::Call<void>(this); }
+        AGE_API void MakeActive() override                  { hook::Thunk<0x51DAE0>::Call<void>(this); }
+        AGE_API void UpdateInput() override                 { hook::Thunk<0x51DC60>::Call<void>(this); }
 
         //lua
         static void BindLua(LuaState L) {
@@ -323,12 +323,12 @@ namespace MM2
     public:
         AGE_API camAICS(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x520A30>::Call<void>(this);
+            hook::Thunk<0x520A30>::Call<void>(this);
         }
 
         virtual AGE_API ~camAICS(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x406810>::Call<void>(this);
+            hook::Thunk<0x406810>::Call<void>(this);
         }
 
         static inline float getHeight(void) {
@@ -340,11 +340,11 @@ namespace MM2
             *heightPtr = height;
         }
 
-        AGE_API void SetPosition(Vector3 *a1)               { ageHook::Thunk<0x520AC0>::Call<void>(this, a1); }
-        AGE_API void SetMatrix(Matrix34 *a1)                { ageHook::Thunk<0x520AE0>::Call<void>(this, a1); }
+        AGE_API void SetPosition(Vector3 *a1)               { hook::Thunk<0x520AC0>::Call<void>(this, a1); }
+        AGE_API void SetMatrix(Matrix34 *a1)                { hook::Thunk<0x520AE0>::Call<void>(this, a1); }
 
         // asNode overrides
-        AGE_API void Reset() override                       { ageHook::Thunk<0x520AB0>::Call<void>(this); }
+        AGE_API void Reset() override                       { hook::Thunk<0x520AB0>::Call<void>(this); }
 
         //lua
         static void BindLua(LuaState L) {
@@ -378,34 +378,34 @@ namespace MM2
     public:
         AGE_API camViewCS(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x51FD70>::Call<void>(this);
+            hook::Thunk<0x51FD70>::Call<void>(this);
         }
 
         virtual AGE_API ~camViewCS(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x51FE20>::Call<void>(this);
+            hook::Thunk<0x51FE20>::Call<void>(this);
         }
 
         inline camCarCS * getCurrentCamera(void) const      { return carCS; }
         bool isCurrentCamera(camCarCS *cam)                 { return carCS == cam; }
 
-        AGE_API static camViewCS * Instance(vehCar *a1)     { return ageHook::StaticThunk<0x51FE30>::Call<camViewCS *>(a1); }
+        AGE_API static camViewCS * Instance(vehCar *a1)     { return hook::StaticThunk<0x51FE30>::Call<camViewCS *>(a1); }
 
-        AGE_API void SetCam(camCarCS *cam)                  { ageHook::Thunk<0x51FE90>::Call<void>(this, cam); }
-        AGE_API void OneShot()                              { ageHook::Thunk<0x5200C0>::Call<void>(this); }
+        AGE_API void SetCam(camCarCS *cam)                  { hook::Thunk<0x51FE90>::Call<void>(this, cam); }
+        AGE_API void OneShot()                              { hook::Thunk<0x5200C0>::Call<void>(this); }
 
         AGE_API bool NewCam(camCarCS *cam, int a2, float a3, datCallback a4)
-                                                            { return ageHook::Thunk<0x51FF30>::Call<bool>(this, cam, a2, a3, a4); }
+                                                            { return hook::Thunk<0x51FF30>::Call<bool>(this, cam, a2, a3, a4); }
 
-        AGE_API void Init(vehCar *car)                      { ageHook::Thunk<0x51FFF0>::Call<void>(this, car); }
+        AGE_API void Init(vehCar *car)                      { hook::Thunk<0x51FFF0>::Call<void>(this, car); }
 
-        AGE_API void ForceMatrixDelta(const Vector3 *a1)    { ageHook::Thunk<0x5200A0>::Call<void>(this, a1); }
-        AGE_API void ForceMatrixDelta(const Matrix34 *a1)   { ageHook::Thunk<0x520080>::Call<void>(this, a1); }
+        AGE_API void ForceMatrixDelta(const Vector3 *a1)    { hook::Thunk<0x5200A0>::Call<void>(this, a1); }
+        AGE_API void ForceMatrixDelta(const Matrix34 *a1)   { hook::Thunk<0x520080>::Call<void>(this, a1); }
 
         //overrides
-        AGE_API void Update() override                      { ageHook::Thunk<0x51FFC0>::Call<void>(this); }
-        AGE_API void Reset() override                       { ageHook::Thunk<0x520010>::Call<void>(this); }
-        AGE_API void FileIO(datParser &parser) override     { ageHook::Thunk<0x5200D0>::Call<void>(this, &parser); }
+        AGE_API void Update() override                      { hook::Thunk<0x51FFC0>::Call<void>(this); }
+        AGE_API void Reset() override                       { hook::Thunk<0x520010>::Call<void>(this); }
+        AGE_API void FileIO(datParser &parser) override     { hook::Thunk<0x5200D0>::Call<void>(this, &parser); }
 
         //helpers for lua calls
         bool NewCam(camCarCS *cam, int a2, float a3) {

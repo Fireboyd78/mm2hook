@@ -53,39 +53,39 @@ namespace MM2
             return asCullManager::Instance;
         }
     public:
-        static ageHook::Type<asCullManager *> Instance;
+        static hook::Type<asCullManager *> Instance;
 
         asCullManager(void)                                 DONOTCALL;
         asCullManager(const asCullManager &&)               DONOTCALL;
 
         virtual ~asCullManager(void) {
-            ageHook::Thunk<0x4A1370>::Call<void>(this);
+            hook::Thunk<0x4A1370>::Call<void>(this);
         }
         
         /*
             asNode virtuals
         */
-        void Reset() override                               { ageHook::Thunk<0x4A13F0>::Call<void>(this); }
-        void Update() override                              { ageHook::Thunk<0x4A1450>::Call<void>(this); }
+        void Reset() override                               { hook::Thunk<0x4A13F0>::Call<void>(this); }
+        void Update() override                              { hook::Thunk<0x4A1450>::Call<void>(this); }
 
         /*
             asCullManager virtuals
         */
         virtual AGE_API void DeclareCamera(asCamera *camera)
-                                                            { ageHook::Thunk<0x4A1580>::Call<void>(this, camera); }
+                                                            { hook::Thunk<0x4A1580>::Call<void>(this, camera); }
 
         virtual AGE_API void DeclareCullable(asCullable *cullable)
-                                                            { ageHook::Thunk<0x4A15B0>::Call<void>(this, cullable); }
+                                                            { hook::Thunk<0x4A15B0>::Call<void>(this, cullable); }
         virtual AGE_API void DeclareCullable2D(asCullable *cullable)
-                                                            { ageHook::Thunk<0x4A1600>::Call<void>(this, cullable); }
+                                                            { hook::Thunk<0x4A1600>::Call<void>(this, cullable); }
         virtual AGE_API void DeclareCullable2DFG(asCullable *cullable)
-                                                            { ageHook::Thunk<0x4A1640>::Call<void>(this, cullable); }
+                                                            { hook::Thunk<0x4A1640>::Call<void>(this, cullable); }
 
         /*
             asCullManager
         */
         AGE_API void DeclareBitmap(asCullable *cullable, gfxBitmap *bitmap)
-                                                            { ageHook::Thunk<0x4A1680>::Call<void>(this, cullable, bitmap); }
+                                                            { hook::Thunk<0x4A1680>::Call<void>(this, cullable, bitmap); }
 
         //lua
         static void BindLua(LuaState L) {

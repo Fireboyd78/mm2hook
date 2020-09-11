@@ -15,7 +15,7 @@ namespace MM2
     public:
         virtual AGE_API ~Base() {
             scoped_vtable x(this);
-            ageHook::Thunk<0x4C8200>::Call<void>(this);
+            hook::Thunk<0x4C8200>::Call<void>(this);
         };
 
         //lua

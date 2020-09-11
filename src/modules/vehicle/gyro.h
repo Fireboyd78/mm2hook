@@ -53,19 +53,19 @@ namespace MM2
                 this->flags &= ~(0x40000);
         }
     public:
-        AGE_API vehGyro() { ageHook::Thunk<0x4D5B80>::Call<void>(this); }
+        AGE_API vehGyro() { hook::Thunk<0x4D5B80>::Call<void>(this); }
 
         AGE_API void Init(vehCarSim *carSim, const char *name) 
-                                                        { ageHook::Thunk<0x4D5BD0>::Call<void>(this, carSim, name); }
+                                                        { hook::Thunk<0x4D5BD0>::Call<void>(this, carSim, name); }
 
         /*
             asNode virtuals
         */
 
-        AGE_API void Update() override                  { ageHook::Thunk<0x4D5C00>::Call<void>(this); }
-        AGE_API void FileIO(datParser& parser) override { ageHook::Thunk<0x4D5EE0>::Call<void>(this); }
-        AGE_API const char* GetDirName() override       { return ageHook::Thunk<0x4D5BC0 >::Call<const char*>(this); }
-        AGE_API char* GetClassName() override           { return ageHook::Thunk<0x4D5FA0 >::Call<char*>(this); }
+        AGE_API void Update() override                  { hook::Thunk<0x4D5C00>::Call<void>(this); }
+        AGE_API void FileIO(datParser& parser) override { hook::Thunk<0x4D5EE0>::Call<void>(this); }
+        AGE_API const char* GetDirName() override       { return hook::Thunk<0x4D5BC0 >::Call<const char*>(this); }
+        AGE_API char* GetClassName() override           { return hook::Thunk<0x4D5FA0 >::Call<char*>(this); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<vehGyro, asNode>("vehGyro")

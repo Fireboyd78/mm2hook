@@ -81,17 +81,17 @@ static init_handler g_feature_handlers[] = {
 
 static float ped_LodThreshold = 1225.f;
 
-ageHook::Type<float> obj_NoDrawThresh       ( 0x5C571C ); // default: 300.0
+hook::Type<float> obj_NoDrawThresh       ( 0x5C571C ); // default: 300.0
 
-ageHook::Type<float> obj_VLowThresh         ( 0x5C6658 ); // default: 200.0
-ageHook::Type<float> obj_LowThresh          ( 0x5C665C ); // default: 100.0
-ageHook::Type<float> obj_MedThresh          ( 0x5C6660 ); // default: 40.0
+hook::Type<float> obj_VLowThresh         ( 0x5C6658 ); // default: 200.0
+hook::Type<float> obj_LowThresh          ( 0x5C665C ); // default: 100.0
+hook::Type<float> obj_MedThresh          ( 0x5C6660 ); // default: 40.0
 
-ageHook::Type<float> sdl_VLowThresh         ( 0x5C5708 );  // default: 300.0
-ageHook::Type<float> sdl_LowThresh          ( 0x5C570C );  // default: 100.0
-ageHook::Type<float> sdl_MedThresh          ( 0x5C5710 );  // default: 50.0
+hook::Type<float> sdl_VLowThresh         ( 0x5C5708 );  // default: 300.0
+hook::Type<float> sdl_LowThresh          ( 0x5C570C );  // default: 100.0
+hook::Type<float> sdl_MedThresh          ( 0x5C5710 );  // default: 50.0
 
-ageHook::Type<int> timeOfDay                ( 0x62B068 );
+hook::Type<int> timeOfDay                ( 0x62B068 );
 
 /*
     asCullManagerHandler
@@ -106,13 +106,13 @@ void asCullManagerHandler::Init(int maxCullables, int maxCullables2D) {
 
     LogFile::Format("[asCullManager::Init]: Max Cullables = %d, %d\n", maxCullables, maxCullables2D);
 
-    ageHook::Thunk<0x4A1290>::Call<void>(this, maxCullables, maxCullables2D);
+    hook::Thunk<0x4A1290>::Call<void>(this, maxCullables, maxCullables2D);
 }
 
 void asCullManagerHandler::Install() {
     InstallCallback("asCullManager::Init", "Increases max cullables.",
         &Init, {
-            cbHook<CALL>(0x401D5C),
+            cb::call(0x401D5C),
         }
     );
 }
@@ -285,13 +285,13 @@ void cityLevelHandler::Install() {
 
     InstallCallback("cityLevel::DrawRooms", "Custom implementation to allow for getting the number of rooms.",
         &DrawRooms, {
-            cbHook<CALL>(0x445798), // cityLevel::Draw
+            cb::call(0x445798), // cityLevel::Draw
         }
     );
 
     InstallCallback("cityLevel::Update", "Adds PostUpdate handler.",
         &PostUpdate, {
-            cbHook<JMP>(0x4452D0), // jump to PostUpdate at the very end
+            cb::jmp(0x4452D0), // jump to PostUpdate at the very end
         }
     );
 
@@ -356,11 +356,11 @@ struct TimeWeatherInfo {
     }
 
     void Apply() {
-        static ageHook::Type<gfxTexture *> g_GlowTexture    = 0x62767C;
-        static ageHook::Type<gfxTexture *> g_ReflectionMap  = 0x628914;
+        static hook::Type<gfxTexture *> g_GlowTexture    = 0x62767C;
+        static hook::Type<gfxTexture *> g_ReflectionMap  = 0x628914;
 
-        static ageHook::Type<float> g_FlatColorIntensity    = 0x5C9DA0;
-        static ageHook::Type<float> g_WeatherFriction       = 0x5CF6B8;
+        static hook::Type<float> g_FlatColorIntensity    = 0x5C9DA0;
+        static hook::Type<float> g_WeatherFriction       = 0x5CF6B8;
 
         aiMap::Instance->drawHeadlights = ShowHeadlights;
         vehCar::sm_DrawHeadlights = ShowHeadlights;
@@ -370,7 +370,7 @@ struct TimeWeatherInfo {
 
         if (MMSTATE->WeatherType == 3) {
             // jump to the part of mmGame::InitWeather that sets up birth rules
-            ageHook::StaticThunk<0x4133D6>::Call<void>();
+            hook::StaticThunk<0x4133D6>::Call<void>();
         }
 
         if (!useSoftware)
@@ -383,7 +383,7 @@ struct TimeWeatherInfo {
     }
 
     void ApplyFlatColor() {
-        static ageHook::Type<float> g_FlatColorIntensity = 0x5C9DA0;
+        static hook::Type<float> g_FlatColorIntensity = 0x5C9DA0;
 
         g_FlatColorIntensity = FlatColorIntensity;
     }
@@ -392,7 +392,7 @@ struct TimeWeatherInfo {
 static TimeWeatherInfo g_TimeWeathers[NUM_TIMEWEATHERS];
 static TimeWeatherInfo *TimeWeather = nullptr;
 
-static ageHook::Type<int> TimeWeatherIdx = 0x62B068;
+static hook::Type<int> TimeWeatherIdx = 0x62B068;
 
 // cannot be 'bool' or else EAX will be corrupted!
 BOOL CanDrawNightTrafficGlows() {
@@ -434,7 +434,7 @@ void cityTimeWeatherLightingHandler::LoadCityTimeWeatherLighting() {
     InitTimeWeathers();
 
     // LoadCityTimeWeatherLighting
-    ageHook::StaticThunk<0x443530>::Call<void>();
+    hook::StaticThunk<0x443530>::Call<void>();
 
     TimeWeather = &g_TimeWeathers[TimeWeatherIdx];
     TimeWeather->Apply();
@@ -442,7 +442,7 @@ void cityTimeWeatherLightingHandler::LoadCityTimeWeatherLighting() {
 
 void cityTimeWeatherLightingHandler::FileIO(datParser &parser) {
     // cityTimeWeatherLighting::FileIO
-    ageHook::Thunk<0x443440>::Call<void>(this, &parser);
+    hook::Thunk<0x443440>::Call<void>(this, &parser);
 
     // apply to the active TimeWeatherInfo
     if (TimeWeather != nullptr)
@@ -452,7 +452,7 @@ void cityTimeWeatherLightingHandler::FileIO(datParser &parser) {
 void cityTimeWeatherLightingHandler::Install() {
     InstallCallback("LoadCityTimeWeatherLighting", "Allows for more control over city lighting initialization.",
         &LoadCityTimeWeatherLighting, {
-            cbHook<CALL>(0x44425B), // cityLevel::Load
+            cb::call(0x44425B), // cityLevel::Load
         }
     );
 
@@ -473,7 +473,7 @@ void cityTimeWeatherLightingHandler::Install() {
     });
 
     InstallCallback(&CanDrawNightTrafficGlows, {
-        cbHook<CALL>(0x53CABC),
+        cb::call(0x53CABC),
     }, "aiTrafficLightInstance::DrawGlow code implementation");
     
     /*
@@ -482,12 +482,12 @@ void cityTimeWeatherLightingHandler::Install() {
 
     // use 'sprintf' like an iterator ;)
     InstallCallback(&NextTimeWeather, {
-        cbHook<CALL>(0x443564),
+        cb::call(0x443564),
     }, "Custom iterator in LoadCityTimeWeatherLighting.");
     
     // inject our custom properties into the .lt file parser
     InstallCallback(&FileIO, {
-        cbHook<CALL>(0x443584),
+        cb::call(0x443584),
     }, "Custom FileIO for cityTimeWeatherLighting.");
 }
 
@@ -857,25 +857,25 @@ void gfxPipelineHandler::Install() {
 
     InstallCallback("gfxPipeline::SetRes", "Custom implementation allowing for more control of the window.",
         &SetRes, {
-            cbHook<JMP>(0x4A8CE0),
+            cb::jmp(0x4A8CE0),
         }
     );
 
     InstallCallback("gfxPipeline::gfxWindowCreate", "Custom implementation allowing for more control of the window.",
         &gfxWindowCreate, {
-            cbHook<JMP>(0x4A8A90),
+            cb::jmp(0x4A8A90),
         }
     );
 
     InstallCallback("gfxApplySettings", "Custom implementation allowing for more control of the graphical settings.",
         &gfxApplySettings, {
-            cbHook<JMP>(0x4AC870),
+            cb::jmp(0x4AC870),
         }
     );
 
     InstallCallback("gfxLoadVideoDatabase", "Disables 'badvideo.txt' file.",
         &ReturnFalse, {
-            cbHook<CALL>(0x4AC4F9),
+            cb::call(0x4AC4F9),
         }
     );
 }
@@ -952,19 +952,19 @@ void sdlPage16Handler::Install() {
 
     InstallCallback("sdlPage16::Draw", "SetAttributePointer implementation.",
         &SetAttributePointer, {
-            cbHook<CALL>(0x448372), // 448371 + 1, after our 'push edi' instruction (SEE ABOVE)
+            cb::call(0x448372), // 448371 + 1, after our 'push edi' instruction (SEE ABOVE)
         }
     );
 
     InstallCallback("sdlPage16::Draw", "Hooks a call to Quitf to print out more detailed information.",
         &InvalidCmd, {
-            cbHook<CALL>(0x4507B3),
+            cb::call(0x4507B3),
         }
     );
 
     InstallCallback("cityLevel::DrawRooms", "Intercepts a call to sdlPage16::Draw.",
         &Draw, {
-            cbHook<CALL>(0x4459D2),
+            cb::call(0x4459D2),
         }
     );
 }
@@ -1107,8 +1107,8 @@ void vglHandler::Install() {
         auto begin = pair.begin;
         auto end = pair.end;
 
-        InstallCallback(vglBeginCB, { begin, CALL });
-        InstallCallback(vglEndCB, { end,   CALL });
+        InstallCallback(vglBeginCB, cb::call(begin));
+        InstallCallback(vglEndCB, cb::call(end));
 
         Installf("   - { vglBegin: %08X, vglEnd: %08X }\n", begin, end);
     }
@@ -1129,7 +1129,7 @@ void Aud3DObjectManagerHandler::InitAmbObjContainer(LPCSTR name) {
     LogFile::Format("AmbientContainer: %s\n", szAmbientSFX);
 
     //call original
-    ageHook::Thunk<0x50F650>::Call<void>(this, szAmbientSFX);
+    hook::Thunk<0x50F650>::Call<void>(this, szAmbientSFX);
 }
 
 void Aud3DObjectManagerHandler::Install() {
@@ -1139,7 +1139,7 @@ void Aud3DObjectManagerHandler::Install() {
 
     InstallCallback("mmPlayer::Init", "Allows for custom positional ambient effects in addon cities.",
         &InitAmbObjContainer, {
-            cbHook<CALL>(0x404082),
+            cb::call(0x404082),
         }
     );
 }
@@ -1165,7 +1165,7 @@ void mmGameMusicDataHandler::Install() {
 
     InstallCallback("mmGameMusicData::LoadAmbientSFX", "Allows for custom ambient effects in addon cities.",
         &LoadAmbientSFX, {
-            cbHook<CALL>(0x433F93),
+            cb::call(0x433F93),
         }
     );
 }
@@ -1192,8 +1192,8 @@ void vehCarAudioContainerHandler::Install() {
 
     InstallCallback("vehCarAudioContainer::SetSirenCSVName", "Allows for custom sirens in addon cities.",
         &SetSirenCSVName, {
-            cbHook<CALL>(0x412783),
-            cbHook<CALL>(0x412772),
+            cb::call(0x412783),
+            cb::call(0x412772),
         }
     );
 }
@@ -1211,13 +1211,13 @@ void vehPoliceCarAudioHandler::InitSirenAudio(vehCarSim *a1, vehCarDamage *a2, L
         sirenCsvFile = buffer;
 
     // vehPoliceCarAudio::Init
-    ageHook::Thunk<0x4D46F0>::Call<void>(this, a1, a2, basename, sirenCsvFile, a5);
+    hook::Thunk<0x4D46F0>::Call<void>(this, a1, a2, basename, sirenCsvFile, a5);
 }
 
 void vehPoliceCarAudioHandler::Install() {
     InstallCallback("vehPoliceCarAudio::Init", "Allows vehicles to use their own custom sirens instead of default ones for each city.",
         &InitSirenAudio, {
-            cbHook<CALL>(0x4D44A3),
+            cb::call(0x4D44A3),
         }
     );
 }
@@ -1311,13 +1311,13 @@ void lvlHandler::Install() {
 
     InstallCallback("lvlAiMap::SetRoad", "Allows for more detailed information when propulating roads.",
         &SetAIRoad, {
-            cbHook<CALL>(0x45D70F),
+            cb::call(0x45D70F),
         }
     );
 
     InstallCallback("lvlAiMap::SetRoad", "Allows for more detailed information when propulating roads.",
         &GetAIRoom, {
-            cbHook<CALL>(0x45D76E),
+            cb::call(0x45D76E),
         }
     );
 
@@ -1325,7 +1325,7 @@ void lvlHandler::Install() {
     {
         InstallCallback("lvlSDL::Enumerate", "New enumerate function.",
             &EnumerateSDL, {
-                cbHook<JMP>(0x45BE50),
+                cb::jmp(0x45BE50),
             }
         );
     }
@@ -1354,7 +1354,7 @@ void lvlHandler::Install() {
 
         InstallCallback("lvlSDL::Enumerate", "Hooks a call to Quitf to print out more detailed information.",
             &InvalidCommand, {
-                cbHook<CALL>(0x45BEF4),
+                cb::call(0x45BEF4),
             }
         );
     }   
@@ -1374,7 +1374,7 @@ void memSafeHeapHandler::Init(void *memAllocator, unsigned int heapSize, bool p3
     heapSize = (g_heapSize << 20);
 
     LogFile::Format("[memSafeHeap::Init]: Allocating %dMB heap (%d bytes)\n", g_heapSize, heapSize);
-    return ageHook::Thunk<0x577210>::Call<void>(this, memAllocator, heapSize, p3, p4, checkAlloc); //TODO: move to own class
+    return hook::Thunk<0x577210>::Call<void>(this, memAllocator, heapSize, p3, p4, checkAlloc); //TODO: move to own class
 }
 
 void memSafeHeapHandler::Install() {
@@ -1382,7 +1382,7 @@ void memSafeHeapHandler::Install() {
 
     InstallCallback("memSafeHeap::Init", "Adds '-heapsize' parameter that takes a size in megabytes. Defaults to 128MB.",
         &Init, {
-            cbHook<CALL>(0x4015DD),
+            cb::call(0x4015DD),
         }
     );
 }
@@ -1435,7 +1435,7 @@ void mmGameHandler::SendChatMessage(char *message) {
     }
 }
 
-ageHook::Type<float> wheelFriction(0x5CF6B8);
+hook::Type<float> wheelFriction(0x5CF6B8);
 
 void mmGameHandler::InitWeather(void) {
     // should've already been initialized, but juuuust in case...
@@ -1584,13 +1584,13 @@ void mmGameHandler::Install() {
 
     InstallCallback("mmGame::SendChatMessage", "Passes any chat messages to the handler.",
         &SendChatMessage, {
-            cbHook<JMP>(0x414EB6),
+            cb::jmp(0x414EB6),
         }
     );
 
     InstallCallback("mmGame::InitWeather", "Allows for more control over weather initialization.",
         &InitWeather, {
-            cbHook<CALL>(0x4131C0), // mmGame::Init
+            cb::call(0x4131C0), // mmGame::Init
         }
     );
 
@@ -1602,9 +1602,9 @@ void mmGameHandler::Install() {
     if (cfgMm1StyleAutoReverse.Get()) {
         InstallCallback("mmGame::UpdateSteeringBrakes", "Improves auto reverse system.",
             &UpdateSteeringBrakes, {
-                cbHook<CALL>(0x413EED),
-                cbHook<CALL>(0x413F29),
-                cbHook<CALL>(0x413F4C),
+                cb::call(0x413EED),
+                cb::call(0x413F29),
+                cb::call(0x413F4C),
             }
         );
     }
@@ -1612,8 +1612,8 @@ void mmGameHandler::Install() {
     if (cfgGtaStyleHornSiren.Get()) {
         InstallCallback("mmGame::UpdateHorn", "Implements GTA-style horn/siren",
             &UpdateHorn, {
-                cbHook<CALL>(0x413F22),
-                cbHook<CALL>(0x414691),
+                cb::call(0x413F22),
+                cb::call(0x414691),
             }
         );
     }
@@ -1642,7 +1642,7 @@ mmDirSnd* mmDirSndHandler::Init(ulong sampleRate, bool enableStero, int p3, int 
 void mmDirSndHandler::Install() {
     InstallCallback("mmDirSnd::Init", "Fixes no sound issue on startup.",
         &Init, {
-            cbHook<CALL>(0x51941D),
+            cb::call(0x51941D),
         }
     );
 }
@@ -1654,13 +1654,13 @@ void mmDirSndHandler::Install() {
 void gizFerryHandler::SetSpeed(float value) {
     value *= cfgFerrySpeedMultiplier;
 
-    ageHook::Thunk<0x579520>::Call<void>(this, value);
+    hook::Thunk<0x579520>::Call<void>(this, value);
 }
 
 void gizFerryHandler::Install() {
     InstallCallback("gizFerry:SetSpeed", "Allows a speed modifier to be applied to ferry speeds.",
         &SetSpeed, {
-            cbHook<CALL>(0x579951), // gizFerryMgr::ApplyTuning
+            cb::call(0x579951), // gizFerryMgr::ApplyTuning
         }
     );
 
@@ -1676,15 +1676,15 @@ void gizParkedCarMgrHandler::EnumeratePath(LPCSTR a1, const Matrix34* a2, bool a
     //only apply car scaling in cruise
     if (dgStatePack::Instance->GameMode == Cruise) {
         int oldRandomSeed = gRandSeed;
-        float rand = ageHook::StaticThunk<0x4BBE30>::Call<float>();
+        float rand = hook::StaticThunk<0x4BBE30>::Call<float>();
 
         if (dgStatePack::Instance->TrafficDensity > rand) {
             gRandSeed = oldRandomSeed;
-            ageHook::StaticThunk<0x579BD0>::Call<void>(a1, a2, a3); //gizParkedCarMgr_EnumeratePath
+            hook::StaticThunk<0x579BD0>::Call<void>(a1, a2, a3); //gizParkedCarMgr_EnumeratePath
         }
     }
     else {
-        ageHook::StaticThunk<0x579BD0>::Call<void>(a1, a2, a3); //gizParkedCarMgr_EnumeratePath
+        hook::StaticThunk<0x579BD0>::Call<void>(a1, a2, a3); //gizParkedCarMgr_EnumeratePath
     }
 }
 
@@ -1692,7 +1692,7 @@ void gizParkedCarMgrHandler::Install() {
     if (cfgDynamicParkedCarDensity) {
         InstallCallback("gizParkedCarMgr::Init", "Scales parked cars with traffic density.",
             &EnumeratePath, {
-                cbHook<PUSH>(0x579B80),
+                cb::push(0x579B80),
             }
         );
     }
@@ -1729,8 +1729,8 @@ void BridgeFerryHandler::Install() {
     // revert bridges/ferries to how they were in the betas
     InstallCallback("Bridge/Ferry: Cull", "Quick'n dirty fix for fullbright bridges/ferries.",
         &Cull, {
-            cbHook<CALL>(0x5780BC), // gizBridgeMgr::Cull
-            cbHook<CALL>(0x5798F0), // gizFerryMgr::Cull
+            cb::call(0x5780BC), // gizBridgeMgr::Cull
+            cb::call(0x5798F0), // gizFerryMgr::Cull
         }
     );
 
@@ -1819,8 +1819,8 @@ void mmHudMapFeatureHandler::DrawLightGreenTri(const Matrix34 *a1) {
     rglEnableDisable(RGL_DEPTH_TEST, true);
 }
 
-ageHook::Type<unsigned int> HudmapIconColors(0x5C4740);
-ageHook::Type<Vector3> YAXIS(0x6A3B28);
+hook::Type<unsigned int> HudmapIconColors(0x5C4740);
+hook::Type<Vector3> YAXIS(0x6A3B28);
 Matrix34 mtx;
 
 void mmHudMapFeatureHandler::DrawIcon(int iconType, const Matrix34 *matrix) {
@@ -2106,19 +2106,19 @@ void mmHudMapFeatureHandler::Install() {
 
     InstallCallback("mmHudMap::DrawPlayer",
         &DrawPlayer, {
-            cbHook<CALL>(0x42F527),
+            cb::call(0x42F527),
         }
     );
 
     InstallCallback("mmHudMap::DrawCops",
         &DrawCops, {
-            cbHook<CALL>(0x42F519),
+            cb::call(0x42F519),
         }
     );
 
     InstallCallback("mmHudMap::DrawOpponents",
         &DrawOpponents, {
-            cbHook<CALL>(0x42F520),
+            cb::call(0x42F520),
         }
     );
 }
@@ -2205,7 +2205,7 @@ void mmIconsHandler::RegisterOpponents(OppIconInfo *icons, int count, void *a3) 
     }
 
     //call original
-    ageHook::Thunk<0x4322F0>::Call<void>(this, icons, count, a3);
+    hook::Thunk<0x4322F0>::Call<void>(this, icons, count, a3);
 }
 
 void mmIconsHandler::RegisterOpponents_Blitz(OppIconInfo *icons, int count, void *a3) {
@@ -2229,7 +2229,7 @@ void mmIconsHandler::RegisterOpponents_Blitz(OppIconInfo *icons, int count, void
     }
 
     //call original
-    ageHook::Thunk<0x4322F0>::Call<void>(this, icons, count, a3);
+    hook::Thunk<0x4322F0>::Call<void>(this, icons, count, a3);
 }
 
 void mmIconsHandler::Install() {
@@ -2242,13 +2242,13 @@ void mmIconsHandler::Install() {
 
     InstallCallback("mmIcons::RegisterOpponents",
         &RegisterOpponents, {
-            cbHook<CALL>(0x412C40), // mmGame::Init
+            cb::call(0x412C40), // mmGame::Init
         }
     );
 
     InstallCallback("mmIcons::RegisterOpponents [mmSingleBlitz]",
         &RegisterOpponents_Blitz, {
-            cbHook<CALL>(0x41B065), // mmSingleBlitz::Init
+            cb::call(0x41B065), // mmSingleBlitz::Init
         }
     );
 }
@@ -2300,12 +2300,12 @@ void mmDashViewHandler::UpdateCS() {
     dashCam->m31 += (headBobY * cfgHeadBobMultiplierY);
     dashCam->m32 += (headBobZ * cfgHeadBobMultiplierZ);
 
-    ageHook::Thunk<0x4A3370>::Call<void>(this);
+    hook::Thunk<0x4A3370>::Call<void>(this);
 }
 
 void mmDashViewHandler::FileIO(datParser* parser) {
     //call original FileIO
-    ageHook::Thunk<0x4315D0>::Call<void>(this, parser);
+    hook::Thunk<0x4315D0>::Call<void>(this, parser);
 
     //add missing things
     parser->AddValue("MaxSpeed", getPtr<float>(this, 0x5D0), 1);
@@ -2316,7 +2316,7 @@ void mmDashViewHandler::Install() {
     if (cfgEnableHeadBobbing) {
         InstallCallback("mmDashView::Update", "Allows for a custom implementation of head-bobbing in dashboards.",
             &UpdateCS, {
-                cbHook<CALL>(0x430F87), // replaces call to asLinearCS::Update
+                cb::call(0x430F87), // replaces call to asLinearCS::Update
             }
         );
     }
@@ -2356,7 +2356,7 @@ Stream * StreamHandler::Open(const char *filename, bool readOnly)
         return nullptr;
 
     // Stream::AllocStream
-    return ageHook::StaticThunk<0x4C98D0>::Call<Stream *>(filename, handle, fileMethods);
+    return hook::StaticThunk<0x4C98D0>::Call<Stream *>(filename, handle, fileMethods);
 }
 
 void StreamHandler::Install()
@@ -2364,7 +2364,7 @@ void StreamHandler::Install()
     if (cfgUseModsFolder) {
         InstallCallback("Stream::Open", "Allows for files to be overridden using a mods folder.",
             &Open, {
-                cbHook<JMP>(0x4C99C0), // Stream::Open(const char *, bool)
+                cb::jmp(0x4C99C0), // Stream::Open(const char *, bool)
             }
         );
     }
@@ -2383,8 +2383,8 @@ bool desaturateDefaultTextures = false;
 static gfxImage * (*DefaultLoadImage)(const char *, bool);
 static gfxImage * (*DefaultPrepareImage)(gfxImage*, const char *, bool);
 
-ageHook::Type<bool> EnableTextureVariantHandler(0x6276EC);
-ageHook::Type<bool> AllowDesaturatedTextureVariants(0x6276ED);
+hook::Type<bool> EnableTextureVariantHandler(0x6276EC);
+hook::Type<bool> AllowDesaturatedTextureVariants(0x6276ED);
 
 
 std::vector<std::string> split(std::string str, std::string token) {
@@ -2476,13 +2476,13 @@ void TextureVariantHandler::InitVariantData() {
     }
 
     //call vehCarAudioContainer::InitStatics, which we hooked
-    ageHook::StaticThunk<0x4D0FF0>::Call<void>();
+    hook::StaticThunk<0x4D0FF0>::Call<void>();
 }
 
 static void Desaturate(gfxImage* result) {
     for (gfxImage *image = result; image != nullptr; image = image->Next) {
         // DesaturateTextureVariant
-        ageHook::StaticThunk<0x442FB0>::Call<void>(image);
+        hook::StaticThunk<0x442FB0>::Call<void>(image);
     }
 }
 
@@ -2565,12 +2565,12 @@ void TextureVariantHandler::InstallTextureVariantHandler()
 void TextureVariantHandler::Install()
 {
     InstallCallback(InitVariantData, {
-        cbHook<CALL>(0x412746),
+        cb::call(0x412746),
         }, "Installs the texture variant init function."
     );
 
     InstallCallback(InstallTextureVariantHandler, {
-            cbHook<CALL>(0x401599),
+            cb::call(0x401599),
         }, "Installs new texture variant handler."
     );
 
@@ -2678,10 +2678,10 @@ void PUMainHandler::Install() {
     if (cfgInstantReplay) {
         InstallCallback("PUMain::ctor", "Overrides button placement for the pause menu.",
             &PUMenuHook::AddPauseButton, {
-                cbHook<CALL>(0x50A6AE),
-                cbHook<CALL>(0x50A712),
-                cbHook<CALL>(0x50A776),
-                cbHook<CALL>(0x50A7D0),
+                cb::call(0x50A6AE),
+                cb::call(0x50A712),
+                cb::call(0x50A776),
+                cb::call(0x50A7D0),
             }
         );
     }
@@ -2711,7 +2711,7 @@ void mmPlayerHandler::Zoink() {
     //if we're in CNR, drop the gold!
     if (dgStatePack::Instance->GameMode == dgGameMode::CnR) {
         auto game = mmGameManager::Instance->getGame();
-        ageHook::Thunk<0x425460>::ThisCall<void>(game); // mmMultiCR::DropThruCityHandler
+        hook::Thunk<0x425460>::ThisCall<void>(game); // mmMultiCR::DropThruCityHandler
     }
 
     // if the aimap doesn't exist, reset back to spawn
@@ -2844,7 +2844,7 @@ void mmPlayerHandler::Update() {
     }
 
     //call original
-    ageHook::Thunk<0x405760>::Call<void>(this);
+    hook::Thunk<0x405760>::Call<void>(this);
 }
 
 void mmPlayerHandler::Reset() {
@@ -2868,7 +2868,7 @@ void mmPlayerHandler::Reset() {
     }
 
     // call original
-    ageHook::Thunk<0x404A60>::Call<void>(this);
+    hook::Thunk<0x404A60>::Call<void>(this);
 }
 
 void mmPlayerHandler::Install() {
@@ -2909,7 +2909,7 @@ void mmCityListHandler::Load(char* cinfoName) {
 void mmCityListHandler::Install() {
     InstallCallback("mmCityList::LoadAll", "Makes London the 2nd city in the list.",
         &mmCityListHandler::Load, {
-            cbHook<CALL>(0x5244FE),
+            cb::call(0x5244FE),
         }
     );
 }
@@ -2952,7 +2952,7 @@ void mmSingleRaceHandler::QueueCopVoice(float a1) {
 void mmSingleRaceHandler::Install() {
     InstallCallback("mmSingleRace::UpdateGame", "Plays damage out voices in checkpoint race.",
         &QueueCopVoice, {
-            cbHook<CALL>(0x41E9EF),
+            cb::call(0x41E9EF),
         }
     );
 
@@ -2964,7 +2964,7 @@ void mmSingleRaceHandler::Install() {
 /*
     dgBangerInstanceHandler
 */
-ageHook::Type<gfxTexture*> glowTexture = 0x62767C;
+hook::Type<gfxTexture*> glowTexture = 0x62767C;
 gfxTexture* redGlowTexture;
 bool glowLoaded = false;
 
@@ -2982,7 +2982,7 @@ void dgBangerInstanceHandler::DrawGlow()
     }
 
     //prepare glow texture
-    dgBangerData* data = ageHook::Thunk<0x441AB0>::Call<dgBangerData *>(this);
+    dgBangerData* data = hook::Thunk<0x441AB0>::Call<dgBangerData *>(this);
     gfxTexture* lastTexture = (gfxTexture*)glowTexture;
     bool swappedTexture = false;
 
@@ -2993,7 +2993,7 @@ void dgBangerInstanceHandler::DrawGlow()
 
     //draw glows
     ltLight::DrawGlowBegin();
-    ageHook::Thunk<0x441840>::Call<void>(this); // call original
+    hook::Thunk<0x441840>::Call<void>(this); // call original
     ltLight::DrawGlowEnd();
 
     //reset glow texture
@@ -3021,7 +3021,7 @@ void dgBangerInstanceHandler::Install()
 
     InstallCallback("aiTrafficLightInstance::DrawGlow", "Make traffic light banger lights double sided.",
         &DrawGlow, {
-            cbHook<CALL>(0x53CCFD),
+            cb::call(0x53CCFD),
         }
     );
 }
@@ -3038,7 +3038,7 @@ void vehCarHandler::InitCar(LPCSTR vehName, int a2, int a3, bool a4, bool a5) {
 }
 
 const phBound * vehCarHandler::GetModelBound(int a1) {
-    auto result = ageHook::Thunk<0x4648C0>::Call<const phBound *>(this, a1);
+    auto result = hook::Thunk<0x4648C0>::Call<const phBound *>(this, a1);
 
     if (result == NULL)
         Errorf(">>> COULD NOT RETRIEVE VEHICLE BOUND (%d) !!! <<<", a1);
@@ -3082,18 +3082,18 @@ void vehCarHandler::InitCarAudio(LPCSTR a1, BOOL a2) {
 void vehCarHandler::Install(void) {
     InstallCallback("vehCar::InitAudio", "Enables debugging for vehicle initialization, and automatic vehtypes handling.",
         &InitCarAudio, {
-            cbHook<CALL>(0x55943A), // aiVehiclePhysics::Init
-            cbHook<CALL>(0x404090), // mmPlayer::Init
-            cbHook<CALL>(0x43C540), // mmNetObject::Init
+            cb::call(0x55943A), // aiVehiclePhysics::Init
+            cb::call(0x404090), // mmPlayer::Init
+            cb::call(0x43C540), // mmNetObject::Init
         }
     );
 
     if (cfgVehicleDebug) {
         InstallCallback("vehCar::InitAudio", "Enables debugging for vehicle initialization.",
             &InitCarAudio, {
-                cbHook<CALL>(0x55943A), // aiVehiclePhysics::Init
-                cbHook<CALL>(0x404090), // mmPlayer::Init
-                cbHook<CALL>(0x43C540), // mmNetObject::Init
+                cb::call(0x55943A), // aiVehiclePhysics::Init
+                cb::call(0x404090), // mmPlayer::Init
+                cb::call(0x43C540), // mmNetObject::Init
             }
         );
 
@@ -3113,7 +3113,7 @@ static ConfigValue<bool> cfgBreakReflections("ReflectionsOnBreakables", true);
 
 void vehBreakableMgrHandler::ModStaticDraw(modShader* a1) {
     auto mod = reinterpret_cast<modStatic*>(this);
-    ageHook::Type<gfxTexture *> g_ReflectionMap = 0x628914;
+    hook::Type<gfxTexture *> g_ReflectionMap = 0x628914;
     bool isSoftware = *(bool*)0x6830D4;
 
     //convert world matrix for reflection drawing
@@ -3138,7 +3138,7 @@ void vehBreakableMgrHandler::Install() {
 
     InstallCallback("vehBreakableMgr::Draw", "Draws reflections on breakables.",
         &ModStaticDraw, {
-            cbHook<CALL>(0x4D886D), // vehBreakableMgr::Draw
+            cb::call(0x4D886D), // vehBreakableMgr::Draw
         }
     );
 }
@@ -3169,7 +3169,7 @@ void vehCarModelFeatureHandler::DrawWhl4(int a2, int a3, Matrix34* a4, int a5) {
     a4->m31 += offsetY;
     a4->m32 += offsetZ;
 
-    ageHook::Thunk<0x4CE840>::Call<void>(this, a2, a3, a4, a5);
+    hook::Thunk<0x4CE840>::Call<void>(this, a2, a3, a4, a5);
 }
 
 void vehCarModelFeatureHandler::DrawWhl5(int a2, int a3, Matrix34* a4, int a5) {
@@ -3186,12 +3186,12 @@ void vehCarModelFeatureHandler::DrawWhl5(int a2, int a3, Matrix34* a4, int a5) {
     a4->m31 += offsetY;
     a4->m32 += offsetZ;
 
-    ageHook::Thunk<0x4CE840>::Call<void>(this, a2, a3, a4, a5);
+    hook::Thunk<0x4CE840>::Call<void>(this, a2, a3, a4, a5);
 }
 
 void vehCarModelFeatureHandler::ModStaticDraw(modShader* a1) {
     auto mod = reinterpret_cast<modStatic*>(this);
-    ageHook::Type<gfxTexture *> g_ReflectionMap = 0x628914;
+    hook::Type<gfxTexture *> g_ReflectionMap = 0x628914;
     bool isSoftware = *(bool*)0x6830D4;
 
     //convert world matrix for reflection drawing
@@ -3358,13 +3358,13 @@ void vehCarModelFeatureHandler::DrawGlow() {
 void vehCarModelFeatureHandler::Install() {
     InstallCallback("vehCarModel::DrawPart", "Use extra wheel matrices.",
         &DrawWhl4, {
-            cbHook<CALL>(0x4CE631), // vehCarModel::Draw
+            cb::call(0x4CE631), // vehCarModel::Draw
         }
     );
 
     InstallCallback("vehCarModel::DrawPart", "Use extra wheel matrices.",
         &DrawWhl5, {
-            cbHook<CALL>(0x4CE6CF), // vehCarModel::Draw
+            cb::call(0x4CE6CF), // vehCarModel::Draw
         }
     );
 
@@ -3373,7 +3373,7 @@ void vehCarModelFeatureHandler::Install() {
     {
         InstallCallback("vehCarModel::DrawPart", "Draws reflections on car parts.",
             &ModStaticDraw, {
-                cbHook<CALL>(0x4CE92F), // vehCarModel::DrawPart
+                cb::call(0x4CE92F), // vehCarModel::DrawPart
             }
         );
     }
@@ -3399,7 +3399,7 @@ static ConfigValue<bool> cfgWheelWobble("PhysicalWheelWobble", false);
 float vehWheelHandler::GetBumpDisplacement(float a1)
 {
     //call original
-    float displacement = ageHook::Thunk<0x4D3440>::Call<float>(this, a1);
+    float displacement = hook::Thunk<0x4D3440>::Call<float>(this, a1);
 
     //get vars
     float wheelWobble = *getPtr<float>(this, 0x218);
@@ -3431,7 +3431,7 @@ void vehWheelHandler::Install()
 
     InstallCallback("vehWheel::ComputeDwtdw", "Implementation of physical wheel wobbling.",
         &GetBumpDisplacement, {
-            cbHook<CALL>(0x4D2EDA), // vehWheel::ComputeDwtdw
+            cb::call(0x4D2EDA), // vehWheel::ComputeDwtdw
         }
     );
 }
@@ -3444,25 +3444,25 @@ void fxTexelDamageHandler::Install()
 {
     InstallCallback("fxTexelDamage::ApplyDamage", "",
         &fxTexelDamage::ApplyDamage, {
-            cbHook<CALL>(0x4CAE46),
+            cb::call(0x4CAE46),
         }
     );
 
     InstallCallback("fxTexelDamage::Init", "",
         &fxTexelDamage::Init, {
-            cbHook<CALL>(0x4CD492)
+            cb::call(0x4CD492)
         }
     );
 
     InstallCallback("fxTexelDamage::Reset", "",
         &fxTexelDamage::Reset, {
-            cbHook<CALL>(0x4CE018)
+            cb::call(0x4CE018)
         }
     );
 
     InstallCallback("fxTexelDamage::Kill", "",
         &fxTexelDamage::Kill, {
-            cbHook<JMP>(0x591CC0)
+            cb::jmp(0x591CC0)
         }
     );
 }
@@ -3476,7 +3476,7 @@ static ConfigValue<bool> cfgRagdolls("Ragdolls", true);
 void pedestrianInstanceHandler::aiMapClean()
 {
     //clean aimap
-    ageHook::Thunk<0x534C10>::Call<void>(this);
+    hook::Thunk<0x534C10>::Call<void>(this);
 
     //destroy pedRagdollMgr
     delete pedRagdollMgr::Instance;
@@ -3485,7 +3485,7 @@ void pedestrianInstanceHandler::aiMapClean()
 void pedestrianInstanceHandler::aiMapInit(char * a1, char * a2, char * a3, const dgStatePack * a4, int a5, vehCar * a6, bool a7)
 {
     //init aimap
-    ageHook::Thunk<0x534FC0>::Call<void>(this, a1, a2, a3, a4, a5, a6, a7);
+    hook::Thunk<0x534FC0>::Call<void>(this, a1, a2, a3, a4, a5, a6, a7);
     
     //init pedRagdollMgr
     pedRagdollMgr::Instance = new pedRagdollMgr();
@@ -3533,7 +3533,7 @@ void pedestrianInstanceHandler::Draw(int a1) {
 
     //if we have no ragdoll, call the original function
     if (inst->GetEntity() == nullptr) {
-        ageHook::Thunk<0x57B5F0>::Call<void>(this, a1);
+        hook::Thunk<0x57B5F0>::Call<void>(this, a1);
         return;
     }else{
         this->DrawRagdoll();
@@ -3548,13 +3548,13 @@ void pedestrianInstanceHandler::Install()
 
     InstallCallback("aiMap::Init", "aiMap initialization hook for ragdoll manager",
         &aiMapInit, {
-            cbHook<CALL>(0x412B98), // mmGame::Init
+            cb::call(0x412B98), // mmGame::Init
         }
     );
 
     InstallCallback("aiMap::Clean", "aiMap clean hook for ragdoll manager",
         &aiMapClean, {
-            cbHook<CALL>(0x413A44), // mmGame::Init
+            cb::call(0x413A44), // mmGame::Init
         }
     );
 
@@ -3640,7 +3640,7 @@ void aiVehicleInstanceFeatureHandler::DrawGlow() {
             //MM2 headlights
             if (AIMAP->drawHeadlights) {
                 //call original
-                ageHook::Thunk<0x552930>::Call<void>(this);
+                hook::Thunk<0x552930>::Call<void>(this);
             }
         }
         if (ambientHeadlightStyle == 1 || ambientHeadlightStyle == 2) {
@@ -3780,20 +3780,20 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
 }
 
 void vehTrailerInstanceFeatureHandler::AddGeomHook(const char* pkgName, const char* name, int flags) {
-    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, name, flags);
-    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, "rlight", flags);
-    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, "blight", flags);
-    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, "hlight", flags);
-    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, "slight0", flags);
-    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, "slight1", flags);
-    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, "siren0", flags);
-    ageHook::Thunk<0x463BA0>::Call<int>(this, pkgName, "siren1", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, name, flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "rlight", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "blight", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "hlight", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "slight0", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "slight1", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "siren0", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "siren1", flags);
 }
 
 void vehTrailerInstanceFeatureHandler::Install() {
     InstallCallback("vehTrailerInstance::Init", "Adds more lights geometries.",
         &AddGeomHook, {
-            cbHook<CALL>(0x4D7E79),
+            cb::call(0x4D7E79),
         }
     );
 
@@ -3817,10 +3817,10 @@ void vehCarSimHandler::Install()
 
     InstallCallback("vehCarSim::Init", "Use our own init function.",
         &vehCarSim::Init, {
-            cbHook<CALL>(0x403C21),
-            cbHook<CALL>(0x42BE75),
-            cbHook<CALL>(0x43C573),
-            cbHook<CALL>(0x43C6DF),
+            cb::call(0x403C21),
+            cb::call(0x42BE75),
+            cb::call(0x43C573),
+            cb::call(0x43C6DF),
         }
     );
 }

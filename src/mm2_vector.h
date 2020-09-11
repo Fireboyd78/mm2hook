@@ -102,7 +102,7 @@ namespace MM2
         float m32;
 
         void Set(Matrix34* values) {
-            ageHook::Thunk<0x4BBFB0>::Call<void>(this, values);
+            hook::Thunk<0x4BBFB0>::Call<void>(this, values);
         }
 
         void MakeScale(float xScale, float yScale, float zScale) {
@@ -350,7 +350,7 @@ namespace MM2
             this->m22 = 1.0;
         }
 
-        AGE_API void Set(const Matrix34* a1)                { ageHook::Thunk<0x4BBFB0>::Call<void>(this, a1); }
+        AGE_API void Set(const Matrix34* a1)                { hook::Thunk<0x4BBFB0>::Call<void>(this, a1); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<Matrix34>("Matrix34")
@@ -432,29 +432,29 @@ namespace MM2
         float m44;
 
         AGE_API static void Convert(Matrix44* output, const Matrix34* input)
-                                                            { ageHook::StaticThunk<0x42FCF0>::Call<void>(output, input); }
-        AGE_API void Identity(void)                         { ageHook::Thunk<0x4C0730>::Call<void>(this); }
-        AGE_API void Transpose(void)                        { ageHook::Thunk<0x4C0929>::Call<void>(this); }
-        AGE_API void Zero(void)                             { ageHook::Thunk<0x4C0770>::Call<void>(this); }
-        AGE_API void Hermite(void)                          { ageHook::Thunk<0x4C0870>::Call<void>(this); }
-        AGE_API void Bezier(void)                           { ageHook::Thunk<0x4C0820>::Call<void>(this); }
-        AGE_API void CatmullRom(void)                       { ageHook::Thunk<0x4C08C0>::Call<void>(this); }
-        AGE_API float Determinant(void)                     { return ageHook::Thunk<0x4C134A>::Call<float>(this); }
-        AGE_API void Add(const Matrix44* a1)                { ageHook::Thunk<0x4C0A30>::Call<void>(this, a1); }
-        AGE_API void AddScaled(const Matrix44* a1, float a2){ ageHook::Thunk<0x4C0CB0>::Call<void>(this, a1, a2); }
-        AGE_API void Dot(const Matrix44* a1)                { ageHook::Thunk<0x4C0D50>::Call<void>(this, a1); }
-        AGE_API void FastInverse(const Matrix44* a1)        { ageHook::Thunk<0x4C1260>::Call<void>(this, a1); }
-        AGE_API void FromMatrix34(const Matrix34* a1)       { ageHook::Thunk<0x4C0970>::Call<void>(this, a1); }
-        AGE_API void InvertTo(const Matrix44* a1)           { ageHook::Thunk<0x4C1510>::Call<void>(this, a1); }
-        AGE_API void MakeRotX(float a1)                     { ageHook::Thunk<0x4C1C00>::Call<void>(this, a1); }
-        AGE_API void MakeRotY(float a1)                     { ageHook::Thunk<0x4C1C50>::Call<void>(this, a1); }
-        AGE_API void MakeRotZ(float a1)                     { ageHook::Thunk<0x4C1CA0>::Call<void>(this, a1); }
-        AGE_API void Print(LPCSTR name)                     { ageHook::Thunk<0x4C1CF0>::Call<void>(this, name); }
-        AGE_API void Set(const Matrix44* a1)                { ageHook::Thunk<0x4C07B0>::Call<void>(this, a1); }
-        AGE_API void Subtract(const Matrix44* a1)           { ageHook::Thunk<0x4C0B70>::Call<void>(this, a1); }
-        AGE_API void ToMatrix34(const Matrix34* a1)         { ageHook::Thunk<0x4C09E0>::Call<void>(this, a1); }
+                                                            { hook::StaticThunk<0x42FCF0>::Call<void>(output, input); }
+        AGE_API void Identity(void)                         { hook::Thunk<0x4C0730>::Call<void>(this); }
+        AGE_API void Transpose(void)                        { hook::Thunk<0x4C0929>::Call<void>(this); }
+        AGE_API void Zero(void)                             { hook::Thunk<0x4C0770>::Call<void>(this); }
+        AGE_API void Hermite(void)                          { hook::Thunk<0x4C0870>::Call<void>(this); }
+        AGE_API void Bezier(void)                           { hook::Thunk<0x4C0820>::Call<void>(this); }
+        AGE_API void CatmullRom(void)                       { hook::Thunk<0x4C08C0>::Call<void>(this); }
+        AGE_API float Determinant(void)                     { return hook::Thunk<0x4C134A>::Call<float>(this); }
+        AGE_API void Add(const Matrix44* a1)                { hook::Thunk<0x4C0A30>::Call<void>(this, a1); }
+        AGE_API void AddScaled(const Matrix44* a1, float a2){ hook::Thunk<0x4C0CB0>::Call<void>(this, a1, a2); }
+        AGE_API void Dot(const Matrix44* a1)                { hook::Thunk<0x4C0D50>::Call<void>(this, a1); }
+        AGE_API void FastInverse(const Matrix44* a1)        { hook::Thunk<0x4C1260>::Call<void>(this, a1); }
+        AGE_API void FromMatrix34(const Matrix34* a1)       { hook::Thunk<0x4C0970>::Call<void>(this, a1); }
+        AGE_API void InvertTo(const Matrix44* a1)           { hook::Thunk<0x4C1510>::Call<void>(this, a1); }
+        AGE_API void MakeRotX(float a1)                     { hook::Thunk<0x4C1C00>::Call<void>(this, a1); }
+        AGE_API void MakeRotY(float a1)                     { hook::Thunk<0x4C1C50>::Call<void>(this, a1); }
+        AGE_API void MakeRotZ(float a1)                     { hook::Thunk<0x4C1CA0>::Call<void>(this, a1); }
+        AGE_API void Print(LPCSTR name)                     { hook::Thunk<0x4C1CF0>::Call<void>(this, name); }
+        AGE_API void Set(const Matrix44* a1)                { hook::Thunk<0x4C07B0>::Call<void>(this, a1); }
+        AGE_API void Subtract(const Matrix44* a1)           { hook::Thunk<0x4C0B70>::Call<void>(this, a1); }
+        AGE_API void ToMatrix34(const Matrix34* a1)         { hook::Thunk<0x4C09E0>::Call<void>(this, a1); }
         AGE_API void Transform4(const Vector3* a1, const Vector4* a2, int a3)        
-                                                            { ageHook::Thunk<0x4C1D60>::Call<void>(this, a1, a2, a3); }
+                                                            { hook::Thunk<0x4C1D60>::Call<void>(this, a1, a2, a3); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<Matrix44>("Matrix44")

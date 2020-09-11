@@ -97,7 +97,7 @@ void vehWheelDebugHandler::Cull()
 
 void vehWheelDebugHandler::Update()
 {
-	ageHook::Thunk<0x4D34E0>::Call<void>(this); //call original
+	hook::Thunk<0x4D34E0>::Call<void>(this); //call original
     asCullManager::Instance->DeclareCullable(reinterpret_cast<asCullable *>(this));
 }
 
@@ -173,14 +173,14 @@ void aiMapDebugHandler::Cull()
 void aiMapDebugHandler::Update()
 {
     test = 1;
-    ageHook::Thunk<0x536E50>::Call<void>(this); //call original
+    hook::Thunk<0x536E50>::Call<void>(this); //call original
     asCullManager::Instance->DeclareCullable(reinterpret_cast<asCullable *>(this));
 }
 
 void aiMapDebugHandler::UpdatePaused()
 {
     test = 2;
-    ageHook::Thunk<0x5374E0>::Call<void>(this); //call original
+    hook::Thunk<0x5374E0>::Call<void>(this); //call original
     asCullManager::Instance->DeclareCullable(reinterpret_cast<asCullable *>(this));
 }
 
@@ -190,7 +190,7 @@ void aiMapDebugHandler::Install()
     if (cfgAiDebug.Get()) {
         InstallCallback("aiMap::Update (Debug Hook)", "Call from mmGame",
             &Update, {
-                cbHook<CALL>(0x4141CF),
+                cb::call(0x4141CF),
             }
         );
 

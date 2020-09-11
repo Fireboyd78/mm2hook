@@ -70,7 +70,7 @@ void aiPathHandler::UpdatePedestrians(void) {
 void aiPathHandler::Install() {
     InstallCallback("aiPath::UpdatePedestrians", "Limits the number of update attempts for pedestrians.",
         &UpdatePedestrians, {
-            cbHook<CALL>(0x536FE0), // aiMap::Update
+            cb::call(0x536FE0), // aiMap::Update
         }
     );
 }
@@ -91,7 +91,7 @@ void aiPedestrianHandler::Update(void) {
 void aiPedestrianHandler::Install() {
     InstallCallback("aiPedestrian::Update", "Limits the number of update attempts for a pedestrian.",
         &Update, {
-            cbHook<CALL>(0x544191), // aiPath::UpdatePedestrians
+            cb::call(0x544191), // aiPath::UpdatePedestrians
         }
     );
 }
@@ -153,8 +153,8 @@ BOOL aiPoliceForceHandler::IsPerpDrivingMadly(vehCar *perpCar) {
     char *vehName = perpCar->getCarDamage()->GetName(); // we can't use vehCarSim because the game forces vpcop to vpmustang99...
 
     // ignore perp if they're a cop
-    if (!ageHook::StaticThunk<0x4D1A70>::Call<bool>(vehName)) {
-        if (ageHook::Thunk<0x53E2A0>::Call<BOOL>(this, perpCar))
+    if (!hook::StaticThunk<0x4D1A70>::Call<bool>(vehName)) {
+        if (hook::Thunk<0x53E2A0>::Call<BOOL>(this, perpCar))
         {
             float speed = perpCar->getCarSim()->getSpeedMPH();
             float speedLimit = getSpeedLimit(perpCar) * 2.857142857142857f;
@@ -163,12 +163,12 @@ BOOL aiPoliceForceHandler::IsPerpDrivingMadly(vehCar *perpCar) {
                 LogFile::Printf(1, "PERP DETECTED!!! He's doing %.4f over the speed limit (~%.4fmph)!\n", (speed - speedLimit), speedLimit);
                 return TRUE;
             }
-            if (ageHook::Thunk<0x53E370>::Call<BOOL>(this, perpCar)) {
+            if (hook::Thunk<0x53E370>::Call<BOOL>(this, perpCar)) {
                 LogFile::Printf(1, "PERP IS DOING DAMAGE TO PROPERTY!");
                 return TRUE;
             }
         }
-        if (ageHook::Thunk<0x53E390>::Call<BOOL>(this, perpCar)) {
+        if (hook::Thunk<0x53E390>::Call<BOOL>(this, perpCar)) {
             LogFile::Printf(1, "OFFICER INVOLVED COLLISION WITH PERP!");
             return TRUE;
         }
@@ -180,8 +180,8 @@ BOOL aiPoliceForceHandler::IsPerpDrivingMadly(vehCar *perpCar) {
 void aiPoliceForceHandler::Install() {
     InstallCallback("aiPoliceForce::Reset", "Resets the number of cops pursuing the player upon reset.",
         &Reset, {
-            cbHook<CALL>(0x536AAE),
-            cbHook<CALL>(0x550ECA),
+            cb::call(0x536AAE),
+            cb::call(0x550ECA),
         }
     );
 
@@ -189,7 +189,7 @@ void aiPoliceForceHandler::Install() {
         // obviously doesn't belong in aiPoliceForceHandler, should either move it or make this a generic "PoliceHandler"
         InstallCallback("aiPoliceOfficer::DetectPerpetrator", "Experimenting with making cops a little smarter about chasing people.",
             &IsPerpDrivingMadly, {
-                cbHook<CALL>(0x53E057), // aiPoliceOfficer::Fov
+                cb::call(0x53E057), // aiPoliceOfficer::Fov
             }
         );
     }
@@ -214,10 +214,10 @@ void aiPoliceOfficerHandler::PerpEscapes(bool a1) {
 void aiPoliceOfficerHandler::Install() {
     InstallCallback("aiPoliceOfficer::PerpEscapes", "Fixes ai police siren lights being active if perp escaped.",
         &PerpEscapes, {
-            cbHook<CALL>(0x53DD1F),
-            cbHook<CALL>(0x53DE83),
-            cbHook<CALL>(0x53DE9F),
-            cbHook<CALL>(0x53DEC1),
+            cb::call(0x53DD1F),
+            cb::call(0x53DE83),
+            cb::call(0x53DE9F),
+            cb::call(0x53DEC1),
         }
     );
 }
@@ -236,7 +236,7 @@ void gfxImageHandler::Scale(int width, int height) {
 void gfxImageHandler::Install() {
     InstallCallback("gfxImage::Scale", "Fixes loading screen image scaling",
         &Scale, {
-            cbHook<CALL>(0x401C75),
+            cb::call(0x401C75),
         }
     );
 }
@@ -286,7 +286,7 @@ void vehCarBugfixHandler::Update() {
     }
 
     // call original
-    ageHook::Thunk<0x42C690>::Call<void>(this);
+    hook::Thunk<0x42C690>::Call<void>(this);
 }
 
 void vehCarBugfixHandler::Install() {
@@ -338,14 +338,14 @@ void vehCarAudioHandler::Update() {
     }
 
     // call original
-    ageHook::Thunk<0x4DC320>::Call<void>(this);
+    hook::Thunk<0x4DC320>::Call<void>(this);
 }
 
 void vehCarAudioHandler::Reset() {
     carAirborneTimer = 0.0f;
 
     // call original
-    ageHook::Thunk<0x4DBE30>::Call<void>(this);
+    hook::Thunk<0x4DBE30>::Call<void>(this);
 }
 
 void vehCarAudioHandler::Install() {
@@ -357,16 +357,16 @@ void vehCarAudioHandler::Install() {
 
     InstallCallback("vehCarAudio::IsAirBorne", "Better method of vehicle airborne checking.",
         &IsAirBorne, {
-            cbHook<JMP>(0x4D16F9),
-            cbHook<JMP>(0x4D1705),
-            cbHook<JMP>(0x4D1711),
-            cbHook<JMP>(0x4D171F),
+            cb::jmp(0x4D16F9),
+            cb::jmp(0x4D1705),
+            cb::jmp(0x4D1711),
+            cb::jmp(0x4D171F),
         }
     );
 
     InstallCallback("vehCarAudio::Reset", "Better method of vehicle airborne checking.",
         &Reset, {
-            cbHook<CALL>(0x4D19CA),
+            cb::call(0x4D19CA),
         }
     );
 
@@ -386,7 +386,7 @@ void vehCarAudioContainerBugfixHandler::StartSiren() {
 
     if (policeAudio != nullptr) {
         // vehPoliceCarAudio::StartSiren
-        ageHook::Thunk<0x4D4B20>::ThisCall<void>(policeAudio, 0);
+        hook::Thunk<0x4D4B20>::ThisCall<void>(policeAudio, 0);
     }
 }
 
@@ -395,22 +395,22 @@ void vehCarAudioContainerBugfixHandler::StopSiren() {
 
     if (policeAudio != nullptr) {
         // vehPoliceCarAudio::StopSiren
-        ageHook::Thunk<0x4D4C20>::ThisCall<void>(policeAudio);
+        hook::Thunk<0x4D4C20>::ThisCall<void>(policeAudio);
     }
 }
 
 void vehCarAudioContainerBugfixHandler::Install() {
     InstallCallback("vehCarAudioContainer::StartSiren", "Fixes a crash caused by activating sirens on a vehicle with missing audio." ,
         &StartSiren, {
-            cbHook<CALL>(0x4145FB), // mmGame::UpdateHorn
-            cbHook<CALL>(0x43D533), // mmNetObject::PositionUpdate
+            cb::call(0x4145FB), // mmGame::UpdateHorn
+            cb::call(0x43D533), // mmNetObject::PositionUpdate
         }
     );
 
     InstallCallback("vehCarAudioContainer::StopSiren", "Fixes a crash caused by deactivating sirens on a vehicle with missing audio." ,
         &StopSiren, {
-            cbHook<CALL>(0x41460C), // mmGame::UpdateHorn
-            cbHook<CALL>(0x43D562), // mmNetObject::PositionUpdate
+            cb::call(0x41460C), // mmGame::UpdateHorn
+            cb::call(0x43D562), // mmNetObject::PositionUpdate
         }
     );
 }
@@ -434,13 +434,13 @@ void vehCarModelHandler::Install() {
 */
 
 void mmBillInstanceHandler::Scale(float x, float y, float z) {
-    ageHook::Thunk<0x4BE560>::Call<void>(this, x, y, -z);
+    hook::Thunk<0x4BE560>::Call<void>(this, x, y, -z);
 }
 
 void mmBillInstanceHandler::Install() {
     InstallCallback("mmBillInstance::Draw", "Fix inverted checkpoints",
         &Scale, {
-            cbHook<CALL>(0x43F952), // mmBillInstance::Draw
+            cb::call(0x43F952), // mmBillInstance::Draw
         }
     );
 
@@ -508,7 +508,7 @@ void mmGearIndicatorHandler::Install() {
     if (cfgMm1StyleTransmission.Get()) {
         InstallCallback("mmGearIndicatorHandler::Draw", "Adds the unused P gear indicator to the HUD.",
             &Draw, {
-                cbHook<CALL>(0x431B26),
+                cb::call(0x431B26),
             }
         );
     }
@@ -553,7 +553,7 @@ void mmSpeedIndicatorHandler::Install() {
     {
         InstallCallback("mmSpeedIndicator::Draw", "Fixes graphical UI errors that occur when a vehicle travels too fast.",
             &Float2Long, {
-                cbHook<CALL>(0x43F345),
+                cb::call(0x43F345),
             }
         );
 
@@ -569,13 +569,13 @@ void mmSpeedIndicatorHandler::Install() {
     cityLevelBugfixHandler
 */
 
-ageHook::Type<asParticles*> sm_RainParticles(0x62770C);
-ageHook::Type<bool> sm_EnablePVS(0x62B070);
+hook::Type<asParticles*> sm_RainParticles(0x62770C);
+hook::Type<bool> sm_EnablePVS(0x62B070);
 bool cityLevelBugfixHandler::IsMirrorDrawing = false;
 
 Stream* cityLevelBugfixHandler::OpenPvsStream(const char * folder, const char * file, const char * extension, bool a4, bool a5) {
     //open stream
-    auto stream = ageHook::StaticThunk<0x4C58C0>::Call<Stream*>(folder, file, extension, a4, a5);
+    auto stream = hook::StaticThunk<0x4C58C0>::Call<Stream*>(folder, file, extension, a4, a5);
     
     //stream will be NULL if the PVS doesn't exist
     if (!stream) {
@@ -608,13 +608,13 @@ void cityLevelBugfixHandler::UpdateRainParticles() {
 void cityLevelBugfixHandler::Install() {
     InstallCallback("cityLevel::Load", "Disables PVS when it doesn't exist.",
         &OpenPvsStream, {
-            cbHook<CALL>(0x4440E8), // cityLevel::Load
+            cb::call(0x4440E8), // cityLevel::Load
         }
     );
 
     InstallCallback("lvlLevel::Draw", "Allows for control over when to update rain particle position.",
         &UpdateRainParticles, {
-            cbHook<CALL>(0x4462B7),
+            cb::call(0x4462B7),
         }
     );
     mem::nop(0x4462BA + 0x02, 76); // nop out the rest of the rain update, since we're replacing it
@@ -626,7 +626,7 @@ void cityLevelBugfixHandler::Install() {
 
 void mmMirrorHandler::Cull() {
     cityLevelBugfixHandler::IsMirrorDrawing = true;
-    ageHook::Thunk<0x42B8C0>::Call<void>(this); // call original
+    hook::Thunk<0x42B8C0>::Call<void>(this); // call original
     cityLevelBugfixHandler::IsMirrorDrawing = false;
 }
 
@@ -642,11 +642,11 @@ void mmMirrorHandler::Install() {
     mmInterfaceHandler
 */
 
-ageHook::Type<char[80]> currentPlayerVehicle (0x6B1B28);
+hook::Type<char[80]> currentPlayerVehicle (0x6B1B28);
 
 void mmInterfaceHandler::PlayerResolveCars() {
     //call original
-    ageHook::Thunk<0x40FE20>::Call<void>(this);
+    hook::Thunk<0x40FE20>::Call<void>(this);
 
     //null out currentPlayerVehicle if this vehicle is missing
     //the code after PlayerResolveCars in PlayerSetState will then reset to vpbug
@@ -658,7 +658,7 @@ void mmInterfaceHandler::PlayerResolveCars() {
 void mmInterfaceHandler::Install() {
     InstallCallback("mmInterface::PlayerSetState", "Fixes game crashes in the vehicle select menu when the selected vehicle is missing.",
         &PlayerResolveCars, {
-            cbHook<CALL>(0x040E256),
+            cb::call(0x040E256),
         }
     );
 }
@@ -681,7 +681,7 @@ void lvlSkyHandler::Install() {
 
     InstallCallback("mmGame::Reset", "Fixes sky rotation on city reset.",
         &ResetRot, {
-            cbHook<JMP>(0x413DE3),
+            cb::jmp(0x413DE3),
         }
     );
 }
@@ -728,7 +728,7 @@ void mmHudMapHandler::Activate() {
         return;
 
     //forward to mmHudMap::Activate
-    ageHook::Thunk<0x42EEE0>::Call<void>(this);
+    hook::Thunk<0x42EEE0>::Call<void>(this);
 }
 
 void mmHudMapHandler::SetMapMode(int mode) {
@@ -736,19 +736,19 @@ void mmHudMapHandler::SetMapMode(int mode) {
         return;
 
     //forward to mmHudMap::SetMapMode
-    ageHook::Thunk<0x42EF30>::Call<void>(this, mode);
+    hook::Thunk<0x42EF30>::Call<void>(this, mode);
 }
 
 void mmHudMapHandler::Install() {
     InstallCallback("mmHudMap::Activate", "Fixes crashes when attempting to activate a nonexistant hudmap.",
         &Activate, {
-            cbHook<CALL>(0x42A306), // mmPopup::DisablePU
+            cb::call(0x42A306), // mmPopup::DisablePU
         }
     );
     InstallCallback("mmHudMap::SetMapMode", "Fixes crashes when attempting to activate a nonexistant hudmap.",
         &SetMapMode, {
-            cbHook<CALL>(0x42EE98), // mmHudMap::Reset
-            cbHook<CALL>(0x43204E), // mmViewMgr::SetViewSetting
+            cb::call(0x42EE98), // mmHudMap::Reset
+            cb::call(0x43204E), // mmViewMgr::SetViewSetting
         }
     );
 }
@@ -770,7 +770,7 @@ void mmPopupHandler::HudEnable() {
     if(wasCdPlayerEnabled && !cdPlayer->isActive())
       cdPlayer->Toggle();
 
-    ageHook::Thunk<0x42D910>::Call<void>(this); // mmHUD::Enable
+    hook::Thunk<0x42D910>::Call<void>(this); // mmHUD::Enable
 }
 
 void mmPopupHandler::HudDisable(int a1) {
@@ -781,7 +781,7 @@ void mmPopupHandler::HudDisable(int a1) {
     if (wasCdPlayerEnabled)
         cdPlayer->Toggle();
 
-    ageHook::Thunk<0x42D970>::Call<void>(this, a1); // mmHUD::Disable
+    hook::Thunk<0x42D970>::Call<void>(this, a1); // mmHUD::Disable
 }
 
 void mmPopupHandler::Install() {
@@ -796,16 +796,16 @@ void mmPopupHandler::Install() {
     // CD player fixes
     InstallCallback("mmPopup::DisablePU", "Shows the CD player on popup disable",
         &HudEnable, {
-            cbHook<CALL>(0x42A2F5),
+            cb::call(0x42A2F5),
         }
     );
 
     InstallCallback("mmPopup::ShowResults", "Hides the CD player when popups are showing",
         &HudDisable, {
-            cbHook<CALL>(0x42A65F),
-            cbHook<CALL>(0x42A722),
-            cbHook<CALL>(0x42A7EB),
-            cbHook<CALL>(0x42A3BF),
+            cb::call(0x42A65F),
+            cb::call(0x42A722),
+            cb::call(0x42A7EB),
+            cb::call(0x42A3BF),
         }
     );
 }
@@ -815,13 +815,13 @@ void mmPopupHandler::Install() {
 */
 
 bool mmMultiCRHandler::LoadMusic(char* a1, char* a2) {
-    return ageHook::Thunk<0x433F40>::Call<bool>(this, "singlerace", a2);
+    return hook::Thunk<0x433F40>::Call<bool>(this, "singlerace", a2);
 }
 
 void mmMultiCRHandler::Install() {
     InstallCallback("mmMultiCR::Init", "Fixes results screen crash due to incorrect music.",
         &LoadMusic, {
-            cbHook<CALL>(0x4239CB),
+            cb::call(0x4239CB),
         }
     );
 
@@ -878,7 +878,7 @@ public:
     }
 
     ULONG Init(void) {
-        return ageHook::Thunk<0x51C1F0>::Call<ulong>(this);
+        return hook::Thunk<0x51C1F0>::Call<ulong>(this);
     }
 
     virtual ~MixerCTL() FORWARD_THUNK;
@@ -913,7 +913,7 @@ void audManagerHandler::Init(int maxSounds, int a2, int a3, char *a4, short a5, 
     }
 #endif
 
-    ageHook::Thunk<0x519350>::Call<void>(this, maxSounds, a2, a3, a4, a5, a6);
+    hook::Thunk<0x519350>::Call<void>(this, maxSounds, a2, a3, a4, a5, a6);
 }
 
 void audManagerHandler::AssignCDVolume(float value) {
@@ -925,7 +925,7 @@ void audManagerHandler::AssignCDVolume(float value) {
     SetMixerWaveVolume(MMSTATE->SoundFXVolume);
     
     // AudManager::AssignCDVolume
-    ageHook::Thunk<0x519A30>::Call<void>(this, value);
+    hook::Thunk<0x519A30>::Call<void>(this, value);
 }
 
 void audManagerHandler::SetupCDAudio(float balance) {
@@ -933,7 +933,7 @@ void audManagerHandler::SetupCDAudio(float balance) {
     SetMixerWaveVolume(MMSTATE->SoundFXVolume);
 
     // AudManager::AssignCDBalance
-    ageHook::Thunk<0x519880>::Call<void>(this, balance);
+    hook::Thunk<0x519880>::Call<void>(this, balance);
 }
 
 void audManagerHandler::SetMixerCDVolume(float value) {
@@ -943,7 +943,7 @@ void audManagerHandler::SetMixerCDVolume(float value) {
         LogFile::Printf(1, "[audManagerHandler::SetMixerVolume]: Setting mixer CD volume to %.2f", value);
 
         // MixerCTL::AssignCDVolume
-        ageHook::Thunk<0x51C330>::Call<void>((MixerCTL *)mixer, value);
+        hook::Thunk<0x51C330>::Call<void>((MixerCTL *)mixer, value);
     }
 }
 
@@ -954,7 +954,7 @@ void audManagerHandler::SetMixerWaveVolume(float value) {
         LogFile::Printf(1, "[audManagerHandler::SetMixerVolume]: Setting mixer sound volume to %.2f", value);
 
         // MixerCTL::AssignWaveVolume
-        ageHook::Thunk<0x51C310>::Call<void>((MixerCTL *)mixer, value);
+        hook::Thunk<0x51C310>::Call<void>((MixerCTL *)mixer, value);
     }
 }
 
@@ -971,34 +971,34 @@ void audManagerHandler::Install() {
 
     InstallCallback("AudManager::Init", "Allows the mixer control to be initialized along with the audio manager.",
         &Init, {
-            cbHook<CALL>(0x401F1B),
+            cb::call(0x401F1B),
         }
     );
 
 #ifdef USE_MIXER_STUFF
     InstallCallback("AudManager::AssignCDVolume", "Properly sets mixer volume when changing CD volume.",
         &AssignCDVolume, {
-            cbHook<CALL>(0x401F81), // InitAudioManager
-            cbHook<CALL>(0x50C932), // PUAudioOptions::SetCDVolume
+            cb::call(0x401F81), // InitAudioManager
+            cb::call(0x50C932), // PUAudioOptions::SetCDVolume
         }
     );
 
     InstallCallback("AudManager::AssignWaveVolume", "Properly sets mixer volume when changing sound volume.",
         &AssignCDVolume, {
-            cbHook<CALL>(0x401F71), // InitAudioManager
-            cbHook<CALL>(0x50C8FC), // PUAudioOptions::SetWaveVolume
+            cb::call(0x401F71), // InitAudioManager
+            cb::call(0x50C8FC), // PUAudioOptions::SetWaveVolume
         }
     );
 
     InstallCallback(&SetupCDAudio, "Allows the mixer volume to be updated when loading player config.", {
-            cbHook<CALL>(0x525DC6), // mmPlayerConfig::SetAudio
+            cb::call(0x525DC6), // mmPlayerConfig::SetAudio
         }
     );
 #endif
 
     InstallCallback("mmRaceSpeech::LoadCityInfo", "Non registry dependent minimum install check.",
         &MinInstall, {
-            cbHook<CALL>(0x51AA2C),
+            cb::call(0x51AA2C),
         }
     );
 }
@@ -1007,8 +1007,8 @@ void audManagerHandler::Install() {
     pedAnimationInstanceHandler
 */
 
-ageHook::Type<float> FrameFraction      = 0x6B4724;
-ageHook::Type<int> FrameDelta           = 0x6B4720;
+hook::Type<float> FrameFraction      = 0x6B4724;
+hook::Type<int> FrameDelta           = 0x6B4720;
 
 static float pedAnimFrameRate   = 30.0f;
 static float pedAnimFPS         = (1000.0f / pedAnimFrameRate);
@@ -1025,7 +1025,7 @@ void pedAnimationInstanceHandler::PreUpdate(float seconds) {
 void pedAnimationInstanceHandler::Install() {
     InstallCallback("pedAnimationInstance::PreUpdate", "Allows for more precise control over pedestrian animations.",
         &PreUpdate, {
-            cbHook<CALL>(0x54BF6A),
+            cb::call(0x54BF6A),
         }
     );
 }
@@ -1138,7 +1138,7 @@ void asMeshCardInfoHandler::Install()
 {
     InstallCallback("asMeshCardInfo::Draw", "Scales particles correctly based on current cull mode.",
         &asMeshCardInfo::Draw, {
-            cbHook<JMP>(0x461770),
+            cb::jmp(0x461770),
         }
     );
 }
@@ -1150,7 +1150,7 @@ void asMeshCardInfoHandler::Install()
 void aiVehicleInstanceHandler::Reset()
 {
     *getPtr<byte>(this, 0x1A) = 0;
-    ageHook::Thunk<0x552100>::Call<void>(this); // call original
+    hook::Thunk<0x552100>::Call<void>(this); // call original
 }
 
 void aiVehicleInstanceHandler::Install()
@@ -1185,13 +1185,13 @@ void aiRouteRacerHandler::Update() {
         *getPtr<int>(this, 0x27C) = 3;
 
     //call original
-    ageHook::Thunk<0x53D3B0>::Call<void>(this);
+    hook::Thunk<0x53D3B0>::Call<void>(this);
 }
 
 void aiRouteRacerHandler::Install() {
     InstallCallback("aiRouteRacer::Update", "Fixes opponents fight each other for their spots at the finish line",
         &Update, {
-            cbHook<CALL>(0x53705B), // aiMap::Update
+            cb::call(0x53705B), // aiMap::Update
         }
     );
 }
@@ -1213,7 +1213,7 @@ void modShaderHandler::BeginEnvMap(gfxTexture * a1, const Matrix34 * a2)
     (&RSTATE->Data)->FogStart = 9999;
     (&RSTATE->Data)->FogEnd = 10000;
         
-    ageHook::StaticThunk<0x4A41B0>::Call<void>(a1, a2); //call original
+    hook::StaticThunk<0x4A41B0>::Call<void>(a1, a2); //call original
 }
 
 void modShaderHandler::EndEnvMap()
@@ -1222,24 +1222,24 @@ void modShaderHandler::EndEnvMap()
     (&RSTATE->Data)->FogStart = lastFogStart;
     (&RSTATE->Data)->FogEnd = lastFogEnd;
 
-    ageHook::StaticThunk<0x4A4420>::Call<void>(); //call original
+    hook::StaticThunk<0x4A4420>::Call<void>(); //call original
 }
 
 void modShaderHandler::Install()
 {
     InstallCallback("modShader::BeginEnvMap", "Turns off fog while drawing reflections.",
         &BeginEnvMap, {
-            cbHook<CALL>(0x4CE1F5),
-            cbHook<CALL>(0x5341DD),
-            cbHook<CALL>(0x552252),
+            cb::call(0x4CE1F5),
+            cb::call(0x5341DD),
+            cb::call(0x552252),
         }
     );
 
     InstallCallback("modShader::EndEnvMap", "Turns off fog while drawing reflections.",
         &EndEnvMap, {
-            cbHook<CALL>(0x4CE228),
-            cbHook<CALL>(0x534202),
-            cbHook<CALL>(0x55226B),
+            cb::call(0x4CE228),
+            cb::call(0x534202),
+            cb::call(0x55226B),
         }
     );
 
@@ -1263,7 +1263,7 @@ void mmDashViewBugfixHandler::Init(char *basename, mmPlayer *a2)
         basename = "vpcaddie"; //set vpcaddie's dash as a default dashboard
 
     //call original
-    ageHook::Thunk<0x430890>::Call<void>(this, basename, a2);
+    hook::Thunk<0x430890>::Call<void>(this, basename, a2);
 }
 
 void mmDashViewBugfixHandler::Install()
@@ -1271,7 +1271,7 @@ void mmDashViewBugfixHandler::Install()
     if (cfgMissingDashboardFix.Get()) {
         InstallCallback("mmDashView::Init", "Fixes missing dashboard",
             &Init, {
-                cbHook<CALL>(0x42D60B),
+                cb::call(0x42D60B),
             }
         );
     }
@@ -1287,23 +1287,23 @@ void mmPlayerBugfixHandler::Ctor()
     memset(this, 0x00, 0x23A4);
 
     //call ctor original
-    ageHook::Thunk<0x4033D0>::Call<void>(this);
+    hook::Thunk<0x4033D0>::Call<void>(this);
 }
 
 void mmPlayerBugfixHandler::Install()
 {
     InstallCallback("mmPlayer::mmPlayer", "Clean up player memory on ctor.",
         &Ctor, {
-            cbHook<CALL>(0x415D79),
-            cbHook<CALL>(0x41AE89),
-            cbHook<CALL>(0x41C6E9),
-            cbHook<CALL>(0x41E169),
-            cbHook<CALL>(0x41FAD9),
-            cbHook<CALL>(0x420169),
-            cbHook<CALL>(0x421E09),
-            cbHook<CALL>(0x423A2E),
-            cbHook<CALL>(0x427739),
-            cbHook<CALL>(0x428469),
+            cb::call(0x415D79),
+            cb::call(0x41AE89),
+            cb::call(0x41C6E9),
+            cb::call(0x41E169),
+            cb::call(0x41FAD9),
+            cb::call(0x420169),
+            cb::call(0x421E09),
+            cb::call(0x423A2E),
+            cb::call(0x427739),
+            cb::call(0x428469),
         }
     );
 }
@@ -1350,10 +1350,10 @@ void phBoundBugfixHandler::Install()
     if (cfgBoundSphereCalculation) {
         InstallCallback("phBound::CalculateSphereFromBoundingBox", "Fix bound sphere calculations causing bad collisions.",
             &CalculateSphereFromBoundingBox, {
-                cbHook<CALL>(0x480CCC),
-                cbHook<CALL>(0x4842BA),
-                cbHook<CALL>(0x486C31),
-                cbHook<CALL>(0x48712C),
+                cb::call(0x480CCC),
+                cb::call(0x4842BA),
+                cb::call(0x486C31),
+                cb::call(0x48712C),
             }
         );
     }
@@ -1367,7 +1367,7 @@ void fxShardManagerBugfixHandler::Install()
 {
     InstallCallback("fxShardManager::Drraw", "Fix crashes with cars with low material count.",
         &fxShardManager::Draw, {
-            cbHook<JMP>(0x4602D0)
+            cb::jmp(0x4602D0)
         }
     );
 }
@@ -1425,15 +1425,15 @@ void vehSemiCarAudioBugfixHandler::Init(MM2::vehCarSim * carsim, MM2::vehCarDama
     //if custom semi data exists, load that. Otherwise load default.
     if (semiDataExists) {
         Warningf("Loading custom semi data: %s", (LPCSTR)semiDataName);
-        ageHook::Thunk<0x4DCD70>::Call<void>(this, (LPCSTR)semiDataName);
+        hook::Thunk<0x4DCD70>::Call<void>(this, (LPCSTR)semiDataName);
     }
     else {
         Warningf("Loading DEFAULT semi data, can't find custom semi data: %s", (LPCSTR)semiDataName);
-        ageHook::Thunk<0x4DCD70>::Call<void>(this, "semidata");
+        hook::Thunk<0x4DCD70>::Call<void>(this, "semidata");
     }
     
     //call back to vehCarAudio::Init
-    ageHook::Thunk<0x4DB900>::Call<void>(this, carsim, cardamage, basename, a5, a6, a7);
+    hook::Thunk<0x4DB900>::Call<void>(this, carsim, cardamage, basename, a5, a6, a7);
 }
 
 void vehSemiCarAudioBugfixHandler::SetNon3DParams() 
@@ -1462,7 +1462,7 @@ void vehSemiCarAudioBugfixHandler::SetNon3DParams()
     }
  
     //call back to vehCarAudio::SetNon3DParams
-    ageHook::Thunk<0x4DC240>::Call<void>(this);
+    hook::Thunk<0x4DC240>::Call<void>(this);
 }
 
 void vehSemiCarAudioBugfixHandler::Install()
@@ -1472,14 +1472,14 @@ void vehSemiCarAudioBugfixHandler::Install()
 
     InstallCallback("vehSemiCarAudio::Init", "Allow custom sounds for air brake audio.",
         &Init, {
-            cbHook<CALL>(0x4DC99A)
+            cb::call(0x4DC99A)
         }
     );
 
     InstallCallback("vehSemiCarAudio::Init", "Fix semi air brake audio.",
         &UpdateAirBlow, {
-            cbHook<CALL>(0x4DCB61),
-            cbHook<CALL>(0x4DCB3C)
+            cb::call(0x4DCB61),
+            cb::call(0x4DCB3C)
         }
     );
 

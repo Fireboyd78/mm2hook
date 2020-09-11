@@ -47,15 +47,15 @@ namespace MM2
     public:
         AGE_API lvlMaterial() {
             scoped_vtable x(this);
-            ageHook::Thunk<0x4664C0>::Call<void>(this);
+            hook::Thunk<0x4664C0>::Call<void>(this);
         }
 
         //members
-        AGE_API void Load(datAsciiTokenizer *reader)            { ageHook::Thunk<0x466510>::Call<void>(this, reader); }
+        AGE_API void Load(datAsciiTokenizer *reader)            { hook::Thunk<0x466510>::Call<void>(this, reader); }
 
         //virtuals
-        AGE_API void Copy(const phMaterial *material) override  { ageHook::Thunk<0x4668E0>::Call<void>(this, material); }
-        AGE_API void Save(datAsciiTokenizer *writer) override   { ageHook::Thunk<0x4666F0>::Call<void>(this, writer); }
+        AGE_API void Copy(const phMaterial *material) override  { hook::Thunk<0x4668E0>::Call<void>(this, material); }
+        AGE_API void Save(datAsciiTokenizer *writer) override   { hook::Thunk<0x4666F0>::Call<void>(this, writer); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<lvlMaterial, phMaterial>("lvlMaterial")

@@ -13,20 +13,20 @@ namespace MM2
 
     class datTimeManager {
     public:
-        static ageHook::Type<float> InvSeconds;
-        static ageHook::Type<float> FPS;
-        static ageHook::Type<float> Seconds;
-        static ageHook::Type<float> ActualSeconds;
-        static ageHook::Type<float> ElapsedTime;
-        static ageHook::Type<unsigned int> FrameCount;
-        static ageHook::Type<Timer> Time;
+        static hook::Type<float> InvSeconds;
+        static hook::Type<float> FPS;
+        static hook::Type<float> Seconds;
+        static hook::Type<float> ActualSeconds;
+        static hook::Type<float> ElapsedTime;
+        static hook::Type<unsigned int> FrameCount;
+        static hook::Type<Timer> Time;
 
         AGE_API static void Reset(void) {
-            ageHook::StaticThunk<0x4C6300>::Call<void>();
+            hook::StaticThunk<0x4C6300>::Call<void>();
         };
 
         AGE_API static void Update(void) {
-            ageHook::StaticThunk<0x4C6340>::Call<void>();
+            hook::StaticThunk<0x4C6340>::Call<void>();
         };
 
         //lua

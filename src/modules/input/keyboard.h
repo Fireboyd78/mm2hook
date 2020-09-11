@@ -13,7 +13,7 @@ namespace MM2
     class ioKeyboard {
     public:
         AGE_API static void Update() {
-            ageHook::StaticThunk<0x4BABA0>::Call<void>();
+            hook::StaticThunk<0x4BABA0>::Call<void>();
         }
 
         static void ClearStates() {

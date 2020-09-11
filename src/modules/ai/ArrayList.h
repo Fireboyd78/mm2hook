@@ -34,10 +34,10 @@ namespace MM2
             return data[index];
         }
 
-        AGE_API void Append(int value)                      { ageHook::Thunk<0x543D50>::Call<void>(this, value); }
+        AGE_API void Append(int value)                      { hook::Thunk<0x543D50>::Call<void>(this, value); }
 
-        AGE_API void ReadBinary(Stream *stream)             { ageHook::Thunk<0x543DE0>::Call<void>(this, stream); }
-        AGE_API void SaveBinary(Stream *stream)             { ageHook::Thunk<0x543DB0>::Call<void>(this, stream); }
+        AGE_API void ReadBinary(Stream *stream)             { hook::Thunk<0x543DE0>::Call<void>(this, stream); }
+        AGE_API void SaveBinary(Stream *stream)             { hook::Thunk<0x543DB0>::Call<void>(this, stream); }
     };
 
     // Lua initialization

@@ -16,31 +16,31 @@ namespace MM2
     private:
         byte _buffer[0x177A4 - sizeof(asNode)];
     public:
-        static ageHook::Type<aiVehicleManager *> Instance;
-        static ageHook::Type<int> SignalClock;
+        static hook::Type<aiVehicleManager *> Instance;
+        static hook::Type<int> SignalClock;
 
         AGE_API aiVehicleManager(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x553B30>::Call<void>(this);
+            hook::Thunk<0x553B30>::Call<void>(this);
         }
 
         AGE_API virtual ~aiVehicleManager(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x553C2>::Call<void>(this);
+            hook::Thunk<0x553C2>::Call<void>(this);
         }
 
         //members
-        AGE_API void Init(char *unused)                           { ageHook::Thunk<0x553CE0>::Call<void>(this, unused); }
-        AGE_API int AddVehicleDataEntry(LPCSTR name)              { return ageHook::Thunk<0x553FA0>::Call<int>(this, name); }
-        AGE_API void SaveEntry()                                  { ageHook::Thunk<0x5541E0>::Call<void>(this); }
+        AGE_API void Init(char *unused)                           { hook::Thunk<0x553CE0>::Call<void>(this, unused); }
+        AGE_API int AddVehicleDataEntry(LPCSTR name)              { return hook::Thunk<0x553FA0>::Call<int>(this, name); }
+        AGE_API void SaveEntry()                                  { hook::Thunk<0x5541E0>::Call<void>(this); }
         /*
         AGE_API aiVehicleActive Attach
         AGE_API aiVehicleActive Detach
         */
 
         //asNode overrides
-        AGE_API void Reset() override                             { ageHook::Thunk<0x553D60>::Call<void>(this); }
-        AGE_API void Update() override                            { ageHook::Thunk<0x553EA0>::Call<void>(this); }
+        AGE_API void Reset() override                             { hook::Thunk<0x553D60>::Call<void>(this); }
+        AGE_API void Update() override                            { hook::Thunk<0x553EA0>::Call<void>(this); }
 
         //helpers
         int getDataCount() {

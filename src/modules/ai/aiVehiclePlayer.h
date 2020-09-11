@@ -18,7 +18,7 @@ namespace MM2
     private:
         byte _buffer[0x2C];
     protected:
-        static ageHook::Field<0x14, class vehCar *> _vehCar;
+        static hook::Field<0x14, class vehCar *> _vehCar;
     public:
         aiVehiclePlayer(void)                               DONOTCALL;
         aiVehiclePlayer(const aiVehiclePlayer &&)           DONOTCALL;

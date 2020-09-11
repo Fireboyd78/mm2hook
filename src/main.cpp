@@ -43,7 +43,7 @@ bool bAgeDebug = false;
 // ==========================
 // Pointer hooks
 // ==========================
-ageHook::Type<asNode> ROOT                              = 0x661738;
+hook::Type<asNode> ROOT                              = 0x661738;
 
 /*
     ===========================================================================
@@ -325,26 +325,26 @@ public:
     static void Install() {
         InstallCallback("CreateGameMutex", "Adds '-nomutex' argument to allow multiple game processes.",
             &CreateGameMutex, {
-                cbHook<CALL>(0x40128D),
+                cb::call(0x40128D),
             }
         );
 
         InstallCallback("CheckGlobalMemory", "Disables check for available memory.",
             &NullSub, {
-                cbHook<CALL>(0x401295),
+                cb::call(0x401295),
             }
         );
 
         InstallCallback("ageDebug", "Verbose debug logger.",
             &ageDebug, {
-                cbHook<JMP>(0x402630),
+                cb::jmp(0x402630),
             }
         );
 
         InstallCallback("ProgressRect", "Fixes white loading bar in 32-bit display mode.",
             &ProgressRect, {
-                cbHook<CALL>(0x401163),
-                cbHook<CALL>(0x4011CC),
+                cb::call(0x401163),
+                cb::call(0x4011CC),
             }
         );
 
@@ -352,55 +352,55 @@ public:
         {
             InstallCallback("ComputeCpuSpeed", "Removes the CPU speed calculation for the old auto detect method and improves startup times.",
                 &ComputeCpuSpeed, {
-                    cbHook<CALL>(0x401208),
+                    cb::call(0x401208),
                 }
             );
 
-            // cbHook into the original AutoDetect and replace it with our own version
+            // cb::hook into the original AutoDetect and replace it with our own version
             InstallCallback("AutoDetectCallback", "Replaces the default AutoDetect method with a much faster one.",
                 &AutoDetectCallback, {
-                    cbHook<JMP>(0x4AC030),
+                    cb::jmp(0x4AC030),
                 }
             );
         }
 
         InstallCallback("isVehInfoFile", "Fixes random crashes.",
             &isVehInfoFile, {
-                cbHook<CALL>(0x5248E1),
+                cb::call(0x5248E1),
             }
         );
 
         InstallCallback("isCityInfoFile", "Fixes random crashes.",
             &isCityInfoFile, {
-                cbHook<CALL>(0x5244CF),
+                cb::call(0x5244CF),
             }
         );
 
         // NOTE: Completely overrides the original AngelReadString (will check Lua first then DLL)
         InstallCallback("AngelReadString", "Adds support for Lua-based locale. Uses MMLANG.DLL on Lua failure.",
             &AngelReadString, {
-                cbHook<JMP>(0x534790),
+                cb::jmp(0x534790),
             }
         );
 
         InstallCallback("zipFile::Init", "Fixes 'extraLen' spam in the console/log.",
             &NullSub, {
-                cbHook<CALL>(0x5738EA),
+                cb::call(0x5738EA),
             }
         );
 
         // don't print certain errors unless specified
         if (!cfgPhysicsDebug) {
             InstallCallback(&NullSub, {
-                    cbHook<CALL>(0x469A20), // ; 'CollideInstances: Attempting to collide instances without bounds'
-                    cbHook<CALL>(0x4692C5), // ; 'dgPhysManager::CollideProbe : instance has no bound'
-                    cbHook<CALL>(0x469B24), // ; 'dgPhysManager::CollideTerrain - entry in room 0'
+                    cb::call(0x469A20), // ; 'CollideInstances: Attempting to collide instances without bounds'
+                    cb::call(0x4692C5), // ; 'dgPhysManager::CollideProbe : instance has no bound'
+                    cb::call(0x469B24), // ; 'dgPhysManager::CollideTerrain - entry in room 0'
                 }, "Disables physics collision error debugging (use '-physDebug' to enable)."
             );
         }
         
         InstallCallback(&ParseStateArgs, {
-            cbHook<CALL>(0x4013A4)
+            cb::call(0x4013A4)
         }, "State pack argument parsing.");
 
         if (cfgRandomSeed.Get(RandomSeed)
@@ -408,10 +408,10 @@ public:
         {
             InstallCallback("ResetRandomSeed", "Resets the random seed to a user-specified one.",
                 &ResetRandomSeed, {
-                    cbHook<CALL>(0x4068F0), // mmReplayManager::ctor
-                    cbHook<CALL>(0x406993), // mmReplayManager::Reset
-                    cbHook<CALL>(0x444B79), // cityLevel::Load
-                    cbHook<CALL>(0x536A68), // aiMap::Reset
+                    cb::call(0x4068F0), // mmReplayManager::ctor
+                    cb::call(0x406993), // mmReplayManager::Reset
+                    cb::call(0x444B79), // cityLevel::Load
+                    cb::call(0x536A68), // aiMap::Reset
                 }
             );
         }
@@ -420,15 +420,15 @@ public:
         {
             InstallCallback("GenerateRandomSeed", "Generates a new random seed instead of resetting it to a fixed value.",
                 &GenerateRandomSeed, {
-                    cbHook<CALL>(0x4068F0), // mmReplayManager::ctor
-                    cbHook<CALL>(0x444B79), // cityLevel::Load
+                    cb::call(0x4068F0), // mmReplayManager::ctor
+                    cb::call(0x444B79), // cityLevel::Load
                 }
             );
 
             InstallCallback("ResetRandomSeed", "Resets the random seed to one we previously generated.",
                 &ResetRandomSeed, {
-                    cbHook<CALL>(0x406993), // mmReplayManager::Reset
-                    cbHook<CALL>(0x536A68), // aiMap::Reset
+                    cb::call(0x406993), // mmReplayManager::Reset
+                    cb::call(0x536A68), // aiMap::Reset
                 }
             );
         }
@@ -451,7 +451,7 @@ public:
     static void Install() {
         InstallCallback("datTimeManager::Update", "Intercepts the call to update each tick.",
             &Update, {
-                cbHook<CALL>(0x401A2F),
+                cb::call(0x401A2F),
             }
         );
     }
@@ -618,17 +618,17 @@ public:
     static void Install() {
         InstallCallback("datStack::ExceptionFilter", "Custom exception filter",
             &MM2::datStack::ExceptionFilterCombined, {
-                cbHook<JMP>(0x4C7720), //redirect function
+                cb::jmp(0x4C7720), //redirect function
             });
         InstallCallback("datStack::LookupAddress", "Allows for more detailed address information.",
             static_cast<void (*)(char*, LPCSTR, int, char*, int)>(&GetAddressName), {
-                cbHook<CALL>(0x4C74DD), // sprintf
+                cb::call(0x4C74DD), // sprintf
             }
         );
 
         InstallCallback("datStack::LookupAddress", "Allows for more detailed information of unknown symbols.",
             static_cast<void(*)(char*, LPCSTR, int)>(&GetAddressName), {
-                cbHook<CALL>(0x4C74B9), // sprintf
+                cb::call(0x4C74B9), // sprintf
             }
         );
     }
@@ -790,7 +790,7 @@ public:
         Reset(false);
 
         // GameLoop
-        ageHook::StaticThunk<0x401A00>::Call<void>(parsedStateArgs);
+        hook::StaticThunk<0x401A00>::Call<void>(parsedStateArgs);
 
         Reset(true);
     }
@@ -801,7 +801,7 @@ public:
         discordHandler::Release();
 
         // gfxPipeline::EndGfx2D
-        ageHook::StaticThunk<0x4AAA10>::Call<void>();
+        hook::StaticThunk<0x4AAA10>::Call<void>();
 
         // we can now safely close everything else
         if (MM2Lua::IsEnabled())
@@ -830,12 +830,12 @@ public:
 
         InstallCallback(
             &Update, {
-                cbHook<CALL>(0x401989), // MainPhase
+                cb::call(0x401989), // MainPhase
             }, "GameLoop hook" );
 
         InstallCallback(
             &Shutdown, {
-                cbHook<CALL>(0x40161B) // Main
+                cb::call(0x40161B) // Main
             }, "Shutdown hook");
 
         /*
@@ -852,7 +852,7 @@ public:
 
         InstallCallback("ArchInit", "Allows the hook to initialize before the game starts.",
             &Initialize, {
-                cbHook<CALL>(0x4023DB),
+                cb::call(0x4023DB),
             }
         );
 

@@ -46,12 +46,12 @@ namespace MM2
     public:
         AGE_API mmVehInfo(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x529720>::Call<void>(this);
+            hook::Thunk<0x529720>::Call<void>(this);
         }
 
         virtual AGE_API ~mmVehInfo(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x529770>::Call<void>(this);
+            hook::Thunk<0x529770>::Call<void>(this);
         }
 
         inline char * GetBaseName(void) {
@@ -111,23 +111,23 @@ namespace MM2
     public:
         AGE_API mmVehList(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x524550>::Call<void>(this);
+            hook::Thunk<0x524550>::Call<void>(this);
         }
 
         virtual AGE_API ~mmVehList(void) {
             scoped_vtable x(this);
-            ageHook::Thunk<0x524570>::Call<void>(this);
+            hook::Thunk<0x524570>::Call<void>(this);
         }
 
-        AGE_API void LoadAll()                              { ageHook::Thunk<0x524950>::Call<void>(this); }
+        AGE_API void LoadAll()                              { hook::Thunk<0x524950>::Call<void>(this); }
 
-        AGE_API int GetVehicleID(char *vehicle)             { return ageHook::Thunk<0x5246B0>::Call<int>(this, vehicle); }
+        AGE_API int GetVehicleID(char *vehicle)             { return hook::Thunk<0x5246B0>::Call<int>(this, vehicle); }
 
-        AGE_API mmVehInfo * GetVehicleInfo(int vehicle)     { return ageHook::Thunk<0x5245E0>::Call<mmVehInfo *>(this, vehicle); }
-        AGE_API mmVehInfo * GetVehicleInfo(char *vehicle)   { return ageHook::Thunk<0x524610>::Call<mmVehInfo *>(this, vehicle); }
+        AGE_API mmVehInfo * GetVehicleInfo(int vehicle)     { return hook::Thunk<0x5245E0>::Call<mmVehInfo *>(this, vehicle); }
+        AGE_API mmVehInfo * GetVehicleInfo(char *vehicle)   { return hook::Thunk<0x524610>::Call<mmVehInfo *>(this, vehicle); }
 
-        AGE_API void SetDefaultVehicle(char* vehicle)       { ageHook::Thunk<0x524690>::Call<void>(this, vehicle); }
-        AGE_API void Print()                                { ageHook::Thunk<0x524810>::Call<void>(this); }
+        AGE_API void SetDefaultVehicle(char* vehicle)       { hook::Thunk<0x524690>::Call<void>(this, vehicle); }
+        AGE_API void Print()                                { hook::Thunk<0x524810>::Call<void>(this); }
         
         //helper
         inline int GetNumVehicles() {

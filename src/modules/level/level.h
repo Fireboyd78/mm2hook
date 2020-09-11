@@ -19,10 +19,10 @@ namespace MM2
         }
 
     public:
-        static ageHook::Type<lvlLevel> Singleton;
+        static hook::Type<lvlLevel> Singleton;
 
         AGE_API void MoveToRoom(lvlInstance *instance, int room) {
-            ageHook::Thunk<0x465480>::Call<void>(this, instance, room);
+            hook::Thunk<0x465480>::Call<void>(this, instance, room);
         }
 
         //lua

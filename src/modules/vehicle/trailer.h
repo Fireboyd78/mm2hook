@@ -18,8 +18,8 @@ namespace MM2
 
     class vehTrailer : public dgPhysEntity, public asNode {
     protected:
-        ageHook::Field<0x1E4, vehCarSim *> _sim;
-        ageHook::Field<0xCC, dgTrailerJoint> _joint;
+        hook::Field<0x1E4, vehCarSim *> _sim;
+        hook::Field<0xCC, dgTrailerJoint> _joint;
     public:
         inline vehCarSim* getCarSim(void) const {
             return _sim.get(this);
@@ -39,7 +39,7 @@ namespace MM2
 
     class vehTrailerInstance : public lvlInstance {
     protected:
-        ageHook::Field<0x14, vehTrailer *> _trailer;
+        hook::Field<0x14, vehTrailer *> _trailer;
     public:
         inline vehTrailer * getTrailer(void) const {
             return _trailer.get(this);

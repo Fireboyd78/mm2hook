@@ -13,18 +13,18 @@ namespace MM2
 
     class ioMouse {
     public:
-        static ageHook::Type<float> InvWidth;
-        static ageHook::Type<float> InvHeight;
+        static hook::Type<float> InvWidth;
+        static hook::Type<float> InvHeight;
 
-        static ageHook::Type<int> m_dX;
-        static ageHook::Type<int> m_dY;
-        static ageHook::Type<int> m_dZ;
-        static ageHook::Type<int> m_LastButtons;
-        static ageHook::Type<int> m_Buttons;
-        static ageHook::Type<int> m_WindowButtons;
+        static hook::Type<int> m_dX;
+        static hook::Type<int> m_dY;
+        static hook::Type<int> m_dZ;
+        static hook::Type<int> m_LastButtons;
+        static hook::Type<int> m_Buttons;
+        static hook::Type<int> m_WindowButtons;
     public:
         AGE_API static void Update() {
-            ageHook::StaticThunk<0x4BB3A0>::Call<void>();
+            hook::StaticThunk<0x4BB3A0>::Call<void>();
         }
 
         static void ClearStates() {
