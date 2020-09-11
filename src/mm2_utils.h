@@ -5,10 +5,6 @@
     Game patching functions
 */
 
-#define CALL cb::type::call
-#define JMP cb::type::jmp
-#define PUSH cb::type::push
-
 void Installf(LPCSTR format, ...);
 
 typedef void (*InitFn)();
