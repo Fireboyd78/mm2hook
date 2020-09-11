@@ -5,13 +5,11 @@
     Game patching functions
 */
 
-using hookType = cb::type;
+#define CALL cb::type::call
+#define JMP cb::type::jmp
+#define PUSH cb::type::push
 
-#define CALL hookType::call
-#define JMP hookType::jmp
-#define PUSH hookType::push
-
-template <hookType type>
+template <cb::type type>
 using cbHook = cb::hook<type>;
 
 void Installf(LPCSTR format, ...);
