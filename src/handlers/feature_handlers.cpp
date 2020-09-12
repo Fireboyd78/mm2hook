@@ -3246,7 +3246,7 @@ void vehCarModelFeatureHandler::DrawGlow() {
     modStatic* slight1 = lvlInstance::GetGeomTableEntry(geomID + 6)->getHighestLOD();
 
     //draw signals
-    if (enableSignals) {
+    if (enableSignals && car->IsPlayer()) {
         //check signal clock
         bool drawSignal = fmod(datTimeManager::ElapsedTime, 1.f) > 0.5f;
         //draw stuff!
