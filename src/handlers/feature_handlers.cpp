@@ -3280,13 +3280,19 @@ void vehCarModelFeatureHandler::DrawGlow() {
     }
 
     if (cfgMm1StyleTransmission.Get()) {
-        auto engine = carsim->getEngine();
+        auto throttle = carsim->getEngine()->getThrottleInput();
         auto speedMPH = carsim->getSpeedMPH();
+        auto transmission = carsim->getTransmission();
 
         //draw rlight
         if (rlight != nullptr && gear == 0) {
-            if (engine->getThrottleInput() > 0.f || speedMPH >= 1.f)
+            if (transmission->IsAuto()) {
+                if (throttle > 0.f || speedMPH >= 1.f)
+                    rlight->Draw(shaders);
+            }
+            else {
                 rlight->Draw(shaders);
+            }
         }
     }
 
