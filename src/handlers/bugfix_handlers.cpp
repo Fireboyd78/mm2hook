@@ -1014,7 +1014,7 @@ static float pedAnimFrameRate   = 30.0f;
 static float pedAnimFPS         = (1000.0f / pedAnimFrameRate);
 
 void pedAnimationInstanceHandler::PreUpdate(float seconds) {
-    FrameFraction -= (seconds * -pedAnimFPS);
+    FrameFraction += (seconds * pedAnimFPS);
 
     float delta = floorf(FrameFraction);
 
@@ -1022,12 +1022,31 @@ void pedAnimationInstanceHandler::PreUpdate(float seconds) {
     FrameFraction -= delta;
 }
 
+void pedAnimationInstanceHandler::aiMapUpdate()
+{
+    //call preupdate
+    pedAnimationInstanceHandler::PreUpdate(datTimeManager::Seconds);
+
+    //call aimap update
+    hook::Thunk<0x536E50>::Call<void>(this);
+}
+
 void pedAnimationInstanceHandler::Install() {
-    InstallCallback("pedAnimationInstance::PreUpdate", "Allows for more precise control over pedestrian animations.",
-        &PreUpdate, {
-            cb::call(0x54BF6A),
+    InstallCallback("aiMap::Update (Debug Hook)", "Call from mmGame",
+        &aiMapUpdate, {
+            cb::call(0x4141CF),
         }
     );
+
+    InstallVTableHook("aiMap::Update (Debug Hook)",
+        &aiMapUpdate, {
+            0x5B5468
+        });
+
+    //nop out original call, that got called each frame
+    InstallPatch({ 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }, {
+        0x54BF66,
+        });
 }
 
 /*

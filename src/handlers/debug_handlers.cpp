@@ -170,13 +170,6 @@ void aiMapDebugHandler::Cull()
     vglEnd();
 }
 
-void aiMapDebugHandler::Update()
-{
-    test = 1;
-    hook::Thunk<0x536E50>::Call<void>(this); //call original
-    asCullManager::Instance->DeclareCullable(reinterpret_cast<asCullable *>(this));
-}
-
 void aiMapDebugHandler::UpdatePaused()
 {
     test = 2;
@@ -188,17 +181,6 @@ void aiMapDebugHandler::UpdatePaused()
 void aiMapDebugHandler::Install()
 {
     if (cfgAiDebug.Get()) {
-        InstallCallback("aiMap::Update (Debug Hook)", "Call from mmGame",
-            &Update, {
-                cb::call(0x4141CF),
-            }
-        );
-
-        InstallVTableHook("aiMap::Update (Debug Hook)", 
-            &Update, {
-                0x5B5468
-            });
-
         InstallVTableHook("aiMap::UpdatePaused (Debug Hook)", 
             &UpdatePaused, {
                 0x5B5474

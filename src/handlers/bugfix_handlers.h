@@ -158,7 +158,9 @@ public:
 
 class pedAnimationInstanceHandler {
 public:
-    void PreUpdate(float seconds);
+    void aiMapUpdate();
+
+    static void PreUpdate(float seconds);
 
     static void Install();
 };
