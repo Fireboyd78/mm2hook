@@ -3721,9 +3721,28 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
     modStatic* siren0 = lvlInstance::GetGeomTableEntry(geomSet + 13)->getHighestLOD();
     modStatic* siren1 = lvlInstance::GetGeomTableEntry(geomSet + 14)->getHighestLOD();
 
-    //draw rlight
-    if (rlight != nullptr && gear == 0) {
-        rlight->Draw(shaders);
+    if (cfgMm1StyleTransmission.Get()) {
+        auto throttle = carsim->getEngine()->getThrottleInput();
+        auto speedMPH = carsim->getSpeedMPH();
+        auto transmission = carsim->getTransmission();
+
+        //draw rlight
+        if (rlight != nullptr && gear == 0) {
+            if (transmission->IsAuto()) {
+                if (throttle > 0.f || speedMPH >= 1.f)
+                    rlight->Draw(shaders);
+            }
+            else {
+                rlight->Draw(shaders);
+            }
+        }
+    }
+
+    if (!cfgMm1StyleTransmission.Get()) {
+        //draw rlight
+        if (rlight != nullptr && gear == 0) {
+            rlight->Draw(shaders);
+        }
     }
 
     //draw blight
