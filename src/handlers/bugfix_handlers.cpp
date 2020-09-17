@@ -1011,13 +1011,12 @@ hook::Type<float> FrameFraction      = 0x6B4724;
 hook::Type<int> FrameDelta           = 0x6B4720;
 
 static float pedAnimFrameRate   = 30.0f;
-static float pedAnimFPS         = (1000.0f / pedAnimFrameRate);
 
 void pedAnimationInstanceHandler::PreUpdate(float seconds) {
-    FrameFraction += (seconds * pedAnimFPS);
+    FrameFraction += (seconds * pedAnimFrameRate);
 
     float delta = floorf(FrameFraction);
-
+    
     FrameDelta = (int)delta;
     FrameFraction -= delta;
 }
@@ -1025,7 +1024,8 @@ void pedAnimationInstanceHandler::PreUpdate(float seconds) {
 void pedAnimationInstanceHandler::aiMapUpdate()
 {
     //call preupdate
-    pedAnimationInstanceHandler::PreUpdate(datTimeManager::Seconds);
+    if (ioKeyboard::GetKeyState(DIK_0) == 0)
+        pedAnimationInstanceHandler::PreUpdate(datTimeManager::ActualSeconds);
 
     //call aimap update
     hook::Thunk<0x536E50>::Call<void>(this);
