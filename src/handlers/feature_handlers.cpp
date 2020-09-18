@@ -1519,6 +1519,8 @@ void mmGameHandler::UpdateSteeringBrakes(void) {
 static ConfigValue<bool> cfgGtaStyleHornSiren("GTAStyleHornSiren", false);
 static float horn_lastPressTime = 0.f;
 static float horn_lastReleaseTime = 0.f;
+static float horn_holdTime = 0.f;
+static float horn_sirenThreshod = 0.1f;
 static bool lastHornButtonState = false;
 
 void mmGameHandler::UpdateHorn(bool a1) {
@@ -1534,6 +1536,8 @@ void mmGameHandler::UpdateHorn(bool a1) {
     bool isSirenActive = siren->Active;
     bool isVehiclePolice = audio->IsPolice(vehName);
 
+    bool cancelHornInput = horn_holdTime < horn_sirenThreshod && isVehiclePolice;
+
     //button state updating
     bool buttonReleasedThisFrame = a1 != lastHornButtonState && !a1;
     bool buttonPressedThisFrame = a1 != lastHornButtonState && a1;
@@ -1544,12 +1548,15 @@ void mmGameHandler::UpdateHorn(bool a1) {
     else if (buttonReleasedThisFrame)
     {
         horn_lastReleaseTime = datTimeManager::ElapsedTime;
+        horn_holdTime = 0.f;
     }
+    if (a1)
+        horn_holdTime += datTimeManager::Seconds;
     lastHornButtonState = a1;
 
     //update police audio
     if (isVehiclePolice && siren != nullptr) {
-        if (buttonReleasedThisFrame && (horn_lastReleaseTime - horn_lastPressTime) < 0.15f) {
+        if (buttonReleasedThisFrame && (horn_lastReleaseTime - horn_lastPressTime) < horn_sirenThreshod) {
             if (siren->Active) {
                 siren->Active = false;
                 audio->StopSiren();
@@ -1568,7 +1575,8 @@ void mmGameHandler::UpdateHorn(bool a1) {
         auto hornSound = *getPtr<AudSoundBase*>(policeAudio, 0x10C);
         if (hornSound->IsPlaying() != a1) {
             if (a1) {
-                hornSound->PlayLoop(-1.f, -1.f);
+                if (!cancelHornInput)
+                    hornSound->PlayLoop(-1.f, -1.f);
             }
             else {
                 hornSound->Stop();
