@@ -174,7 +174,8 @@ public:
         ImGui::NewFrame();
 
         // Lua
-        MM2Lua::OnRenderUi();
+        if(MM2Lua::IsEnabled())
+            MM2Lua::OnRenderUi();
 
         //
         ImGui::Render();
