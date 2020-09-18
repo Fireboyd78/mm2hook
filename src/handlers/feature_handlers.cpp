@@ -1549,7 +1549,7 @@ void mmGameHandler::UpdateHorn(bool a1) {
 
     //update police audio
     if (isVehiclePolice && siren != nullptr) {
-        if (buttonReleasedThisFrame && (horn_lastReleaseTime - horn_lastPressTime) < 0.25f) {
+        if (buttonReleasedThisFrame && (horn_lastReleaseTime - horn_lastPressTime) < 0.15f) {
             if (siren->Active) {
                 siren->Active = false;
                 audio->StopSiren();
