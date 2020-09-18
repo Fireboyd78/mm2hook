@@ -1517,6 +1517,9 @@ void mmGameHandler::UpdateSteeringBrakes(void) {
 }
 
 static ConfigValue<bool> cfgGtaStyleHornSiren("GTAStyleHornSiren", false);
+static float horn_lastPressTime = 0.f;
+static float horn_lastReleaseTime = 0.f;
+static bool lastHornButtonState = false;
 
 void mmGameHandler::UpdateHorn(bool a1) {
     auto game = reinterpret_cast<mmGame*>(this);
@@ -1524,54 +1527,63 @@ void mmGameHandler::UpdateHorn(bool a1) {
     auto car = player->getCar();
     auto siren = car->getSiren();
     auto audio = car->getAudio();
+
     auto policeAudio = audio->GetPoliceCarAudioPtr();
-    char *vehName = car->getCarDamage()->GetName();
-    bool elapsedTime = fmod(datTimeManager::ElapsedTime, 1.f) > 0.75f;
-    byte *sirenLights = *getPtr<byte*>(player, 0xF4);
-    byte *buttonPressed = getPtr<byte>(this, 0x274);
-    if (audio->IsPolice(vehName)) {
-        auto hornSound = *getPtr<AudSoundBase*>(policeAudio, 0x10C);
-        if (a1) {
-            if (!*buttonPressed && elapsedTime) {
-                sirenLights[1] = sirenLights[1] == 0;
-                if (siren != nullptr && siren->Active) {
-                    audio->StartSiren();
-                    *buttonPressed = 1;
-                }
-                else {
-                    audio->StopSiren();
-                    *buttonPressed = 1;
-                }
-                return;
+    char* vehName = car->getCarDamage()->GetName();
+
+    bool isSirenActive = siren->Active;
+    bool isVehiclePolice = audio->IsPolice(vehName);
+
+    //button state updating
+    bool buttonReleasedThisFrame = a1 != lastHornButtonState && !a1;
+    bool buttonPressedThisFrame = a1 != lastHornButtonState && a1;
+    if (buttonPressedThisFrame)
+    {
+        horn_lastPressTime = datTimeManager::ElapsedTime;
+    }
+    else if (buttonReleasedThisFrame)
+    {
+        horn_lastReleaseTime = datTimeManager::ElapsedTime;
+    }
+    lastHornButtonState = a1;
+
+    //update police audio
+    if (isVehiclePolice && siren != nullptr) {
+        if (buttonReleasedThisFrame && (horn_lastReleaseTime - horn_lastPressTime) < 0.25f) {
+            if (siren->Active) {
+                siren->Active = false;
+                audio->StopSiren();
             }
-            if (!*buttonPressed) {
-                if (hornSound != nullptr && !hornSound->IsPlaying()) {
-                    hornSound->SetPlayPosition(0);
-                    hornSound->PlayLoop(-1.f, -1.f);
-                }
+            else
+            {
+                siren->Active = true;
+                audio->StartSiren();
             }
-            *buttonPressed = 1;
-            return;
-        }
-        if (*buttonPressed) {
-            if (hornSound != nullptr && hornSound->IsPlaying()) {
-                hornSound->Stop();
-            }
-            *buttonPressed = 0;
         }
     }
-    if (!audio->IsPolice(vehName)) {
-        if (a1) {
-            if (!*buttonPressed) {
-                audio->PlayHorn();
+
+    //update horn audio
+    if (isVehiclePolice)
+    {
+        auto hornSound = *getPtr<AudSoundBase*>(policeAudio, 0x10C);
+        if (hornSound->IsPlaying() != a1) {
+            if (a1) {
+                hornSound->PlayLoop(-1.f, -1.f);
             }
-            *buttonPressed = 1;
-            return;
+            else {
+                hornSound->Stop();
+            }
         }
-        if (*buttonPressed) {
+    }
+    else
+    {
+        if (a1) {
+            audio->PlayHorn();
+        }
+        else
+        {
             audio->StopHorn();
         }
-        *buttonPressed = 0;
     }
 }
 
