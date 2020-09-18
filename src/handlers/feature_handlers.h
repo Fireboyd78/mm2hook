@@ -336,8 +336,14 @@ public:
     static void Install();
 };
 
+class vehTrailerFeatureHandler {
+public:
+    static void Install();
+};
+
 class vehTrailerInstanceFeatureHandler {
 public:
+    void Draw(int a1);
     void DrawGlow();
     void AddGeomHook(const char* pkgName, const char* name, int flags);
     static void Install();

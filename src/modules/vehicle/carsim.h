@@ -75,12 +75,13 @@ namespace MM2
         float SteeringInput;
         float SSSValue;
         float SSSThreshold;
-
     public:
         //EXTRA FIELDS. The hook expands on this class, this is only possible because it's only used like a pointer in the original MM code
-        //These are the position differences from (WHL5-WHL3) and (WHL4-WHL2)
+        //These are the position differences from (WHL5-WHL3) and (WHL4-WHL2) / (TWHL5-TWHL3) and (TWHL4-TWHL2) for trailers
         Vector3 BackBackLeftWheelPosDiff;
         Vector3 BackBackRightWheelPosDiff;
+        Vector3 TrailerBackBackLeftWheelPosDiff;
+        Vector3 TrailerBackBackRightWheelPosDiff;
     public:
         inline float getBoundFriction(void) {
             return this->BoundFriction;
@@ -319,7 +320,7 @@ namespace MM2
         }
     };
 
-    ASSERT_SIZEOF(vehCarSim, 0x1560 + 0xC + 0xC); //+2 extra fields
+    ASSERT_SIZEOF(vehCarSim, 0x1560 + 0xC + 0xC + 0xC + 0xC); //+4 extra fields
 
     // Lua initialization
 

@@ -51,6 +51,7 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<vehCarModelFeatureHandler>("vehCarModel"),
     CreateHandler<vehCarSimHandler>("vehCarSim"),
     CreateHandler<vehWheelHandler>("vehWheel"),
+    CreateHandler<vehTrailerFeatureHandler>("vehTrailer"),
     CreateHandler<vehTrailerInstanceFeatureHandler>("vehTrailerInstance"),
 
     CreateHandler<Dialog_NewPlayerHandler>("New player dialog"),
@@ -3686,9 +3687,91 @@ void aiVehicleInstanceFeatureHandler::Install() {
 }
 
 /*
+    vehTrailerHandler
+*/
+
+void vehTrailerFeatureHandler::Install() {
+    InstallCallback("vehTrailer::Init", "Reads TWHL4/5 MTX files",
+        &vehTrailer::Init, {
+            cb::call(0x42C023),
+        }
+    );
+}
+
+/*
     vehTrailerInstanceFeatureHandler
 */
 Matrix34 trailerMatrix = Matrix34();
+
+void vehTrailerInstanceFeatureHandler::Draw(int a1) {
+
+    //call original
+    hook::Thunk<0x4D7F20>::Call<void>(this, a1);
+
+    auto inst = reinterpret_cast<vehTrailerInstance*>(this);
+    auto geomSet = inst->getGeomSetId() - 1;
+    auto trailer = inst->getTrailer();
+    auto carsim = trailer->getCarSim();
+    auto trailerMtx = inst->GetMatrix(&trailerMatrix);
+    auto twhl2Mtx = trailer->getWheel(2)->getMatrix();
+    auto twhl3Mtx = trailer->getWheel(3)->getMatrix();
+
+    //get our shader set
+    int shaderSet = *getPtr<int>(this, 24);
+    auto shaders = lvlInstance::GetGeomTableEntry(geomSet)->pShaders[shaderSet];
+
+    //get wheels
+    auto twhl4 = lvlInstance::GetGeomTableEntry(geomSet + 15);
+    auto twhl5 = lvlInstance::GetGeomTableEntry(geomSet + 16);
+
+    if (twhl4 != nullptr) {
+        twhl2Mtx.Set(&twhl2Mtx);
+
+        float offsetX = carsim->TrailerBackBackLeftWheelPosDiff.Y * trailerMtx.m10 + carsim->TrailerBackBackLeftWheelPosDiff.Z * trailerMtx.m20 + carsim->TrailerBackBackLeftWheelPosDiff.X * trailerMtx.m00;
+        float offsetY = carsim->TrailerBackBackLeftWheelPosDiff.Y * trailerMtx.m11 + carsim->TrailerBackBackLeftWheelPosDiff.Z * trailerMtx.m21 + carsim->TrailerBackBackLeftWheelPosDiff.X * trailerMtx.m01;
+        float offsetZ = carsim->TrailerBackBackLeftWheelPosDiff.Y * trailerMtx.m12 + carsim->TrailerBackBackLeftWheelPosDiff.Z * trailerMtx.m22 + carsim->TrailerBackBackLeftWheelPosDiff.X * trailerMtx.m02;
+        twhl2Mtx.m30 += offsetX;
+        twhl2Mtx.m31 += offsetY;
+        twhl2Mtx.m32 += offsetZ;
+
+        //setup renderer
+        Matrix44::Convert(gfxRenderState::sm_World, &twhl2Mtx);
+        *(int*)0x685778 |= 0x88; //set m_Touched
+
+        if (twhl4->getHighLOD() != nullptr && a1 == 3)
+            twhl4->getHighLOD()->Draw(shaders);
+
+        if (twhl4->getMedLOD() != nullptr && a1 == 2)
+            twhl4->getMedLOD()->Draw(shaders);
+
+        if (twhl4->getLowLOD() != nullptr && a1 == 1)
+            twhl4->getLowLOD()->Draw(shaders);
+    }
+
+    if (twhl5 != nullptr) {
+        twhl3Mtx.Set(&twhl3Mtx);
+
+        float offsetX = carsim->TrailerBackBackRightWheelPosDiff.Y * trailerMtx.m10 + carsim->TrailerBackBackRightWheelPosDiff.Z * trailerMtx.m20 + carsim->TrailerBackBackRightWheelPosDiff.X * trailerMtx.m00;
+        float offsetY = carsim->TrailerBackBackRightWheelPosDiff.Y * trailerMtx.m11 + carsim->TrailerBackBackRightWheelPosDiff.Z * trailerMtx.m21 + carsim->TrailerBackBackRightWheelPosDiff.X * trailerMtx.m01;
+        float offsetZ = carsim->TrailerBackBackRightWheelPosDiff.Y * trailerMtx.m12 + carsim->TrailerBackBackRightWheelPosDiff.Z * trailerMtx.m22 + carsim->TrailerBackBackRightWheelPosDiff.X * trailerMtx.m02;
+        twhl3Mtx.m30 += offsetX;
+        twhl3Mtx.m31 += offsetY;
+        twhl3Mtx.m32 += offsetZ;
+
+        //setup renderer
+        Matrix44::Convert(gfxRenderState::sm_World, &twhl3Mtx);
+        *(int*)0x685778 |= 0x88; //set m_Touched
+
+        if (twhl5->getHighLOD() != nullptr && a1 == 3)
+            twhl5->getHighLOD()->Draw(shaders);
+
+        if (twhl5->getMedLOD() != nullptr && a1 == 2)
+            twhl5->getMedLOD()->Draw(shaders);
+
+        if (twhl5->getLowLOD() != nullptr && a1 == 1)
+            twhl5->getLowLOD()->Draw(shaders);
+    }
+}
 
 void vehTrailerInstanceFeatureHandler::DrawGlow() {
     auto inst = reinterpret_cast<vehTrailerInstance*>(this);
@@ -3813,12 +3896,20 @@ void vehTrailerInstanceFeatureHandler::AddGeomHook(const char* pkgName, const ch
     hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "slight1", flags);
     hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "siren0", flags);
     hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "siren1", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "twhl4", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "twhl5", flags);
 }
 
 void vehTrailerInstanceFeatureHandler::Install() {
     InstallCallback("vehTrailerInstance::Init", "Adds more lights geometries.",
         &AddGeomHook, {
             cb::call(0x4D7E79),
+        }
+    );
+
+    InstallVTableHook("vehTrailerInstance::Draw",
+        &Draw, {
+            0x5B2FB0,
         }
     );
 
@@ -3834,11 +3925,12 @@ void vehTrailerInstanceFeatureHandler::Install() {
 /*
     vehCarSimHandler
 */
+
 void vehCarSimHandler::Install()
 {
-    InstallPatch({0x78}, {
-            0x42BB4B + 1, // Change size of vehCarSim on allocation
-        });
+    InstallPatch({ 0x90 }, {
+        0x42BB4B + 1, // Change size of vehCarSim on allocation
+    });
 
     InstallCallback("vehCarSim::Init", "Use our own init function.",
         &vehCarSim::Init, {

@@ -80,7 +80,7 @@ namespace MM2
                 return Low;
             }
 
-            inline modStatic * getMedLOd() const {
+            inline modStatic * getMedLOD() const {
                 return Medium;
             }
 
@@ -97,7 +97,7 @@ namespace MM2
                     //fields
                     .addPropertyReadOnly("VL", &getVeryLowLOD)
                     .addPropertyReadOnly("L", &getLowLOD)
-                    .addPropertyReadOnly("M", &getMedLOd)
+                    .addPropertyReadOnly("M", &getMedLOD)
                     .addPropertyReadOnly("H", &getHighLOD)
                     .addPropertyReadOnly("Radius", &getRadius)
                     .addFunction("GetHighestLOD", &getHighestLOD)
