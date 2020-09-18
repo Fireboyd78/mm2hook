@@ -13,7 +13,48 @@ bool isMainLuaLoaded = false;
 
 void mm2L_error(LPCSTR message)
 {
-    MM2::Abortf("[Lua] Error -- %s", message);
+    MM2::Errorf("[Lua] Error -- %s", message);
+}
+
+template <class retType, typename... T>
+retType tryCallFunction(LuaRef func, T&&... args)
+{
+    if (func.isValid()) {
+        if (!func.isFunction()) {
+            mm2L_error("Tried to call a LuaRef that's not a function.");
+            return;
+        }
+
+        try 
+        {
+            return func.call<retType>(std::forward<T>(args)...);
+        }
+        catch (LuaException le) 
+        {
+            mm2L_error(le.what());
+        }
+    }
+}
+
+
+void tryCallFunction(LuaRef func)
+{
+    /*if (func.isValid()) {
+        if (!func.isFunction()) {
+            mm2L_error("Tried to call a LuaRef that's not a function.");
+            return;
+        }
+
+        try
+        {
+            func.call();
+        }
+        catch (LuaException le)
+        {
+            mm2L_error(le.what());
+        }
+    }*/
+    tryCallFunction<void>(func);
 }
 
 void luaAddModule_LogFile(lua_State * L)
@@ -119,8 +160,7 @@ void LoadMainScript() {
 
             //call init
             LuaRef func(L, "init");
-            if (func.isFunction())
-                func.call();
+            tryCallFunction(func);
         }
 
         //mm2L_error(L.toString(-1));
@@ -191,7 +231,7 @@ void MM2Lua::Initialize() {
         LuaRef(L, "lfs").get("chdir").call(execPath);
 
         //override print function
-        SendCommand("print = Displayf");
+        SendCommand("print = function(x) Displayf(tostring(x)) end");
 
         //
         LogFile::WriteLine("Loading main script...");
@@ -206,56 +246,46 @@ void MM2Lua::Reset()
 
 void MM2Lua::OnChatMessage(char* message) {
     LuaRef func(L, "onChatMessage");
-    if (func.isFunction())
-        func.call(message);
+    tryCallFunction<void>(func, message);
 }
 
 void MM2Lua::OnGameEnd() {
     LuaRef func(L, "onGameEnd");
-    if (func.isFunction())
-        func.call();
+    tryCallFunction(func);
 }
 
 void MM2Lua::OnGameInit() {
     LuaRef func(L, "onGameInit");
-    if (func.isFunction())
-        func.call();
+    tryCallFunction(func);
 }
 
 void MM2Lua::OnSessionCreate(char * sessionName, char * sessionPassword, int sessionMaxPlayers, NETSESSION_DESC * sessionData)
 {
     LuaRef func(L, "onSessionCreate");
-    if (func.isFunction())
-        func.call(sessionName, sessionPassword, sessionMaxPlayers, sessionData);
+    tryCallFunction<void>(func, sessionName, sessionPassword, sessionMaxPlayers, sessionData);
 }
 
 void MM2Lua::OnSessionJoin(char * a2, GUID * a3, char * a4)
 {
     LuaRef func(L, "onSessionJoin");
-    if (func.isFunction())
-        func.call(a2, a3, a4);
+    tryCallFunction<void>(func, a2, a3, a4);
 }
 
 void MM2Lua::OnDisconnect() {
     LuaRef func(L, "onDisconnect");
-    if (func.isFunction())
-        func.call();
+    tryCallFunction(func);
 }
 
 void MM2Lua::OnReset() {
     LuaRef func(L, "onReset");
-    if (func.isFunction())
-        func.call();
+    tryCallFunction(func);
 }
 
 void MM2Lua::OnTick()
 {
     if (isMainLuaLoaded) {
-        // don't do any errors since this is called EVERY tick
-        // testing should be done in the lua script (if needed)
         LuaRef tickFunction(L, "tick");
-        if (tickFunction.isFunction())
-            tickFunction.call();
+        tryCallFunction(tickFunction);
     }
 
     // reset lastKey
@@ -266,8 +296,7 @@ void MM2Lua::OnRestart()
 {
     if (isMainLuaLoaded) {
         LuaRef func(L, "restart");
-        if (func.isFunction())
-            func.call();
+        tryCallFunction(func);
     }
 }
 
@@ -275,8 +304,7 @@ void MM2Lua::OnShutdown()
 {
     if (isMainLuaLoaded) {
         LuaRef func(L, "shutdown");
-        if (func.isFunction())
-            func.call();
+        tryCallFunction(func);
     }
 
     L.close();
@@ -285,8 +313,7 @@ void MM2Lua::OnShutdown()
 void MM2Lua::OnRenderUi()
 {
     LuaRef func(L, "onRenderUi");
-    if (func.isFunction())
-        func.call();
+    tryCallFunction(func);
 }
 
 void MM2Lua::OnKeyPress(DWORD vKey)
@@ -305,5 +332,12 @@ void MM2Lua::OnKeyPress(DWORD vKey)
 void MM2Lua::SendCommand(LPCSTR command)
 {
     LogFile::Format("> [Lua]: %s\n", command);
-    luaL_dostring(L, command);
+    try 
+    {
+        Lua::exec(L, command);
+    }
+    catch (LuaException le) 
+    {
+        mm2L_error(le.what());
+    }
 }
