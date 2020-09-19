@@ -933,6 +933,9 @@
       <Filter>Source Files\imgui\renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\hook.h" />
+    <ClInclude Include="src\modules\data\refcount.h">
+      <Filter>Source Files\modules\data</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">

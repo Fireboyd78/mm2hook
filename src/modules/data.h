@@ -11,6 +11,7 @@
 #include "data\base.h"
 #include "data\token.h"
 #include "data\stack.h"
+#include "data\refcount.h"
 
 namespace MM2
 {

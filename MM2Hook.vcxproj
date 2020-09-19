@@ -197,6 +197,7 @@
     <ClInclude Include="src\modules\data\base.h" />
     <ClInclude Include="src\modules\data\callback.h" />
     <ClInclude Include="src\modules\data\hash.h" />
+    <ClInclude Include="src\modules\data\refcount.h" />
     <ClInclude Include="src\modules\data\stack.h" />
     <ClInclude Include="src\modules\data\timemgr.h" />
     <ClInclude Include="src\modules\data\timer.h" />
