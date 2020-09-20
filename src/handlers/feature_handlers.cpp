@@ -4008,14 +4008,14 @@ void vehCableCarInstanceHandler::DrawGlow()
     }
 }
 
-void vehCableCarInstanceHandler::BeginGeom(const char* a1, const char* a2, int a3)
+bool vehCableCarInstanceHandler::BeginGeom(const char* a1, const char* a2, int a3)
 {
     //We hook this to set flag 64 (shadow)
     auto inst = reinterpret_cast<lvlInstance*>(this);
     inst->setFlag(64);
 
     //Call original
-    inst->BeginGeom(a1, a2, a3);
+    return inst->BeginGeom(a1, a2, a3);
 }
 
 void vehCableCarInstanceHandler::Install()
