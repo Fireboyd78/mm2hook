@@ -364,3 +364,11 @@ class vehCarSimHandler {
 public:
     static void Install();
 };
+
+class vehCableCarInstanceHandler {
+public:
+    void DrawShadow();
+    void DrawGlow();
+    void BeginGeom(const char* a1, const char* a2, int a3);
+    static void Install();
+};

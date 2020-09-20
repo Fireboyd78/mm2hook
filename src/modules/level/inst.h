@@ -23,8 +23,8 @@ namespace MM2
         byte byte4;
         byte byte5;
 
-        short room;
-        short Flags;
+        ushort room;
+        ushort Flags;
 
         short GeomSet;
 
@@ -133,7 +133,7 @@ namespace MM2
         }
     public:
         
-        inline short getRoomId(void) const {
+        inline ushort getRoomId(void) const {
             return room;
         }
 
@@ -141,6 +141,20 @@ namespace MM2
             return GeomSet;
         }
 
+        short getFlags() const {
+            return this->Flags;
+        }
+
+        inline void setFlags(ushort flags) {
+            this->Flags = flags;
+        }
+
+        inline void setFlag(ushort flag) {
+            this->Flags |= flag;
+        }
+
+        static AGE_API bool ComputeShadowMatrix(Matrix34 *outMatrix, int room, Matrix34 const *inMatrix)
+                                                            { return hook::StaticThunk<0x464430>::Call<bool>(outMatrix, room, inMatrix); }
         static AGE_API void ResetInstanceHeap()             { hook::StaticThunk<0x4631A0>::Call<void>(); }
         static AGE_API void ResetAll()                      { hook::StaticThunk<0x4631E0>::Call<void>(); }
         static AGE_API void SetShadowBillboardMtx(Matrix44 &a1)
