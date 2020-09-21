@@ -4044,9 +4044,8 @@ void vehCableCarInstanceHandler::Install()
 
 static ConfigValue<bool> cfgHudArrowStyles("EnableHudArrowStyles", true);
 
-void mmArrowHandler::SetShape(LPCSTR modelName, LPCSTR dirName, bool useLVertex, Vector3* a4) {
-    hook::Thunk<0x533660>::Call<void>(this, modelName, dirName, useLVertex, a4);
-
+void mmArrowHandler::SetShape(LPCSTR modelName, LPCSTR dirName, bool useLVertex, Vector3* a4)
+{
     if (dgStatePack::Instance->GameMode == Blitz)
         hook::Thunk<0x533660>::Call<void>(this, "hudarrow_blitz01", "geometry", 0, nullptr);
 
@@ -4057,7 +4056,8 @@ void mmArrowHandler::SetShape(LPCSTR modelName, LPCSTR dirName, bool useLVertex,
         hook::Thunk<0x533660>::Call<void>(this, "hudarrow01", "geometry", 0, nullptr);
 }
 
-void mmArrowHandler::Install() {
+void mmArrowHandler::Install()
+{
     if (cfgHudArrowStyles.Get()) {
         InstallCallback("mmArrow::mmArrow", "Enables the unused hud arrows for blitz and crash course game modes.",
             &SetShape, {
