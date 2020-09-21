@@ -128,18 +128,55 @@ namespace MM2
 
     class asMeshSetForm : public asNode {
     private:
-        byte _buffer[0x60];
-    protected:
-        hook::Field<0x30, Matrix34> _worldMatrix;
+        modStatic* ModStatic;
+        int VariantCount;
+        modShader** Shaders;
+        modShader* ChosenShaderSet;
+        int dword_28;
+        int Flags;
+        Matrix34 Matrix;
     public:
-        inline Matrix34* getWorldMatrix() const {
-            return _worldMatrix.ptr(this);
+        inline Matrix34 getMatrix() {
+            return this->Matrix;
         }
             
-        inline void setWorldMatrix(Matrix34* a1) const {
-            _worldMatrix.ptr(this)->Set(a1);
+        inline void setMatrix(Matrix34 a1) {
+            this->Matrix = a1;
         }
 
+        inline void setVariant(int variant) {
+            if (this->Shaders == nullptr || variant >= this->VariantCount)
+                return;
+            this->ChosenShaderSet = Shaders[variant];
+        }
+
+        inline int getVariant() {
+            if (this->Shaders == nullptr)
+                return -1;
+            
+            //compare shader sets to our current
+            for (int i = 0; i < this->VariantCount; i++) {
+                if (this->ChosenShaderSet == this->Shaders[i])
+                    return i;
+            }
+
+            return -1;
+        }
+
+        inline int getVariantCount() {
+            return this->VariantCount;
+        }
+
+        inline Vector3 getPosition() {
+            return Vector3(this->Matrix.m30, this->Matrix.m31, this->Matrix.m32);
+        }
+
+        inline void setPosition(Vector3 position) {
+            this->Matrix.m30 = position.X;
+            this->Matrix.m31 = position.Y;
+            this->Matrix.m32 = position.Z;
+        }
+    public:
         AGE_API asMeshSetForm(void) {
             scoped_vtable x(this);
             hook::Thunk<0x533600>::Call<void>(this);
@@ -168,7 +205,11 @@ namespace MM2
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<asMeshSetForm, asNode>("asMeshSetForm")
                 .addConstructor(LUA_ARGS())
-                .addProperty("WorldMatrix", &getWorldMatrix, &setWorldMatrix)
+                .addProperty("Matrix", &getMatrix, &setMatrix)
+                .addProperty("Position", &getPosition, &setPosition)
+                .addProperty("Variant", &getVariant, &setVariant)
+                .addPropertyReadOnly("NumVariants", &getVariantCount)
+
                 .addFunction("SetShape", &SetShape)
                 .addFunction("SetZRead", &SetZRead)
                 .addFunction("SetZWrite", &SetZWrite)
