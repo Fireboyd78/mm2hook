@@ -38,7 +38,7 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<mmGameHandler>("mmGame"),
     CreateHandler<mmGameMusicDataHandler>("mmGameMusicData"),
     CreateHandler<Aud3DObjectManagerHandler>("Aud3DObjectManagerHandler"),
-
+    CreateHandler<mmArrowHandler>("mmArrowHandler"),
     CreateHandler<mmSingleRaceHandler>("mmSingleRace"),
 
     CreateHandler<dgBangerInstanceHandler>("dgBangerInstance"),
@@ -4036,6 +4036,35 @@ void vehCableCarInstanceHandler::Install()
             cb::call(0x53F8AA),
         }
     );
+}
+
+/*
+    mmArrowHandler
+*/
+
+static ConfigValue<bool> cfgHudArrowStyles("EnableHudArrowStyles", true);
+
+void mmArrowHandler::SetShape(LPCSTR modelName, LPCSTR dirName, bool useLVertex, Vector3* a4) {
+    hook::Thunk<0x533660>::Call<void>(this, modelName, dirName, useLVertex, a4);
+
+    if (dgStatePack::Instance->GameMode == Blitz)
+        hook::Thunk<0x533660>::Call<void>(this, "hudarrow_blitz01", "geometry", 0, nullptr);
+
+    else if (dgStatePack::Instance->GameMode == CrashCourse)
+        hook::Thunk<0x533660>::Call<void>(this, "hudarrow_cc01", "geometry", 0, nullptr);
+
+    else
+        hook::Thunk<0x533660>::Call<void>(this, "hudarrow01", "geometry", 0, nullptr);
+}
+
+void mmArrowHandler::Install() {
+    if (cfgHudArrowStyles.Get()) {
+        InstallCallback("mmArrow::mmArrow", "Enables the unused hud arrows for blitz and crash course game modes.",
+            &SetShape, {
+                cb::call(0x42E6BA),
+            }
+        );
+    }
 }
 
 #ifndef FEATURES_DECLARED

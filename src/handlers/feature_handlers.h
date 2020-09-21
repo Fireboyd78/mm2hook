@@ -372,3 +372,9 @@ public:
     bool BeginGeom(const char* a1, const char* a2, int a3);
     static void Install();
 };
+
+class mmArrowHandler {
+public:
+    void SetShape(LPCSTR modelName, LPCSTR dirName, bool useLVertex, MM2::Vector3* a4);
+    static void Install();
+};
