@@ -3595,7 +3595,6 @@ void aiVehicleInstanceFeatureHandler::DrawGlow() {
     auto inst = reinterpret_cast<aiVehicleInstance*>(this);
     auto geomID = inst->getGeomSetId() - 1;
     auto geomSet = lvlInstance::GetGeomTableEntry(geomID);
-    auto AIMAP = &aiMap::Instance;
 
     //setup renderer
     Matrix34 carMatrix = inst->GetMatrix(&aiVehicleMatrix);
@@ -3625,7 +3624,7 @@ void aiVehicleInstanceFeatureHandler::DrawGlow() {
         if (brake < 0.f || speed == 0.f)
             tlight->Draw(shaders);
         //draw headlight copy
-        if (AIMAP->drawHeadlights)
+        if (aiMap::Instance->drawHeadlights)
             tlight->Draw(shaders);
     }
 
@@ -3647,7 +3646,7 @@ void aiVehicleInstanceFeatureHandler::DrawGlow() {
     if (ambientHeadlightStyle < 3) {
         if (ambientHeadlightStyle == 0 || ambientHeadlightStyle == 2) {
             //MM2 headlights
-            if (AIMAP->drawHeadlights) {
+            if (aiMap::Instance->drawHeadlights) {
                 //call original
                 hook::Thunk<0x552930>::Call<void>(this);
             }
@@ -3657,7 +3656,7 @@ void aiVehicleInstanceFeatureHandler::DrawGlow() {
             Matrix44::Convert(gfxRenderState::sm_World, &carMatrix);
             *(int*)0x685778 |= 0x88; //set m_Touched
 
-            if (hlight != nullptr && AIMAP->drawHeadlights) {
+            if (hlight != nullptr && aiMap::Instance->drawHeadlights) {
                 hlight->Draw(shaders);
             }
         }
