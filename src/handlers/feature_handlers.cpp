@@ -4044,16 +4044,15 @@ void vehCableCarInstanceHandler::Install()
 
 static ConfigValue<bool> cfgHudArrowStyles("EnableHudArrowStyles", true);
 
-void mmArrowHandler::SetShape(LPCSTR modelName, LPCSTR dirName, bool useLVertex, Vector3* a4)
-{
+void mmArrowHandler::SetShape(LPCSTR modelName, LPCSTR dirName, bool useLVertex, Vector3* a4) {
+    auto form = reinterpret_cast<asMeshSetForm*>(this);
+
     if (dgStatePack::Instance->GameMode == Blitz)
-        hook::Thunk<0x533660>::Call<void>(this, "hudarrow_blitz01", "geometry", 0, nullptr);
-
+        form->SetShape("hudarrow_blitz01", "geometry", 0);
     else if (dgStatePack::Instance->GameMode == CrashCourse)
-        hook::Thunk<0x533660>::Call<void>(this, "hudarrow_cc01", "geometry", 0, nullptr);
-
+        form->SetShape("hudarrow_cc01", "geometry", 0);
     else
-        hook::Thunk<0x533660>::Call<void>(this, "hudarrow01", "geometry", 0, nullptr);
+        form->SetShape("hudarrow01", "geometry", 0);
 }
 
 void mmArrowHandler::Install()
