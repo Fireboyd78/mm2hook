@@ -86,6 +86,8 @@ namespace MM2
         byte _buffer5[0x4];
         lvlMaterial *CurrentPhysicsMaterial;
     public:
+        static hook::Type<float> WeatherFriction;
+
         inline Matrix34 getMatrix() {
             return this->WheelMatrix;
         }

@@ -1431,13 +1431,19 @@ void mmGameHandler::SendChatMessage(char *message) {
         if (!strcmp(message, "/gravity")) {
             dgPhysManager::Gravity.set(dgPhysManager::Gravity.get() == -19.6f ? -9.8f : -19.6f);
         }
+        if (!strcmp(message, "/slide")) {
+            if (MMSTATE->WeatherType == 3 && MMSTATE->TimeOfDay == 3)
+                vehWheel::WeatherFriction.set(vehWheel::WeatherFriction.get() == 0.75f ? -0.02f : 0.75f);
+            else if (MMSTATE->WeatherType == 3 && MMSTATE->TimeOfDay != 3)
+                vehWheel::WeatherFriction.set(vehWheel::WeatherFriction.get() == 0.8f ? -0.03f : 0.8f);
+            else
+                vehWheel::WeatherFriction.set(vehWheel::WeatherFriction.get() == 1.f ? -0.04f : 1.f);
+        }
 
         //send to dispatcher
         GameEventDispatcher::onChatMessage(message);
     }
 }
-
-hook::Type<float> wheelFriction(0x5CF6B8);
 
 void mmGameHandler::InitWeather(void) {
     // should've already been initialized, but juuuust in case...
