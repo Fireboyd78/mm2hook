@@ -617,9 +617,15 @@ public:
 
     static void Install() {
         InstallCallback("datStack::ExceptionFilter", "Custom exception filter",
-            &MM2::datStack::ExceptionFilterCombined, {
+            &MM2::datStack::ExceptionFilter, {
                 cb::jmp(0x4C7720), //redirect function
             });
+
+        InstallCallback("datStack::ExceptionFilter", "Custom exception filter",
+            &MM2::datStack::ExceptionFilterCombined, {
+                cb::call(0x4022FF), //redirect function
+            });
+
         InstallCallback("datStack::LookupAddress", "Allows for more detailed address information.",
             static_cast<void (*)(char*, LPCSTR, int, char*, int)>(&GetAddressName), {
                 cb::call(0x4C74DD), // sprintf
