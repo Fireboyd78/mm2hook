@@ -1393,6 +1393,9 @@ void memSafeHeapHandler::Install() {
     mmGameHandler
 */
 
+hook::Type<float> bridgeSpeed(0x5DBFA4);
+hook::Type<float> bridgeAngle(0x5DBFA8);
+
 void mmGameHandler::SendChatMessage(char *message) {
     if (g_bConsoleOpen) {
         if (MM2Lua::IsEnabled())
@@ -1438,6 +1441,10 @@ void mmGameHandler::SendChatMessage(char *message) {
                 vehWheel::WeatherFriction.set(vehWheel::WeatherFriction.get() == 0.8f ? -0.03f : 0.8f);
             else
                 vehWheel::WeatherFriction.set(vehWheel::WeatherFriction.get() == 1.f ? -0.04f : 1.f);
+        }
+        if (!strcmp(message, "/bridge")) {
+            bridgeSpeed.set(bridgeSpeed.get() == 0.05f ? 2.5f : 0.05f);
+            bridgeAngle.set(bridgeAngle.get() == 0.471238941f ? 1.f : 0.471238941f);
         }
 
         //send to dispatcher
