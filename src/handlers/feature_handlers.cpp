@@ -4055,6 +4055,8 @@ void vehCableCarInstanceHandler::Install()
     mmArrowHandler
 */
 
+static ConfigValue<bool> cfgHudArrowStyles("EnableHudArrowStyles", true);
+
 void mmArrowHandler::SetShape(LPCSTR modelName, LPCSTR dirName, bool useLVertex, Vector3* a4) {
     auto form = reinterpret_cast<asMeshSetForm*>(this);
 
@@ -4066,12 +4068,15 @@ void mmArrowHandler::SetShape(LPCSTR modelName, LPCSTR dirName, bool useLVertex,
         form->SetShape("hudarrow01", "geometry", 0);
 }
 
-void mmArrowHandler::Install() {
-    InstallCallback("mmArrow::mmArrow", "Enables the unused hud arrows for blitz and crash course game modes.",
-        &SetShape, {
-            cb::call(0x42E6BA),
-        }
-    );
+void mmArrowHandler::Install()
+{
+    if (cfgHudArrowStyles.Get()) {
+        InstallCallback("mmArrow::mmArrow", "Enables the unused hud arrows for blitz and crash course game modes.",
+            &SetShape, {
+                cb::call(0x42E6BA),
+            }
+        );
+    }
 }
 
 #ifndef FEATURES_DECLARED
