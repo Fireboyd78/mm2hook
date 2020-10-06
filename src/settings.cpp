@@ -18,26 +18,8 @@ DWORD line_reader::fill_buffer() {
     m_index = -1;
 
     if (!m_eof) {
-        if (SetFilePointer(m_handle, m_offset, NULL, FILE_BEGIN) != -1
-            && ReadFile(m_handle, &m_buffer, sizeof(m_buffer), &length, NULL)) {
-            if (length < sizeof(m_buffer))
-                m_buffer[length] = NULL;
-
-            // terminate after the last line-break (if needed)
-            for (DWORD i = length; i > 0; i--) {
-                // acceptable
-                if (m_buffer[i] == '\0')
-                    break;
-
-                if (m_buffer[i - 1] == '\n') {
-                    m_buffer[i] = '\0';
-
-                    // adjust length
-                    length = i;
-                    break;
-                }
-            }
-
+        if (ReadFile(m_handle, &m_buffer, sizeof(m_buffer) - 1, &length, NULL) && (length > 0)) {
+            m_buffer[length] = '\0';
             m_offset += length;
             m_index = 0;
         } else {
@@ -49,57 +31,49 @@ DWORD line_reader::fill_buffer() {
 }
 
 std::string line_reader::read_line() {
-    std::string result = "";
+    std::string result;
+    bool done = false;
 
-    // nothing to read
-    if (m_index == -1 && fill_buffer() == 0)
-        return result;
+    while (!done) {
+        if (m_buffer[m_index] == '\0')
+            fill_buffer();
 
-    int start = m_index;
-    int end = -1;
+        if (m_eof) {
+            ++m_line;
+            break;
+        }
 
-    while (m_index < sizeof(m_buffer)) {
-        int idx = m_index++;
+        const char* data = &m_buffer[m_index];
+        int length = std::strcspn(data, "\n");
+        m_index += length;
 
-        char c = m_buffer[idx];
-        
-        if (c == '\0' || (c == '\n')) {
-            if (end == -1)
-                end = idx;
+        bool done = false;
 
-            result = std::string(&m_buffer[start], (end - start));
+        if (data[length] == '\n') {
+            ++m_index;
             ++m_line;
 
-            if (c == '\0')
-                m_index = -1;
+            if (length > 0 && data[length - 1] == '\r')
+                --length;
 
-            break;
-        } else if (c == '\r') {
-            end = idx;
+            done = true;
         }
+
+        result.append(data, length);
     }
 
     return result;
 }
 
 std::string line_reader::read_line(bool (*predicate)(std::string &)) {
-    std::string result = read_line();
+    while (!eof()) {
+        std::string result = read_line();
 
-    // no predicate == valid (cause there's nothing to check)
-    bool valid = (predicate == nullptr);
-
-    while (!valid) {
-        if (predicate(result)) {
-            valid = true;
-        } else {
-            result = read_line();
-
-            if (m_index == -1)
-                break;
-        }
+        if (predicate(result))
+            return result;
     }
 
-    return result;
+    return "";
 }
 
 /*
@@ -150,7 +124,7 @@ std::string read_line(line_reader &reader) {
         line = line.substr(trim);
 
     size_t length = line.length();
-    
+
     // strip out inline comments
     for (size_t idx = 0; idx < length; idx++) {
         char c = line[idx];
@@ -231,7 +205,7 @@ bool HookConfig::Read() {
         }
 
         key = read_token(line, 0, pIdx);
-        
+
         // property value (trim leading whitespace as needed)
         size_t vIdx = skip_whitespace(line, (pIdx + 1),  end);
 
@@ -280,7 +254,7 @@ void HookConfig::Close() {
     }
 }
 
-bool HookConfig::GetProperty(const char *key, char *value) {
+bool HookConfig::GetProperty(const char *key, char *value, size_t buf_len) {
     if (!isLoaded)
         return false;
 
@@ -288,11 +262,11 @@ bool HookConfig::GetProperty(const char *key, char *value) {
 
     if (prop != properties.end()) {
         if (value != nullptr)
-            strcpy(value, prop->second.c_str());
+            strcpy_s(value, buf_len, prop->second.c_str());
 
         return true;
     }
-    
+
     return false;
 }
 
@@ -316,7 +290,7 @@ bool HookConfig::GetProperty(const char *key, int &value) {
 
     char buffer[128] { NULL };
 
-    if (GetProperty(key, buffer)) {
+    if (GetProperty(key, buffer, sizeof(buffer))) {
         value = atoi(buffer);
         return true;
     }
@@ -330,7 +304,7 @@ bool HookConfig::GetProperty(const char *key, float &value) {
 
     char buffer[128] { NULL };
 
-    if (GetProperty(key, buffer)) {
+    if (GetProperty(key, buffer, sizeof(buffer))) {
         value = (float)atof(buffer);
         return true;
     }
@@ -359,11 +333,17 @@ bool ConfigProperty::Get() {
     return HookConfig::IsFlagEnabled(name);
 }
 
-bool ConfigProperty::Get(char *value) {
-    if (CanCheckArg() && datArgParser::Get(arg, 0, reinterpret_cast<const char **>(value)))
-        return true;
+bool ConfigProperty::Get(char *value, size_t buf_len) {
+    if (CanCheckArg()) {
+        const char* arg_value = nullptr;
 
-    return HookConfig::GetProperty(name, value);
+        if (datArgParser::Get(arg, 0, &arg_value)) {
+            strcpy_s(value, buf_len, arg_value);
+            return true;
+        }
+    }
+
+    return HookConfig::GetProperty(name, value, buf_len);
 }
 
 bool ConfigProperty::Get(bool &value) {

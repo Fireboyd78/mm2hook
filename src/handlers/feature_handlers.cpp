@@ -1163,7 +1163,7 @@ bool mmGameMusicDataHandler::LoadAmbientSFX(LPCSTR name) {
 }
 
 void mmGameMusicDataHandler::Install() {
-    HookConfig::GetProperty("DefaultCityAmbienceFile", defaultCityAmbienceFile);
+    HookConfig::GetProperty("DefaultCityAmbienceFile", defaultCityAmbienceFile, sizeof(defaultCityAmbienceFile));
 
     InstallCallback("mmGameMusicData::LoadAmbientSFX", "Allows for custom ambient effects in addon cities.",
         &LoadAmbientSFX, {
@@ -1190,7 +1190,7 @@ void vehCarAudioContainerHandler::SetSirenCSVName(LPCSTR name) {
 }
 
 void vehCarAudioContainerHandler::Install() {
-    HookConfig::GetProperty("DefaultCitySirenFile", defaultCitySirenFile);
+    HookConfig::GetProperty("DefaultCitySirenFile", defaultCitySirenFile, sizeof(defaultCitySirenFile));
 
     InstallCallback("vehCarAudioContainer::SetSirenCSVName", "Allows for custom sirens in addon cities.",
         &SetSirenCSVName, {
