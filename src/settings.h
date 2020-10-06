@@ -15,7 +15,7 @@ class line_reader {
 
     bool m_eof = false;
 
-    char m_buffer[16] = { NULL };
+    char m_buffer[8192] = { NULL };
 
     DWORD fill_buffer();
 
