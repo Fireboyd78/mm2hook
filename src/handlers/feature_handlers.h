@@ -7,25 +7,6 @@
 
 #include "..\events\dispatcher.h"
 
-static bool g_bConsoleOpen;
-static bool showMeCops;
-static bool hazardLights;
-static bool leftSignal;
-static bool rightSignal;
-
-static ConfigValue<bool> cfgInstantReplay           ("InstantReplay",           true);
-static ConfigValue<bool> cfgUseAllParkedCars        ("UseAllParkedCars",        true);
-static ConfigValue<bool> cfgUseAllTrafficColors     ("UseAllTrafficColors",     true);
-static ConfigValue<bool> cfgAmbientSoundsWithMusic  ("AmbientSoundsWithMusic",  true);
-static ConfigValue<bool> cfgFlashingHeadlights      ("FlashingHeadlights",      true);
-static ConfigValue<bool> cfgEnableSignals           ("EnableSignalLights",      false);
-static ConfigValue<int> cfgAmbientHeadlightStyle    ("AmbientHeadlightStyle",   0);
-static ConfigValue<int> cfgHeadlightStyle           ("HeadlightStyle",          0);
-static ConfigValue<int> cfgSirenStyle               ("SirenStyle",              0);
-static ConfigValue<float> cfgSirenCycleRate         ("SirenCycle",    0.25f);
-static ConfigValue<float> cfgFerrySpeedMultiplier   ("FerrySpeedMultiplier",    5.0f);
-
-
 class asCullManagerHandler {
 public:
     void Init(int maxCullables, int maxCullables2D);
@@ -211,7 +192,7 @@ public:
 class mmDashViewHandler {
 public:
     static float TachMinLimit;
-    
+
     void UpdateCS();
     void FileIO(MM2::datParser* parser);
 
@@ -298,7 +279,7 @@ public:
 };
 
 class vehCarModelFeatureHandler {
-public: 
+public:
     void DrawWhl4(int a2, int a3, MM2::Matrix34* a4, int a5);
     void DrawWhl5(int a2, int a3, MM2::Matrix34* a4, int a5);
     void DrawGlow();

@@ -398,7 +398,7 @@ public:
                 }, "Disables physics collision error debugging (use '-physDebug' to enable)."
             );
         }
-        
+
         InstallCallback(&ParseStateArgs, {
             cb::call(0x4013A4)
         }, "State pack argument parsing.");
@@ -496,7 +496,7 @@ public:
             datOutput::CallBeforeMsgBoxFunction();
 
             MessageBoxA(NULL, FormatBuffer, Prefixes[level], MB_ICONERROR);
-            
+
             if (level == 4)
                 datOutput::CallAfterMsgBoxFunction();
         }
@@ -640,6 +640,9 @@ public:
     }
 };
 
+static ConfigValue<bool> cfgUseAllParkedCars ("UseAllParkedCars", true);
+static ConfigValue<bool> cfgUseAllTrafficColors ("UseAllTrafficColors", true);
+
 class HookSystemFramework
 {
 private:
@@ -684,12 +687,6 @@ private:
         InstallPatch("Disable lock check", { 0x65 /* jnz 40130D */ }, {
             0x4012A7, // Main
         });
-
-        if (cfgInstantReplay) {
-            InstallPatch("Add replay button to main menu", { 0x3C }, {
-                0x505EC3 + 2, // MainMenu::MainMenu(int)
-            });
-        }
 
         InstallPatch("Fixes being kicked in multiplayer when losing focus", { 0xB8, 0x00, 0x00, 0x00, 0x00, 0xC3 /* mov eax, 0 -> ret */ }, {
             0x4390F0,   //mmGameMulti::LostCallback
@@ -783,7 +780,7 @@ public:
             MM2Lua::Reset();
         }
 
-        if (!restarting) 
+        if (!restarting)
         {
             auto imguiNode = new mmImGuiManager();
             imguiNode->Init();

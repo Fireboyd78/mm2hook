@@ -32,9 +32,8 @@ DWORD line_reader::fill_buffer() {
 
 std::string line_reader::read_line() {
     std::string result;
-    bool done = false;
 
-    while (!done) {
+    while (true) {
         if (m_buffer[m_index] == '\0')
             fill_buffer();
 
@@ -47,19 +46,17 @@ std::string line_reader::read_line() {
         int length = std::strcspn(data, "\n");
         m_index += length;
 
-        bool done = false;
+        result.append(data, length);
 
         if (data[length] == '\n') {
             ++m_index;
             ++m_line;
 
-            if (length > 0 && data[length - 1] == '\r')
-                --length;
+            if (!result.empty() && result.back() == '\r')
+                result.pop_back();
 
-            done = true;
+            break;
         }
-
-        result.append(data, length);
     }
 
     return result;

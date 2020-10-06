@@ -73,7 +73,7 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<pedestrianInstanceHandler>("pedestrianInstanceHandler"),
 
     CreateHandler<aiVehicleInstanceFeatureHandler>("aiVehicleInstance"),
-    
+
     CreateHandler<luaDrawableHandler>("luaDrawableHandler")
 };
 
@@ -269,7 +269,7 @@ void cityLevelHandler::SetObjectDetail(int lod) {
     // By default the game doesn't set this based on the detail level
     float pedDrawThreshold = powf(HookConfig::GetProperty("PedestrianLod", 35.5f), 2) * (lod + 1);
     ped_LodThreshold = pedDrawThreshold;
-    
+
     LogFile::Format("[cityLevel::SetObjectDetail]: '%s'\n"
         " - OBJ { %.4f, %.4f, %.4f, %.4f }\n"
         " - SDL { %.4f, %.4f, %.4f }\n"
@@ -315,7 +315,7 @@ struct TimeWeatherInfo {
 
     bool ShowHeadlights;
     bool ShowLightGlows;
-    
+
     float FlatColorIntensity;
     float WeatherFriction;
 
@@ -330,7 +330,7 @@ struct TimeWeatherInfo {
     void FileIO(datParser &parser) {
         parser.AddValue("Headlights", &ShowHeadlights);
         parser.AddValue("LightGlows", &ShowLightGlows);
-        
+
         parser.AddValue("FlatColorIntensity", &FlatColorIntensity);
         parser.AddValue("WeatherFriction", &WeatherFriction);
 
@@ -348,7 +348,7 @@ struct TimeWeatherInfo {
 
         FlatColorIntensity = (statePack->TimeOfDay == 3) ? 0.5f : 1.0f;
 
-        WeatherFriction = (statePack->WeatherType == 3) 
+        WeatherFriction = (statePack->WeatherType == 3)
                             ? ((statePack->TimeOfDay == 3) ? 0.75f : 0.8f)
                             : 1.0f;
 
@@ -468,7 +468,7 @@ void cityTimeWeatherLightingHandler::Install() {
     InstallPatch("aiTrafficLightInstance::DrawGlow code injection", {
         0xE8, 0xCD, 0xCD, 0xCD, 0xCD,   // call <DEADCODE>
         0x90, 0x90,                     // nop(2)
-        
+
         0x0F, 0xBF, 0x4E, 0x3C,         // movsx ecx, word ptr [esi+3Ch]
     }, {
         0x53CABC, // aiTrafficLightInstance::DrawGlow
@@ -477,7 +477,7 @@ void cityTimeWeatherLightingHandler::Install() {
     InstallCallback(&CanDrawNightTrafficGlows, {
         cb::call(0x53CABC),
     }, "aiTrafficLightInstance::DrawGlow code implementation");
-    
+
     /*
         LoadCityTimeWeatherLighting hooks
     */
@@ -486,7 +486,7 @@ void cityTimeWeatherLightingHandler::Install() {
     InstallCallback(&NextTimeWeather, {
         cb::call(0x443564),
     }, "Custom iterator in LoadCityTimeWeatherLighting.");
-    
+
     // inject our custom properties into the .lt file parser
     InstallCallback(&FileIO, {
         cb::call(0x443584),
@@ -507,6 +507,11 @@ void gfxPipelineHandler::gfxApplySettings(void) {
 
     useInterface = gfxInterfaceChoice;
 }
+
+static bool g_bConsoleOpen = false;
+static bool hazardLights = false;
+static bool leftSignal = false;
+static bool rightSignal = false;
 
 bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
 {
@@ -1122,7 +1127,7 @@ void vglHandler::Install() {
 
 void Aud3DObjectManagerHandler::InitAmbObjContainer(LPCSTR name) {
     string_buf<80> buffer("%sambientcontainer", MMSTATE->CityName);
-    
+
     //don't continue if it doesn't exist
     if (!datAssetManager::Exists("aud\\ambient", buffer, "csv"))
         return;
@@ -1154,7 +1159,7 @@ char defaultCityAmbienceFile[64] = "londonambience";
 
 bool mmGameMusicDataHandler::LoadAmbientSFX(LPCSTR name) {
     string_buf<80> buffer("%sambience", MMSTATE->CityName);
-    
+
     LPCSTR szAmbientSFX = (datAssetManager::Exists("aud\\dmusic\\csv_files", buffer, "csv")) ? buffer : defaultCityAmbienceFile;
 
     LogFile::Format("AmbientSFX: %s\n", szAmbientSFX);
@@ -1181,7 +1186,7 @@ char defaultCitySirenFile[64] = "sfpolicesiren";
 
 void vehCarAudioContainerHandler::SetSirenCSVName(LPCSTR name) {
     string_buf<80> buffer("%spolicesiren", MMSTATE->CityName);
-    
+
     LPCSTR szSirenName = (datAssetManager::Exists("aud\\cardata\\player", buffer, "csv")) ? buffer : defaultCitySirenFile;
 
     LogFile::Format("SirenCSVName: %s\n", szSirenName);
@@ -1359,7 +1364,7 @@ void lvlHandler::Install() {
                 cb::call(0x45BEF4),
             }
         );
-    }   
+    }
 }
 
 /*
@@ -1395,6 +1400,8 @@ void memSafeHeapHandler::Install() {
 
 hook::Type<float> bridgeSpeed(0x5DBFA4);
 hook::Type<float> bridgeAngle(0x5DBFA8);
+
+static bool showMeCops = false;
 
 void mmGameHandler::SendChatMessage(char *message) {
     if (g_bConsoleOpen) {
@@ -1634,7 +1641,7 @@ void mmGameHandler::Install() {
     InstallPatch("Enables spawning in INST rooms.", { 0x04 }, {
         0x413C1C,
         });
-    
+
     if (cfgMm1StyleAutoReverse.Get()) {
         InstallCallback("mmGame::UpdateSteeringBrakes", "Improves auto reverse system.",
             &UpdateSteeringBrakes, {
@@ -1688,6 +1695,8 @@ void mmDirSndHandler::Install() {
     gizFerryHandler
 */
 
+static ConfigValue<float> cfgFerrySpeedMultiplier ("FerrySpeedMultiplier", 5.0f);
+
 void gizFerryHandler::SetSpeed(float value) {
     value *= cfgFerrySpeedMultiplier;
 
@@ -1740,15 +1749,15 @@ void gizParkedCarMgrHandler::Install() {
 */
 /*
     By default, bridges are treated as "Cullables" instead of "Drawables" (MM2 is weird)
-    
+
     Before the patch, Cull calls dgBangerInstance::Draw, and Draw does nothing.
     With the patch, these 2 functions are swapped around, so Draw calls dgBangerInstance::Draw, and Cull does nothing.
-    
+
     Problem solved, right? Nope. Cull is called by gizBridgeMgr::Cull, where as Draw is called by cityLevel::DrawRooms.
-    
+
     gizBridgeMgr has it's own maximum draw distance for bridges, so gizBridgeMgr::Cull draws them fine at range.
     But cityLevel::DrawRooms uses the prop lod distances, so the bridges end up disappearing a lot sooner.
-    
+
     A "solution" is to manually set the LOD distance values (see cityLevel::SetObjectDetail).
     But that would cause everything to be drawn further, and decrase FPS.
     It also seems to create rendering artifacts when set too high.
@@ -2355,14 +2364,14 @@ Stream * StreamHandler::Open(const char *filename, bool readOnly)
     const coreFileMethods *fileMethods = (readOnly) ? Stream::sm_DefaultOpenMethods : Stream::sm_DefaultCreateMethods;
 
     string_buf<MAX_PATH> modFilename(".\\mods\\%s", filename);
-    
+
     if (file_exists(modFilename))
     {
         LogFile::Format("[StreamHandler::Open]: Using '%s' file from mods directory (readOnly=%s)\n", filename, bool_str(readOnly));
 
         // don't let the name fool you, it's just non-zip file methods ;)
         fileMethods = Stream::sm_DefaultCreateMethods;
-        
+
         // override filename with new path
         filename = modFilename;
     }
@@ -2477,7 +2486,7 @@ void TextureVariantHandler::InitVariantData() {
             variant_infos.push_back(vInfo);
         }
     }
-    
+
     //add defaults
     if (dgStatePack::Instance->WeatherType == 3) {
         auto rVariant = variant_info();
@@ -2539,7 +2548,7 @@ gfxImage * TextureVariantHandler::LoadTextureVariant(const char *textureName, bo
                 return variantTex;
         }
     }
-    
+
     auto defaultTex = DefaultLoadImage(textureName, mipmaps);
     return defaultTex;
 }
@@ -2553,7 +2562,7 @@ gfxImage * TextureVariantHandler::PrepareTextureVariant(gfxImage* image, const c
             if (TextureVariantExists(textureName, variant_infos[i].suffix)) {
                 if (variant_infos[i].canDesaturate)
                     Desaturate(image);
-                
+
                 return image;
             }
         }
@@ -2601,7 +2610,7 @@ void TextureVariantHandler::Install()
     //--    InstallPatch({ 1 }, {
     //--        0x53CABC + 3
     //--    });
-    //--    
+    //--
     //--    /*
     //--        mmGame::InitWeather patches
     //--    */
@@ -2691,6 +2700,8 @@ public:
     }
 };
 
+ConfigValue<bool> cfgInstantReplay ("InstantReplay", true);
+
 void PUMainHandler::Install() {
     if (cfgInstantReplay) {
         InstallCallback("PUMain::ctor", "Overrides button placement for the pause menu.",
@@ -2701,6 +2712,10 @@ void PUMainHandler::Install() {
                 cb::call(0x50A7D0),
             }
         );
+
+        InstallPatch("Add replay button to main menu", { 0x3C }, {
+            0x505EC3 + 2, // MainMenu::MainMenu(int)
+        });
     }
 }
 
@@ -2721,7 +2736,7 @@ void mmPlayerHandler::Zoink() {
     auto player = reinterpret_cast<mmPlayer*>(this);
     auto car = player->getCar();
     auto carPos = car->getModel()->GetPosition();
-   
+
     // tell the player "That didn't happen!"
     player->getHUD()->SetMessage(AngelReadString(29), 3.f, 0);
 
@@ -2744,7 +2759,7 @@ void mmPlayerHandler::Zoink() {
 
     for (int is = 0; is < AIMAP->numIntersections; is++) {
         auto intersection = AIMAP->intersections[is];
-            
+
         // avoid dummy intersections
         if (intersection->pathCount == 0)
             continue;
@@ -2771,7 +2786,7 @@ void mmPlayerHandler::Zoink() {
             closestIntersection = is;
         }
     }
-    
+
     // move player to the closest intersection if we can
     auto carsim = car->getCarSim();
     if (closestIntersection >= 0) {
@@ -2786,7 +2801,7 @@ void mmPlayerHandler::Zoink() {
         // set back
         carsim->SetResetPos(&oldResetPos);
     }
-    else 
+    else
     {
         // reset vehicle to original spawn
         // no intersection found to teleport to
@@ -2800,7 +2815,7 @@ void mmPlayerHandler::Splash() {
     auto player = reinterpret_cast<mmPlayer*>(this);
     auto car = player->getCar();
     float vehicleMph = car->getModel()->GetVelocity()->Mag() * 2.23694f;
-    
+
     //trigger ColliderId 22 with velocity of vehicleMph
     auto impactAud = car->getAudio()->GetAudImpactPtr();
     impactAud->Play(vehicleMph, 22);
@@ -2842,7 +2857,7 @@ void mmPlayerHandler::Update() {
         prevSplashState = splashState;
     }
 
-    //check if we're damaged out 
+    //check if we're damaged out
     if (enableExplosionSoundCached) {
         if (curDamage >= maxDamage) {
             //turn off engine
@@ -2887,6 +2902,8 @@ void mmPlayerHandler::Reset() {
     // call original
     hook::Thunk<0x404A60>::Call<void>(this);
 }
+
+static ConfigValue<bool> cfgAmbientSoundsWithMusic ("AmbientSoundsWithMusic", true);
 
 void mmPlayerHandler::Install() {
     enableOutOfMapFixCached = cfgEnableOutOfMapFix.Get();
@@ -3313,7 +3330,7 @@ void vehCarModelFeatureHandler::DrawGlow() {
     }
 
     if (!cfgMm1StyleTransmission.Get()) {
-        //draw rlight 
+        //draw rlight
         if (rlight != nullptr && gear == 0) {
             rlight->Draw(shaders);
         }
@@ -3377,6 +3394,12 @@ void vehCarModelFeatureHandler::DrawGlow() {
     }
 }
 
+static ConfigValue<bool> cfgEnableSignals ("EnableSignalLights", false);
+static ConfigValue<bool> cfgFlashingHeadlights ("FlashingHeadlights", true);
+static ConfigValue<int> cfgSirenStyle ("SirenStyle", 0);
+static ConfigValue<int> cfgHeadlightStyle ("HeadlightStyle", 0);
+static ConfigValue<float> cfgSirenCycleRate ("SirenCycle", 0.25f);
+
 void vehCarModelFeatureHandler::Install() {
     InstallCallback("vehCarModel::DrawPart", "Use extra wheel matrices.",
         &DrawWhl4, {
@@ -3399,7 +3422,7 @@ void vehCarModelFeatureHandler::Install() {
             }
         );
     }
-    
+
     enableSignals = cfgEnableSignals.Get();
     flashingHeadlights = cfgFlashingHeadlights.Get();
     sirenStyle = cfgSirenStyle.Get();
@@ -3508,10 +3531,10 @@ void pedestrianInstanceHandler::aiMapInit(char * a1, char * a2, char * a3, const
 {
     //init aimap
     hook::Thunk<0x534FC0>::Call<void>(this, a1, a2, a3, a4, a5, a6, a7);
-    
+
     //init pedRagdollMgr
     pedRagdollMgr::Instance = new pedRagdollMgr();
-    
+
     char* values[2] = { "pedmodel_man", "pedmodel_woman" };
     pedRagdollMgr::Instance->Init(2, values);
 
@@ -3532,9 +3555,9 @@ void pedestrianInstanceHandler::DrawRagdoll() {
 
     //matrices
     Matrix44 pedestrianMatrixList[32]; //bone matrices
-    
-    //get pedActive                                   
-    auto active = reinterpret_cast<pedActive*>(inst->GetEntity()); 
+
+    //get pedActive
+    auto active = reinterpret_cast<pedActive*>(inst->GetEntity());
 
     //set matrix
     gfxRenderState::sm_World->Identity();
@@ -3675,6 +3698,8 @@ void aiVehicleInstanceFeatureHandler::DrawGlow() {
         }
     }
 }
+
+static ConfigValue<int> cfgAmbientHeadlightStyle ("AmbientHeadlightStyle", 0);
 
 void aiVehicleInstanceFeatureHandler::Install() {
     ambientHeadlightStyle = cfgAmbientHeadlightStyle.Get();
@@ -3966,7 +3991,7 @@ void vehCableCarInstanceHandler::DrawShadow()
 {
     //get vars
     auto inst = reinterpret_cast<lvlInstance*>(this);
-    int geomSet = inst->getGeomSetId() - 1; 
+    int geomSet = inst->getGeomSetId() - 1;
 
     //get our shader set
     int shaderSet = 0;
@@ -3976,7 +4001,7 @@ void vehCableCarInstanceHandler::DrawShadow()
     Matrix34 shadowMatrix;
     Matrix34 dummyMatrix;
 
-    if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, inst->getRoomId(), &inst->GetMatrix(&dummyMatrix))) 
+    if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, inst->getRoomId(), &inst->GetMatrix(&dummyMatrix)))
     {
         //setup renderer
         *(int*)0x685778 |= 0x88; //set m_Touched
@@ -3996,7 +4021,7 @@ void vehCableCarInstanceHandler::DrawGlow()
     //We only draw a headlight glow here. Bail immediately if we can
     if (!aiMap::Instance->drawHeadlights)
         return;
-    
+
     //get vars
     auto inst = reinterpret_cast<lvlInstance*>(this);
     int geomSet = inst->getGeomSetId() - 1;
@@ -4082,5 +4107,3 @@ void mmArrowHandler::Install()
 #ifndef FEATURES_DECLARED
 #define FEATURES_DECLARED
 #endif
-
-
