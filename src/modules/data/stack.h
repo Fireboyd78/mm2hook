@@ -90,7 +90,7 @@ namespace MM2
                 
             //fill address and stack buf
             datStack::LookupAddress(addressBuf, ctx->Eip);
-            sprintf(stackBuf, "EAX=%08x EBX=%08x ECX=%08x EDX=%08x\nESI=%08x EDI=%08x EBP=%08x ESP=%08x",
+            sprintf_s(stackBuf, "EAX=%08x EBX=%08x ECX=%08x EDX=%08x\nESI=%08x EDI=%08x EBP=%08x ESP=%08x",
                               ctx->Eax,
                               ctx->Ebx,
                               ctx->Ecx,
@@ -111,7 +111,7 @@ namespace MM2
             fclose(tempFile);
 
             //finally combine everything and show the error
-            sprintf(totalBuf, "%s\nException %x at EIP=%s\n%s", stackBuf, eptrs->ExceptionRecord->ExceptionCode, addressBuf, tracebackBuf);
+            sprintf_s(totalBuf, "%s\nException %x at EIP=%s\n%s", stackBuf, eptrs->ExceptionRecord->ExceptionCode, addressBuf, tracebackBuf);
             MessageBoxA(0, totalBuf, "Guru Meditation", MB_OK | MB_ICONSTOP);
             return 1;
         }

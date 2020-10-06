@@ -9,20 +9,16 @@
 class line_reader {
     HANDLE m_handle = nullptr;
     DWORD m_offset = 0;
-    
+
     int m_line = 0;
     int m_index = -1;
-    
+
     bool m_eof = false;
 
-    char m_buffer[8192] = { NULL };
-protected:
+    char m_buffer[16] = { NULL };
+
     DWORD fill_buffer();
 
-    void prepare_buffer() {
-        if (m_index == -1)
-            fill_buffer();
-    }
 public:
     explicit line_reader(HANDLE handle)
         : m_handle(handle) {
@@ -35,11 +31,7 @@ public:
     }
 
     bool eof() {
-        return m_eof || (m_index == -1 && fill_buffer() == 0);
-    }
-
-    bool can_read() {
-        return !m_eof && (m_index > -1) && (m_index < sizeof(m_buffer));
+        return m_eof;
     }
 
     std::string read_line();
@@ -56,7 +48,7 @@ public:
     // reads from the config file (if open)
     static bool Read();
 
-    static bool GetProperty(const char *key, char *value);
+    static bool GetProperty(const char *key, char *value, size_t buf_len);
     static bool GetProperty(const char *key, bool &value);
     static bool GetProperty(const char *key, int &value);
     static bool GetProperty(const char *key, float &value);
@@ -69,22 +61,6 @@ public:
 
         return getter(key, result),
             result;
-    }
-
-    template <>
-    static char * GetProperty<char *>(const char *key, char *defaultValue) {
-        char *result = defaultValue;
-        char buffer[MAX_PATH] { NULL };
-
-        if (GetProperty(key, buffer)) {
-            int len = strlen(buffer);
-
-            // allocate a new string buffer
-            result = new char[len] { NULL };
-            strncpy_s(result, len, buffer, len);
-        }
-
-        return result;
     }
 
     // is flag property present and enabled?
@@ -108,7 +84,7 @@ public:
     explicit ConfigProperty(const char *propName, const char *argName);
 
     bool Get();
-    bool Get(char *value);
+    bool Get(char *value, size_t buf_len);
     bool Get(bool &value);
     bool Get(int &value);
     bool Get(float &value);
