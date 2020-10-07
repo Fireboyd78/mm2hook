@@ -560,24 +560,24 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
             }
         } return true;
 
-        // '[{'
-        case VK_OEM_4: {
+        // ',<'
+        case VK_OEM_COMMA: {
             // toggle left signal
             leftSignal = !leftSignal;
             hazardLights = false;
             rightSignal = false;
         } return true;
 
-        // '\|'
-        case VK_OEM_5: {
+        // '-_'
+        case VK_OEM_MINUS: {
             // toggle hazard lights
             hazardLights = !hazardLights;
             leftSignal = false;
             rightSignal = false;
         } return true;
 
-        // ']}'
-        case VK_OEM_6: {
+        // '.>'
+        case VK_OEM_PERIOD: {
             // toggle right signal
             rightSignal = !rightSignal;
             hazardLights = false;
