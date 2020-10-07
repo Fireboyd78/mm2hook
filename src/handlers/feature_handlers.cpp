@@ -547,7 +547,8 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
             }
         } return true;
 
-        case VK_F7: {
+        // 'VK_L'
+        case 0x4C: {
             // TODO: make this a separate plugin
             // toggle vehicle headlights
             vehCar::sm_DrawHeadlights = !vehCar::sm_DrawHeadlights;
