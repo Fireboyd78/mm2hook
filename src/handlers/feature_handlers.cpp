@@ -3184,6 +3184,7 @@ int headlightStyle = 0;
 float sirenCycle = 0.25f;
 bool enableSignals = false;
 bool flashingHeadlights = true;
+bool nfsMwStyleTotaledCar = false;
 
 static ConfigValue<bool> cfgPartReflections("ReflectionsOnCarParts", false);
 
@@ -3255,7 +3256,11 @@ void vehCarModelFeatureHandler::DrawGlow() {
     auto car = model->getCar();
     auto carsim = car->getCarSim();
     auto siren = car->getSiren();
+    auto curDamage = car->getCarDamage()->getCurDamage();
+    auto maxDamage = car->getCarDamage()->getMaxDamage();
     int gear = carsim->getTransmission()->getGear();
+    if (curDamage >= maxDamage && nfsMwStyleTotaledCar)
+        return;
 
     //setup renderer
     Matrix34 carMatrix = model->GetMatrix(&vehCarModelGarbageMtx); //argument is useless, we want return value here
@@ -3395,6 +3400,7 @@ void vehCarModelFeatureHandler::DrawGlow() {
 
 static ConfigValue<bool> cfgEnableSignals ("EnableSignalLights", false);
 static ConfigValue<bool> cfgFlashingHeadlights ("FlashingHeadlights", true);
+static ConfigValue<bool> cfgNfsMwStyleTotaledCar("NFSMWStyleTotaledCar", false);
 static ConfigValue<int> cfgSirenStyle ("SirenStyle", 0);
 static ConfigValue<int> cfgHeadlightStyle ("HeadlightStyle", 0);
 static ConfigValue<float> cfgSirenCycleRate ("SirenCycle", 0.25f);
@@ -3427,6 +3433,7 @@ void vehCarModelFeatureHandler::Install() {
     sirenStyle = cfgSirenStyle.Get();
     headlightStyle = cfgHeadlightStyle.Get();
     sirenCycle = cfgSirenCycleRate.Get();
+    nfsMwStyleTotaledCar = cfgNfsMwStyleTotaledCar.Get();
     InstallVTableHook("vehCarModel::DrawGlow",
         &DrawGlow, {
             0x5B2CE8
