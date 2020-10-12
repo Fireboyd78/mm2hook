@@ -2839,8 +2839,6 @@ void mmPlayerHandler::Update() {
     auto audio = car->getAudio();
     auto siren = car->getSiren();
     auto engine = car->getCarSim()->getEngine();
-    auto curDamage = car->getCarDamage()->getCurDamage();
-    auto maxDamage = car->getCarDamage()->getMaxDamage();
     byte *sirenLights = *getPtr<byte*>(this, 0xF4);
 
     //check if we're out of the level
@@ -2860,7 +2858,7 @@ void mmPlayerHandler::Update() {
 
     //check if we're damaged out
     if (enableExplosionSoundCached) {
-        if (curDamage >= maxDamage) {
+        if (player->IsMaxDamaged()) {
             //turn off engine
             audio->SilenceEngine(1);
             engine->setCurrentTorque(0.f);
@@ -2871,7 +2869,7 @@ void mmPlayerHandler::Update() {
                 PlayExplosion();
             }
         }
-        if (curDamage < maxDamage) {
+        if (!player->IsMaxDamaged()) {
             audio->SilenceEngine(0);
         }
     }
