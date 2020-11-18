@@ -2056,68 +2056,62 @@ void mmHudMapFeatureHandler::DrawCops() {
 
 void mmHudMapFeatureHandler::DrawOpponents() {
     auto AIMAP = &aiMap::Instance;
-    int v1 = 0;
 
-    if (*getPtr<int>(this, 0xBC) > 0) {
-        for (int i = 0; i < *getPtr<__int16>(this, 0xBC); i++) {
-            int v2 = v1 + *getPtr<int>(this, 0x34);
-            auto oppMtx = *(Matrix34**)(v2 + 8);
+    for (int i = 0; i < *getPtr<__int16>(this, 0xBC); i++) {
+        int v2 = *getPtr<int>(this, 0x34) + (i * 0x28);
+        auto oppMtx = *(Matrix34**)(v2 + 8);
 
-            if (*(int*)(v2 + 4)) {
-                // draw triangle outline
-                float triSize = *getPtr<float>(this, 0x64) * 1.3f;
-                auto sizeHandler = *getPtr<Matrix34*>(this, 0x64);
-                *getPtr<float>(this, 0x64) = triSize;
+        if (*(int*)(v2 + 4) && oppMtx) {
+            // draw triangle outline
+            float triSize = *getPtr<float>(this, 0x64) * 1.3f;
+            auto sizeHandler = *getPtr<Matrix34*>(this, 0x64);
+            *getPtr<float>(this, 0x64) = triSize;
 
-                // check if we're in multiplayer
-                if (MMSTATE->unk_EC) {
-                    DrawIcon(0, oppMtx);
-                    *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-                    DrawIcon(i + 2, oppMtx);
-                }
-                if (!MMSTATE->unk_EC) {
-                    auto opp = AIMAP->Opponent(i);
-                    auto car = opp->getCar();
-                    auto curDamage = car->getCarDamage()->getCurDamage();
-                    auto maxDamage = car->getCarDamage()->getMaxDamage();
+            // check if we're in multiplayer
+            if (MMSTATE->unk_EC) {
+                DrawIcon(0, oppMtx);
+                *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+                DrawIcon(i + 2, oppMtx);
+            } else {
+                auto opp = AIMAP->Opponent(i);
+                auto car = opp->getCar();
+                auto curDamage = car->getCarDamage()->getCurDamage();
+                auto maxDamage = car->getCarDamage()->getMaxDamage();
 
-                    if (hudMapColorStyle < 5) {
-                        if (curDamage < maxDamage) {
-                            if (hudMapColorStyle == 0) {
-                                DrawIcon(0, oppMtx);
-                                *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-                                DrawIcon(7, oppMtx);
-                            }
-                            if (hudMapColorStyle == 1) {
-                                DrawIcon(0, oppMtx);
-                                *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-                                DrawIcon(i + 2, oppMtx);
-                            }
-                            if (hudMapColorStyle == 2) {
-                                DrawIcon(0, oppMtx);
-                                *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-                                DrawNfsMwOpponentIcon(oppMtx);
-                            }
-                            if (hudMapColorStyle == 3) {
-                                DrawIcon(0, oppMtx);
-                                *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-                                DrawIcon(6, oppMtx);
-                            }
-                            if (hudMapColorStyle == 4) {
-                                DrawIcon(opponentTriOutlineColor, oppMtx);
-                                *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-                                DrawIcon(opponentTriColor, oppMtx);
-                            }
-                        }
-                        if (curDamage >= maxDamage) {
+                if (hudMapColorStyle < 5) {
+                    if (curDamage < maxDamage) {
+                        if (hudMapColorStyle == 0) {
                             DrawIcon(0, oppMtx);
                             *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-                            DrawIcon(16, oppMtx);
+                            DrawIcon(7, oppMtx);
                         }
+                        else if (hudMapColorStyle == 1) {
+                            DrawIcon(0, oppMtx);
+                            *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+                            DrawIcon(i + 2, oppMtx);
+                        }
+                        else if (hudMapColorStyle == 2) {
+                            DrawIcon(0, oppMtx);
+                            *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+                            DrawNfsMwOpponentIcon(oppMtx);
+                        }
+                        else if (hudMapColorStyle == 3) {
+                            DrawIcon(0, oppMtx);
+                            *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+                            DrawIcon(6, oppMtx);
+                        }
+                        else if (hudMapColorStyle == 4) {
+                            DrawIcon(opponentTriOutlineColor, oppMtx);
+                            *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+                            DrawIcon(opponentTriColor, oppMtx);
+                        }
+                    } else {
+                        DrawIcon(0, oppMtx);
+                        *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+                        DrawIcon(16, oppMtx);
                     }
                 }
             }
-            v1 += 40;
         }
     }
 }
