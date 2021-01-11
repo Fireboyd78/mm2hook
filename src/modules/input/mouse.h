@@ -45,7 +45,7 @@ namespace MM2
             return current && !last;
         }
 
-        static bool GetButtonPressed(int button) {
+        static bool GetButton(int button) {
             int flag = 1 << button;
 
             bool current = (m_Buttons.get() & flag) != 0;
@@ -67,7 +67,7 @@ namespace MM2
             LuaBinding(L).beginClass<ioMouse>("ioMouse")
                 .addStaticFunction("GetButtonUp", &GetButtonUp)
                 .addStaticFunction("GetButtonDown", &GetButtonDown)
-                .addStaticFunction("GetButtonPressed", &GetButtonPressed)
+                .addStaticFunction("GetButton", &GetButton)
                 .addStaticProperty("x", [] { return m_X.get(); })
                 .addStaticProperty("y", [] { return m_Y.get(); })   
                 .endClass();
