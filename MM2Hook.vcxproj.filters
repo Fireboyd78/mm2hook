@@ -102,6 +102,9 @@
     <Filter Include="Source Files\imgui\renderer">
       <UniqueIdentifier>{28b01d55-9318-4d0f-812c-2a4f55fb56dc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\implot">
+      <UniqueIdentifier>{ff1c3a0d-223e-4913-9c4e-e4adaaa4d0d4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\lua\lapi.h">
@@ -936,6 +939,12 @@
     <ClInclude Include="src\modules\data\refcount.h">
       <Filter>Source Files\modules\data</Filter>
     </ClInclude>
+    <ClInclude Include="src\implot\implot_internal.h">
+      <Filter>Source Files\implot</Filter>
+    </ClInclude>
+    <ClInclude Include="src\implot\implot.h">
+      <Filter>Source Files\implot</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
@@ -1249,6 +1258,15 @@
     </ClCompile>
     <ClCompile Include="src\hook.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\implot\implot_demo.cpp">
+      <Filter>Source Files\implot</Filter>
+    </ClCompile>
+    <ClCompile Include="src\implot\implot_items.cpp">
+      <Filter>Source Files\implot</Filter>
+    </ClCompile>
+    <ClCompile Include="src\implot\implot.cpp">
+      <Filter>Source Files\implot</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -16,7 +16,7 @@
     <ProjectGuid>{6CC7F4D6-BD50-4664-B731-1034CA380774}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>MM2Hook</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
@@ -134,6 +134,8 @@
     <ClInclude Include="src\imgui\imstb_truetype.h" />
     <ClInclude Include="src\imgui\misc\cpp\imgui_stdlib.h" />
     <ClInclude Include="src\imgui\renderer\imgui_age_rendernode.h" />
+    <ClInclude Include="src\implot\implot.h" />
+    <ClInclude Include="src\implot\implot_internal.h" />
     <ClInclude Include="src\luafilesystem\lfs.h" />
     <ClInclude Include="src\mm2_effects.h" />
     <ClInclude Include="src\events\dispatcher.h" />
@@ -365,6 +367,9 @@
     <ClCompile Include="src\imgui\luabindings\imgui_lua_bindings.cpp" />
     <ClCompile Include="src\imgui\misc\cpp\imgui_stdlib.cpp" />
     <ClCompile Include="src\imgui\renderer\imgui_age_rendernode.cpp" />
+    <ClCompile Include="src\implot\implot.cpp" />
+    <ClCompile Include="src\implot\implot_demo.cpp" />
+    <ClCompile Include="src\implot\implot_items.cpp" />
     <ClCompile Include="src\luafilesystem\lfs.c" />
     <ClCompile Include="src\mm2_effects.cpp" />
     <ClCompile Include="src\events\dispatcher.cpp" />

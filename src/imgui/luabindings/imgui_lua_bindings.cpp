@@ -4,6 +4,7 @@
 #include <string>
 
 #include "..\imgui.h"
+#include "..\..\implot\implot.h"
 #include "..\misc\cpp\imgui_stdlib.h"
 #include <mm2_gfx.h>
 
@@ -432,8 +433,103 @@ static ImVec2 ImGuiCalcTextSizeLua(const char* text, const char* text_end, bool 
     return ImGui::CalcTextSize(text, text_end, hide_text_after_double_hash, wrap_width);
 }
 
+///////////////////
+//IMPLOT BINDINGS//
+///////////////////
+static bool ImPlot_BeginPlot(const char* title_id, const char* x_label, const char* y_label, ImVec2 size, ImPlotFlags flags ,
+                            ImPlotAxisFlags x_flags, ImPlotAxisFlags y_flags, ImPlotAxisFlags y2_flags, ImPlotAxisFlags y3_flags) {
+
+    return ImPlot::BeginPlot(title_id, ProcessNullableString(x_label), ProcessNullableString(y_label), size, flags, x_flags, y_flags, y2_flags, y3_flags);
+}
+
+static void ImPlot_EndPlot() {
+    ImPlot::EndPlot();
+}
+
+static void ImPlot_PlotText(const char* text, double x, double y, bool vertical, ImVec2 pix_offset) {
+    ImPlot::PlotText(text, x, y, vertical, pix_offset);
+}
+
+static void ImPlot_PlotBars(const char* label_id, LuaRef xValues, LuaRef yValues, double width, int offset) {
+    std::vector<float> xAxisVector;
+    if (!TableValuesToArray<float>(xValues, LuaTypeID::NUMBER, xAxisVector))
+        return;
+
+    std::vector<float> yAxisVector;
+    if (!TableValuesToArray<float>(yValues, LuaTypeID::NUMBER, yAxisVector))
+        return;
+
+    int count = min(xAxisVector.size(), yAxisVector.size());
+    ImPlot::PlotBars(label_id, xAxisVector.data(), yAxisVector.data(), count, width, offset);
+}
+
+static void ImPlot_PlotScatter(const char* label_id, LuaRef xValues, LuaRef yValues, int offset) {
+    std::vector<float> xAxisVector;
+    if (!TableValuesToArray<float>(xValues, LuaTypeID::NUMBER, xAxisVector))
+        return;
+
+    std::vector<float> yAxisVector;
+    if (!TableValuesToArray<float>(yValues, LuaTypeID::NUMBER, yAxisVector))
+        return;
+
+    int count = min(xAxisVector.size(), yAxisVector.size());
+    ImPlot::PlotScatter(label_id, xAxisVector.data(), yAxisVector.data(), count, offset);
+}
+
+template <typename T>
+static void ImPlot_SharedPlotFnSignature(const char* label, LuaRef xValues, LuaRef yValues, int offset, void(*plotFunction)(const char* label, T* x, T* y, int count, int offset)) 
+{
+    std::vector<float> xAxisVector;
+    if (!TableValuesToArray<float>(xValues, LuaTypeID::NUMBER, xAxisVector))
+        return;
+
+    std::vector<float> yAxisVector;
+    if (!TableValuesToArray<float>(yValues, LuaTypeID::NUMBER, yAxisVector))
+        return;
+
+    int count = min(xAxisVector.size(), yAxisVector.size());
+    plotFunction(label, xAxisVector.data(), yAxisVector.data(), count, offset);
+}
+
+static void ImPlot_PlotLine(const char* label, LuaRef xValues, LuaRef yValues, int offset) {
+    std::vector<float> xAxisVector;
+    if (!TableValuesToArray<float>(xValues, LuaTypeID::NUMBER, xAxisVector))
+        return;
+
+    std::vector<float> yAxisVector;
+    if (!TableValuesToArray<float>(yValues, LuaTypeID::NUMBER, yAxisVector))
+        return;
+
+    int count = min(xAxisVector.size(), yAxisVector.size());
+    ImPlot::PlotLine(label, xAxisVector.data(), yAxisVector.data(), count, offset);
+}
+
+static void ImPlot_PlotDigital(const char* label, LuaRef xValues, LuaRef yValues, int offset) {
+    std::vector<float> xAxisVector;
+    if (!TableValuesToArray<float>(xValues, LuaTypeID::NUMBER, xAxisVector))
+        return;
+
+    std::vector<float> yAxisVector;
+    if (!TableValuesToArray<float>(yValues, LuaTypeID::NUMBER, yAxisVector))
+        return;
+
+    int count = min(xAxisVector.size(), yAxisVector.size());
+    ImPlot::PlotDigital(label, xAxisVector.data(), yAxisVector.data(), count, offset);
+}
+
 //
 static void ImguiBindLua(LuaState L) {
+    LuaBinding(L).beginClass<ImPlotPoint>("ImPlotPoint")
+        .addFactory([](double x = 0.0, double y = 0.0) {
+            auto vec = new ImPlotPoint();
+            vec->x = x;
+            vec->y = y;
+            return vec;
+        }, LUA_ARGS(_opt<double>, _opt<double>))
+        .addVariableRef("x", &ImPlotPoint::x)
+        .addVariableRef("y", &ImPlotPoint::y)
+        .endClass();
+
     LuaBinding(L).beginClass<ImVec2>("ImVec2")
         .addFactory([](float x = 0.0, float y = 0.0) {
             auto vec = new ImVec2;
@@ -445,7 +541,7 @@ static void ImguiBindLua(LuaState L) {
         .addVariableRef("y", &ImVec2::y)
         .endClass();
 
-        LuaBinding(L).beginClass<ImVec4>("ImVec4")
+    LuaBinding(L).beginClass<ImVec4>("ImVec4")
         .addFactory([](float x = 0.0, float y = 0.0, float z = 0.0, float w = 0.0) {
             auto vec = new ImVec4;
             vec->x = x;
@@ -459,7 +555,17 @@ static void ImguiBindLua(LuaState L) {
         .addVariableRef("z", &ImVec4::z)
         .addVariableRef("w", &ImVec4::w)
         .endClass();
-        
+    
+    LuaBinding(L).beginModule("implot")
+        .addFunction("BeginPlot", &ImPlot_BeginPlot)
+        .addFunction("EndPlot", &ImPlot_EndPlot)
+        .addFunction("PlotLine", &ImPlot_PlotLine)
+        .addFunction("PlotBars", &ImPlot_PlotBars)
+        .addFunction("PlotScatter", &ImPlot_PlotScatter)
+        .addFunction("PlotDigital", &ImPlot_PlotDigital)
+        .addFunction("PlotText", &ImPlot_PlotText)
+        .endModule();
+
     LuaBinding(L).beginModule("imgui")
         .addFunction("Button", &ImGui::Button)
         .addFunction("InvisibleButton", &ImGui::InvisibleButton)

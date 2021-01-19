@@ -5,6 +5,7 @@
 #include <mm2_gfx.h>
 #include <mm2_lua.h>
 
+#include <implot/implot.h>
 #include <imgui/imgui.h>
 #include <imgui/impl/imgui_impl_win32.h>
 #include <imgui/impl/imgui_impl_age.h>
@@ -106,6 +107,8 @@ public:
         Displayf("Initializing ImGui");
 
         ImGui::CreateContext();
+        ImPlot::CreateContext();
+
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
         io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
@@ -164,6 +167,7 @@ public:
         Displayf("Shutting down IMGUI");
         ImGui_ImplAGE_Shutdown();
         ImGui_ImplWin32_Shutdown();
+        ImPlot::DestroyContext();
         ImGui::DestroyContext();
     }
 
