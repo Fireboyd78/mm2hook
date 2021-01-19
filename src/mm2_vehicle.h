@@ -121,12 +121,12 @@ namespace MM2
 
         AGE_API void LoadAll()                              { hook::Thunk<0x524950>::Call<void>(this); }
 
-        AGE_API int GetVehicleID(char *vehicle)             { return hook::Thunk<0x5246B0>::Call<int>(this, vehicle); }
-
         AGE_API mmVehInfo * GetVehicleInfo(int vehicle)     { return hook::Thunk<0x5245E0>::Call<mmVehInfo *>(this, vehicle); }
-        AGE_API mmVehInfo * GetVehicleInfo(char *vehicle)   { return hook::Thunk<0x524610>::Call<mmVehInfo *>(this, vehicle); }
+        AGE_API mmVehInfo * GetVehicleInfo(const char *vehicle)   
+                                                            { return hook::Thunk<0x524610>::Call<mmVehInfo *>(this, vehicle); }
+        AGE_API int GetVehicleID(const char* vehicle)       { return hook::Thunk<0x5246B0>::Call<int>(this, vehicle); }
 
-        AGE_API void SetDefaultVehicle(char* vehicle)       { hook::Thunk<0x524690>::Call<void>(this, vehicle); }
+        AGE_API void SetDefaultVehicle(const char* vehicle) { hook::Thunk<0x524690>::Call<void>(this, vehicle); }
         AGE_API void Print()                                { hook::Thunk<0x524810>::Call<void>(this); }
         
         //helper
@@ -136,15 +136,20 @@ namespace MM2
 
         //lua
         static void BindLua(LuaState L) {
-            /*throws nearly triple digit errors?
             LuaBinding(L).beginClass<mmVehList>("mmVehList")
-                .addStaticProperty("Instance", [] { return (mmVehList*)0x6B1CA8; }) //HACK but it should work
+                .addStaticProperty("Instance", [] { 
+                                                    auto vehListPtr = (mmVehList**)0x6B1CA8; 
+                                                    if (vehListPtr != nullptr)
+                                                        return *vehListPtr;
+                                                    return (mmVehList*)nullptr;
+                                                  }) //HACK but it should work
+                .addFunction("Print", &Print)
                 .addPropertyReadOnly("NumVehicles", &GetNumVehicles)
-                .addFunction("GetVehicleInfo", static_cast<mmVehInfo *(mmVehList::*)(char*)>(&GetVehicleInfo))
-                .addFunction("GetVehicleInfoFromID", static_cast<mmVehInfo *(mmVehList::*)(int)>(&GetVehicleInfo))
+                .addFunction("GetVehicleInfo", static_cast<mmVehInfo *(mmVehList::*)(const char*)>(&GetVehicleInfo))
+                .addFunction("GetVehicleInfoByIndex", static_cast<mmVehInfo *(mmVehList::*)(int)>(&GetVehicleInfo))
                 .addFunction("GetVehicleID", &GetVehicleID)
                 .addFunction("SetDefaultVehicle", &SetDefaultVehicle)
-                .endClass();*/
+                .endClass();
         }
     };
 
