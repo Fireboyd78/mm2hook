@@ -314,6 +314,7 @@ public:
 class aiVehicleInstanceFeatureHandler {
 public:
     void DrawGlow();
+    void AddGeomHook(const char* pkgName, const char* name, int flags);
     static void Install();
 };
 

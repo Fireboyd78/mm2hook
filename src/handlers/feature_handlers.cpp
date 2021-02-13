@@ -3639,7 +3639,7 @@ void aiVehicleInstanceFeatureHandler::DrawGlow() {
     *(int*)0x685778 |= 0x88; //set m_Touched
 
     //get our shader set
-    int shaderSet = inst->GetNumLightSources();
+    auto shaderSet = *getPtr<signed short>(this, 0x1E);
     auto shaders = geomSet->pShaders[shaderSet];
 
     //get objects
@@ -3647,6 +3647,7 @@ void aiVehicleInstanceFeatureHandler::DrawGlow() {
     modStatic* tlight = lvlInstance::GetGeomTableEntry(geomID + 3)->getHighestLOD();
     modStatic* slight0 = lvlInstance::GetGeomTableEntry(geomID + 4)->getHighestLOD();
     modStatic* slight1 = lvlInstance::GetGeomTableEntry(geomID + 5)->getHighestLOD();
+    modStatic* blight = lvlInstance::GetGeomTableEntry(geomID + 18)->getHighestLOD();
 
     //get lights stuff
     int *activate = *getPtr<int*>(this, 0x14);
@@ -3654,6 +3655,12 @@ void aiVehicleInstanceFeatureHandler::DrawGlow() {
     float brake = *getPtr<float>(activate, 0x54);
     byte toggleSignal = *getPtr<byte>(this, 0x1A);
     int signalDelayTime = *getPtr<int>(this, 0x18); // adjusts the delay time for signal lights among traffic vehicles
+
+    //draw blight
+    if (blight != nullptr) {
+        if (brake < 0.f || speed == 0.f)
+            blight->Draw(shaders);
+    }
 
     //draw tlight
     if (tlight != nullptr) {
@@ -3700,9 +3707,20 @@ void aiVehicleInstanceFeatureHandler::DrawGlow() {
     }
 }
 
+void aiVehicleInstanceFeatureHandler::AddGeomHook(const char* pkgName, const char* name, int flags) {
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, name, flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "blight", flags);
+}
+
 static ConfigValue<int> cfgAmbientHeadlightStyle ("AmbientHeadlightStyle", 0);
 
 void aiVehicleInstanceFeatureHandler::Install() {
+    InstallCallback("aiVehicleInstance::aiVehicleInstance", "Adds brake light geometry.",
+        &AddGeomHook, {
+            cb::call(0x551F2F),
+        }
+    );
+
     ambientHeadlightStyle = cfgAmbientHeadlightStyle.Get();
     InstallVTableHook("aiVehicleInstance::DrawGlow",
         &DrawGlow, {
