@@ -3151,7 +3151,8 @@ void vehBreakableMgrHandler::ModStaticDraw(modShader* a1) {
     mod->Draw(a1);
 
     //draw reflections
-    if (g_ReflectionMap != nullptr && !isSoftware) {
+    auto state = &MMSTATE;
+    if (g_ReflectionMap != nullptr && !isSoftware && state->EnableReflections) {
         modShader::BeginEnvMap(g_ReflectionMap, envInput);
         mod->DrawEnvMapped(a1, g_ReflectionMap, 1.0f);
         modShader::EndEnvMap();
