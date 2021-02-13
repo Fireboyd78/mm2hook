@@ -3707,6 +3707,28 @@ void aiVehicleInstanceFeatureHandler::DrawGlow() {
     }
 }
 
+void aiVehicleInstanceFeatureHandler::ModStaticDraw(modShader* a1) {
+    auto mod = reinterpret_cast<modStatic*>(this);
+    hook::Type<gfxTexture*> g_ReflectionMap = 0x628914;
+    bool isSoftware = *(bool*)0x6830D4;
+
+    //convert world matrix for reflection drawing
+    Matrix44* worldMatrix = gfxRenderState::sm_World;
+    Matrix34 envInput = Matrix34();
+    worldMatrix->ToMatrix34(&envInput);
+
+    //draw car part
+    mod->Draw(a1);
+
+    //draw reflections
+    auto state = &MMSTATE;
+    if (g_ReflectionMap != nullptr && !isSoftware && state->EnableReflections) {
+        modShader::BeginEnvMap(g_ReflectionMap, envInput);
+        mod->DrawEnvMapped(a1, g_ReflectionMap, 1.0f);
+        modShader::EndEnvMap();
+    }
+}
+
 void aiVehicleInstanceFeatureHandler::AddGeomHook(const char* pkgName, const char* name, int flags) {
     hook::Thunk<0x463BA0>::Call<int>(this, pkgName, name, flags);
     hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "blight", flags);
@@ -3720,6 +3742,14 @@ void aiVehicleInstanceFeatureHandler::Install() {
             cb::call(0x551F2F),
         }
     );
+
+    if (cfgPartReflections.Get()) {
+        InstallCallback("aiVehicleInstance::DrawPart", "Draws reflections on car parts.",
+            &ModStaticDraw, {
+                cb::call(0x55291F), // aiVehicleInstance::DrawPart
+            }
+        );
+    }
 
     ambientHeadlightStyle = cfgAmbientHeadlightStyle.Get();
     InstallVTableHook("aiVehicleInstance::DrawGlow",
