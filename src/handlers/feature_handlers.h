@@ -280,10 +280,12 @@ public:
 
 class vehCarModelFeatureHandler {
 public:
+    void Draw(int a1);
     void DrawWhl4(int a2, int a3, MM2::Matrix34* a4, int a5);
     void DrawWhl5(int a2, int a3, MM2::Matrix34* a4, int a5);
     void DrawGlow();
     void ModStaticDraw(MM2::modShader * a1);
+    void AddGeomHook(const char* pkgName, const char* name, int flags);
     static void Install();
 };
 
@@ -313,6 +315,7 @@ public:
 
 class aiVehicleInstanceFeatureHandler {
 public:
+    void Draw(int a1);
     void DrawGlow();
     void ModStaticDraw(MM2::modShader* a1);
     void AddGeomHook(const char* pkgName, const char* name, int flags);

@@ -3183,6 +3183,30 @@ bool nfsMwStyleTotaledCar = false;
 
 static ConfigValue<bool> cfgPartReflections("ReflectionsOnCarParts", false);
 
+void vehCarModelFeatureHandler::Draw(int a1) {
+
+    //call original
+    hook::Thunk<0x4CE040>::Call<void>(this, a1);
+
+    auto model = reinterpret_cast<vehCarModel*>(this);
+    auto geomID = model->getGeomSetId() - 1;
+    auto geomSet = lvlInstance::GetGeomTableEntry(geomID);
+
+    //setup renderer
+    Matrix34 carMatrix = model->GetMatrix(&vehCarModelGarbageMtx);
+    Matrix44::Convert(gfxRenderState::sm_World, &carMatrix);
+    *(int*)0x685778 |= 0x88; //set m_Touched
+
+    //get our shader set
+    int variantIndex = model->getVariant();
+    auto shaders = geomSet->pShaders[variantIndex];
+
+    if (vehCar::sm_DrawHeadlights)
+        model->DrawPart(a1, 54, &carMatrix, shaders);
+    else
+        model->DrawPart(a1, 55, &carMatrix, shaders);
+}
+
 void vehCarModelFeatureHandler::DrawWhl4(int a2, int a3, Matrix34* a4, int a5) {
     auto mod = reinterpret_cast<vehCarModel*>(this);
     auto carsim = mod->getCar()->getCarSim();
@@ -3393,6 +3417,12 @@ void vehCarModelFeatureHandler::DrawGlow() {
     }
 }
 
+void vehCarModelFeatureHandler::AddGeomHook(const char* pkgName, const char* name, int flags) {
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, name, flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "plighton", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "plightoff", flags);
+}
+
 static ConfigValue<bool> cfgEnableSignals ("EnableSignalLights", false);
 static ConfigValue<bool> cfgFlashingHeadlights ("FlashingHeadlights", true);
 static ConfigValue<bool> cfgNfsMwStyleTotaledCar("NFSMWStyleTotaledCar", false);
@@ -3401,6 +3431,18 @@ static ConfigValue<int> cfgHeadlightStyle ("HeadlightStyle", 0);
 static ConfigValue<float> cfgSirenCycleRate ("SirenCycle", 0.25f);
 
 void vehCarModelFeatureHandler::Install() {
+    InstallCallback("vehCarModel::Init", "Adds pop-up lights geometries.",
+        &AddGeomHook, {
+            cb::call(0x4CD396),
+        }
+    );
+
+    InstallVTableHook("vehCarModel::Draw",
+        &Draw, {
+            0x5B2CDC,
+        }
+    );
+
     InstallCallback("vehCarModel::DrawPart", "Use extra wheel matrices.",
         &DrawWhl4, {
             cb::call(0x4CE631), // vehCarModel::Draw
@@ -3628,6 +3670,42 @@ void pedestrianInstanceHandler::Install()
 Matrix34 aiVehicleMatrix = Matrix34();
 int ambientHeadlightStyle = 0;
 
+void aiVehicleInstanceFeatureHandler::Draw(int a1) {
+
+    //call original
+    hook::Thunk<0x552160>::Call<void>(this, a1);
+
+    auto inst = reinterpret_cast<aiVehicleInstance*>(this);
+    auto geomID = inst->getGeomSetId() - 1;
+    auto geomSet = lvlInstance::GetGeomTableEntry(geomID);
+
+    //setup renderer
+    Matrix34 carMatrix = inst->GetMatrix(&aiVehicleMatrix);
+    Matrix44::Convert(gfxRenderState::sm_World, &carMatrix);
+    *(int*)0x685778 |= 0x88; //set m_Touched
+
+    //get our shader set
+    auto shaderSet = *getPtr<signed short>(this, 0x1E);
+    auto shaders = geomSet->pShaders[shaderSet];
+
+    //get objects
+    modStatic* plighton = lvlInstance::GetGeomTableEntry(geomID + 19)->getHighLOD();
+    modStatic* plightoff = lvlInstance::GetGeomTableEntry(geomID + 20)->getHighLOD();
+
+    if (plighton != nullptr) {
+        if (aiMap::Instance->drawHeadlights) {
+            plighton->Draw(shaders);
+            inst->DrawPart(plighton, &carMatrix, shaders, *getPtr<int>(this, 6));
+        }
+    }
+    if (plightoff != nullptr) {
+        if (!aiMap::Instance->drawHeadlights) {
+            plightoff->Draw(shaders);
+            inst->DrawPart(plightoff, &carMatrix, shaders, *getPtr<int>(this, 6));
+        }
+    }
+}
+
 void aiVehicleInstanceFeatureHandler::DrawGlow() {
     auto inst = reinterpret_cast<aiVehicleInstance*>(this);
     auto geomID = inst->getGeomSetId() - 1;
@@ -3732,12 +3810,14 @@ void aiVehicleInstanceFeatureHandler::ModStaticDraw(modShader* a1) {
 void aiVehicleInstanceFeatureHandler::AddGeomHook(const char* pkgName, const char* name, int flags) {
     hook::Thunk<0x463BA0>::Call<int>(this, pkgName, name, flags);
     hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "blight", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "plighton", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "plightoff", flags);
 }
 
 static ConfigValue<int> cfgAmbientHeadlightStyle ("AmbientHeadlightStyle", 0);
 
 void aiVehicleInstanceFeatureHandler::Install() {
-    InstallCallback("aiVehicleInstance::aiVehicleInstance", "Adds brake light geometry.",
+    InstallCallback("aiVehicleInstance::aiVehicleInstance", "Adds brake light and pop-up lights geometries.",
         &AddGeomHook, {
             cb::call(0x551F2F),
         }
@@ -3750,6 +3830,12 @@ void aiVehicleInstanceFeatureHandler::Install() {
             }
         );
     }
+
+    InstallVTableHook("aiVehicleInstance::Draw",
+        &Draw, {
+            0x5B5938
+        }
+    );
 
     ambientHeadlightStyle = cfgAmbientHeadlightStyle.Get();
     InstallVTableHook("aiVehicleInstance::DrawGlow",
