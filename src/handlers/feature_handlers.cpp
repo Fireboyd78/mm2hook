@@ -3693,16 +3693,12 @@ void aiVehicleInstanceFeatureHandler::Draw(int a1) {
     modStatic* plightoff = lvlInstance::GetGeomTableEntry(geomID + 20)->getHighLOD();
 
     if (plighton != nullptr) {
-        if (aiMap::Instance->drawHeadlights) {
-            plighton->Draw(shaders);
+        if (aiMap::Instance->drawHeadlights)
             inst->DrawPart(plighton, &carMatrix, shaders, *getPtr<int>(this, 6));
-        }
     }
     if (plightoff != nullptr) {
-        if (!aiMap::Instance->drawHeadlights) {
-            plightoff->Draw(shaders);
+        if (!aiMap::Instance->drawHeadlights)
             inst->DrawPart(plightoff, &carMatrix, shaders, *getPtr<int>(this, 6));
-        }
     }
 }
 
