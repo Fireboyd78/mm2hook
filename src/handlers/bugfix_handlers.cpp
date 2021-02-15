@@ -1399,6 +1399,16 @@ void vehSemiCarAudioBugfixHandler::UpdateAirBlow()
 {
     auto carAudio = reinterpret_cast<vehCarAudio*>(this);
     auto carsim = carAudio->getCarSim();
+    
+    //only do this sound for player vehicles
+    //if done on all vehicles, cheaters in multiplayer
+    //will just absolutely SPAM the airbrake sound
+    auto player = mmGameManager::Instance.get()->getPlayerSafe();
+    if (player == nullptr)
+        return;
+    if (player->getCar()->getCarSim() != carsim)
+        return;
+
     float speed = carsim->getSpeedMPH();
     bool isBraking = carsim->getBrake() > 0.1f;
 
@@ -1411,10 +1421,8 @@ void vehSemiCarAudioBugfixHandler::UpdateAirBlow()
     if (speed < 1.f) {
         if (isBraking && canPlayAirBlowSound) {
             auto airBrakeSound = *getPtr<AudSoundBase*>(this, 0x13C);
-            if (airBrakeSound != nullptr) {
-                if (!airBrakeSound->IsPlaying())
-                    airBrakeSound->PlayOnce(-1.f, -1.f);
-            }
+            if (airBrakeSound != nullptr)
+                airBrakeSound->PlayOnce(-1.f, -1.f);
         }
         canPlayAirBlowSound = false;
     }
