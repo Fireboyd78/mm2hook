@@ -1410,9 +1410,11 @@ void vehSemiCarAudioBugfixHandler::UpdateAirBlow()
     //if we're going <1mph, play the sound
     if (speed < 1.f) {
         if (isBraking && canPlayAirBlowSound) {
-            auto soundBase = *getPtr<AudSoundBase*>(this, 0x13C);
-            if (soundBase != nullptr)
-                soundBase->PlayOnce(-1.f, -1.f);
+            auto airBrakeSound = *getPtr<AudSoundBase*>(this, 0x13C);
+            if (airBrakeSound != nullptr) {
+                if (!airBrakeSound->IsPlaying())
+                    airBrakeSound->PlayOnce(-1.f, -1.f);
+            }
         }
         canPlayAirBlowSound = false;
     }
