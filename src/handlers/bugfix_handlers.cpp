@@ -1427,6 +1427,43 @@ void vehSemiCarAudioBugfixHandler::UpdateAirBlow()
     }
 }
 
+void vehSemiCarAudioBugfixHandler::UpdateReverse()
+{
+    auto carAudio = reinterpret_cast<vehCarAudio*>(this);
+    auto carsim = carAudio->getCarSim();
+    auto reverseSound = *getPtr<AudSoundBase*>(this, 0x138);
+    auto transmission = carsim->getTransmission();
+    float throttle = carsim->getEngine()->getThrottleInput();
+    float speed = carsim->getSpeedMPH();
+
+    if (transmission->IsAuto() && reverseSound != nullptr) {
+        if (transmission->getGear() == 0) {
+            if (throttle > 0.f || speed >= 1.f) {
+                if (!reverseSound->IsPlaying())
+                    reverseSound->PlayLoop(-1.f, -1.f);
+            }
+            else {
+                if (reverseSound->IsPlaying())
+                    reverseSound->Stop();
+            }
+        }
+        else {
+            if (reverseSound->IsPlaying())
+                reverseSound->Stop();
+        }
+    }
+    if (!transmission->IsAuto() && reverseSound != nullptr) {
+        if (transmission->getGear() == 0) {
+            if (!reverseSound->IsPlaying())
+                reverseSound->PlayLoop(-1.f, -1.f);
+        }
+        else {
+            if (reverseSound->IsPlaying())
+                reverseSound->Stop();
+        }
+    }
+}
+
 void vehSemiCarAudioBugfixHandler::Init(MM2::vehCarSim * carsim, MM2::vehCarDamage * cardamage, char * basename, bool a5, bool a6, bool a7)
 {
     //set some things in the semi audio class
@@ -1486,6 +1523,15 @@ void vehSemiCarAudioBugfixHandler::SetNon3DParams()
 
 void vehSemiCarAudioBugfixHandler::Install()
 {
+    if (cfgMm1StyleTransmission.Get()) {
+        InstallCallback("vehSemiCarAudio::Init", "Fix semi reverse audio.",
+            &UpdateReverse, {
+                cb::call(0x4DCB35),
+                cb::call(0x4DCB5A),
+            }
+        );
+    }
+
     if (!cfgAirbrakeFix.Get())
         return;
 
