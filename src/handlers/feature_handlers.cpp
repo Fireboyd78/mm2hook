@@ -547,44 +547,78 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
             }
         } return true;
 
-        // 'VK_L'
-        case 0x4C: {
-            // TODO: make this a separate plugin
-            // toggle vehicle headlights
-            vehCar::sm_DrawHeadlights = !vehCar::sm_DrawHeadlights;
-        } return true;
-
         case VK_F8: {
             if (HookConfig::Read()) {
                 LogFile::WriteLine("Configuration settings reloaded successfully.");
             }
         } return true;
 
+        // 'VK_L'
+        case 0x4C:
+        {
+            mmGameManager* mgr = mmGameManager::Instance;
+            auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
+            auto popup = gamePtr->getPopup();
+
+            if (gamePtr != NULL && popup != NULL) {
+                if (!popup->IsEnabled()) {
+                    // toggle vehicle headlights
+                    vehCar::sm_DrawHeadlights = !vehCar::sm_DrawHeadlights;
+                }
+            }
+        } return true;
+
         // ',<'
-        case VK_OEM_COMMA: {
-            // toggle left signal
-            leftSignal = !leftSignal;
-            hazardLights = false;
-            rightSignal = false;
+        case VK_OEM_COMMA:
+        {
+            mmGameManager* mgr = mmGameManager::Instance;
+            auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
+            auto popup = gamePtr->getPopup();
+
+            if (gamePtr != NULL && popup != NULL) {
+                if (!popup->IsEnabled()) {
+                    // toggle left signal
+                    leftSignal = !leftSignal;
+                    hazardLights = false;
+                    rightSignal = false;
+                }
+            }
         } return true;
 
         // '-_'
-        case VK_OEM_MINUS: {
-            // toggle hazard lights
-            hazardLights = !hazardLights;
-            leftSignal = false;
-            rightSignal = false;
+        case VK_OEM_MINUS:
+        {
+            mmGameManager* mgr = mmGameManager::Instance;
+            auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
+            auto popup = gamePtr->getPopup();
+
+            if (gamePtr != NULL && popup != NULL) {
+                if (!popup->IsEnabled()) {
+                    // toggle hazard lights
+                    hazardLights = !hazardLights;
+                    leftSignal = false;
+                    rightSignal = false;
+                }
+            }
         } return true;
 
         // '.>'
-        case VK_OEM_PERIOD: {
-            // toggle right signal
-            rightSignal = !rightSignal;
-            hazardLights = false;
-            leftSignal = false;
+        case VK_OEM_PERIOD:
+        {
+            mmGameManager* mgr = mmGameManager::Instance;
+            auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
+            auto popup = gamePtr->getPopup();
+
+            if (gamePtr != NULL && popup != NULL) {
+                if (!popup->IsEnabled()) {
+                    // toggle right signal
+                    rightSignal = !rightSignal;
+                    hazardLights = false;
+                    leftSignal = false;
+                }
+            }
         } return true;
     }
-
     return false;
 }
 
