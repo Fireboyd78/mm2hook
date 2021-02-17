@@ -3907,6 +3907,45 @@ void vehTrailerFeatureHandler::Install() {
 */
 Matrix34 trailerMatrix = Matrix34();
 
+void vehTrailerInstanceFeatureHandler::DrawPartReflections(modStatic* a1, Matrix34* a2, modShader* a3) {
+    hook::Type<gfxTexture*> g_ReflectionMap = 0x628914;
+    bool isSoftware = *(bool*)0x6830D4;
+
+    //convert world matrix for reflection drawing
+    Matrix44* worldMatrix = gfxRenderState::sm_World;
+    worldMatrix->ToMatrix34(a2);
+
+    //draw trailer wheels
+    a1->Draw(a3);
+
+    //draw reflections
+    auto state = &MMSTATE;
+    if (g_ReflectionMap != nullptr && !isSoftware && state->EnableReflections) {
+        modShader::BeginEnvMap(g_ReflectionMap, *a2);
+        a1->DrawEnvMapped(a3, g_ReflectionMap, 1.0f);
+        modShader::EndEnvMap();
+    }
+}
+
+void vehTrailerInstanceFeatureHandler::DrawPart(int a1, int a2, Matrix34* a3, modShader* a4) {
+    auto inst = reinterpret_cast<vehTrailerInstance*>(this);
+    auto geomSet = inst->getGeomSetId() - 1;
+
+    //setup renderer
+    Matrix44::Convert(gfxRenderState::sm_World, a3);
+    *(int*)0x685778 |= 0x88; //set m_Touched
+
+    //get part
+    modStatic* part = lvlInstance::GetGeomTableEntry(geomSet + a2)->getHighLOD();
+
+    if (part != nullptr && a1 == 3) {
+        if (cfgPartReflections.Get())
+            DrawPartReflections(part, a3, a4);
+        else
+            part->Draw(a4);
+    }
+}
+
 void vehTrailerInstanceFeatureHandler::Draw(int a1) {
 
     //call original
@@ -3924,57 +3963,25 @@ void vehTrailerInstanceFeatureHandler::Draw(int a1) {
     int shaderSet = *getPtr<int>(this, 24);
     auto shaders = lvlInstance::GetGeomTableEntry(geomSet)->pShaders[shaderSet];
 
-    //get wheels
-    auto twhl4 = lvlInstance::GetGeomTableEntry(geomSet + 15);
-    auto twhl5 = lvlInstance::GetGeomTableEntry(geomSet + 16);
+    //draw twhl4
+    twhl2Mtx.Set(&twhl2Mtx);
+    float twhl4OffsetX = carsim->TrailerBackBackLeftWheelPosDiff.Y * trailerMtx.m10 + carsim->TrailerBackBackLeftWheelPosDiff.Z * trailerMtx.m20 + carsim->TrailerBackBackLeftWheelPosDiff.X * trailerMtx.m00;
+    float twhl4OffsetY = carsim->TrailerBackBackLeftWheelPosDiff.Y * trailerMtx.m11 + carsim->TrailerBackBackLeftWheelPosDiff.Z * trailerMtx.m21 + carsim->TrailerBackBackLeftWheelPosDiff.X * trailerMtx.m01;
+    float twhl4OffsetZ = carsim->TrailerBackBackLeftWheelPosDiff.Y * trailerMtx.m12 + carsim->TrailerBackBackLeftWheelPosDiff.Z * trailerMtx.m22 + carsim->TrailerBackBackLeftWheelPosDiff.X * trailerMtx.m02;
+    twhl2Mtx.m30 += twhl4OffsetX;
+    twhl2Mtx.m31 += twhl4OffsetY;
+    twhl2Mtx.m32 += twhl4OffsetZ;
+    DrawPart(a1, 15, &twhl2Mtx, shaders);
 
-    if (twhl4 != nullptr) {
-        twhl2Mtx.Set(&twhl2Mtx);
-
-        float offsetX = carsim->TrailerBackBackLeftWheelPosDiff.Y * trailerMtx.m10 + carsim->TrailerBackBackLeftWheelPosDiff.Z * trailerMtx.m20 + carsim->TrailerBackBackLeftWheelPosDiff.X * trailerMtx.m00;
-        float offsetY = carsim->TrailerBackBackLeftWheelPosDiff.Y * trailerMtx.m11 + carsim->TrailerBackBackLeftWheelPosDiff.Z * trailerMtx.m21 + carsim->TrailerBackBackLeftWheelPosDiff.X * trailerMtx.m01;
-        float offsetZ = carsim->TrailerBackBackLeftWheelPosDiff.Y * trailerMtx.m12 + carsim->TrailerBackBackLeftWheelPosDiff.Z * trailerMtx.m22 + carsim->TrailerBackBackLeftWheelPosDiff.X * trailerMtx.m02;
-        twhl2Mtx.m30 += offsetX;
-        twhl2Mtx.m31 += offsetY;
-        twhl2Mtx.m32 += offsetZ;
-
-        //setup renderer
-        Matrix44::Convert(gfxRenderState::sm_World, &twhl2Mtx);
-        *(int*)0x685778 |= 0x88; //set m_Touched
-
-        if (twhl4->getHighLOD() != nullptr && a1 == 3)
-            twhl4->getHighLOD()->Draw(shaders);
-
-        if (twhl4->getMedLOD() != nullptr && a1 == 2)
-            twhl4->getMedLOD()->Draw(shaders);
-
-        if (twhl4->getLowLOD() != nullptr && a1 == 1)
-            twhl4->getLowLOD()->Draw(shaders);
-    }
-
-    if (twhl5 != nullptr) {
-        twhl3Mtx.Set(&twhl3Mtx);
-
-        float offsetX = carsim->TrailerBackBackRightWheelPosDiff.Y * trailerMtx.m10 + carsim->TrailerBackBackRightWheelPosDiff.Z * trailerMtx.m20 + carsim->TrailerBackBackRightWheelPosDiff.X * trailerMtx.m00;
-        float offsetY = carsim->TrailerBackBackRightWheelPosDiff.Y * trailerMtx.m11 + carsim->TrailerBackBackRightWheelPosDiff.Z * trailerMtx.m21 + carsim->TrailerBackBackRightWheelPosDiff.X * trailerMtx.m01;
-        float offsetZ = carsim->TrailerBackBackRightWheelPosDiff.Y * trailerMtx.m12 + carsim->TrailerBackBackRightWheelPosDiff.Z * trailerMtx.m22 + carsim->TrailerBackBackRightWheelPosDiff.X * trailerMtx.m02;
-        twhl3Mtx.m30 += offsetX;
-        twhl3Mtx.m31 += offsetY;
-        twhl3Mtx.m32 += offsetZ;
-
-        //setup renderer
-        Matrix44::Convert(gfxRenderState::sm_World, &twhl3Mtx);
-        *(int*)0x685778 |= 0x88; //set m_Touched
-
-        if (twhl5->getHighLOD() != nullptr && a1 == 3)
-            twhl5->getHighLOD()->Draw(shaders);
-
-        if (twhl5->getMedLOD() != nullptr && a1 == 2)
-            twhl5->getMedLOD()->Draw(shaders);
-
-        if (twhl5->getLowLOD() != nullptr && a1 == 1)
-            twhl5->getLowLOD()->Draw(shaders);
-    }
+    //draw twhl5
+    twhl3Mtx.Set(&twhl3Mtx);
+    float twhl5OffsetX = carsim->TrailerBackBackRightWheelPosDiff.Y * trailerMtx.m10 + carsim->TrailerBackBackRightWheelPosDiff.Z * trailerMtx.m20 + carsim->TrailerBackBackRightWheelPosDiff.X * trailerMtx.m00;
+    float twhl5OffsetY = carsim->TrailerBackBackRightWheelPosDiff.Y * trailerMtx.m11 + carsim->TrailerBackBackRightWheelPosDiff.Z * trailerMtx.m21 + carsim->TrailerBackBackRightWheelPosDiff.X * trailerMtx.m01;
+    float twhl5OffsetZ = carsim->TrailerBackBackRightWheelPosDiff.Y * trailerMtx.m12 + carsim->TrailerBackBackRightWheelPosDiff.Z * trailerMtx.m22 + carsim->TrailerBackBackRightWheelPosDiff.X * trailerMtx.m02;
+    twhl3Mtx.m30 += twhl5OffsetX;
+    twhl3Mtx.m31 += twhl5OffsetY;
+    twhl3Mtx.m32 += twhl5OffsetZ;
+    DrawPart(a1, 16, &twhl3Mtx, shaders);
 }
 
 void vehTrailerInstanceFeatureHandler::DrawGlow() {
@@ -4091,6 +4098,28 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
     }
 }
 
+void vehTrailerInstanceFeatureHandler::ModStaticDraw(modShader* a1) {
+    auto mod = reinterpret_cast<modStatic*>(this);
+    hook::Type<gfxTexture*> g_ReflectionMap = 0x628914;
+    bool isSoftware = *(bool*)0x6830D4;
+
+    //convert world matrix for reflection drawing
+    Matrix44* worldMatrix = gfxRenderState::sm_World;
+    Matrix34 envInput = Matrix34();
+    worldMatrix->ToMatrix34(&envInput);
+
+    //draw trailer
+    mod->Draw(a1);
+
+    //draw reflections
+    auto state = &MMSTATE;
+    if (g_ReflectionMap != nullptr && !isSoftware && state->EnableReflections) {
+        modShader::BeginEnvMap(g_ReflectionMap, envInput);
+        mod->DrawEnvMapped(a1, g_ReflectionMap, 1.0f);
+        modShader::EndEnvMap();
+    }
+}
+
 void vehTrailerInstanceFeatureHandler::AddGeomHook(const char* pkgName, const char* name, int flags) {
     hook::Thunk<0x463BA0>::Call<int>(this, pkgName, name, flags);
     hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "rlight", flags);
@@ -4110,6 +4139,18 @@ void vehTrailerInstanceFeatureHandler::Install() {
             cb::call(0x4D7E79),
         }
     );
+
+    if (cfgPartReflections.Get()) {
+        InstallCallback("vehTrailerInstance::Draw", "Draws reflections on trailers.",
+            &ModStaticDraw, {
+                cb::call(0x4D7FA0),
+                cb::call(0x4D8027),
+                cb::call(0x4D806E),
+                cb::call(0x4D80B6),
+                cb::call(0x4D8106),
+            }
+        );
+    }
 
     InstallVTableHook("vehTrailerInstance::Draw",
         &Draw, {

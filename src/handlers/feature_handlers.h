@@ -331,6 +331,9 @@ class vehTrailerInstanceFeatureHandler {
 public:
     void Draw(int a1);
     void DrawGlow();
+    void DrawPart(int a1, int a2, MM2::Matrix34* a3, MM2::modShader* a4);
+    void DrawPartReflections(MM2::modStatic* a1, MM2::Matrix34* a2, MM2::modShader* a3);
+    void ModStaticDraw(MM2::modShader* a1);
     void AddGeomHook(const char* pkgName, const char* name, int flags);
     static void Install();
 };
