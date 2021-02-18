@@ -3218,10 +3218,6 @@ bool nfsMwStyleTotaledCar = false;
 static ConfigValue<bool> cfgPartReflections("ReflectionsOnCarParts", false);
 
 void vehCarModelFeatureHandler::Draw(int a1) {
-
-    //call original
-    hook::Thunk<0x4CE040>::Call<void>(this, a1);
-
     auto model = reinterpret_cast<vehCarModel*>(this);
     auto geomID = model->getGeomSetId() - 1;
     auto geomSet = lvlInstance::GetGeomTableEntry(geomID);
@@ -3236,9 +3232,17 @@ void vehCarModelFeatureHandler::Draw(int a1) {
     auto shaders = geomSet->pShaders[variantIndex];
 
     if (vehCar::sm_DrawHeadlights)
+        //draw plighton
         model->DrawPart(a1, 54, &carMatrix, shaders);
     else
+        //draw plightoff
         model->DrawPart(a1, 55, &carMatrix, shaders);
+
+    //draw breakable parts
+    model->getGenBreakableMgr()->Draw(&carMatrix, shaders, a1);
+
+    //call original
+    hook::Thunk<0x4CE040>::Call<void>(this, a1);
 }
 
 void vehCarModelFeatureHandler::DrawWhl4(int a2, int a3, Matrix34* a4, int a5) {
@@ -3510,6 +3514,11 @@ void vehCarModelFeatureHandler::Install() {
             0x5B2CE8
         }
     );
+
+    // removes Angels breakable parts
+    InstallPatch({ 0xEB }, {
+        0x4CE1A9,
+    });
 }
 
 /*
@@ -3705,10 +3714,6 @@ Matrix34 aiVehicleMatrix = Matrix34();
 int ambientHeadlightStyle = 0;
 
 void aiVehicleInstanceFeatureHandler::Draw(int a1) {
-
-    //call original
-    hook::Thunk<0x552160>::Call<void>(this, a1);
-
     auto inst = reinterpret_cast<aiVehicleInstance*>(this);
     auto geomID = inst->getGeomSetId() - 1;
     auto geomSet = lvlInstance::GetGeomTableEntry(geomID);
@@ -3734,6 +3739,9 @@ void aiVehicleInstanceFeatureHandler::Draw(int a1) {
         if (!aiMap::Instance->drawHeadlights)
             inst->DrawPart(plightoff, &carMatrix, shaders, *getPtr<int>(this, 6));
     }
+
+    //call original
+    hook::Thunk<0x552160>::Call<void>(this, a1);
 }
 
 void aiVehicleInstanceFeatureHandler::DrawGlow() {
