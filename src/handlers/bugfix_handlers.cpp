@@ -28,7 +28,6 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<vehCarAudioContainerBugfixHandler>("vehCarAudioContainer bugfixes"),
     CreateHandler<vehCarModelHandler>("vehCarModel"),
     CreateHandler<vehTrailerHandler>("vehTrailer"),
-    CreateHandler<vehTrailerInstanceHandler>("vehTrailerInstance"),
     CreateHandler<vehPoliceCarAudioBugfixHandler>("vehPoliceCarAudio"),
     CreateHandler<vehSemiCarAudioBugfixHandler>("vehSemiCarAudio"),
     CreateHandler<mmDashViewBugfixHandler>("mmDashViewBugfix"),
@@ -1121,21 +1120,8 @@ void mpConsistencyHandler::Install() {
 
 void vehTrailerHandler::Install()
 {
-    // removes Angels improperly rendered lights
     Installf("Removes default.dgTrailerJoint check preventing trailers from loading properly.");
     mem::nop(0x4D7DCC, 19); // nop out default.dgTrailerJoint load attempt
-}
-
-/*
-    vehTrailerInstanceHandler
-*/
-
-void vehTrailerInstanceHandler::Install()
-{
-    // removes Angels improperly rendered lights
-    InstallPatch({ 0xEB }, {
-        0x4D7FBF,
-    });
 }
 
 /*
@@ -1397,7 +1383,8 @@ void fxShardManagerBugfixHandler::Install()
 bool canPlayAirBlowSound = false;
 void vehSemiCarAudioBugfixHandler::UpdateAirBlow() 
 {
-    auto carsim = *getPtr<vehCarSim*>(this, 0x118);
+    auto carAudio = reinterpret_cast<vehCarAudio*>(this);
+    auto carsim = carAudio->getCarSim();
     
     //only do this sound for player vehicles
     //if done on all vehicles, cheaters in multiplayer
@@ -1419,11 +1406,48 @@ void vehSemiCarAudioBugfixHandler::UpdateAirBlow()
     //if we're going <1mph, play the sound
     if (speed < 1.f) {
         if (isBraking && canPlayAirBlowSound) {
-            auto soundBase = *getPtr<AudSoundBase*>(this, 0x13C);
-            if (soundBase != nullptr)
-                soundBase->PlayOnce(-1.f, -1.f);
+            auto airBrakeSound = *getPtr<AudSoundBase*>(this, 0x13C);
+            if (airBrakeSound != nullptr)
+                airBrakeSound->PlayOnce(-1.f, -1.f);
         }
         canPlayAirBlowSound = false;
+    }
+}
+
+void vehSemiCarAudioBugfixHandler::UpdateReverse()
+{
+    auto carAudio = reinterpret_cast<vehCarAudio*>(this);
+    auto carsim = carAudio->getCarSim();
+    auto reverseSound = *getPtr<AudSoundBase*>(this, 0x138);
+    auto transmission = carsim->getTransmission();
+    float throttle = carsim->getEngine()->getThrottleInput();
+    float speed = carsim->getSpeedMPH();
+
+    if (transmission->IsAuto() && reverseSound != nullptr) {
+        if (transmission->getGear() == 0) {
+            if (throttle > 0.f || speed >= 1.f) {
+                if (!reverseSound->IsPlaying())
+                    reverseSound->PlayLoop(-1.f, -1.f);
+            }
+            else {
+                if (reverseSound->IsPlaying())
+                    reverseSound->Stop();
+            }
+        }
+        else {
+            if (reverseSound->IsPlaying())
+                reverseSound->Stop();
+        }
+    }
+    if (!transmission->IsAuto() && reverseSound != nullptr) {
+        if (transmission->getGear() == 0) {
+            if (!reverseSound->IsPlaying())
+                reverseSound->PlayLoop(-1.f, -1.f);
+        }
+        else {
+            if (reverseSound->IsPlaying())
+                reverseSound->Stop();
+        }
     }
 }
 
@@ -1486,6 +1510,15 @@ void vehSemiCarAudioBugfixHandler::SetNon3DParams()
 
 void vehSemiCarAudioBugfixHandler::Install()
 {
+    if (cfgMm1StyleTransmission.Get()) {
+        InstallCallback("vehSemiCarAudio::Init", "Fix semi reverse audio.",
+            &UpdateReverse, {
+                cb::call(0x4DCB35),
+                cb::call(0x4DCB5A),
+            }
+        );
+    }
+
     if (!cfgAirbrakeFix.Get())
         return;
 

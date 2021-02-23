@@ -137,6 +137,10 @@ namespace MM2
         inline float getLongSlipPercent(void) {
             return this->LongSlipPercent;
         }
+
+        inline float getRotationRate(void) {
+            return this->RotationRate;
+        }
     public:
         AGE_API vehWheel()                                     { hook::Thunk<0x4D2190>::Call<void>(this); }
 

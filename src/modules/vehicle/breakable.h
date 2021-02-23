@@ -54,6 +54,8 @@ namespace MM2
                                                             { hook::Thunk<0x4D8600 >::Call<void>(this, a1, a2, a3, a4, a5); }
         AGE_API void Eject(vehBreakable *a1, int room)      { hook::Thunk<0x4D8940>::Call<void>(this, a1, room); }
         AGE_API void EjectAll(int room)                     { hook::Thunk<0x4D8BB0>::Call<void>(this, room); }
+        AGE_API void Draw(const Matrix34* a1, modShader* a2, int a3)
+                                                            { hook::Thunk<0x4D8780>::Call<void>(this, a1, a2, a3); }
         AGE_API vehBreakable * Get(int index)               { return hook::Thunk<0x4D86F0>::Call<vehBreakable *>(this, index); }
 
         static void BindLua(LuaState L) {

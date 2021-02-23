@@ -73,6 +73,8 @@ namespace MM2
         AGE_API bool GetVisible()                           { return hook::Thunk<0x4CF070>::Call<bool>(this); }
         AGE_API void SetVisible(bool a1)                    { hook::Thunk<0x4CF050>::Call<void>(this, a1); }
         AGE_API void DrawHeadlights(bool rotate)            { hook::Thunk<0x4CED50>::Call<void>(this, rotate); }
+        AGE_API void DrawPart(int a1, int a2, const Matrix34* a3, modShader* a4)
+                                                            { hook::Thunk<0x4CE840>::Call<void>(this, a1, a2, a3, a4); }
         
         /*
             lvlInstance virtuals
