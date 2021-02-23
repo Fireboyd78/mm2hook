@@ -4107,59 +4107,24 @@ void vehTrailerInstanceFeatureHandler::Draw(int a1) {
     modStatic* tswhl4 = *getPtr<modStatic*>((geomSet + 21), a1 * 4);
     modStatic* tswhl5 = *getPtr<modStatic*>((geomSet + 22), a1 * 4);
 
+    vehWheel* wheels[4] = { twhl0, twhl1, twhl2, twhl3 };
+    modStatic* sWhlGeometries[4] = { tswhl0, tswhl1, tswhl2, tswhl3 };
+    int sWhlIds[4] = { 17, 18, 19, 20 };
+    int whlIds[4] = { 3, 4, 5, 6 };
+
     //draw trailer
     DrawPart(a1, 0, &trailerMtx, shaders);
 
-    if (twhl0->getRotationRate() < -26.f || twhl0->getRotationRate() > 26.f) {
-        if (tswhl0 != nullptr)
-            //draw tswhl0
-            DrawPart(a1, 17, &twhl0->getMatrix(), shaders);
-        else
-            //draw twhl0
-            DrawPart(a1, 3, &twhl0->getMatrix(), shaders);
-    }
-    else {
-        //draw twhl0
-        DrawPart(a1, 3, &twhl0->getMatrix(), shaders);
-    }
-
-    if (twhl1->getRotationRate() < -26.f || twhl1->getRotationRate() > 26.f) {
-        if (tswhl1 != nullptr)
-            //draw tswhl1
-            DrawPart(a1, 18, &twhl1->getMatrix(), shaders);
-        else
-            //draw twhl1
-            DrawPart(a1, 4, &twhl1->getMatrix(), shaders);
-    }
-    else {
-        //draw twhl1
-        DrawPart(a1, 4, &twhl1->getMatrix(), shaders);
-    }
-
-    if (twhl2->getRotationRate() < -26.f || twhl2->getRotationRate() > 26.f) {
-        if (tswhl2 != nullptr)
-            //draw tswhl2
-            DrawPart(a1, 19, &twhl2->getMatrix(), shaders);
-        else
-            //draw twhl2
-            DrawPart(a1, 5, &twhl2->getMatrix(), shaders);
-    }
-    else {
-        //draw twhl2
-        DrawPart(a1, 5, &twhl2->getMatrix(), shaders);
-    }
-
-    if (twhl3->getRotationRate() < -26.f || twhl3->getRotationRate() > 26.f) {
-        if (tswhl3 != nullptr)
-            //draw tswhl3
-            DrawPart(a1, 20, &twhl3->getMatrix(), shaders);
-        else
-            //draw twhl3
-            DrawPart(a1, 6, &twhl3->getMatrix(), shaders);
-    }
-    else {
-        //draw twhl3
-        DrawPart(a1, 6, &twhl3->getMatrix(), shaders);
+    //draw (s)whl0-4
+    for (int i = 0; i < 4; i++) {
+        auto wheel = wheels[i];
+        if (fabs(wheel->getRotationRate() > 26.f) && sWhlGeometries[i] != nullptr) {
+            DrawPart(a1, sWhlIds[i], &wheel->getMatrix(), shaders);
+        }
+        else 
+        {
+            DrawPart(a1, whlIds[i], &wheel->getMatrix(), shaders);
+        }
     }
 
     if (twhl2->getRotationRate() < -26.f || twhl2->getRotationRate() > 26.f) {

@@ -48,6 +48,22 @@ namespace MM2
             float Radius;
             uint32_t dword1C;
 
+            inline modStatic * getLOD(int lod) const {
+                if (lod < 0 || lod > 3)
+                    return nullptr;
+
+                switch (lod) {
+                case 0:
+                    return VeryLow;
+                case 1:
+                    return Low;
+                case 2:
+                    return Medium;
+                case 3:
+                    return High;
+                }
+            }
+
             inline modStatic * getHighestLOD() const {
                 if (High != nullptr)
                     return High;
