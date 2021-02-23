@@ -28,7 +28,6 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<vehCarAudioContainerBugfixHandler>("vehCarAudioContainer bugfixes"),
     CreateHandler<vehCarModelHandler>("vehCarModel"),
     CreateHandler<vehTrailerHandler>("vehTrailer"),
-    CreateHandler<vehTrailerInstanceHandler>("vehTrailerInstance"),
     CreateHandler<vehPoliceCarAudioBugfixHandler>("vehPoliceCarAudio"),
     CreateHandler<vehSemiCarAudioBugfixHandler>("vehSemiCarAudio"),
     CreateHandler<mmDashViewBugfixHandler>("mmDashViewBugfix"),
@@ -1121,21 +1120,8 @@ void mpConsistencyHandler::Install() {
 
 void vehTrailerHandler::Install()
 {
-    // removes Angels improperly rendered lights
     Installf("Removes default.dgTrailerJoint check preventing trailers from loading properly.");
     mem::nop(0x4D7DCC, 19); // nop out default.dgTrailerJoint load attempt
-}
-
-/*
-    vehTrailerInstanceHandler
-*/
-
-void vehTrailerInstanceHandler::Install()
-{
-    // removes Angels improperly rendered lights
-    InstallPatch({ 0xEB }, {
-        0x4D7FBF,
-    });
 }
 
 /*

@@ -3221,6 +3221,11 @@ void vehCarModelFeatureHandler::Draw(int a1) {
     auto model = reinterpret_cast<vehCarModel*>(this);
     auto geomID = model->getGeomSetId() - 1;
     auto geomSet = lvlInstance::GetGeomTableEntry(geomID);
+    auto carsim = model->getCar()->getCarSim();
+    auto whl0 = carsim->getWheel(0);
+    auto whl1 = carsim->getWheel(1);
+    auto whl2 = carsim->getWheel(2);
+    auto whl3 = carsim->getWheel(3);
 
     //setup renderer
     Matrix34 carMatrix = model->GetMatrix(&vehCarModelGarbageMtx);
@@ -3230,6 +3235,14 @@ void vehCarModelFeatureHandler::Draw(int a1) {
     //get our shader set
     int variantIndex = model->getVariant();
     auto shaders = geomSet->pShaders[variantIndex];
+
+    //get spinning wheels
+    modStatic* swhl0 = *getPtr<modStatic*>((geomSet + 56), a1 * 4);
+    modStatic* swhl1 = *getPtr<modStatic*>((geomSet + 57), a1 * 4);
+    modStatic* swhl2 = *getPtr<modStatic*>((geomSet + 58), a1 * 4);
+    modStatic* swhl3 = *getPtr<modStatic*>((geomSet + 59), a1 * 4);
+    modStatic* swhl4 = *getPtr<modStatic*>((geomSet + 60), a1 * 4);
+    modStatic* swhl5 = *getPtr<modStatic*>((geomSet + 61), a1 * 4);
 
     if (vehCar::sm_DrawHeadlights)
         //draw plighton
@@ -3243,40 +3256,126 @@ void vehCarModelFeatureHandler::Draw(int a1) {
 
     //call original
     hook::Thunk<0x4CE040>::Call<void>(this, a1);
+
+    if (*getPtr<byte>(this, 0xA8) & 1) {
+        if (whl0->getRotationRate() < -26.f || whl0->getRotationRate() > 26.f) {
+            if (swhl0 != nullptr)
+                //draw swhl0
+                model->DrawPart(a1, 56, &whl0->getMatrix(), shaders);
+            else
+                //draw whl0
+                model->DrawPart(a1, 26, &whl0->getMatrix(), shaders);
+        }
+        else {
+            //draw whl0
+            model->DrawPart(a1, 26, &whl0->getMatrix(), shaders);
+        }
+    }
+
+    if (*getPtr<byte>(this, 0xA8) & 4) {
+        if (whl1->getRotationRate() < -26.f || whl1->getRotationRate() > 26.f) {
+            if (swhl1 != nullptr)
+                //draw swhl1
+                model->DrawPart(a1, 57, &whl1->getMatrix(), shaders);
+            else
+                //draw whl1
+                model->DrawPart(a1, 27, &whl1->getMatrix(), shaders);
+        }
+        else {
+            //draw whl1
+            model->DrawPart(a1, 27, &whl1->getMatrix(), shaders);
+        }
+    }
+
+    if (*getPtr<byte>(this, 0xA8) & 0x10) {
+        if (whl2->getRotationRate() < -26.f || whl2->getRotationRate() > 26.f) {
+            if (swhl2 != nullptr)
+                //draw swhl2
+                model->DrawPart(a1, 58, &whl2->getMatrix(), shaders);
+            else
+                //draw whl2
+                model->DrawPart(a1, 28, &whl2->getMatrix(), shaders);
+        }
+        else {
+            //draw whl2
+            model->DrawPart(a1, 28, &whl2->getMatrix(), shaders);
+        }
+    }
+
+    if (*getPtr<byte>(this, 0xA8) & 0x40) {
+        if (whl3->getRotationRate() < -26.f || whl3->getRotationRate() > 26.f) {
+            if (swhl3 != nullptr)
+                //draw swhl3
+                model->DrawPart(a1, 59, &whl3->getMatrix(), shaders);
+            else
+                //draw whl3
+                model->DrawPart(a1, 29, &whl3->getMatrix(), shaders);
+        }
+        else {
+            //draw whl3
+            model->DrawPart(a1, 29, &whl3->getMatrix(), shaders);
+        }
+    }
+
+    if (whl2->getRotationRate() < -26.f || whl2->getRotationRate() > 26.f) {
+        if (swhl4 != nullptr)
+            //draw swhl4
+            DrawWhl4(a1, 60, &whl2->getMatrix(), shaders);
+        else
+            //draw whl4
+            DrawWhl4(a1, 51, &whl2->getMatrix(), shaders);
+    }
+    else {
+        //draw whl4
+        DrawWhl4(a1, 51, &whl2->getMatrix(), shaders);
+    }
+
+    if (whl3->getRotationRate() < -26.f || whl3->getRotationRate() > 26.f) {
+        if (swhl5 != nullptr)
+            //draw swhl5
+            DrawWhl5(a1, 61, &whl3->getMatrix(), shaders);
+        else
+            //draw whl5
+            DrawWhl5(a1, 52, &whl3->getMatrix(), shaders);
+    }
+    else {
+        //draw whl5
+        DrawWhl5(a1, 52, &whl3->getMatrix(), shaders);
+    }
 }
 
-void vehCarModelFeatureHandler::DrawWhl4(int a2, int a3, Matrix34* a4, int a5) {
+void vehCarModelFeatureHandler::DrawWhl4(int a1, int a2, Matrix34* a3, modShader* a4) {
     auto mod = reinterpret_cast<vehCarModel*>(this);
     auto carsim = mod->getCar()->getCarSim();
 
-    a4->Set(&carsim->getWheel(2)->getMatrix());
+    a3->Set(&carsim->getWheel(2)->getMatrix());
     auto carMatrix = carsim->getWorldMatrix();
 
     float offsetX = carsim->BackBackLeftWheelPosDiff.Y * carMatrix->m10 + carsim->BackBackLeftWheelPosDiff.Z * carMatrix->m20 + carsim->BackBackLeftWheelPosDiff.X * carMatrix->m00;
     float offsetY = carsim->BackBackLeftWheelPosDiff.Y * carMatrix->m11 + carsim->BackBackLeftWheelPosDiff.Z * carMatrix->m21 + carsim->BackBackLeftWheelPosDiff.X * carMatrix->m01;
     float offsetZ = carsim->BackBackLeftWheelPosDiff.Y * carMatrix->m12 + carsim->BackBackLeftWheelPosDiff.Z * carMatrix->m22 + carsim->BackBackLeftWheelPosDiff.X * carMatrix->m02;
-    a4->m30 += offsetX;
-    a4->m31 += offsetY;
-    a4->m32 += offsetZ;
+    a3->m30 += offsetX;
+    a3->m31 += offsetY;
+    a3->m32 += offsetZ;
 
-    hook::Thunk<0x4CE840>::Call<void>(this, a2, a3, a4, a5);
+    mod->DrawPart(a1, a2, a3, a4);
 }
 
-void vehCarModelFeatureHandler::DrawWhl5(int a2, int a3, Matrix34* a4, int a5) {
+void vehCarModelFeatureHandler::DrawWhl5(int a1, int a2, Matrix34* a3, modShader* a4) {
     auto mod = reinterpret_cast<vehCarModel*>(this);
     auto carsim = mod->getCar()->getCarSim();
 
-    a4->Set(&carsim->getWheel(3)->getMatrix());
+    a3->Set(&carsim->getWheel(3)->getMatrix());
     auto carMatrix = carsim->getWorldMatrix();
 
     float offsetX = carsim->BackBackRightWheelPosDiff.Y * carMatrix->m10 + carsim->BackBackRightWheelPosDiff.Z * carMatrix->m20 + carsim->BackBackRightWheelPosDiff.X * carMatrix->m00;
     float offsetY = carsim->BackBackRightWheelPosDiff.Y * carMatrix->m11 + carsim->BackBackRightWheelPosDiff.Z * carMatrix->m21 + carsim->BackBackRightWheelPosDiff.X * carMatrix->m01;
     float offsetZ = carsim->BackBackRightWheelPosDiff.Y * carMatrix->m12 + carsim->BackBackRightWheelPosDiff.Z * carMatrix->m22 + carsim->BackBackRightWheelPosDiff.X * carMatrix->m02;
-    a4->m30 += offsetX;
-    a4->m31 += offsetY;
-    a4->m32 += offsetZ;
+    a3->m30 += offsetX;
+    a3->m31 += offsetY;
+    a3->m32 += offsetZ;
 
-    hook::Thunk<0x4CE840>::Call<void>(this, a2, a3, a4, a5);
+    mod->DrawPart(a1, a2, a3, a4);
 }
 
 void vehCarModelFeatureHandler::ModStaticDraw(modShader* a1) {
@@ -3459,6 +3558,12 @@ void vehCarModelFeatureHandler::AddGeomHook(const char* pkgName, const char* nam
     hook::Thunk<0x463BA0>::Call<int>(this, pkgName, name, flags);
     hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "plighton", flags);
     hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "plightoff", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "swhl0", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "swhl1", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "swhl2", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "swhl3", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "swhl4", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "swhl5", flags);
 }
 
 static ConfigValue<bool> cfgEnableSignals ("EnableSignalLights", false);
@@ -3469,7 +3574,7 @@ static ConfigValue<int> cfgHeadlightStyle ("HeadlightStyle", 0);
 static ConfigValue<float> cfgSirenCycleRate ("SirenCycle", 0.25f);
 
 void vehCarModelFeatureHandler::Install() {
-    InstallCallback("vehCarModel::Init", "Adds pop-up lights geometries.",
+    InstallCallback("vehCarModel::Init", "Adds more geometries.",
         &AddGeomHook, {
             cb::call(0x4CD396),
         }
@@ -3480,19 +3585,6 @@ void vehCarModelFeatureHandler::Install() {
             0x5B2CDC,
         }
     );
-
-    InstallCallback("vehCarModel::DrawPart", "Use extra wheel matrices.",
-        &DrawWhl4, {
-            cb::call(0x4CE631), // vehCarModel::Draw
-        }
-    );
-
-    InstallCallback("vehCarModel::DrawPart", "Use extra wheel matrices.",
-        &DrawWhl5, {
-            cb::call(0x4CE6CF), // vehCarModel::Draw
-        }
-    );
-
 
     if (cfgPartReflections.Get())
     {
@@ -3518,6 +3610,42 @@ void vehCarModelFeatureHandler::Install() {
     // removes Angels breakable parts
     InstallPatch({ 0xEB }, {
         0x4CE1A9,
+    });
+
+    // removes Angels front left wheel
+    InstallPatch({ 0xEB }, {
+        0x4CE4B2,
+    });
+
+    // removes Angels front right wheel
+    InstallPatch({ 0xEB }, {
+        0x4CE4ED,
+    });
+
+    // removes Angels back left wheel
+    InstallPatch({ 0xEB }, {
+        0x4CE529,
+    });
+
+    // removes Angels back right wheel
+    InstallPatch({ 0xEB }, {
+        0x4CE564,
+    });
+
+    // removes Angels back back left wheel
+    InstallPatch({
+        0xE9, 0x92, 0x0, 0x0, 0x0,
+        0x90,
+    }, {
+        0x4CE59F,
+    });
+
+    // removes Angels back back right wheel
+    InstallPatch({
+        0xE9, 0x92, 0x0, 0x0, 0x0,
+        0x90,
+    }, {
+        0x4CE63D,
     });
 }
 
@@ -3882,17 +4010,17 @@ void aiVehicleInstanceFeatureHandler::Install() {
         }
     );
 
-    // remove Angels tlight
+    // removes Angels tlight
     InstallPatch({ 0xEB }, {
         0x552995,
     });
 
-    // remove Angels slight0
+    // removes Angels slight0
     InstallPatch({ 0xEB }, {
         0x5529F2,
     });
 
-    // remove Angels slight1
+    // removes Angels slight1
     InstallPatch({ 0xEB }, {
         0x552A2E,
     });
@@ -3921,15 +4049,16 @@ void vehTrailerInstanceFeatureHandler::DrawPartReflections(modStatic* a1, Matrix
 
     //convert world matrix for reflection drawing
     Matrix44* worldMatrix = gfxRenderState::sm_World;
-    worldMatrix->ToMatrix34(a2);
+    Matrix34 envInput = Matrix34();
+    worldMatrix->ToMatrix34(&envInput);
 
-    //draw trailer wheels
+    //draw trailer
     a1->Draw(a3);
 
     //draw reflections
     auto state = &MMSTATE;
     if (g_ReflectionMap != nullptr && !isSoftware && state->EnableReflections) {
-        modShader::BeginEnvMap(g_ReflectionMap, *a2);
+        modShader::BeginEnvMap(g_ReflectionMap, envInput);
         a1->DrawEnvMapped(a3, g_ReflectionMap, 1.0f);
         modShader::EndEnvMap();
     }
@@ -3937,17 +4066,18 @@ void vehTrailerInstanceFeatureHandler::DrawPartReflections(modStatic* a1, Matrix
 
 void vehTrailerInstanceFeatureHandler::DrawPart(int a1, int a2, Matrix34* a3, modShader* a4) {
     auto inst = reinterpret_cast<vehTrailerInstance*>(this);
-    auto geomSet = inst->getGeomSetId() - 1;
+    auto geomID = inst->getGeomSetId() - 1;
+    auto geomSet = lvlInstance::GetGeomTableEntry(geomID);
 
     //setup renderer
     Matrix44::Convert(gfxRenderState::sm_World, a3);
     *(int*)0x685778 |= 0x88; //set m_Touched
 
     //get part
-    modStatic* part = lvlInstance::GetGeomTableEntry(geomSet + a2)->getHighLOD();
+    modStatic* part = *getPtr<modStatic*>((geomSet + a2), a1 * 4);
 
-    if (part != nullptr && a1 == 3) {
-        if (cfgPartReflections.Get())
+    if (part != nullptr) {
+        if (cfgPartReflections.Get() && a1 == 3)
             DrawPartReflections(part, a3, a4);
         else
             part->Draw(a4);
@@ -3955,41 +4085,144 @@ void vehTrailerInstanceFeatureHandler::DrawPart(int a1, int a2, Matrix34* a3, mo
 }
 
 void vehTrailerInstanceFeatureHandler::Draw(int a1) {
-
-    //call original
-    hook::Thunk<0x4D7F20>::Call<void>(this, a1);
-
     auto inst = reinterpret_cast<vehTrailerInstance*>(this);
-    auto geomSet = inst->getGeomSetId() - 1;
+    auto geomID = inst->getGeomSetId() - 1;
+    auto geomSet = lvlInstance::GetGeomTableEntry(geomID);
     auto trailer = inst->getTrailer();
-    auto carsim = trailer->getCarSim();
     auto trailerMtx = inst->GetMatrix(&trailerMatrix);
-    auto twhl2Mtx = trailer->getWheel(2)->getMatrix();
-    auto twhl3Mtx = trailer->getWheel(3)->getMatrix();
+    auto twhl0 = trailer->getWheel(0);
+    auto twhl1 = trailer->getWheel(1);
+    auto twhl2 = trailer->getWheel(2);
+    auto twhl3 = trailer->getWheel(3);
 
     //get our shader set
     int shaderSet = *getPtr<int>(this, 24);
-    auto shaders = lvlInstance::GetGeomTableEntry(geomSet)->pShaders[shaderSet];
+    auto shaders = geomSet->pShaders[shaderSet];
 
-    //draw twhl4
-    twhl2Mtx.Set(&twhl2Mtx);
-    float twhl4OffsetX = carsim->TrailerBackBackLeftWheelPosDiff.Y * trailerMtx.m10 + carsim->TrailerBackBackLeftWheelPosDiff.Z * trailerMtx.m20 + carsim->TrailerBackBackLeftWheelPosDiff.X * trailerMtx.m00;
-    float twhl4OffsetY = carsim->TrailerBackBackLeftWheelPosDiff.Y * trailerMtx.m11 + carsim->TrailerBackBackLeftWheelPosDiff.Z * trailerMtx.m21 + carsim->TrailerBackBackLeftWheelPosDiff.X * trailerMtx.m01;
-    float twhl4OffsetZ = carsim->TrailerBackBackLeftWheelPosDiff.Y * trailerMtx.m12 + carsim->TrailerBackBackLeftWheelPosDiff.Z * trailerMtx.m22 + carsim->TrailerBackBackLeftWheelPosDiff.X * trailerMtx.m02;
-    twhl2Mtx.m30 += twhl4OffsetX;
-    twhl2Mtx.m31 += twhl4OffsetY;
-    twhl2Mtx.m32 += twhl4OffsetZ;
-    DrawPart(a1, 15, &twhl2Mtx, shaders);
+    //get spinning wheels
+    modStatic* tswhl0 = *getPtr<modStatic*>((geomSet + 17), a1 * 4);
+    modStatic* tswhl1 = *getPtr<modStatic*>((geomSet + 18), a1 * 4);
+    modStatic* tswhl2 = *getPtr<modStatic*>((geomSet + 19), a1 * 4);
+    modStatic* tswhl3 = *getPtr<modStatic*>((geomSet + 20), a1 * 4);
+    modStatic* tswhl4 = *getPtr<modStatic*>((geomSet + 21), a1 * 4);
+    modStatic* tswhl5 = *getPtr<modStatic*>((geomSet + 22), a1 * 4);
 
-    //draw twhl5
-    twhl3Mtx.Set(&twhl3Mtx);
-    float twhl5OffsetX = carsim->TrailerBackBackRightWheelPosDiff.Y * trailerMtx.m10 + carsim->TrailerBackBackRightWheelPosDiff.Z * trailerMtx.m20 + carsim->TrailerBackBackRightWheelPosDiff.X * trailerMtx.m00;
-    float twhl5OffsetY = carsim->TrailerBackBackRightWheelPosDiff.Y * trailerMtx.m11 + carsim->TrailerBackBackRightWheelPosDiff.Z * trailerMtx.m21 + carsim->TrailerBackBackRightWheelPosDiff.X * trailerMtx.m01;
-    float twhl5OffsetZ = carsim->TrailerBackBackRightWheelPosDiff.Y * trailerMtx.m12 + carsim->TrailerBackBackRightWheelPosDiff.Z * trailerMtx.m22 + carsim->TrailerBackBackRightWheelPosDiff.X * trailerMtx.m02;
-    twhl3Mtx.m30 += twhl5OffsetX;
-    twhl3Mtx.m31 += twhl5OffsetY;
-    twhl3Mtx.m32 += twhl5OffsetZ;
-    DrawPart(a1, 16, &twhl3Mtx, shaders);
+    //draw trailer
+    DrawPart(a1, 0, &trailerMtx, shaders);
+
+    if (twhl0->getRotationRate() < -26.f || twhl0->getRotationRate() > 26.f) {
+        if (tswhl0 != nullptr)
+            //draw tswhl0
+            DrawPart(a1, 17, &twhl0->getMatrix(), shaders);
+        else
+            //draw twhl0
+            DrawPart(a1, 3, &twhl0->getMatrix(), shaders);
+    }
+    else {
+        //draw twhl0
+        DrawPart(a1, 3, &twhl0->getMatrix(), shaders);
+    }
+
+    if (twhl1->getRotationRate() < -26.f || twhl1->getRotationRate() > 26.f) {
+        if (tswhl1 != nullptr)
+            //draw tswhl1
+            DrawPart(a1, 18, &twhl1->getMatrix(), shaders);
+        else
+            //draw twhl1
+            DrawPart(a1, 4, &twhl1->getMatrix(), shaders);
+    }
+    else {
+        //draw twhl1
+        DrawPart(a1, 4, &twhl1->getMatrix(), shaders);
+    }
+
+    if (twhl2->getRotationRate() < -26.f || twhl2->getRotationRate() > 26.f) {
+        if (tswhl2 != nullptr)
+            //draw tswhl2
+            DrawPart(a1, 19, &twhl2->getMatrix(), shaders);
+        else
+            //draw twhl2
+            DrawPart(a1, 5, &twhl2->getMatrix(), shaders);
+    }
+    else {
+        //draw twhl2
+        DrawPart(a1, 5, &twhl2->getMatrix(), shaders);
+    }
+
+    if (twhl3->getRotationRate() < -26.f || twhl3->getRotationRate() > 26.f) {
+        if (tswhl3 != nullptr)
+            //draw tswhl3
+            DrawPart(a1, 20, &twhl3->getMatrix(), shaders);
+        else
+            //draw twhl3
+            DrawPart(a1, 6, &twhl3->getMatrix(), shaders);
+    }
+    else {
+        //draw twhl3
+        DrawPart(a1, 6, &twhl3->getMatrix(), shaders);
+    }
+
+    if (twhl2->getRotationRate() < -26.f || twhl2->getRotationRate() > 26.f) {
+        if (tswhl4 != nullptr)
+            //draw tswhl4
+            DrawTwhl4(a1, 21, &twhl2->getMatrix(), shaders);
+        else
+            //draw twhl4
+            DrawTwhl4(a1, 15, &twhl2->getMatrix(), shaders);
+    }
+    else {
+        //draw twhl4
+        DrawTwhl4(a1, 15, &twhl2->getMatrix(), shaders);
+    }
+
+    if (twhl3->getRotationRate() < -26.f || twhl3->getRotationRate() > 26.f) {
+        if (tswhl5 != nullptr)
+            //draw tswhl5
+            DrawTwhl5(a1, 22, &twhl3->getMatrix(), shaders);
+        else
+            //draw twhl5
+            DrawTwhl5(a1, 16, &twhl3->getMatrix(), shaders);
+    }
+    else {
+        //draw twhl5
+        DrawTwhl5(a1, 16, &twhl3->getMatrix(), shaders);
+    }
+}
+
+void vehTrailerInstanceFeatureHandler::DrawTwhl4(int a1, int a2, Matrix34* a3, modShader* a4) {
+    auto inst = reinterpret_cast<vehTrailerInstance*>(this);
+    auto trailer = inst->getTrailer();
+    auto carsim = trailer->getCarSim();
+
+    a3->Set(&trailer->getWheel(2)->getMatrix());
+    auto trailerMtx = inst->GetMatrix(&trailerMatrix);
+
+    float offsetX = carsim->TrailerBackBackLeftWheelPosDiff.Y * trailerMtx.m10 + carsim->TrailerBackBackLeftWheelPosDiff.Z * trailerMtx.m20 + carsim->TrailerBackBackLeftWheelPosDiff.X * trailerMtx.m00;
+    float offsetY = carsim->TrailerBackBackLeftWheelPosDiff.Y * trailerMtx.m11 + carsim->TrailerBackBackLeftWheelPosDiff.Z * trailerMtx.m21 + carsim->TrailerBackBackLeftWheelPosDiff.X * trailerMtx.m01;
+    float offsetZ = carsim->TrailerBackBackLeftWheelPosDiff.Y * trailerMtx.m12 + carsim->TrailerBackBackLeftWheelPosDiff.Z * trailerMtx.m22 + carsim->TrailerBackBackLeftWheelPosDiff.X * trailerMtx.m02;
+    a3->m30 += offsetX;
+    a3->m31 += offsetY;
+    a3->m32 += offsetZ;
+
+    DrawPart(a1, a2, a3, a4);
+}
+
+void vehTrailerInstanceFeatureHandler::DrawTwhl5(int a1, int a2, Matrix34* a3, modShader* a4) {
+    auto inst = reinterpret_cast<vehTrailerInstance*>(this);
+    auto trailer = inst->getTrailer();
+    auto carsim = trailer->getCarSim();
+
+    a3->Set(&trailer->getWheel(3)->getMatrix());
+    auto trailerMtx = inst->GetMatrix(&trailerMatrix);
+
+    float offsetX = carsim->TrailerBackBackRightWheelPosDiff.Y * trailerMtx.m10 + carsim->TrailerBackBackRightWheelPosDiff.Z * trailerMtx.m20 + carsim->TrailerBackBackRightWheelPosDiff.X * trailerMtx.m00;
+    float offsetY = carsim->TrailerBackBackRightWheelPosDiff.Y * trailerMtx.m11 + carsim->TrailerBackBackRightWheelPosDiff.Z * trailerMtx.m21 + carsim->TrailerBackBackRightWheelPosDiff.X * trailerMtx.m01;
+    float offsetZ = carsim->TrailerBackBackRightWheelPosDiff.Y * trailerMtx.m12 + carsim->TrailerBackBackRightWheelPosDiff.Z * trailerMtx.m22 + carsim->TrailerBackBackRightWheelPosDiff.X * trailerMtx.m02;
+    a3->m30 += offsetX;
+    a3->m31 += offsetY;
+    a3->m32 += offsetZ;
+
+    DrawPart(a1, a2, a3, a4);
 }
 
 void vehTrailerInstanceFeatureHandler::DrawGlow() {
@@ -4106,28 +4339,6 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
     }
 }
 
-void vehTrailerInstanceFeatureHandler::ModStaticDraw(modShader* a1) {
-    auto mod = reinterpret_cast<modStatic*>(this);
-    hook::Type<gfxTexture*> g_ReflectionMap = 0x628914;
-    bool isSoftware = *(bool*)0x6830D4;
-
-    //convert world matrix for reflection drawing
-    Matrix44* worldMatrix = gfxRenderState::sm_World;
-    Matrix34 envInput = Matrix34();
-    worldMatrix->ToMatrix34(&envInput);
-
-    //draw trailer
-    mod->Draw(a1);
-
-    //draw reflections
-    auto state = &MMSTATE;
-    if (g_ReflectionMap != nullptr && !isSoftware && state->EnableReflections) {
-        modShader::BeginEnvMap(g_ReflectionMap, envInput);
-        mod->DrawEnvMapped(a1, g_ReflectionMap, 1.0f);
-        modShader::EndEnvMap();
-    }
-}
-
 void vehTrailerInstanceFeatureHandler::AddGeomHook(const char* pkgName, const char* name, int flags) {
     hook::Thunk<0x463BA0>::Call<int>(this, pkgName, name, flags);
     hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "rlight", flags);
@@ -4139,6 +4350,12 @@ void vehTrailerInstanceFeatureHandler::AddGeomHook(const char* pkgName, const ch
     hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "siren1", flags);
     hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "twhl4", flags);
     hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "twhl5", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "tswhl0", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "tswhl1", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "tswhl2", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "tswhl3", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "tswhl4", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "tswhl5", flags);
 }
 
 void vehTrailerInstanceFeatureHandler::Install() {
@@ -4147,18 +4364,6 @@ void vehTrailerInstanceFeatureHandler::Install() {
             cb::call(0x4D7E79),
         }
     );
-
-    if (cfgPartReflections.Get()) {
-        InstallCallback("vehTrailerInstance::Draw", "Draws reflections on trailers.",
-            &ModStaticDraw, {
-                cb::call(0x4D7FA0),
-                cb::call(0x4D8027),
-                cb::call(0x4D806E),
-                cb::call(0x4D80B6),
-                cb::call(0x4D8106),
-            }
-        );
-    }
 
     InstallVTableHook("vehTrailerInstance::Draw",
         &Draw, {

@@ -185,11 +185,6 @@ public:
     static void Install();
 };
 
-class vehTrailerInstanceHandler {
-public:
-    static void Install();
-};
-
 class vehPoliceCarAudioBugfixHandler {
 public:
     static void Install();
