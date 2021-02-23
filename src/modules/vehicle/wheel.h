@@ -88,6 +88,12 @@ namespace MM2
     public:
         static hook::Type<float> WeatherFriction;
 
+        inline std::tuple<float, float> computeFriction(float slip) {
+            float visualFriction = 0.f;
+            float functionalFriction = this->ComputeFriction(slip, &visualFriction);
+            return std::make_tuple(functionalFriction, visualFriction);
+        }
+
         inline Matrix34 getMatrix() {
             return this->WheelMatrix;
         }
@@ -146,6 +152,7 @@ namespace MM2
         AGE_API float GetVisualDispLat()                       { return hook::Thunk<0x4D4090>::Call<float>(this); }
         AGE_API float GetVisualDispLong()                      { return hook::Thunk<0x4D40D0>::Call<float>(this); }
 
+        AGE_API float ComputeFriction(float slip, float *vF)   { return hook::Thunk<0x4D25D0>::Call<float>(this, slip, vF); }
         /*
             asNode virtuals
         */
@@ -195,6 +202,7 @@ namespace MM2
                 .addFunction("GetVisualDispVert", &GetVisualDispVert)
                 .addFunction("GetVisualDispLat", &GetVisualDispLat)
                 .addFunction("GetVisualDispLong", &GetVisualDispLong)
+                .addFunction("ComputeFriction", &computeFriction)
             .endClass();
         }
     };
