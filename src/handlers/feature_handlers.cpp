@@ -3244,6 +3244,12 @@ void vehCarModelFeatureHandler::Draw(int a1) {
     modStatic* swhl4 = *getPtr<modStatic*>((geomSet + 60), a1 * 4);
     modStatic* swhl5 = *getPtr<modStatic*>((geomSet + 61), a1 * 4);
 
+    vehWheel* wheels[4] = { whl0, whl1, whl2, whl3 };
+    modStatic* sWhlGeometries[4] = { swhl0, swhl1, swhl2, swhl3 };
+    int sWhlIds[4] = { 56, 57, 58, 59 };
+    int whlIds[4] = { 26, 27, 28, 29 };
+    byte modelBreakFlags = *getPtr<byte>(this, 0xA8);
+
     if (vehCar::sm_DrawHeadlights)
         //draw plighton
         model->DrawPart(a1, 54, &carMatrix, shaders);
@@ -3257,63 +3263,20 @@ void vehCarModelFeatureHandler::Draw(int a1) {
     //call original
     hook::Thunk<0x4CE040>::Call<void>(this, a1);
 
-    if (*getPtr<byte>(this, 0xA8) & 1) {
-        if (whl0->getRotationRate() < -26.f || whl0->getRotationRate() > 26.f) {
-            if (swhl0 != nullptr)
-                //draw swhl0
-                model->DrawPart(a1, 56, &whl0->getMatrix(), shaders);
-            else
-                //draw whl0
-                model->DrawPart(a1, 26, &whl0->getMatrix(), shaders);
-        }
-        else {
-            //draw whl0
-            model->DrawPart(a1, 26, &whl0->getMatrix(), shaders);
-        }
-    }
+    //draw (s)whls 0-4
+    for (int i = 0; i < 4; i++) {
+        auto wheel = wheels[i];
+        int flag = 1 << (i * 2);
 
-    if (*getPtr<byte>(this, 0xA8) & 4) {
-        if (whl1->getRotationRate() < -26.f || whl1->getRotationRate() > 26.f) {
-            if (swhl1 != nullptr)
-                //draw swhl1
-                model->DrawPart(a1, 57, &whl1->getMatrix(), shaders);
-            else
-                //draw whl1
-                model->DrawPart(a1, 27, &whl1->getMatrix(), shaders);
-        }
-        else {
-            //draw whl1
-            model->DrawPart(a1, 27, &whl1->getMatrix(), shaders);
-        }
-    }
-
-    if (*getPtr<byte>(this, 0xA8) & 0x10) {
-        if (whl2->getRotationRate() < -26.f || whl2->getRotationRate() > 26.f) {
-            if (swhl2 != nullptr)
-                //draw swhl2
-                model->DrawPart(a1, 58, &whl2->getMatrix(), shaders);
-            else
-                //draw whl2
-                model->DrawPart(a1, 28, &whl2->getMatrix(), shaders);
-        }
-        else {
-            //draw whl2
-            model->DrawPart(a1, 28, &whl2->getMatrix(), shaders);
-        }
-    }
-
-    if (*getPtr<byte>(this, 0xA8) & 0x40) {
-        if (whl3->getRotationRate() < -26.f || whl3->getRotationRate() > 26.f) {
-            if (swhl3 != nullptr)
-                //draw swhl3
-                model->DrawPart(a1, 59, &whl3->getMatrix(), shaders);
-            else
-                //draw whl3
-                model->DrawPart(a1, 29, &whl3->getMatrix(), shaders);
-        }
-        else {
-            //draw whl3
-            model->DrawPart(a1, 29, &whl3->getMatrix(), shaders);
+        if (modelBreakFlags & flag) {
+            if (fabs(wheel->getRotationRate()) > 26.f && sWhlGeometries[i] != nullptr) 
+            {
+                model->DrawPart(a1, sWhlIds[i], &wheel->getMatrix(), shaders);
+            }
+            else 
+            {
+                model->DrawPart(a1, whlIds[i], &wheel->getMatrix(), shaders);
+            }
         }
     }
 
