@@ -4081,7 +4081,7 @@ void vehTrailerInstanceFeatureHandler::Draw(int a1) {
     //draw (s)whl0-4
     for (int i = 0; i < 4; i++) {
         auto wheel = wheels[i];
-        if (fabs(wheel->getRotationRate() > 26.f) && sWhlGeometries[i] != nullptr) {
+        if (fabs(wheel->getRotationRate()) > 26.f && sWhlGeometries[i] != nullptr) {
             DrawPart(a1, sWhlIds[i], &wheel->getMatrix(), shaders);
         }
         else 
