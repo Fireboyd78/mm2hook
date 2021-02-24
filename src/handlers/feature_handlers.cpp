@@ -3570,11 +3570,6 @@ void vehCarModelFeatureHandler::Install() {
         }
     );
 
-    // removes Angels breakable parts
-    InstallPatch({ 0xEB }, {
-        0x4CE1A9,
-    });
-
     // removes Angels front left wheel
     InstallPatch({ 0xEB }, {
         0x4CE4B2,
