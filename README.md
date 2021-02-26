@@ -51,3 +51,28 @@ mm2hook supports some custom parameters to enable or disable functions and patch
 | -fullscreen | *N/A* | Forces the game to fullscreen mode. |
 | -bitdepth | `bit_depth` | Sets the bit depth in bits. |
 | -heapsize | `size_in_mb` | Sets the heap size (in megabytes). |
+
+## New geometry objects
+
+mm2hook supports more geometries which can be added in PKG files as new realistic features in game.
+
+Pop-up headlights objects.
+
+| Object | Description |
+| :------- | :---------|
+| PLIGHTON | Appears when car lights are on. |
+| PLIGHTOFF | Appears when car lights are off. |
+
+Spinning wheel objects appear when wheel rotation rate is high.
+
+| Object | Description |
+| :------- | :---------|
+| SWHL0 | Front left blurry wheel. |
+| SWHL1 | Front right blurry wheel. |
+| SWHL2 | Back left blurry wheel. |
+| SWHL3 | Back right blurry wheel. |
+| SWHL4 | Back back left blurry wheel. |
+| SWHL5| Back back right blurry wheel. |
+
+**Note:**
+In order to export these objects in the right order, you must use Blender PKG Add-On [here](https://github.com/Dummiesman/PKGImportExport), otherwise it won't work properly.
