@@ -1,5 +1,6 @@
 #pragma once
 #include <modules\level.h>
+#include <..\mm2_model.h>
 
 namespace MM2
 {
@@ -14,6 +15,7 @@ namespace MM2
     extern class modShader;
     extern class phBound;
     extern class phBoundGeometry;
+    extern class modPackage;
 
     // Class definitions
 
@@ -46,7 +48,8 @@ namespace MM2
             modShader **pShaders;
             phBoundGeometry *BoundGeom;
             float Radius;
-            uint32_t dword1C;
+            char numShaders;
+            char numShadersPerPaintjob;
 
             inline modStatic * getLOD(int lod) const {
                 if (lod < 0 || lod > 3)
@@ -198,6 +201,47 @@ namespace MM2
 
         AGE_API void PreLoadShader(int a1)                  { hook::Thunk<0x464B00>::Call<void>(this, a1); }
         AGE_API void Optimize(int a1)                       { hook::Thunk<0x464B70>::Call<void>(this, a1); }
+
+        /*
+            Custom additions
+        */
+        bool BeginGeomWithGroup(const char* a1, const char* a2, const char* group, int a3)
+        {
+            string_buf<256> groupedName("%s_%s", a1, group);
+
+            *(bool*)0x651720 = (a3 & 8) != 0; //set dontPreload
+            *(const char**)0x6516DC = groupedName; //set lastName
+            auto PackageHash = (HashTable*)0x651728;
+
+            
+
+            int existingGeomSet;
+            if (PackageHash->Access(groupedName, &existingGeomSet))
+            {
+                this->GeomSet = existingGeomSet;
+            }
+            else
+            {
+                auto package = new modPackage();
+                *(modPackage**)0x0651740 = package; //set PKG
+
+                if (package->Open("geometry", a1))
+                {
+                    this->GeomSet = GetGeomSet(a1, a2, a3);
+                    PackageHash->Insert(groupedName, (void*)this->GeomSet);
+                    return true;
+                }
+
+                if (package != nullptr)
+                {
+                    delete package;
+                }
+
+                *(modPackage**)0x0651740 = nullptr; //set PKG
+                PackageHash->Insert(groupedName, (void*)0);
+            }
+            return false;
+        }
 
         /*
             lvlInstance virtuals
