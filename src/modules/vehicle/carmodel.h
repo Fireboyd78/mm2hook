@@ -510,7 +510,7 @@ namespace MM2
                 if ((&RSTATE->Data)->AlphaRef != 0)
                 {
                     (&RSTATE->Data)->AlphaRef = 0;
-                    *(int*)0x685778 |= 1; //set m_Touched
+                    gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
                 }
             }
             
@@ -534,7 +534,7 @@ namespace MM2
                 if ((&RSTATE->Data)->AlphaRef != 0)
                 {
                     (&RSTATE->Data)->AlphaRef = 0;
-                    *(int*)0x685778 |= 1; //set m_Touched
+                    gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
                 }
 
                 decalModel->Draw(shaders);
@@ -542,7 +542,7 @@ namespace MM2
                 if ((&RSTATE->Data)->AlphaRef != oldAlphaRef2)
                 {
                     (&RSTATE->Data)->AlphaRef = oldAlphaRef2;
-                    *(int*)0x685778 |= 1; //set m_Touched
+                    gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
                 }
             }
 
@@ -742,7 +742,7 @@ namespace MM2
             if (oldAlphaRef != (&RSTATE->Data)->AlphaRef)
             {
                 (&RSTATE->Data)->AlphaRef = oldAlphaRef;
-                *(int*)0x685778 |= 1; //set m_Touched
+                gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
             }
         }
 

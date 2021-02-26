@@ -57,7 +57,7 @@ namespace MM2
             byte oldCullMode = renderStateData->CullMode;
             if (renderStateData->CullMode != 1) {
                 renderStateData->CullMode = 1;
-                *(int*)0x685778 |= 1; //set m_Touched
+                gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
             }
             
             //draw shards
@@ -75,12 +75,12 @@ namespace MM2
             //reset cull mode
             if (renderStateData->CullMode != oldCullMode) {
                 renderStateData->CullMode = oldCullMode;
-                *(int*)0x685778 |= 1; //set m_Touched
+                gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
             }
 
             //finish off
             memcpy(&gfxRenderState::sm_World, (Matrix44*)0x6A3B48, sizeof(Matrix44));
-            *(int*)0x685778 |= 0x88; //set m_Touched
+            gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
         }
     };
 
