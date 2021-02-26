@@ -53,18 +53,13 @@ namespace MM2
         vehWheel WheelFrontRight;
         vehWheel WheelBackLeft;
         vehWheel WheelBackRight;
+    public:
         vehAxle AxleFront;
         vehAxle AxleRear;
-        vehSuspension Shaft2Suspension;
-        vehSuspension Shaft3Suspension;
-        vehSuspension Arm0Suspension;
-        vehSuspension Arm1Suspension;
-        vehSuspension Arm2Suspension;
-        vehSuspension Arm3Suspension;
-        vehSuspension Shock0Suspension;
-        vehSuspension Shock1Suspension;
-        vehSuspension Shock2Suspension;
-        vehSuspension Shock3Suspension;
+        vehSuspension ShaftSuspensions[2]; //SHAFT2-3
+        vehSuspension ArmSuspensions[4]; //ARM0-4
+        vehSuspension ShockSuspensions[4]; //SHOCK0-4
+    protected:
         vehAero Aero;
         float CarFrictionHandling;
         int unknown5440;
