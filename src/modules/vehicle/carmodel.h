@@ -696,7 +696,6 @@ namespace MM2
                     Matrix34 dummyWhlMatrix = Matrix34();
                     dummyWhlMatrix.Set(&refWheel->getMatrix());
 
-
                     float offsetX = carSim->BackBackLeftWheelPosDiff.Y * carMatrix->m10 + carSim->BackBackLeftWheelPosDiff.Z * carMatrix->m20 + carSim->BackBackLeftWheelPosDiff.X * carMatrix->m00;
                     float offsetY = carSim->BackBackLeftWheelPosDiff.Y * carMatrix->m11 + carSim->BackBackLeftWheelPosDiff.Z * carMatrix->m21 + carSim->BackBackLeftWheelPosDiff.X * carMatrix->m01;
                     float offsetZ = carSim->BackBackLeftWheelPosDiff.Y * carMatrix->m12 + carSim->BackBackLeftWheelPosDiff.Z * carMatrix->m22 + carSim->BackBackLeftWheelPosDiff.X * carMatrix->m02;
@@ -706,9 +705,9 @@ namespace MM2
 
                     if (fabs(refWheel->getRotationRate()) > 26.f && swhl4model != nullptr)
                     {
-                        DrawPart(lod, 51, &dummyWhlMatrix, shaders, vehCarModel::WheelReflections);
-                    } else {
                         DrawPart(lod, 59, &dummyWhlMatrix, shaders, vehCarModel::WheelReflections);
+                    } else {
+                        DrawPart(lod, 51, &dummyWhlMatrix, shaders, vehCarModel::WheelReflections);
                     }
                 }
 
@@ -730,10 +729,10 @@ namespace MM2
 
                     if (fabs(refWheel->getRotationRate()) > 26.f && swhl5model != nullptr)
                     {
-                        DrawPart(lod, 52, &dummyWhlMatrix, shaders, vehCarModel::WheelReflections);
+                        DrawPart(lod, 60, &dummyWhlMatrix, shaders, vehCarModel::WheelReflections);
                     }
                     else {
-                        DrawPart(lod, 60, &dummyWhlMatrix, shaders, vehCarModel::WheelReflections);
+                        DrawPart(lod, 52, &dummyWhlMatrix, shaders, vehCarModel::WheelReflections);
                     }
                 }
             }
