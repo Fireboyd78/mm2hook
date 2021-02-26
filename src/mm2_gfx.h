@@ -521,6 +521,8 @@ namespace MM2
         gfxRenderStateData Data;
         gfxMaterial Material;
 
+        static hook::Type<int> m_Touched;
+
         static hook::TypeProxy<Matrix44> sm_Camera;
         static hook::TypeProxy<Matrix44> sm_World;
 
