@@ -25,12 +25,16 @@ namespace MM2
         float TorqueCoef;
         float DampCoef;
     public:
-        vehWheel * getLeftWheel() {
+        inline vehWheel * getLeftWheel() {
             return this->LeftWheel;
         }
 
-        vehWheel * getRightWheel() {
+        inline vehWheel * getRightWheel() {
             return this->RightWheel;
+        }
+
+        inline Matrix34 getAxleMatrix() {
+            return this->AxleMatrix;
         }
     public:
         AGE_API vehAxle()                                   { hook::Thunk<0x4D9990>::Call<void>(this); }

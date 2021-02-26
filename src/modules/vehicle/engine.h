@@ -87,6 +87,11 @@ namespace MM2
             CurrentTorque = torque;
         }
 
+        inline Matrix34* getVisualMatrixPtr()
+        {
+            return this->EngineVisualMatrixPtr;
+        }
+
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<vehEngine, asNode>("vehEngine")
                 //properties
