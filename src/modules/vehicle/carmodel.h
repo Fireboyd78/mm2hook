@@ -195,7 +195,7 @@ namespace MM2
 
             auto model = lvlInstance::GetGeomTableEntry(this->getGeomSetId() + geomId - 1)->getLOD(lod);
             if (model != nullptr) {
-                model->Draw(shaders);
+                DrawPart(model, matrix, shaders);
 
                 hook::Type<gfxTexture*> g_ReflectionMap = 0x628914;
                 bool isSoftware = *(bool*)0x6830D4;
@@ -203,8 +203,8 @@ namespace MM2
                 auto state = &MMSTATE;
                 if (lod == 3 && (g_ReflectionMap != nullptr && !isSoftware && state->EnableReflections))
                 {
-                    modShader::BeginEnvMap(g_ReflectionMap, *this->carSim->getWorldMatrix());
-                     model->DrawEnvMapped(shaders, g_ReflectionMap, 1.f);
+                    modShader::BeginEnvMap(g_ReflectionMap, *matrix);
+                    model->DrawEnvMapped(shaders, g_ReflectionMap, 1.f);
                     modShader::EndEnvMap();
                 }
             }
