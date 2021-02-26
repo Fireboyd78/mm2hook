@@ -20,3 +20,26 @@ declfield(vehCarDamage::EngineSmokeRule)(0x6AFED4);
     vehWheel
 */
 declfield(vehWheel::WeatherFriction)(0x5CF6B8);
+
+/*
+*   vehCarModel
+*/
+bool vehCarModel::EnableFlashingHeadlights = true;
+bool vehCarModel::EnableSignals = false;
+bool vehCarModel::MWStyleTotaledCar = false;
+bool vehCarModel::PartReflections = false;
+bool vehCarModel::WheelReflections = false;
+int vehCarModel::SirenType = 0;
+int vehCarModel::HeadlightType = 0;
+float vehCarModel::SirenCycle = 0.25f;
+
+bool vehCarModel::HazardLightsState = false;
+bool vehCarModel::LeftSignalLightState = false;
+bool vehCarModel::RightSignalLightState = false;
+
+bool vehCarModel::mm1StyleTransmission = false;
+
+/*
+   vehBreakableMgr
+*/
+bool vehBreakableMgr::EnableReflections = false;

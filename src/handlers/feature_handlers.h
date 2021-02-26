@@ -274,18 +274,14 @@ public:
 
 class vehBreakableMgrHandler {
 public:
-    void ModStaticDraw(MM2::modShader * a1);
     static void Install();
 };
 
 class vehCarModelFeatureHandler {
 public:
     void Draw(int a1);
-    void DrawWhl4(int a1, int a2, MM2::Matrix34* a3, MM2::modShader* a4);
-    void DrawWhl5(int a1, int a2, MM2::Matrix34* a3, MM2::modShader* a4);
     void DrawGlow();
     void ModStaticDraw(MM2::modShader * a1);
-    void AddGeomHook(const char* pkgName, const char* name, int flags);
     static void Install();
 };
 

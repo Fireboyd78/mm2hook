@@ -509,9 +509,6 @@ void gfxPipelineHandler::gfxApplySettings(void) {
 }
 
 static bool g_bConsoleOpen = false;
-static bool hazardLights = false;
-static bool leftSignal = false;
-static bool rightSignal = false;
 
 bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
 {
@@ -578,9 +575,9 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
             if (gamePtr != NULL && popup != NULL) {
                 if (!popup->IsEnabled()) {
                     // toggle left signal
-                    leftSignal = !leftSignal;
-                    hazardLights = false;
-                    rightSignal = false;
+                    vehCarModel::LeftSignalLightState = !vehCarModel::LeftSignalLightState;
+                    vehCarModel::HazardLightsState = false;
+                    vehCarModel::RightSignalLightState = false;
                 }
             }
         } return true;
@@ -595,9 +592,9 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
             if (gamePtr != NULL && popup != NULL) {
                 if (!popup->IsEnabled()) {
                     // toggle hazard lights
-                    hazardLights = !hazardLights;
-                    leftSignal = false;
-                    rightSignal = false;
+                    vehCarModel::HazardLightsState = !vehCarModel::HazardLightsState;
+                    vehCarModel::LeftSignalLightState = false;
+                    vehCarModel::RightSignalLightState = false;
                 }
             }
         } return true;
@@ -612,9 +609,9 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
             if (gamePtr != NULL && popup != NULL) {
                 if (!popup->IsEnabled()) {
                     // toggle right signal
-                    rightSignal = !rightSignal;
-                    hazardLights = false;
-                    leftSignal = false;
+                    vehCarModel::RightSignalLightState = !vehCarModel::RightSignalLightState;
+                    vehCarModel::HazardLightsState = false;
+                    vehCarModel::LeftSignalLightState = false;
                 }
             }
         } return true;
@@ -2920,11 +2917,9 @@ void mmPlayerHandler::Reset() {
     }
 
     // deactivate signal lights if they're active
-    if (hazardLights || leftSignal || rightSignal) {
-        hazardLights = false;
-        leftSignal = false;
-        rightSignal = false;
-    }
+    vehCarModel::HazardLightsState = false;
+    vehCarModel::LeftSignalLightState = false;
+    vehCarModel::RightSignalLightState = false;
 
     // call original
     hook::Thunk<0x404A60>::Call<void>(this);
@@ -3171,35 +3166,12 @@ void vehCarHandler::Install(void) {
 
 static ConfigValue<bool> cfgBreakReflections("ReflectionsOnBreakables", true);
 
-void vehBreakableMgrHandler::ModStaticDraw(modShader* a1) {
-    auto mod = reinterpret_cast<modStatic*>(this);
-    hook::Type<gfxTexture *> g_ReflectionMap = 0x628914;
-    bool isSoftware = *(bool*)0x6830D4;
-
-    //convert world matrix for reflection drawing
-    Matrix44* worldMatrix = gfxRenderState::sm_World;
-    Matrix34 envInput = Matrix34();
-    worldMatrix->ToMatrix34(&envInput);
-
-    //draw breakable
-    mod->Draw(a1);
-
-    //draw reflections
-    auto state = &MMSTATE;
-    if (g_ReflectionMap != nullptr && !isSoftware && state->EnableReflections) {
-        modShader::BeginEnvMap(g_ReflectionMap, envInput);
-        mod->DrawEnvMapped(a1, g_ReflectionMap, 1.0f);
-        modShader::EndEnvMap();
-    }
-}
-
 void vehBreakableMgrHandler::Install() {
-    if (!cfgBreakReflections.Get())
-        return;
-
+    vehBreakableMgr::EnableReflections = cfgBreakReflections.Get();
     InstallCallback("vehBreakableMgr::Draw", "Draws reflections on breakables.",
-        &ModStaticDraw, {
-            cb::call(0x4D886D), // vehBreakableMgr::Draw
+        &vehBreakableMgr::Draw, {
+            cb::call(0x4CE1B7), // vehCarModel::Draw
+            cb::call(0x552220), // aiVehicleInstance::Draw
         }
     );
 }
@@ -3207,138 +3179,9 @@ void vehBreakableMgrHandler::Install() {
 /*
     vehCarModelFeatureHandler
 */
-Matrix34 vehCarModelGarbageMtx = Matrix34();
-int sirenStyle = 0;
-int headlightStyle = 0;
-float sirenCycle = 0.25f;
-bool enableSignals = false;
-bool flashingHeadlights = true;
-bool nfsMwStyleTotaledCar = false;
-
-static ConfigValue<bool> cfgPartReflections("ReflectionsOnCarParts", false);
-
 void vehCarModelFeatureHandler::Draw(int a1) {
     auto model = reinterpret_cast<vehCarModel*>(this);
-    auto geomID = model->getGeomSetId() - 1;
-    auto geomSet = lvlInstance::GetGeomTableEntry(geomID);
-    auto carsim = model->getCar()->getCarSim();
-    auto whl0 = carsim->getWheel(0);
-    auto whl1 = carsim->getWheel(1);
-    auto whl2 = carsim->getWheel(2);
-    auto whl3 = carsim->getWheel(3);
-
-    //setup renderer
-    Matrix34 carMatrix = model->GetMatrix(&vehCarModelGarbageMtx);
-    Matrix44::Convert(gfxRenderState::sm_World, &carMatrix);
-    *(int*)0x685778 |= 0x88; //set m_Touched
-
-    //get our shader set
-    int variantIndex = model->getVariant();
-    auto shaders = geomSet->pShaders[variantIndex];
-
-    //get spinning wheels
-    modStatic* swhl0 = *getPtr<modStatic*>((geomSet + 56), a1 * 4);
-    modStatic* swhl1 = *getPtr<modStatic*>((geomSet + 57), a1 * 4);
-    modStatic* swhl2 = *getPtr<modStatic*>((geomSet + 58), a1 * 4);
-    modStatic* swhl3 = *getPtr<modStatic*>((geomSet + 59), a1 * 4);
-    modStatic* swhl4 = *getPtr<modStatic*>((geomSet + 60), a1 * 4);
-    modStatic* swhl5 = *getPtr<modStatic*>((geomSet + 61), a1 * 4);
-
-    vehWheel* wheels[4] = { whl0, whl1, whl2, whl3 };
-    modStatic* sWhlGeometries[4] = { swhl0, swhl1, swhl2, swhl3 };
-    int sWhlIds[4] = { 56, 57, 58, 59 };
-    int whlIds[4] = { 26, 27, 28, 29 };
-    byte modelBreakFlags = *getPtr<byte>(this, 0xA8);
-
-    if (vehCar::sm_DrawHeadlights)
-        //draw plighton
-        model->DrawPart(a1, 54, &carMatrix, shaders);
-    else
-        //draw plightoff
-        model->DrawPart(a1, 55, &carMatrix, shaders);
-
-    //draw breakable parts
-    model->getGenBreakableMgr()->Draw(&carMatrix, shaders, a1);
-
-    //call original
-    hook::Thunk<0x4CE040>::Call<void>(this, a1);
-
-    //draw (s)whls 0-4
-    for (int i = 0; i < 4; i++) {
-        auto wheel = wheels[i];
-        int flag = 1 << (i * 2);
-
-        if (modelBreakFlags & flag) {
-            if (fabs(wheel->getRotationRate()) > 26.f && sWhlGeometries[i] != nullptr) 
-            {
-                model->DrawPart(a1, sWhlIds[i], &wheel->getMatrix(), shaders);
-            }
-            else 
-            {
-                model->DrawPart(a1, whlIds[i], &wheel->getMatrix(), shaders);
-            }
-        }
-    }
-
-    if (whl2->getRotationRate() < -26.f || whl2->getRotationRate() > 26.f) {
-        if (swhl4 != nullptr)
-            //draw swhl4
-            DrawWhl4(a1, 60, &whl2->getMatrix(), shaders);
-        else
-            //draw whl4
-            DrawWhl4(a1, 51, &whl2->getMatrix(), shaders);
-    }
-    else {
-        //draw whl4
-        DrawWhl4(a1, 51, &whl2->getMatrix(), shaders);
-    }
-
-    if (whl3->getRotationRate() < -26.f || whl3->getRotationRate() > 26.f) {
-        if (swhl5 != nullptr)
-            //draw swhl5
-            DrawWhl5(a1, 61, &whl3->getMatrix(), shaders);
-        else
-            //draw whl5
-            DrawWhl5(a1, 52, &whl3->getMatrix(), shaders);
-    }
-    else {
-        //draw whl5
-        DrawWhl5(a1, 52, &whl3->getMatrix(), shaders);
-    }
-}
-
-void vehCarModelFeatureHandler::DrawWhl4(int a1, int a2, Matrix34* a3, modShader* a4) {
-    auto mod = reinterpret_cast<vehCarModel*>(this);
-    auto carsim = mod->getCar()->getCarSim();
-
-    a3->Set(&carsim->getWheel(2)->getMatrix());
-    auto carMatrix = carsim->getWorldMatrix();
-
-    float offsetX = carsim->BackBackLeftWheelPosDiff.Y * carMatrix->m10 + carsim->BackBackLeftWheelPosDiff.Z * carMatrix->m20 + carsim->BackBackLeftWheelPosDiff.X * carMatrix->m00;
-    float offsetY = carsim->BackBackLeftWheelPosDiff.Y * carMatrix->m11 + carsim->BackBackLeftWheelPosDiff.Z * carMatrix->m21 + carsim->BackBackLeftWheelPosDiff.X * carMatrix->m01;
-    float offsetZ = carsim->BackBackLeftWheelPosDiff.Y * carMatrix->m12 + carsim->BackBackLeftWheelPosDiff.Z * carMatrix->m22 + carsim->BackBackLeftWheelPosDiff.X * carMatrix->m02;
-    a3->m30 += offsetX;
-    a3->m31 += offsetY;
-    a3->m32 += offsetZ;
-
-    mod->DrawPart(a1, a2, a3, a4);
-}
-
-void vehCarModelFeatureHandler::DrawWhl5(int a1, int a2, Matrix34* a3, modShader* a4) {
-    auto mod = reinterpret_cast<vehCarModel*>(this);
-    auto carsim = mod->getCar()->getCarSim();
-
-    a3->Set(&carsim->getWheel(3)->getMatrix());
-    auto carMatrix = carsim->getWorldMatrix();
-
-    float offsetX = carsim->BackBackRightWheelPosDiff.Y * carMatrix->m10 + carsim->BackBackRightWheelPosDiff.Z * carMatrix->m20 + carsim->BackBackRightWheelPosDiff.X * carMatrix->m00;
-    float offsetY = carsim->BackBackRightWheelPosDiff.Y * carMatrix->m11 + carsim->BackBackRightWheelPosDiff.Z * carMatrix->m21 + carsim->BackBackRightWheelPosDiff.X * carMatrix->m01;
-    float offsetZ = carsim->BackBackRightWheelPosDiff.Y * carMatrix->m12 + carsim->BackBackRightWheelPosDiff.Z * carMatrix->m22 + carsim->BackBackRightWheelPosDiff.X * carMatrix->m02;
-    a3->m30 += offsetX;
-    a3->m31 += offsetY;
-    a3->m32 += offsetZ;
-
-    mod->DrawPart(a1, a2, a3, a4);
+    model->vehCarModel::Draw(a1);
 }
 
 void vehCarModelFeatureHandler::ModStaticDraw(modShader* a1) {
@@ -3367,179 +3210,13 @@ static ConfigValue<bool> cfgMm1StyleTransmission("MM1StyleTransmission", false);
 
 void vehCarModelFeatureHandler::DrawGlow() {
     auto model = reinterpret_cast<vehCarModel*>(this);
-    if (!model->GetVisible())
-        return;
-
-    auto geomID = model->getGeomSetId() - 1;
-    auto geomSet = lvlInstance::GetGeomTableEntry(geomID);
-    auto car = model->getCar();
-    auto carsim = car->getCarSim();
-    auto siren = car->getSiren();
-    auto curDamage = car->getCarDamage()->getCurDamage();
-    auto maxDamage = car->getCarDamage()->getMaxDamage();
-    int gear = carsim->getTransmission()->getGear();
-    if (curDamage >= maxDamage && nfsMwStyleTotaledCar)
-        return;
-
-    //setup renderer
-    Matrix34 carMatrix = model->GetMatrix(&vehCarModelGarbageMtx); //argument is useless, we want return value here
-    Matrix44::Convert(gfxRenderState::sm_World, &carMatrix);
-    *(int*)0x685778 |= 0x88; //set m_Touched
-
-    //get our shader set
-    int variantIndex = model->getVariant();
-    auto shaders = geomSet->pShaders[variantIndex];
-
-    //get objects
-    modStatic* hlight = lvlInstance::GetGeomTableEntry(geomID + 2)->getHighestLOD();
-    modStatic* tlight = lvlInstance::GetGeomTableEntry(geomID + 3)->getHighestLOD();
-    modStatic* rlight = lvlInstance::GetGeomTableEntry(geomID + 4)->getHighestLOD();
-    modStatic* blight = lvlInstance::GetGeomTableEntry(geomID + 7)->getHighestLOD();
-    modStatic* siren0 = lvlInstance::GetGeomTableEntry(geomID + 9)->getHighestLOD();
-    modStatic* siren1 = lvlInstance::GetGeomTableEntry(geomID + 10)->getHighestLOD();
-
-    modStatic* slight0 = lvlInstance::GetGeomTableEntry(geomID + 5)->getHighestLOD();
-    modStatic* slight1 = lvlInstance::GetGeomTableEntry(geomID + 6)->getHighestLOD();
-
-    //draw signals
-    if (enableSignals && car->IsPlayer()) {
-        //check signal clock
-        bool drawSignal = fmod(datTimeManager::ElapsedTime, 1.f) > 0.5f;
-        //draw stuff!
-        if (drawSignal) {
-            if (leftSignal || hazardLights) {
-                if (slight0 != nullptr)
-                    slight0->Draw(shaders);
-            }
-            if (rightSignal || hazardLights) {
-                if (slight1 != nullptr)
-                    slight1->Draw(shaders);
-            }
-        }
-    }
-
-    //draw tlight
-    if (tlight != nullptr) {
-        //draw brake copy
-        if(carsim->getBrake() > 0.1)
-            tlight->Draw(shaders);
-        //draw headlight copy
-        if(vehCar::sm_DrawHeadlights)
-            tlight->Draw(shaders);
-    }
-
-    //draw blight
-    if (blight != nullptr) {
-        //draw brake copy
-        if (carsim->getBrake() > 0.1)
-            blight->Draw(shaders);
-    }
-
-    if (cfgMm1StyleTransmission.Get()) {
-        auto throttle = carsim->getEngine()->getThrottleInput();
-        auto speedMPH = carsim->getSpeedMPH();
-        auto transmission = carsim->getTransmission();
-
-        //draw rlight
-        if (rlight != nullptr && gear == 0) {
-            if (transmission->IsAuto()) {
-                if (throttle > 0.f || speedMPH >= 1.f)
-                    rlight->Draw(shaders);
-            }
-            else {
-                rlight->Draw(shaders);
-            }
-        }
-    }
-
-    if (!cfgMm1StyleTransmission.Get()) {
-        //draw rlight
-        if (rlight != nullptr && gear == 0) {
-            rlight->Draw(shaders);
-        }
-    }
-
-    //Draw siren and headlights
-    if (headlightStyle < 3) {
-        if (headlightStyle == 0 || headlightStyle == 2) {
-            //MM2 headlights
-            if (flashingHeadlights) {
-                if (siren != nullptr && siren->Active)
-                {
-                    model->DrawHeadlights(true);
-                }
-                else if (vehCar::sm_DrawHeadlights)
-                {
-                    model->DrawHeadlights(false);
-                }
-            }
-            else if (!flashingHeadlights) {
-                if (vehCar::sm_DrawHeadlights)
-                {
-                    model->DrawHeadlights(false);
-                }
-            }
-        }
-        if (headlightStyle == 1 || headlightStyle == 2) {
-            //MM1 headlights
-            Matrix44::Convert(gfxRenderState::sm_World, &carMatrix);
-            *(int*)0x685778 |= 0x88; //set m_Touched
-
-            if (vehCar::sm_DrawHeadlights && hlight != nullptr) {
-                hlight->Draw(shaders);
-            }
-        }
-    }
-
-    if (sirenStyle < 3) {
-        if (sirenStyle == 0 || sirenStyle == 2) {
-            //MM2 siren
-            if (siren != nullptr && siren->HasLights && siren->Active)
-            {
-                siren->Draw(&carMatrix);
-            }
-        }
-        if (sirenStyle == 1 || sirenStyle == 2) {
-            //MM1 siren
-            Matrix44::Convert(gfxRenderState::sm_World, &carMatrix);
-            *(int*)0x685778 |= 0x88; //set m_Touched
-
-            if (siren != nullptr && siren->Active) {
-                int sirenStage = fmod(datTimeManager::ElapsedTime, 2 * sirenCycle) >= sirenCycle ? 1 : 0;
-                if (sirenStage == 0 && siren0 != nullptr) {
-                    siren0->Draw(shaders);
-                }
-                else if (sirenStage == 1 && siren1 != nullptr) {
-                    siren1->Draw(shaders);
-                }
-            }
-        }
-    }
+    model->vehCarModel::DrawGlow();
 }
-
-void vehCarModelFeatureHandler::AddGeomHook(const char* pkgName, const char* name, int flags) {
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, name, flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "plighton", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "plightoff", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "swhl0", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "swhl1", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "swhl2", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "swhl3", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "swhl4", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "swhl5", flags);
-}
-
-static ConfigValue<bool> cfgEnableSignals ("EnableSignalLights", false);
-static ConfigValue<bool> cfgFlashingHeadlights ("FlashingHeadlights", true);
-static ConfigValue<bool> cfgNfsMwStyleTotaledCar("NFSMWStyleTotaledCar", false);
-static ConfigValue<int> cfgSirenStyle ("SirenStyle", 0);
-static ConfigValue<int> cfgHeadlightStyle ("HeadlightStyle", 0);
-static ConfigValue<float> cfgSirenCycleRate ("SirenCycle", 0.25f);
 
 void vehCarModelFeatureHandler::Install() {
-    InstallCallback("vehCarModel::Init", "Adds more geometries.",
-        &AddGeomHook, {
-            cb::call(0x4CD396),
+    InstallCallback("vehCarModel::Init", "Use rewritten vehCarModel init.",
+        &vehCarModel::Init, {
+            cb::call(0x42BE86),
         }
     );
 
@@ -3549,62 +3226,31 @@ void vehCarModelFeatureHandler::Install() {
         }
     );
 
-    if (cfgPartReflections.Get())
-    {
-        InstallCallback("vehCarModel::DrawPart", "Draws reflections on car parts.",
-            &ModStaticDraw, {
-                cb::call(0x4CE92F), // vehCarModel::DrawPart
-            }
-        );
-    }
-
-    enableSignals = cfgEnableSignals.Get();
-    flashingHeadlights = cfgFlashingHeadlights.Get();
-    sirenStyle = cfgSirenStyle.Get();
-    headlightStyle = cfgHeadlightStyle.Get();
-    sirenCycle = cfgSirenCycleRate.Get();
-    nfsMwStyleTotaledCar = cfgNfsMwStyleTotaledCar.Get();
     InstallVTableHook("vehCarModel::DrawGlow",
         &DrawGlow, {
             0x5B2CE8
         }
     );
 
-    // removes Angels front left wheel
-    InstallPatch({ 0xEB }, {
-        0x4CE4B2,
-    });
+    ConfigValue<bool> cfgPartReflections("ReflectionsOnCarParts", false);
+    ConfigValue<bool> cfgEnableSignals("EnableSignalLights", false);
+    ConfigValue<bool> cfgFlashingHeadlights("FlashingHeadlights", true);
+    ConfigValue<bool> cfgNfsMwStyleTotaledCar("NFSMWStyleTotaledCar", false);
+    ConfigValue<int> cfgSirenStyle("SirenStyle", 0);
+    ConfigValue<int> cfgHeadlightStyle("HeadlightStyle", 0);
+    ConfigValue<float> cfgSirenCycleRate("SirenCycle", 0.25f);
 
-    // removes Angels front right wheel
-    InstallPatch({ 0xEB }, {
-        0x4CE4ED,
-    });
+    vehCarModel::EnableSignals = cfgEnableSignals.Get();
+    vehCarModel::EnableFlashingHeadlights = cfgFlashingHeadlights.Get();
+    vehCarModel::SirenType = cfgSirenStyle.Get();
+    vehCarModel::HeadlightType = cfgHeadlightStyle.Get();
+    vehCarModel::SirenCycle = cfgSirenCycleRate.Get();
+    vehCarModel::MWStyleTotaledCar = cfgNfsMwStyleTotaledCar.Get();
 
-    // removes Angels back left wheel
-    InstallPatch({ 0xEB }, {
-        0x4CE529,
-    });
+    vehCarModel::PartReflections = cfgPartReflections.Get();
+    vehCarModel::WheelReflections = vehCarModel::PartReflections;
 
-    // removes Angels back right wheel
-    InstallPatch({ 0xEB }, {
-        0x4CE564,
-    });
-
-    // removes Angels back back left wheel
-    InstallPatch({
-        0xE9, 0x92, 0x0, 0x0, 0x0,
-        0x90,
-    }, {
-        0x4CE59F,
-    });
-
-    // removes Angels back back right wheel
-    InstallPatch({
-        0xE9, 0x92, 0x0, 0x0, 0x0,
-        0x90,
-    }, {
-        0x4CE63D,
-    });
+    vehCarModel::mm1StyleTransmission = cfgMm1StyleTransmission.Get();
 }
 
 /*
@@ -3947,7 +3593,7 @@ void aiVehicleInstanceFeatureHandler::Install() {
         }
     );
 
-    if (cfgPartReflections.Get()) {
+    if (vehCarModel::PartReflections) {
         InstallCallback("aiVehicleInstance::DrawPart", "Draws reflections on car parts.",
             &ModStaticDraw, {
                 cb::call(0x55291F), // aiVehicleInstance::DrawPart
@@ -4035,7 +3681,7 @@ void vehTrailerInstanceFeatureHandler::DrawPart(int a1, int a2, Matrix34* a3, mo
     modStatic* part = *getPtr<modStatic*>((geomSet + a2), a1 * 4);
 
     if (part != nullptr) {
-        if (cfgPartReflections.Get() && a1 == 3)
+        if (vehCarModel::PartReflections && a1 == 3)
             DrawPartReflections(part, a3, a4);
         else
             part->Draw(a4);
@@ -4076,7 +3722,7 @@ void vehTrailerInstanceFeatureHandler::Draw(int a1) {
     //draw (s)whl0-4
     for (int i = 0; i < 4; i++) {
         auto wheel = wheels[i];
-        if (fabs(wheel->getRotationRate()) > 26.f && sWhlGeometries[i] != nullptr) {
+        if (fabs(wheel->getRotationRate() > 26.f) && sWhlGeometries[i] != nullptr) {
             DrawPart(a1, sWhlIds[i], &wheel->getMatrix(), shaders);
         }
         else 
@@ -4227,16 +3873,16 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
     }
 
     //draw signals
-    if (enableSignals) {
+    if (vehCarModel::EnableSignals) {
         //check signal clock
         bool drawSignal = fmod(datTimeManager::ElapsedTime, 1.f) > 0.5f;
         //draw stuff!
         if (drawSignal) {
-            if (leftSignal || hazardLights) {
+            if (vehCarModel::LeftSignalLightState || vehCarModel::HazardLightsState) {
                 if (slight0 != nullptr)
                     slight0->Draw(shaders);
             }
-            if (rightSignal || hazardLights) {
+            if (vehCarModel::RightSignalLightState || vehCarModel::HazardLightsState) {
                 if (slight1 != nullptr)
                     slight1->Draw(shaders);
             }
@@ -4252,7 +3898,7 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
 
     //draw siren
     if (siren != nullptr && siren->Active) {
-        int sirenStage = fmod(datTimeManager::ElapsedTime, 2 * sirenCycle) >= sirenCycle ? 1 : 0;
+        int sirenStage = fmod(datTimeManager::ElapsedTime, 2 * vehCarModel::SirenCycle) >= vehCarModel::SirenCycle ? 1 : 0;
         if (sirenStage == 0 && siren0 != nullptr) {
             siren0->Draw(shaders);
         }
