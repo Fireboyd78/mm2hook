@@ -611,9 +611,8 @@ namespace MM2
             }
 
             //draw wheels and hubs
-            if (lod >= 2)
+            if (lod >= 1)
             {
-
                 //draw wheels
                 for (int i = 0; i < 4; i++) 
                 {
