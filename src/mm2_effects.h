@@ -33,6 +33,7 @@ namespace MM2
         modShader *CleanShaders;
         gfxTexture **DamageTextures;
 
+        ANGEL_ALLOCATOR
         fxTexelDamage();
 
         int Init(modStatic *model, modShader *shaders, int shaderCount);

@@ -47,6 +47,8 @@ namespace MM2
         uint magic;
         uint fileSize;
     public:
+        ANGEL_ALLOCATOR 
+
         AGE_API modPackage(void) {
             scoped_vtable x(this);
             hook::Thunk<0x4A46D0>::Call<void>(this);

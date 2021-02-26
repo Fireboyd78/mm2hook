@@ -555,6 +555,8 @@ namespace MM2
         int ShadowMode;
         int unk_48;
 
+        ANGEL_ALLOCATOR 
+
         AGE_API ltLight() { hook::Thunk<0x59AB80>::Call<void>(this); }
         AGE_API ~ltLight() { hook::Thunk<0x59ABC0>::Call<void>(this); }
 
