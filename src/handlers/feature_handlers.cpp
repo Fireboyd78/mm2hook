@@ -3235,7 +3235,7 @@ void vehCarModelFeatureHandler::Install() {
     );
 
     ConfigValue<bool> cfgPartReflections("ReflectionsOnCarParts", false);
-    ConfigValue<bool> cfgEnableSignals("EnableSignalLights", false);
+    ConfigValue<bool> cfgEnableSignals("EnableSignalLights", true);
     ConfigValue<bool> cfgFlashingHeadlights("FlashingHeadlights", true);
     ConfigValue<bool> cfgNfsMwStyleTotaledCar("NFSMWStyleTotaledCar", false);
     ConfigValue<int> cfgSirenStyle("SirenStyle", 0);
