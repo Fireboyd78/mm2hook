@@ -3234,6 +3234,7 @@ void vehCarModelFeatureHandler::Install() {
         }
     );
 
+    ConfigValue<bool> cfgEnableSpinningWheels("EnableSpinningWheels", true);
     ConfigValue<bool> cfgPartReflections("ReflectionsOnCarParts", false);
     ConfigValue<bool> cfgEnableSignals("EnableSignalLights", true);
     ConfigValue<bool> cfgFlashingHeadlights("FlashingHeadlights", true);
@@ -3242,6 +3243,7 @@ void vehCarModelFeatureHandler::Install() {
     ConfigValue<int> cfgHeadlightStyle("HeadlightStyle", 0);
     ConfigValue<float> cfgSirenCycleRate("SirenCycle", 0.25f);
 
+    vehCarModel::EnableSpinningWheels = cfgEnableSpinningWheels.Get();
     vehCarModel::EnableSignals = cfgEnableSignals.Get();
     vehCarModel::EnableFlashingHeadlights = cfgFlashingHeadlights.Get();
     vehCarModel::SirenType = cfgSirenStyle.Get();
@@ -3724,38 +3726,28 @@ void vehTrailerInstanceFeatureHandler::Draw(int a1) {
     //draw (s)whl0-4
     for (int i = 0; i < 4; i++) {
         auto wheel = wheels[i];
-        if (fabs(wheel->getRotationRate()) > 26.f && sWhlGeometries[i] != nullptr) {
+        if (fabs(wheel->getRotationRate()) > 26.f && sWhlGeometries[i] != nullptr && vehCarModel::EnableSpinningWheels)
+        {
             DrawPart(a1, sWhlIds[i], &wheel->getMatrix(), shaders);
         }
-        else 
-        {
+        else {
             DrawPart(a1, whlIds[i], &wheel->getMatrix(), shaders);
         }
     }
 
-    if (twhl2->getRotationRate() < -26.f || twhl2->getRotationRate() > 26.f) {
-        if (tswhl4 != nullptr)
-            //draw tswhl4
-            DrawTwhl4(a1, 21, &twhl2->getMatrix(), shaders);
-        else
-            //draw twhl4
-            DrawTwhl4(a1, 15, &twhl2->getMatrix(), shaders);
+    if (fabs(twhl2->getRotationRate()) > 26.f && tswhl4 != nullptr && vehCarModel::EnableSpinningWheels)
+    {
+        DrawTwhl4(a1, 21, &twhl2->getMatrix(), shaders);
     }
     else {
-        //draw twhl4
         DrawTwhl4(a1, 15, &twhl2->getMatrix(), shaders);
     }
 
-    if (twhl3->getRotationRate() < -26.f || twhl3->getRotationRate() > 26.f) {
-        if (tswhl5 != nullptr)
-            //draw tswhl5
-            DrawTwhl5(a1, 22, &twhl3->getMatrix(), shaders);
-        else
-            //draw twhl5
-            DrawTwhl5(a1, 16, &twhl3->getMatrix(), shaders);
+    if (fabs(twhl3->getRotationRate()) > 26.f && tswhl5 != nullptr && vehCarModel::EnableSpinningWheels)
+    {
+        DrawTwhl5(a1, 22, &twhl3->getMatrix(), shaders);
     }
     else {
-        //draw twhl5
         DrawTwhl5(a1, 16, &twhl3->getMatrix(), shaders);
     }
 }

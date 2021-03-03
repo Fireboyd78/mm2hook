@@ -24,6 +24,7 @@ namespace MM2
 
     class vehCarModel : public lvlInstance {
     public:
+        static bool EnableSpinningWheels;
         static bool EnableFlashingHeadlights;
         static bool EnableSignals;
         static bool MWStyleTotaledCar;
@@ -628,12 +629,11 @@ namespace MM2
                     if ((this->wheelBrokenStatus & wheelStatusFlag) != 0)
                     {
                         auto swhlModel = lvlInstance::GetGeomTableEntry(geomSetIdOffset + swhlId)->getLOD(lod);
-                        if (fabs(wheel->getRotationRate()) > 26.f && swhlModel != nullptr)
+                        if (fabs(wheel->getRotationRate()) > 26.f && swhlModel != nullptr && vehCarModel::EnableSpinningWheels)
                         {
                             DrawPart(lod, swhlId, &wheel->getMatrix(), shaders, vehCarModel::WheelReflections);
                         }
-                        else 
-                        {
+                        else {
                             DrawPart(lod, whlId, &wheel->getMatrix(), shaders, vehCarModel::WheelReflections);
                         }
                     }
@@ -702,10 +702,11 @@ namespace MM2
                     dummyWhlMatrix.m31 += offsetY;
                     dummyWhlMatrix.m32 += offsetZ;
 
-                    if (fabs(refWheel->getRotationRate()) > 26.f && swhl4model != nullptr)
+                    if (fabs(refWheel->getRotationRate()) > 26.f && swhl4model != nullptr && vehCarModel::EnableSpinningWheels)
                     {
                         DrawPart(lod, 59, &dummyWhlMatrix, shaders, vehCarModel::WheelReflections);
-                    } else {
+                    }
+                    else {
                         DrawPart(lod, 51, &dummyWhlMatrix, shaders, vehCarModel::WheelReflections);
                     }
                 }
@@ -726,7 +727,7 @@ namespace MM2
                     dummyWhlMatrix.m31 += offsetY;
                     dummyWhlMatrix.m32 += offsetZ;
 
-                    if (fabs(refWheel->getRotationRate()) > 26.f && swhl5model != nullptr)
+                    if (fabs(refWheel->getRotationRate()) > 26.f && swhl5model != nullptr && vehCarModel::EnableSpinningWheels)
                     {
                         DrawPart(lod, 60, &dummyWhlMatrix, shaders, vehCarModel::WheelReflections);
                     }

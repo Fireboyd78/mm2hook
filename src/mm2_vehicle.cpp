@@ -24,6 +24,7 @@ declfield(vehWheel::WeatherFriction)(0x5CF6B8);
 /*
 *   vehCarModel
 */
+bool vehCarModel::EnableSpinningWheels = true;
 bool vehCarModel::EnableFlashingHeadlights = true;
 bool vehCarModel::EnableSignals = true;
 bool vehCarModel::MWStyleTotaledCar = false;
