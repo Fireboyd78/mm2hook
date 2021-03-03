@@ -166,6 +166,15 @@ BOOL aiPoliceForceHandler::IsPerpDrivingMadly(vehCar *perpCar) {
                 LogFile::Printf(1, "PERP IS DOING DAMAGE TO PROPERTY!");
                 return TRUE;
             }
+            for (int i = 0; i < 4; i++)
+            {
+                auto wheel = perpCar->getCarSim()->getWheel(i);
+
+                if (fabs(wheel->getRotationRate()) > 40.f && speed < 0.1f) {
+                    LogFile::Printf(1, "PERP IS DOING BURNOUTS!");
+                    return TRUE;
+                }
+            }
         }
         if (hook::Thunk<0x53E390>::Call<BOOL>(this, perpCar)) {
             LogFile::Printf(1, "OFFICER INVOLVED COLLISION WITH PERP!");
