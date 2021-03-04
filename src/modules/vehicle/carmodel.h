@@ -808,10 +808,7 @@ namespace MM2
                     if (carsim->getBrake() > 0.1)
                         tlight->Draw(shaders);
                     //draw headlight copy
-                    if (car->IsPlayer() && vehCarModel::HeadlightsState)
-                        tlight->Draw(shaders);
-
-                    if (!car->IsPlayer() && vehCar::sm_DrawHeadlights)
+                    if (car->IsPlayer() && vehCarModel::HeadlightsState || !car->IsPlayer() && vehCar::sm_DrawHeadlights)
                         tlight->Draw(shaders);
                 }
 
@@ -860,23 +857,13 @@ namespace MM2
                         {
                             this->DrawHeadlights(true);
                         }
-                        else {
-                            if (car->IsPlayer() && vehCarModel::HeadlightsState)
-                            {
-                                this->DrawHeadlights(false);
-                            }
-                            if (!car->IsPlayer() && vehCar::sm_DrawHeadlights)
-                            {
-                                this->DrawHeadlights(false);
-                            }
-                        }
-                    }
-                    else {
-                        if (car->IsPlayer() && vehCarModel::HeadlightsState)
+                        else if (car->IsPlayer() && vehCarModel::HeadlightsState || !car->IsPlayer() && vehCar::sm_DrawHeadlights)
                         {
                             this->DrawHeadlights(false);
                         }
-                        if (!car->IsPlayer() && vehCar::sm_DrawHeadlights)
+                    }
+                    else {
+                        if (car->IsPlayer() && vehCarModel::HeadlightsState || !car->IsPlayer() && vehCar::sm_DrawHeadlights)
                         {
                             this->DrawHeadlights(false);
                         }
@@ -890,10 +877,7 @@ namespace MM2
                     if (enabledElectrics[2] || enabledElectrics[3])
                     {
                         if (hlight != nullptr) {
-                            if (car->IsPlayer() && vehCarModel::HeadlightsState)
-                                hlight->Draw(shaders);
-
-                            if (!car->IsPlayer() && vehCar::sm_DrawHeadlights)
+                            if (car->IsPlayer() && vehCarModel::HeadlightsState || !car->IsPlayer() && vehCar::sm_DrawHeadlights)
                                 hlight->Draw(shaders);
                         }
                     }
