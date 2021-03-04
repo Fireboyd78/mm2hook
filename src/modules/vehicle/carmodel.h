@@ -36,6 +36,7 @@ namespace MM2
         static bool mm1StyleTransmission; //god this is horrible...
 
         //light states
+        static bool HeadlightsState;
         static bool HazardLightsState;
         static bool LeftSignalLightState;
         static bool RightSignalLightState;
@@ -776,7 +777,7 @@ namespace MM2
             gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
 
-                                     //draw signals
+            //draw signals
             modStatic* slight0 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 5)->getHighestLOD();
             modStatic* slight1 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 6)->getHighestLOD();
 
@@ -807,7 +808,10 @@ namespace MM2
                     if (carsim->getBrake() > 0.1)
                         tlight->Draw(shaders);
                     //draw headlight copy
-                    if (vehCar::sm_DrawHeadlights)
+                    if (car->IsPlayer() && vehCarModel::HeadlightsState)
+                        tlight->Draw(shaders);
+
+                    if (!car->IsPlayer() && vehCar::sm_DrawHeadlights)
                         tlight->Draw(shaders);
                 }
 
@@ -826,7 +830,6 @@ namespace MM2
                     auto speedMPH = carsim->getSpeedMPH();
                     auto transmission = carsim->getTransmission();
 
-                    
                     if (rlight != nullptr && gear == 0) {
                         if (transmission->IsAuto()) {
                             if (throttle > 0.f || speedMPH >= 1.f)
@@ -837,8 +840,7 @@ namespace MM2
                         }
                     }
                 }
-
-                if (!mm1StyleTransmission) {
+                else {
                     if (rlight != nullptr && gear == 0) {
                         rlight->Draw(shaders);
                     }
@@ -858,13 +860,23 @@ namespace MM2
                         {
                             this->DrawHeadlights(true);
                         }
-                        else if (vehCar::sm_DrawHeadlights)
+                        else {
+                            if (car->IsPlayer() && vehCarModel::HeadlightsState)
+                            {
+                                this->DrawHeadlights(false);
+                            }
+                            if (!car->IsPlayer() && vehCar::sm_DrawHeadlights)
+                            {
+                                this->DrawHeadlights(false);
+                            }
+                        }
+                    }
+                    else {
+                        if (car->IsPlayer() && vehCarModel::HeadlightsState)
                         {
                             this->DrawHeadlights(false);
                         }
-                    }
-                    else if (!vehCarModel::EnableFlashingHeadlights) {
-                        if (vehCar::sm_DrawHeadlights)
+                        if (!car->IsPlayer() && vehCar::sm_DrawHeadlights)
                         {
                             this->DrawHeadlights(false);
                         }
@@ -875,10 +887,14 @@ namespace MM2
                     Matrix44::Convert(gfxRenderState::sm_World, this->carSim->getWorldMatrix());
                     gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
-                    if (vehCar::sm_DrawHeadlights && (enabledElectrics[2] || enabledElectrics[3]))
+                    if (enabledElectrics[2] || enabledElectrics[3])
                     {
                         if (hlight != nullptr) {
-                            hlight->Draw(shaders);
+                            if (car->IsPlayer() && vehCarModel::HeadlightsState)
+                                hlight->Draw(shaders);
+
+                            if (!car->IsPlayer() && vehCar::sm_DrawHeadlights)
+                                hlight->Draw(shaders);
                         }
                     }
                 }

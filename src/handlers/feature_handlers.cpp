@@ -366,6 +366,7 @@ struct TimeWeatherInfo {
 
         aiMap::Instance->drawHeadlights = ShowHeadlights;
         vehCar::sm_DrawHeadlights = ShowHeadlights;
+        vehCarModel::HeadlightsState = ShowHeadlights;
 
         g_FlatColorIntensity = FlatColorIntensity;
         g_WeatherFriction = WeatherFriction;
@@ -560,7 +561,7 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
             if (gamePtr != NULL && popup != NULL) {
                 if (!popup->IsEnabled()) {
                     // toggle vehicle headlights
-                    vehCar::sm_DrawHeadlights = !vehCar::sm_DrawHeadlights;
+                    vehCarModel::HeadlightsState = !vehCarModel::HeadlightsState;
                 }
             }
         } return true;
@@ -3835,8 +3836,7 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
             }
         }
     }
-
-    if (!cfgMm1StyleTransmission.Get()) {
+    else {
         //draw rlight
         if (rlight != nullptr && gear == 0) {
             rlight->Draw(shaders);
@@ -3851,7 +3851,7 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
     //draw tlight
     if (tlight != nullptr) {
         //draw night copy
-        if (vehCar::sm_DrawHeadlights)
+        if (vehCarModel::HeadlightsState)
             tlight->Draw(shaders);
 
         //draw brake input copy
@@ -3862,7 +3862,7 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
 
     //draw hlight
     if (hlight != nullptr) {
-        if (vehCar::sm_DrawHeadlights)
+        if (vehCarModel::HeadlightsState)
             hlight->Draw(shaders);
     }
 

@@ -34,6 +34,7 @@ int vehCarModel::SirenType = 0;
 int vehCarModel::HeadlightType = 0;
 float vehCarModel::SirenCycle = 0.25f;
 
+bool vehCarModel::HeadlightsState = false;
 bool vehCarModel::HazardLightsState = false;
 bool vehCarModel::LeftSignalLightState = false;
 bool vehCarModel::RightSignalLightState = false;
