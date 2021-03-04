@@ -26,7 +26,6 @@ namespace MM2
     public:
         static bool EnableSpinningWheels;
         static bool EnableFlashingHeadlights;
-        static bool EnableSignals;
         static bool MWStyleTotaledCar;
         static int SirenType;
         static int HeadlightType;
@@ -781,20 +780,18 @@ namespace MM2
             modStatic* slight0 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 5)->getHighestLOD();
             modStatic* slight1 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 6)->getHighestLOD();
 
-            if (vehCarModel::EnableSignals && car->IsPlayer()) {
-                //check signal clock
-                bool drawSignal = fmod(datTimeManager::ElapsedTime, 1.f) > 0.5f;
+            //check signal clock
+            bool drawSignal = fmod(datTimeManager::ElapsedTime, 1.f) > 0.5f;
 
-                //draw stuff!
-                if (drawSignal) {
-                    if (LeftSignalLightState || HazardLightsState) {
-                        if (slight0 != nullptr)
-                            slight0->Draw(shaders);
-                    }
-                    if (RightSignalLightState || HazardLightsState) {
-                        if (slight1 != nullptr)
-                            slight1->Draw(shaders);
-                    }
+            //draw stuff!
+            if (drawSignal && car->IsPlayer()) {
+                if (LeftSignalLightState || HazardLightsState) {
+                    if (slight0 != nullptr)
+                        slight0->Draw(shaders);
+                }
+                if (RightSignalLightState || HazardLightsState) {
+                    if (slight1 != nullptr)
+                        slight1->Draw(shaders);
                 }
             }
 

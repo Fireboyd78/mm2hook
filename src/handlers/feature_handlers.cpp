@@ -511,6 +511,11 @@ void gfxPipelineHandler::gfxApplySettings(void) {
 
 static bool g_bConsoleOpen = false;
 
+int HeadlightsToggleKey = 76;
+int HazardLightsToggleKey = 189;
+int LeftTurnSignalToggleKey = 188;
+int RightTurnSignalToggleKey = 190;
+
 bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
 {
     if (MM2Lua::IsEnabled())
@@ -550,73 +555,70 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
                 LogFile::WriteLine("Configuration settings reloaded successfully.");
             }
         } return true;
-
-        // 'VK_L'
-        case 0x4C:
-        {
-            mmGameManager* mgr = mmGameManager::Instance;
-            auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
-            auto popup = gamePtr->getPopup();
-
-            if (gamePtr != NULL && popup != NULL) {
-                if (!popup->IsEnabled()) {
-                    // toggle vehicle headlights
-                    vehCarModel::HeadlightsState = !vehCarModel::HeadlightsState;
-                }
-            }
-        } return true;
-
-        // ',<'
-        case VK_OEM_COMMA:
-        {
-            mmGameManager* mgr = mmGameManager::Instance;
-            auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
-            auto popup = gamePtr->getPopup();
-
-            if (gamePtr != NULL && popup != NULL) {
-                if (!popup->IsEnabled()) {
-                    // toggle left signal
-                    vehCarModel::LeftSignalLightState = !vehCarModel::LeftSignalLightState;
-                    vehCarModel::HazardLightsState = false;
-                    vehCarModel::RightSignalLightState = false;
-                }
-            }
-        } return true;
-
-        // '-_'
-        case VK_OEM_MINUS:
-        {
-            mmGameManager* mgr = mmGameManager::Instance;
-            auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
-            auto popup = gamePtr->getPopup();
-
-            if (gamePtr != NULL && popup != NULL) {
-                if (!popup->IsEnabled()) {
-                    // toggle hazard lights
-                    vehCarModel::HazardLightsState = !vehCarModel::HazardLightsState;
-                    vehCarModel::LeftSignalLightState = false;
-                    vehCarModel::RightSignalLightState = false;
-                }
-            }
-        } return true;
-
-        // '.>'
-        case VK_OEM_PERIOD:
-        {
-            mmGameManager* mgr = mmGameManager::Instance;
-            auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
-            auto popup = gamePtr->getPopup();
-
-            if (gamePtr != NULL && popup != NULL) {
-                if (!popup->IsEnabled()) {
-                    // toggle right signal
-                    vehCarModel::RightSignalLightState = !vehCarModel::RightSignalLightState;
-                    vehCarModel::HazardLightsState = false;
-                    vehCarModel::LeftSignalLightState = false;
-                }
-            }
-        } return true;
     }
+
+    if (vKey == HeadlightsToggleKey) {
+        mmGameManager* mgr = mmGameManager::Instance;
+        auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
+        auto popup = gamePtr->getPopup();
+
+        if (gamePtr != NULL && popup != NULL) {
+            if (!popup->IsEnabled()) {
+                // toggle vehicle headlights
+                vehCarModel::HeadlightsState = !vehCarModel::HeadlightsState;
+            }
+        }
+        return true;
+    }
+
+    if (vKey == HazardLightsToggleKey) {
+        mmGameManager* mgr = mmGameManager::Instance;
+        auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
+        auto popup = gamePtr->getPopup();
+
+        if (gamePtr != NULL && popup != NULL) {
+            if (!popup->IsEnabled()) {
+                // toggle hazard lights
+                vehCarModel::HazardLightsState = !vehCarModel::HazardLightsState;
+                vehCarModel::LeftSignalLightState = false;
+                vehCarModel::RightSignalLightState = false;
+            }
+        }
+        return true;
+    }
+
+    if (vKey == LeftTurnSignalToggleKey) {
+        mmGameManager* mgr = mmGameManager::Instance;
+        auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
+        auto popup = gamePtr->getPopup();
+
+        if (gamePtr != NULL && popup != NULL) {
+            if (!popup->IsEnabled()) {
+                // toggle left signal
+                vehCarModel::LeftSignalLightState = !vehCarModel::LeftSignalLightState;
+                vehCarModel::HazardLightsState = false;
+                vehCarModel::RightSignalLightState = false;
+            }
+        }
+        return true;
+    }
+
+    if (vKey == RightTurnSignalToggleKey) {
+        mmGameManager* mgr = mmGameManager::Instance;
+        auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
+        auto popup = gamePtr->getPopup();
+
+        if (gamePtr != NULL && popup != NULL) {
+            if (!popup->IsEnabled()) {
+                // toggle right signal
+                vehCarModel::RightSignalLightState = !vehCarModel::RightSignalLightState;
+                vehCarModel::HazardLightsState = false;
+                vehCarModel::LeftSignalLightState = false;
+            }
+        }
+        return true;
+    }
+
     return false;
 }
 
@@ -918,6 +920,16 @@ void gfxPipelineHandler::Install() {
             cb::call(0x4AC4F9),
         }
     );
+
+    ConfigValue<int> cfgHeadlightsToggleKey("HeadlightsToggleKey", 76);
+    ConfigValue<int> cfgHazardLightsToggleKey("HazardLightsToggleKey", 189);
+    ConfigValue<int> cfgLeftTurnSignalToggleKey("LeftTurnSignalToggleKey", 188);
+    ConfigValue<int> cfgRightTurnSignalToggleKey("RightTurnSignalToggleKey", 190);
+
+    HeadlightsToggleKey = cfgHeadlightsToggleKey.Get();
+    HazardLightsToggleKey = cfgHazardLightsToggleKey.Get();
+    LeftTurnSignalToggleKey = cfgLeftTurnSignalToggleKey.Get();
+    RightTurnSignalToggleKey = cfgRightTurnSignalToggleKey.Get();
 }
 
 /*
@@ -3237,7 +3249,6 @@ void vehCarModelFeatureHandler::Install() {
 
     ConfigValue<bool> cfgEnableSpinningWheels("EnableSpinningWheels", true);
     ConfigValue<bool> cfgPartReflections("ReflectionsOnCarParts", false);
-    ConfigValue<bool> cfgEnableSignals("EnableSignalLights", true);
     ConfigValue<bool> cfgFlashingHeadlights("FlashingHeadlights", true);
     ConfigValue<bool> cfgNfsMwStyleTotaledCar("NFSMWStyleTotaledCar", false);
     ConfigValue<int> cfgSirenStyle("SirenStyle", 0);
@@ -3245,7 +3256,6 @@ void vehCarModelFeatureHandler::Install() {
     ConfigValue<float> cfgSirenCycleRate("SirenCycle", 0.25f);
 
     vehCarModel::EnableSpinningWheels = cfgEnableSpinningWheels.Get();
-    vehCarModel::EnableSignals = cfgEnableSignals.Get();
     vehCarModel::EnableFlashingHeadlights = cfgFlashingHeadlights.Get();
     vehCarModel::SirenType = cfgSirenStyle.Get();
     vehCarModel::HeadlightType = cfgHeadlightStyle.Get();
@@ -3866,20 +3876,17 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
             hlight->Draw(shaders);
     }
 
-    //draw signals
-    if (vehCarModel::EnableSignals) {
-        //check signal clock
-        bool drawSignal = fmod(datTimeManager::ElapsedTime, 1.f) > 0.5f;
-        //draw stuff!
-        if (drawSignal) {
-            if (vehCarModel::LeftSignalLightState || vehCarModel::HazardLightsState) {
-                if (slight0 != nullptr)
-                    slight0->Draw(shaders);
-            }
-            if (vehCarModel::RightSignalLightState || vehCarModel::HazardLightsState) {
-                if (slight1 != nullptr)
-                    slight1->Draw(shaders);
-            }
+    //check signal clock
+    bool drawSignal = fmod(datTimeManager::ElapsedTime, 1.f) > 0.5f;
+    //draw stuff!
+    if (drawSignal) {
+        if (vehCarModel::LeftSignalLightState || vehCarModel::HazardLightsState) {
+            if (slight0 != nullptr)
+                slight0->Draw(shaders);
+        }
+        if (vehCarModel::RightSignalLightState || vehCarModel::HazardLightsState) {
+            if (slight1 != nullptr)
+                slight1->Draw(shaders);
         }
     }
 
