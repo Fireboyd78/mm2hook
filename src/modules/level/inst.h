@@ -65,6 +65,7 @@ namespace MM2
                 case 3:
                     return High;
                 }
+                return nullptr;
             }
 
             inline modStatic * getHighestLOD() const {
