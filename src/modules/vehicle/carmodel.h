@@ -76,6 +76,12 @@ namespace MM2
         vehBreakableMgr* wheelBreakableMgr;
         ltLight* headlights;
         Vector3 headlightPositions[2];
+        //EXTRA FIELDS. The hook expands on this class, this is only possible because it's only used like a pointer in the original MM code
+        //These are the position differences from (FNDR2-WHL2) and (FNDR3-WHL3) / (FNDR4-WHL4) and (FNDR5-WHL5)
+        Vector3 fndr2offset;
+        Vector3 fndr3offset;
+        Vector3 fndr4offset;
+        Vector3 fndr5offset;
     public:
         AGE_API vehCarModel() {
             scoped_vtable x(this);
@@ -129,7 +135,91 @@ namespace MM2
                                                             { hook::Thunk<0x4CDF60>::Call<void>(this, basename, mtxName, geomId); }
         AGE_API void BreakElectrics(Vector3* a1)            { hook::Thunk<0x4CEFE0>::Call<void>(this, a1); }
         AGE_API void ClearDamage()                          { hook::Thunk<0x4CDFF0>::Call<void>(this); }
-        AGE_API void EjectOneshot()                         { hook::Thunk<0x4CDCA0>::Call<void>(this); }
+        AGE_API void EjectOneshot()
+        { 
+            if (!(byte)this->dword_a4) {
+                if (this->carSim->getSpeedMPH() > 100.f) {
+                    this->wheelBreakableMgr->EjectAll(this->getRoomId());
+                    this->wheelBrokenStatus = 0;
+                    this->dword_a4 = 1;
+                    return;
+                }
+                if (this->carSim->getSpeedMPH() <= 75.f) {
+                    if (this->carSim->getSpeedMPH() <= 50.f)
+                        return;
+
+                    int i = 3 * (rand() % 4);
+
+                    int wheelStatusFlag = 1 << i;
+                    int hubStatusFlag = 1 << (i + 1);
+                    int fenderStatusFlag = 1 << (i + 2);
+
+                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(wheelStatusFlag), this->getRoomId());
+                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(hubStatusFlag), this->getRoomId());
+                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(fenderStatusFlag), this->getRoomId());
+
+                    int ejectPackage = (wheelStatusFlag | hubStatusFlag | fenderStatusFlag);
+
+                    int ii = 3 * (rand() % 2);
+
+                    int extraWheelStatusFlag = 1 << (ii + 12);
+                    int extraHubStatusFlag = 1 << (ii + 13);
+                    int extraFenderStatusFlag = 1 << (ii + 14);
+
+                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(extraWheelStatusFlag), this->getRoomId());
+                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(extraHubStatusFlag), this->getRoomId());
+                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(extraFenderStatusFlag), this->getRoomId());
+
+                    int ejectPackage2 = (extraWheelStatusFlag | extraHubStatusFlag | extraFenderStatusFlag);
+
+                    this->wheelBrokenStatus &= ~(ejectPackage | ejectPackage2);
+                    this->dword_a4 = 1;
+                    return;
+                }
+                else {
+                    int i = 3 * (rand() % 4);
+
+                    int wheelStatusFlag = 1 << i;
+                    int hubStatusFlag = 1 << (i + 1);
+                    int fenderStatusFlag = 1 << (i + 2);
+
+                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(wheelStatusFlag), this->getRoomId());
+                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(hubStatusFlag), this->getRoomId());
+                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(fenderStatusFlag), this->getRoomId());
+
+                    int ejectPackage = (wheelStatusFlag | hubStatusFlag | fenderStatusFlag);
+
+                    int ii = 3 * (rand() % 4);
+
+                    int wheelStatusFlag2 = 1 << ii;
+                    int hubStatusFlag2 = 1 << (ii + 1);
+                    int fenderStatusFlag2 = 1 << (ii + 2);
+
+                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(wheelStatusFlag2), this->getRoomId());
+                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(hubStatusFlag2), this->getRoomId());
+                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(fenderStatusFlag2), this->getRoomId());
+
+                    int ejectPackage2 = (wheelStatusFlag2 | hubStatusFlag2 | fenderStatusFlag2);
+
+                    int iii = 3 * (rand() % 2);
+
+                    int extraWheelStatusFlag = 1 << (iii + 12);
+                    int extraHubStatusFlag = 1 << (iii + 13);
+                    int extraFenderStatusFlag = 1 << (iii + 14);
+
+                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(extraWheelStatusFlag), this->getRoomId());
+                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(extraHubStatusFlag), this->getRoomId());
+                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(extraFenderStatusFlag), this->getRoomId());
+
+                    int ejectPackage3 = (extraWheelStatusFlag | extraHubStatusFlag | extraFenderStatusFlag);
+
+                    this->wheelBrokenStatus &= ~(ejectPackage | ejectPackage2 | ejectPackage3);
+                    this->dword_a4 = 1;
+                    return;
+                }
+            }
+        }
+
         AGE_API bool GetVisible()                           { return hook::Thunk<0x4CF070>::Call<bool>(this); }
         AGE_API void SetVisible(bool a1)                    { hook::Thunk<0x4CF050>::Call<void>(this, a1); }
         
@@ -306,6 +396,14 @@ namespace MM2
                 lvlInstance::AddGeom(basename, "swhl4", 0);
                 lvlInstance::AddGeom(basename, "swhl5", 0);
 
+                lvlInstance::AddGeom(basename, "hub4", 0);
+                lvlInstance::AddGeom(basename, "hub5", 0);
+
+                lvlInstance::AddGeom(basename, "fndr2", 0);
+                lvlInstance::AddGeom(basename, "fndr3", 0);
+                lvlInstance::AddGeom(basename, "fndr4", 0);
+                lvlInstance::AddGeom(basename, "fndr5", 0);
+
                 //add variants
                 //supports up to 32 paintjobs
                 for (int i = 0; i < 32; i++)
@@ -414,6 +512,42 @@ namespace MM2
                     this->fndr1offset.Y = (outMatrix.m31 - carsim->getWheel(1)->getCenter().Y) + 0.025f;
                     this->fndr1offset.Z = outMatrix.m32 - carsim->getWheel(1)->getCenter().Z;
                 }
+
+                //extra FNDR2/3 offsets
+                auto fndr2Entry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 63);
+                if (fndr2Entry->getHighLOD() != nullptr)
+                {
+                    Matrix34 outMatrix;
+                    auto carsim = this->carSim;
+
+                    GetPivot(outMatrix, basename, "fndr2");
+                    this->fndr2offset.X = outMatrix.m30 - carsim->getWheel(2)->getCenter().X;
+                    this->fndr2offset.Y = outMatrix.m31 - carsim->getWheel(2)->getCenter().Y;
+                    this->fndr2offset.Z = outMatrix.m32 - carsim->getWheel(2)->getCenter().Z;
+
+                    GetPivot(outMatrix, basename, "fndr3");
+                    this->fndr3offset.X = outMatrix.m30 - carsim->getWheel(3)->getCenter().X;
+                    this->fndr3offset.Y = outMatrix.m31 - carsim->getWheel(3)->getCenter().Y;
+                    this->fndr3offset.Z = outMatrix.m32 - carsim->getWheel(3)->getCenter().Z;
+                }
+
+                //extra FNDR4/5 offsets
+                auto fndr4Entry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 65);
+                if (fndr4Entry->getHighLOD() != nullptr)
+                {
+                    Matrix34 outMatrix;
+                    auto carsim = this->carSim;
+
+                    GetPivot(outMatrix, basename, "fndr4");
+                    this->fndr4offset.X = outMatrix.m30 - carsim->getWheel(2)->getCenter().X;
+                    this->fndr4offset.Y = outMatrix.m31 - carsim->getWheel(2)->getCenter().Y;
+                    this->fndr4offset.Z = (outMatrix.m32 - carsim->getWheel(2)->getCenter().Z) + 1.10738f;
+
+                    GetPivot(outMatrix, basename, "fndr5");
+                    this->fndr5offset.X = outMatrix.m30 - carsim->getWheel(3)->getCenter().X;
+                    this->fndr5offset.Y = outMatrix.m31 - carsim->getWheel(3)->getCenter().Y;
+                    this->fndr5offset.Z = (outMatrix.m32 - carsim->getWheel(3)->getCenter().Z) + 1.10738f;
+                }
             }
 
             //create gen breakables
@@ -430,7 +564,7 @@ namespace MM2
             InitBreakable(this->genBreakableMgr, basename, "break23", 36, 0);
             InitBreakable(this->genBreakableMgr, basename, "break03", 37, 0);
             
-            int variantGeomId = this->variant + 61;
+            int variantGeomId = this->variant + 67;
             string_buf<16> buffer("variant%d", this->variant);
             InitBreakable(this->genBreakableMgr, basename, buffer, variantGeomId, 0);
 
@@ -441,15 +575,23 @@ namespace MM2
             
             InitBreakable(this->wheelBreakableMgr, basename, "whl0", 26, 1 << 0);
             InitBreakable(this->wheelBreakableMgr, basename, "hub0", 38, 1 << 1);
-            InitBreakable(this->wheelBreakableMgr, basename, "whl1", 27, 1 << 2);
-            InitBreakable(this->wheelBreakableMgr, basename, "hub1", 39, 1 << 3);
-            InitBreakable(this->wheelBreakableMgr, basename, "whl2", 28, 1 << 4);
-            InitBreakable(this->wheelBreakableMgr, basename, "hub2", 40, 1 << 5);
-            InitBreakable(this->wheelBreakableMgr, basename, "whl3", 29, 1 << 6);
-            InitBreakable(this->wheelBreakableMgr, basename, "hub3", 41, 1 << 7);
-            InitBreakable(this->wheelBreakableMgr, basename, "fndr0", 49, 1 << 8);
-            InitBreakable(this->wheelBreakableMgr, basename, "fndr1", 50, 1 << 9);
-            InitBreakable(this->wheelBreakableMgr, basename, "engine", 25, 1 << 10);
+            InitBreakable(this->wheelBreakableMgr, basename, "fndr0", 49, 1 << 2);
+            InitBreakable(this->wheelBreakableMgr, basename, "whl1", 27, 1 << 3);
+            InitBreakable(this->wheelBreakableMgr, basename, "hub1", 39, 1 << 4);
+            InitBreakable(this->wheelBreakableMgr, basename, "fndr1", 50, 1 << 5);
+            InitBreakable(this->wheelBreakableMgr, basename, "whl2", 28, 1 << 6);
+            InitBreakable(this->wheelBreakableMgr, basename, "hub2", 40, 1 << 7);
+            InitBreakable(this->wheelBreakableMgr, basename, "fndr2", 63, 1 << 8);
+            InitBreakable(this->wheelBreakableMgr, basename, "whl3", 29, 1 << 9);
+            InitBreakable(this->wheelBreakableMgr, basename, "hub3", 41, 1 << 10);
+            InitBreakable(this->wheelBreakableMgr, basename, "fndr3", 64, 1 << 11);
+            InitBreakable(this->wheelBreakableMgr, basename, "whl4", 51, 1 << 12);
+            InitBreakable(this->wheelBreakableMgr, basename, "hub4", 61, 1 << 13);
+            InitBreakable(this->wheelBreakableMgr, basename, "fndr4", 65, 1 << 14);
+            InitBreakable(this->wheelBreakableMgr, basename, "whl5", 52, 1 << 15);
+            InitBreakable(this->wheelBreakableMgr, basename, "hub5", 62, 1 << 16);
+            InitBreakable(this->wheelBreakableMgr, basename, "fndr5", 66, 1 << 17);
+            InitBreakable(this->wheelBreakableMgr, basename, "engine", 25, 1 << 18);
 
             //load trailer hitch offset
             if (this->getGeomSetId() != 0)
@@ -463,7 +605,6 @@ namespace MM2
                 }
             }
         }
-
         
         /*
             lvlInstance virtuals
@@ -571,7 +712,7 @@ namespace MM2
                 fndrMatrix.m12 = carMatrix.m12;
 
                 auto fndr0model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 49)->getHighLOD();
-                if (fndr0model != nullptr && (wheelBrokenStatus & 0x100) != 0)
+                if (fndr0model != nullptr && (wheelBrokenStatus & 0x4) != 0)
                 {
                     auto whlMatrix = this->carSim->getWheel(0)->getMatrix();
 
@@ -591,7 +732,7 @@ namespace MM2
                 }
 
                 auto fndr1model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 50)->getHighLOD();
-                if (fndr1model != nullptr && (wheelBrokenStatus & 0x200) != 0)
+                if (fndr1model != nullptr && (wheelBrokenStatus & 0x20) != 0)
                 {
                     auto whlMatrix = this->carSim->getWheel(1)->getMatrix();
 
@@ -622,8 +763,8 @@ namespace MM2
                     int whlId = 26 + i;
                     int hubId = 38 + i;
 
-                    int wheelStatusFlag = 1 << (i * 2);
-                    int hubStatusFlag = 1 << ((i + 1) * 2);
+                    int wheelStatusFlag = 1 << (i * 3);
+                    int hubStatusFlag = 1 << ((i * 3) + 1);
 
                     //wheel
                     if ((this->wheelBrokenStatus & wheelStatusFlag) != 0)
@@ -657,6 +798,9 @@ namespace MM2
                     DrawPart(lod, 54, this->carSim->getWorldMatrix(), shaders, vehCarModel::PartReflections);
             }
 
+            Matrix34 dummyWhl4Matrix = Matrix34();
+            Matrix34 dummyWhl5Matrix = Matrix34();
+
             //draw suspension, engine, extra wheels
             if (lod >= 1)
             {
@@ -678,7 +822,7 @@ namespace MM2
                 DrawPart(lod, 24, &this->carSim->AxleRear.getAxleMatrix(), shaders, vehCarModel::PartReflections);
                 
                 //engine
-                if ((this->wheelBrokenStatus & 0x400) != 0)
+                if ((this->wheelBrokenStatus & 0x40000) != 0)
                 {
                     auto engineMatrixPtr = this->carSim->getEngine()->getVisualMatrixPtr();
                     if(engineMatrixPtr != nullptr)
@@ -688,52 +832,175 @@ namespace MM2
                 //extra wheels
                 auto whl4model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 51)->getLOD(lod);
                 auto swhl4model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 59)->getLOD(lod);
-                if (whl4model != nullptr)
+                if (whl4model != nullptr && (this->wheelBrokenStatus & 0x1000) != 0)
                 {
                     auto carMatrix = this->carSim->getWorldMatrix();
                     auto refWheel = this->carSim->getWheel(2);
-                    Matrix34 dummyWhlMatrix = Matrix34();
-                    dummyWhlMatrix.Set(&refWheel->getMatrix());
+                    dummyWhl4Matrix.Set(&refWheel->getMatrix());
 
                     float offsetX = carSim->BackBackLeftWheelPosDiff.Y * carMatrix->m10 + carSim->BackBackLeftWheelPosDiff.Z * carMatrix->m20 + carSim->BackBackLeftWheelPosDiff.X * carMatrix->m00;
                     float offsetY = carSim->BackBackLeftWheelPosDiff.Y * carMatrix->m11 + carSim->BackBackLeftWheelPosDiff.Z * carMatrix->m21 + carSim->BackBackLeftWheelPosDiff.X * carMatrix->m01;
                     float offsetZ = carSim->BackBackLeftWheelPosDiff.Y * carMatrix->m12 + carSim->BackBackLeftWheelPosDiff.Z * carMatrix->m22 + carSim->BackBackLeftWheelPosDiff.X * carMatrix->m02;
-                    dummyWhlMatrix.m30 += offsetX;
-                    dummyWhlMatrix.m31 += offsetY;
-                    dummyWhlMatrix.m32 += offsetZ;
+                    dummyWhl4Matrix.m30 += offsetX;
+                    dummyWhl4Matrix.m31 += offsetY;
+                    dummyWhl4Matrix.m32 += offsetZ;
 
                     if (fabs(refWheel->getRotationRate()) > 26.f && swhl4model != nullptr && vehCarModel::EnableSpinningWheels)
                     {
-                        DrawPart(lod, 59, &dummyWhlMatrix, shaders, vehCarModel::WheelReflections);
+                        DrawPart(lod, 59, &dummyWhl4Matrix, shaders, vehCarModel::WheelReflections);
                     }
                     else {
-                        DrawPart(lod, 51, &dummyWhlMatrix, shaders, vehCarModel::WheelReflections);
+                        DrawPart(lod, 51, &dummyWhl4Matrix, shaders, vehCarModel::WheelReflections);
                     }
                 }
 
                 auto whl5model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 52)->getLOD(lod);
                 auto swhl5model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 60)->getLOD(lod);
-                if (whl5model != nullptr)
+                if (whl5model != nullptr && (this->wheelBrokenStatus & 0x8000) != 0)
                 {
                     auto carMatrix = this->carSim->getWorldMatrix();
                     auto refWheel = this->carSim->getWheel(3);
-                    Matrix34 dummyWhlMatrix = Matrix34();
-                    dummyWhlMatrix.Set(&refWheel->getMatrix());
+                    dummyWhl5Matrix.Set(&refWheel->getMatrix());
 
                     float offsetX = carSim->BackBackRightWheelPosDiff.Y * carMatrix->m10 + carSim->BackBackRightWheelPosDiff.Z * carMatrix->m20 + carSim->BackBackRightWheelPosDiff.X * carMatrix->m00;
                     float offsetY = carSim->BackBackRightWheelPosDiff.Y * carMatrix->m11 + carSim->BackBackRightWheelPosDiff.Z * carMatrix->m21 + carSim->BackBackRightWheelPosDiff.X * carMatrix->m01;
                     float offsetZ = carSim->BackBackRightWheelPosDiff.Y * carMatrix->m12 + carSim->BackBackRightWheelPosDiff.Z * carMatrix->m22 + carSim->BackBackRightWheelPosDiff.X * carMatrix->m02;
-                    dummyWhlMatrix.m30 += offsetX;
-                    dummyWhlMatrix.m31 += offsetY;
-                    dummyWhlMatrix.m32 += offsetZ;
+                    dummyWhl5Matrix.m30 += offsetX;
+                    dummyWhl5Matrix.m31 += offsetY;
+                    dummyWhl5Matrix.m32 += offsetZ;
 
                     if (fabs(refWheel->getRotationRate()) > 26.f && swhl5model != nullptr && vehCarModel::EnableSpinningWheels)
                     {
-                        DrawPart(lod, 60, &dummyWhlMatrix, shaders, vehCarModel::WheelReflections);
+                        DrawPart(lod, 60, &dummyWhl5Matrix, shaders, vehCarModel::WheelReflections);
                     }
                     else {
-                        DrawPart(lod, 52, &dummyWhlMatrix, shaders, vehCarModel::WheelReflections);
+                        DrawPart(lod, 52, &dummyWhl5Matrix, shaders, vehCarModel::WheelReflections);
                     }
+                }
+
+                //extra hubs
+                auto hub4model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 61)->getLOD(lod);
+                if (hub4model != nullptr && (this->wheelBrokenStatus & 0x2000) != 0)
+                {
+                    auto carMatrix = this->carSim->getWorldMatrix();
+                    auto refWheel = this->carSim->getWheel(2);
+                    dummyWhl4Matrix.Set(&refWheel->getMatrix());
+
+                    float offsetX = carSim->BackBackLeftWheelPosDiff.Y * carMatrix->m10 + carSim->BackBackLeftWheelPosDiff.Z * carMatrix->m20 + carSim->BackBackLeftWheelPosDiff.X * carMatrix->m00;
+                    float offsetY = carSim->BackBackLeftWheelPosDiff.Y * carMatrix->m11 + carSim->BackBackLeftWheelPosDiff.Z * carMatrix->m21 + carSim->BackBackLeftWheelPosDiff.X * carMatrix->m01;
+                    float offsetZ = carSim->BackBackLeftWheelPosDiff.Y * carMatrix->m12 + carSim->BackBackLeftWheelPosDiff.Z * carMatrix->m22 + carSim->BackBackLeftWheelPosDiff.X * carMatrix->m02;
+                    dummyWhl4Matrix.m30 += offsetX;
+                    dummyWhl4Matrix.m31 += offsetY;
+                    dummyWhl4Matrix.m32 += offsetZ;
+ 
+                    DrawPart(lod, 61, &dummyWhl4Matrix, shaders, vehCarModel::WheelReflections);
+                }
+
+                auto hub5model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 62)->getLOD(lod);
+                if (hub5model != nullptr && (this->wheelBrokenStatus & 0x10000) != 0)
+                {
+                    auto carMatrix = this->carSim->getWorldMatrix();
+                    auto refWheel = this->carSim->getWheel(3);
+                    dummyWhl5Matrix.Set(&refWheel->getMatrix());
+
+                    float offsetX = carSim->BackBackRightWheelPosDiff.Y * carMatrix->m10 + carSim->BackBackRightWheelPosDiff.Z * carMatrix->m20 + carSim->BackBackRightWheelPosDiff.X * carMatrix->m00;
+                    float offsetY = carSim->BackBackRightWheelPosDiff.Y * carMatrix->m11 + carSim->BackBackRightWheelPosDiff.Z * carMatrix->m21 + carSim->BackBackRightWheelPosDiff.X * carMatrix->m01;
+                    float offsetZ = carSim->BackBackRightWheelPosDiff.Y * carMatrix->m12 + carSim->BackBackRightWheelPosDiff.Z * carMatrix->m22 + carSim->BackBackRightWheelPosDiff.X * carMatrix->m02;
+                    dummyWhl5Matrix.m30 += offsetX;
+                    dummyWhl5Matrix.m31 += offsetY;
+                    dummyWhl5Matrix.m32 += offsetZ;
+
+                    DrawPart(lod, 62, &dummyWhl5Matrix, shaders, vehCarModel::WheelReflections);
+                }
+            }
+
+            //extra fenders
+            if (lod == 3)
+            {
+                Matrix34 fndrMatrix = Matrix34();
+                auto carMatrix = *this->carSim->getWorldMatrix();
+                fndrMatrix.Identity();
+
+                fndrMatrix.m10 = carMatrix.m10;
+                fndrMatrix.m11 = carMatrix.m11;
+                fndrMatrix.m12 = carMatrix.m12;
+
+                //draw FNDR2/3
+                auto fndr2model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 63)->getHighLOD();
+                if (fndr2model != nullptr && (wheelBrokenStatus & 0x100) != 0)
+                {
+                    auto whlMatrix = this->carSim->getWheel(2)->getMatrix();
+
+                    fndrMatrix.m00 = whlMatrix.m00;
+                    fndrMatrix.m01 = whlMatrix.m01;
+                    fndrMatrix.m02 = whlMatrix.m02;
+
+                    fndrMatrix.m20 = fndrMatrix.m12 * fndrMatrix.m01 - fndrMatrix.m11 * fndrMatrix.m02;
+                    fndrMatrix.m21 = fndrMatrix.m02 * fndrMatrix.m10 - fndrMatrix.m12 * fndrMatrix.m00;
+                    fndrMatrix.m22 = fndrMatrix.m11 * fndrMatrix.m00 - fndrMatrix.m01 * fndrMatrix.m10;
+
+                    fndrMatrix.m30 = fndr2offset.Y * fndrMatrix.m10 + fndr2offset.Z * fndrMatrix.m20 + fndr2offset.X * fndrMatrix.m00 + whlMatrix.m30;
+                    fndrMatrix.m31 = fndr2offset.Y * fndrMatrix.m11 + fndr2offset.Z * fndrMatrix.m21 + fndr2offset.X * fndrMatrix.m01 + whlMatrix.m31;
+                    fndrMatrix.m32 = fndr2offset.Y * fndrMatrix.m12 + fndr2offset.Z * fndrMatrix.m22 + fndr2offset.X * fndrMatrix.m02 + whlMatrix.m32;
+
+                    DrawPart(3, 63, &fndrMatrix, shaders, vehCarModel::PartReflections);
+                }
+
+                auto fndr3model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 64)->getHighLOD();
+                if (fndr3model != nullptr && (wheelBrokenStatus & 0x800) != 0)
+                {
+                    auto whlMatrix = this->carSim->getWheel(3)->getMatrix();
+
+                    fndrMatrix.m00 = whlMatrix.m00;
+                    fndrMatrix.m01 = whlMatrix.m01;
+                    fndrMatrix.m02 = whlMatrix.m02;
+
+                    fndrMatrix.m20 = fndrMatrix.m12 * fndrMatrix.m01 - fndrMatrix.m11 * fndrMatrix.m02;
+                    fndrMatrix.m21 = fndrMatrix.m02 * fndrMatrix.m10 - fndrMatrix.m12 * fndrMatrix.m00;
+                    fndrMatrix.m22 = fndrMatrix.m11 * fndrMatrix.m00 - fndrMatrix.m01 * fndrMatrix.m10;
+
+                    fndrMatrix.m30 = fndr3offset.Y * fndrMatrix.m10 + fndr3offset.Z * fndrMatrix.m20 + fndr3offset.X * fndrMatrix.m00 + whlMatrix.m30;
+                    fndrMatrix.m31 = fndr3offset.Y * fndrMatrix.m11 + fndr3offset.Z * fndrMatrix.m21 + fndr3offset.X * fndrMatrix.m01 + whlMatrix.m31;
+                    fndrMatrix.m32 = fndr3offset.Y * fndrMatrix.m12 + fndr3offset.Z * fndrMatrix.m22 + fndr3offset.X * fndrMatrix.m02 + whlMatrix.m32;
+
+                    DrawPart(3, 64, &fndrMatrix, shaders, vehCarModel::PartReflections);
+                }
+
+                //extra FNDR4/5
+                auto fndr4model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 65)->getHighLOD();
+                if (fndr4model != nullptr && (wheelBrokenStatus & 0x4000) != 0)
+                {
+                    fndrMatrix.m00 = dummyWhl4Matrix.m00;
+                    fndrMatrix.m01 = dummyWhl4Matrix.m01;
+                    fndrMatrix.m02 = dummyWhl4Matrix.m02;
+
+                    fndrMatrix.m20 = fndrMatrix.m12 * fndrMatrix.m01 - fndrMatrix.m11 * fndrMatrix.m02;
+                    fndrMatrix.m21 = fndrMatrix.m02 * fndrMatrix.m10 - fndrMatrix.m12 * fndrMatrix.m00;
+                    fndrMatrix.m22 = fndrMatrix.m11 * fndrMatrix.m00 - fndrMatrix.m01 * fndrMatrix.m10;
+
+                    fndrMatrix.m30 = fndr4offset.Y * fndrMatrix.m10 + fndr4offset.Z * fndrMatrix.m20 + fndr4offset.X * fndrMatrix.m00 + dummyWhl4Matrix.m30;
+                    fndrMatrix.m31 = fndr4offset.Y * fndrMatrix.m11 + fndr4offset.Z * fndrMatrix.m21 + fndr4offset.X * fndrMatrix.m01 + dummyWhl4Matrix.m31;
+                    fndrMatrix.m32 = fndr4offset.Y * fndrMatrix.m12 + fndr4offset.Z * fndrMatrix.m22 + fndr4offset.X * fndrMatrix.m02 + dummyWhl4Matrix.m32;
+
+                    DrawPart(3, 65, &fndrMatrix, shaders, vehCarModel::PartReflections);
+                }
+
+                auto fndr5model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 66)->getHighLOD();
+                if (fndr5model != nullptr && (wheelBrokenStatus & 0x20000) != 0)
+                {
+                    fndrMatrix.m00 = dummyWhl5Matrix.m00;
+                    fndrMatrix.m01 = dummyWhl5Matrix.m01;
+                    fndrMatrix.m02 = dummyWhl5Matrix.m02;
+
+                    fndrMatrix.m20 = fndrMatrix.m12 * fndrMatrix.m01 - fndrMatrix.m11 * fndrMatrix.m02;
+                    fndrMatrix.m21 = fndrMatrix.m02 * fndrMatrix.m10 - fndrMatrix.m12 * fndrMatrix.m00;
+                    fndrMatrix.m22 = fndrMatrix.m11 * fndrMatrix.m00 - fndrMatrix.m01 * fndrMatrix.m10;
+
+                    fndrMatrix.m30 = fndr5offset.Y * fndrMatrix.m10 + fndr5offset.Z * fndrMatrix.m20 + fndr5offset.X * fndrMatrix.m00 + dummyWhl5Matrix.m30;
+                    fndrMatrix.m31 = fndr5offset.Y * fndrMatrix.m11 + fndr5offset.Z * fndrMatrix.m21 + fndr5offset.X * fndrMatrix.m01 + dummyWhl5Matrix.m31;
+                    fndrMatrix.m32 = fndr5offset.Y * fndrMatrix.m12 + fndr5offset.Z * fndrMatrix.m22 + fndr5offset.X * fndrMatrix.m02 + dummyWhl5Matrix.m32;
+
+                    DrawPart(3, 66, &fndrMatrix, shaders, vehCarModel::PartReflections);
                 }
             }
 
@@ -928,14 +1195,14 @@ namespace MM2
                 .addFunction("Reset", &Reset)
                 .addFunction("BreakElectrics", &BreakElectrics)
                 .addFunction("ClearDamage", &ClearDamage)
-                .addFunction("EjectOneshot", &EjectOneshot)
+                //.addFunction("EjectOneshot", &EjectOneshot)
 
 
             .endClass();
         }
     };
 
-    ASSERT_SIZEOF(vehCarModel, 0xCC);
+    ASSERT_SIZEOF(vehCarModel, 0xCC + 0xC + 0xC + 0xC + 0xC); //+4 extra fields
 
     // Lua initialization
 

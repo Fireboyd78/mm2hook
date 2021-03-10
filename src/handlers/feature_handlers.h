@@ -282,6 +282,7 @@ public:
     void Draw(int a1);
     void DrawGlow();
     void ModStaticDraw(MM2::modShader * a1);
+    void EjectOneShot();
     static void Install();
 };
 

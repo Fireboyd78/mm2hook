@@ -3228,10 +3228,29 @@ void vehCarModelFeatureHandler::DrawGlow() {
     model->vehCarModel::DrawGlow();
 }
 
+void vehCarModelFeatureHandler::EjectOneShot() {
+    auto model = reinterpret_cast<vehCarModel*>(this);
+    model->vehCarModel::EjectOneshot();
+}
+
 void vehCarModelFeatureHandler::Install() {
+    InstallPatch({ 0xFC }, {
+        0x42BB6E + 1, // Change size of vehCarModel on allocation
+    });
+
+    InstallPatch({ 0xFC }, {
+        0x4CDFE0 + 1, // Change size of vehCarModel on SizeOf
+    });
+
     InstallCallback("vehCarModel::Init", "Use rewritten vehCarModel init.",
         &vehCarModel::Init, {
             cb::call(0x42BE86),
+        }
+    );
+
+    InstallCallback("vehCarModel::EjectOneShot", "add more mechanical breakables.",
+        &EjectOneShot, {
+            cb::call(0x4CAE16),
         }
     );
 
