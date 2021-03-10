@@ -404,6 +404,13 @@ namespace MM2
                 lvlInstance::AddGeom(basename, "fndr4", 0);
                 lvlInstance::AddGeom(basename, "fndr5", 0);
 
+                lvlInstance::AddGeom(basename, "shub0", 0);
+                lvlInstance::AddGeom(basename, "shub1", 0);
+                lvlInstance::AddGeom(basename, "shub2", 0);
+                lvlInstance::AddGeom(basename, "shub3", 0);
+                lvlInstance::AddGeom(basename, "shub4", 0);
+                lvlInstance::AddGeom(basename, "shub5", 0);
+
                 //add variants
                 //supports up to 32 paintjobs
                 for (int i = 0; i < 32; i++)
@@ -564,7 +571,7 @@ namespace MM2
             InitBreakable(this->genBreakableMgr, basename, "break23", 36, 0);
             InitBreakable(this->genBreakableMgr, basename, "break03", 37, 0);
             
-            int variantGeomId = this->variant + 67;
+            int variantGeomId = this->variant + 73;
             string_buf<16> buffer("variant%d", this->variant);
             InitBreakable(this->genBreakableMgr, basename, buffer, variantGeomId, 0);
 
@@ -803,6 +810,7 @@ namespace MM2
                     int swhlId = 55 + i;
                     int whlId = 26 + i;
                     int hubId = 38 + i;
+                    int shubId = 67 + i;
 
                     int wheelStatusFlag = 1 << (i * 3);
                     int hubStatusFlag = 1 << ((i * 3) + 1);
@@ -810,7 +818,14 @@ namespace MM2
                     //hub
                     if ((this->wheelBrokenStatus & hubStatusFlag) != 0)
                     {
-                        DrawPart(lod, hubId, &wheel->getMatrix(), shaders, vehCarModel::PartReflections);
+                        auto shubModel = lvlInstance::GetGeomTableEntry(geomSetIdOffset + shubId)->getLOD(lod);
+                        if (fabs(wheel->getRotationRate()) > 26.f && shubModel != nullptr && vehCarModel::EnableSpinningWheels)
+                        {
+                            DrawPart(lod, shubId, &wheel->getMatrix(), shaders, vehCarModel::PartReflections);
+                        }
+                        else {
+                            DrawPart(lod, hubId, &wheel->getMatrix(), shaders, vehCarModel::PartReflections);
+                        }
                     }
 
                     //wheel
@@ -872,6 +887,7 @@ namespace MM2
 
                 //extra hubs
                 auto hub4model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 61)->getLOD(lod);
+                auto shub4model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 71)->getLOD(lod);
                 if (hub4model != nullptr && (this->wheelBrokenStatus & 0x2000) != 0)
                 {
                     auto carMatrix = this->carSim->getWorldMatrix();
@@ -885,10 +901,17 @@ namespace MM2
                     dummyWhl4Matrix.m31 += offsetY;
                     dummyWhl4Matrix.m32 += offsetZ;
 
-                    DrawPart(lod, 61, &dummyWhl4Matrix, shaders, vehCarModel::WheelReflections);
+                    if (fabs(refWheel->getRotationRate()) > 26.f && shub4model != nullptr && vehCarModel::EnableSpinningWheels)
+                    {
+                        DrawPart(lod, 71, &dummyWhl4Matrix, shaders, vehCarModel::WheelReflections);
+                    }
+                    else {
+                        DrawPart(lod, 61, &dummyWhl4Matrix, shaders, vehCarModel::WheelReflections);
+                    }
                 }
 
                 auto hub5model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 62)->getLOD(lod);
+                auto shub5model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 72)->getLOD(lod);
                 if (hub5model != nullptr && (this->wheelBrokenStatus & 0x10000) != 0)
                 {
                     auto carMatrix = this->carSim->getWorldMatrix();
@@ -902,7 +925,13 @@ namespace MM2
                     dummyWhl5Matrix.m31 += offsetY;
                     dummyWhl5Matrix.m32 += offsetZ;
 
-                    DrawPart(lod, 62, &dummyWhl5Matrix, shaders, vehCarModel::WheelReflections);
+                    if (fabs(refWheel->getRotationRate()) > 26.f && shub5model != nullptr && vehCarModel::EnableSpinningWheels)
+                    {
+                        DrawPart(lod, 72, &dummyWhl5Matrix, shaders, vehCarModel::WheelReflections);
+                    }
+                    else {
+                        DrawPart(lod, 62, &dummyWhl5Matrix, shaders, vehCarModel::WheelReflections);
+                    }
                 }
 
                 Matrix34 fndrMatrix = Matrix34();
