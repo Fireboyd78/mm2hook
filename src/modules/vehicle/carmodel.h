@@ -1224,7 +1224,7 @@ namespace MM2
                 .addFunction("Reset", &Reset)
                 .addFunction("BreakElectrics", &BreakElectrics)
                 .addFunction("ClearDamage", &ClearDamage)
-                //.addFunction("EjectOneshot", &EjectOneshot)
+                .addFunction("EjectOneshot", &EjectOneshot)
 
 
             .endClass();
