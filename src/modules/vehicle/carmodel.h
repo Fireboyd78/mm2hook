@@ -127,6 +127,10 @@ namespace MM2
             return &headlightLightsArray[index];
         }
 
+        inline int getWheelBrokenStatus(void) const {
+            return this->wheelBrokenStatus;
+        }
+
         AGE_API void GetSurfaceColor(modStatic* model, Vector3* outVector)
                                                             { hook::Thunk<0x4CDF00>::Call<void>(this, model, outVector); }
         AGE_API void InitBreakable(vehBreakableMgr* manager, const char* basename, const char* breakableName, int geomId, int someId)

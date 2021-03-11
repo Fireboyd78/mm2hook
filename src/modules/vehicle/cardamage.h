@@ -61,6 +61,10 @@ namespace MM2
         inline float getMaxDamage(void) {
             return this->MaxDamage;
         }
+
+        inline vehCar* getCar(void) const {
+            return this->vehCarPtr;
+        }
     public:
         AGE_API vehCarDamage()                              { hook::Thunk<0x4CA380>::Call<void>(this); }
         AGE_API ~vehCarDamage()                             { hook::Thunk<0x4CA530>::Call<void>(this); }

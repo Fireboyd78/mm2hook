@@ -28,6 +28,14 @@ namespace MM2
         vehCarSim *m_CarSimPtr;
     private:
     public:
+        inline float getStuckTime(void) {
+            return this->StuckTime;
+        }
+
+        inline void setStuckTime(float time) {
+            this->StuckTime = time;
+        }
+
         AGE_API vehStuck()                              { hook::Thunk<0x4D5FB0>::Call<void>(this); }
 
         AGE_API void Init(vehCarSim *carSim, const char *name) 

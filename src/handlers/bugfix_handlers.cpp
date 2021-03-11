@@ -27,6 +27,7 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<vehCarAudioHandler>("vehCarAudio"),
     CreateHandler<vehCarAudioContainerBugfixHandler>("vehCarAudioContainer bugfixes"),
     CreateHandler<vehCarModelHandler>("vehCarModel"),
+    CreateHandler<vehCarDamageHandler>("vehCarDamage"),
     CreateHandler<vehTrailerHandler>("vehTrailer"),
     CreateHandler<vehPoliceCarAudioBugfixHandler>("vehPoliceCarAudio"),
     CreateHandler<vehSemiCarAudioBugfixHandler>("vehSemiCarAudio"),
@@ -436,6 +437,54 @@ void vehCarModelHandler::Install() {
     });
 }
 
+/*
+    vehCarDamage
+*/
+
+static ConfigValue<bool> cfgBrokenWheels("PhysicalBrokenWheels", true);
+
+void vehCarDamageHandler::Update() {
+    auto carDamage = reinterpret_cast<vehCarDamage*>(this);
+    auto car = carDamage->getCar();
+    auto carsim = car->getCarSim();
+    auto model = car->getModel();
+
+    for (int i = 0; i < 4; i++)
+    {
+        auto wheel = carsim->getWheel(i);
+
+        int wheelStatusFlag = 1 << (i * 3);
+
+        if ((model->getWheelBrokenStatus() & wheelStatusFlag) != 0) {
+            if (wheel->getRadius() < 0.f) { // Check if the wheel radius is < 0, if so, it's probably done by us, and we need to reset it
+                string_buf<16> buffer("whl%d", i);
+                Matrix34 outMatrix;
+                if (GetPivot(outMatrix, carDamage->GetName(), buffer)) {
+                    float halfHeight = (outMatrix.m11 - outMatrix.m01) * 0.5f;
+                    wheel->setRadius(fabs(halfHeight));
+                }
+            }
+        }
+        else {
+            wheel->setRadius(-1.f);
+            car->getStuck()->setStuckTime(0.f);
+        }
+    }
+
+    //call original
+    hook::Thunk<0x4CAA40>::Call<void>(this);
+}
+
+void vehCarDamageHandler::Install() {
+    if (!cfgBrokenWheels.Get())
+        return;
+
+    InstallVTableHook("vehCarDamage::Update",
+        &Update, {
+            0x5B2C30,
+        }
+    );
+}
 
 /*
     mmBillInstanceHandler

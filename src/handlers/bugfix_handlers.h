@@ -74,6 +74,12 @@ public:
     static void Install(void);
 };
 
+class vehCarDamageHandler {
+public:
+    void Update();
+    static void Install();
+};
+
 class mmBillInstanceHandler
 {
 public:
