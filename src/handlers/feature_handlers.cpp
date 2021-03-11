@@ -3323,6 +3323,19 @@ float vehWheelHandler::GetBumpDisplacement(float a1)
 
 void vehWheelHandler::Install()
 {
+    InstallCallback("vehWheel::Init", "Use rewritten vehWheel init.",
+        &vehWheel::Init, {
+            cb::call(0x4CBC0A),
+            cb::call(0x4CBC41),
+            cb::call(0x4CBC7D),
+            cb::call(0x4CBCBB),
+            cb::call(0x4D74B8),
+            cb::call(0x4D74E9),
+            cb::call(0x4D751A),
+            cb::call(0x4D754B),
+        }
+    );
+
     if (!cfgWheelWobble.Get())
         return;
 

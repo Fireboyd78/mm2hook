@@ -144,6 +144,29 @@ namespace MM2
     public:
         AGE_API vehWheel()                                     { hook::Thunk<0x4D2190>::Call<void>(this); }
 
+        AGE_API void Init(vehCarSim* carSimPtr, const char* vehicleBasename, const char* wheelName, Vector3 centerOfGravity, phInertialCS* inertialCs, int a6, int a7)
+        {
+            Matrix34 outMatrix;
+
+            this->m_CarSimPtr = carSimPtr;
+            this->WheelFlags |= a7;
+            *getPtr<int>(this, 0x94) = a6;
+            this->m_InertialCSPtr = inertialCs;
+
+            if (GetPivot(outMatrix, vehicleBasename, wheelName)) {
+                this->Center.X = outMatrix.m30;
+                this->Center.Y = outMatrix.m31;
+                this->Center.Z = outMatrix.m32;
+
+                float halfHeight = (outMatrix.m11 - outMatrix.m01) * 0.5f;
+                this->Radius = fabs(halfHeight);
+
+                this->Width = outMatrix.m10 - outMatrix.m00;
+            }
+
+            this->ComputeConstants();
+        }
+
         AGE_API void CopyVars(vehWheel *copyFrom)              { hook::Thunk<0x4D4110>::Call<void>(this, copyFrom); }
 
         AGE_API void ComputeConstants()                        { hook::Thunk<0x4D23F0>::Call<void>(this); }
