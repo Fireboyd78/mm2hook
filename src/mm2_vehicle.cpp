@@ -25,13 +25,14 @@ declfield(vehWheel::WeatherFriction)(0x5CF6B8);
 *   vehCarModel
 */
 bool vehCarModel::EnableSpinningWheels = true;
-bool vehCarModel::EnableFlashingHeadlights = true;
+bool vehCarModel::EnableHeadlightFlashing = true;
 bool vehCarModel::MWStyleTotaledCar = false;
 bool vehCarModel::PartReflections = false;
 bool vehCarModel::WheelReflections = false;
 int vehCarModel::SirenType = 0;
 int vehCarModel::HeadlightType = 0;
 float vehCarModel::SirenCycle = 0.25f;
+float vehCarModel::HeadlightFlashingSpeed = 42.411503f;
 
 bool vehCarModel::HeadlightsState = false;
 bool vehCarModel::HazardLightsState = false;

@@ -25,11 +25,12 @@ namespace MM2
     class vehCarModel : public lvlInstance {
     public:
         static bool EnableSpinningWheels;
-        static bool EnableFlashingHeadlights;
+        static bool EnableHeadlightFlashing;
         static bool MWStyleTotaledCar;
         static int SirenType;
         static int HeadlightType;
         static float SirenCycle;
+        static float HeadlightFlashingSpeed;
         static bool PartReflections;
         static bool WheelReflections;
         static bool mm1StyleTransmission; //god this is horrible...
@@ -82,6 +83,8 @@ namespace MM2
         Vector3 fndr3offset;
         Vector3 fndr4offset;
         Vector3 fndr5offset;
+        ltLight* extraHeadlights[6]; //HEADLIGHT2-7
+        Vector3 extraHeadlightPositions[6];
     public:
         AGE_API vehCarModel() {
             scoped_vtable x(this);
@@ -234,8 +237,8 @@ namespace MM2
 
             if (rotate)
             {
-                this->headlights[0].Direction.RotateY(datTimeManager::Seconds * 42.411503f);
-                this->headlights[1].Direction.RotateY(datTimeManager::Seconds * -42.411503f);
+                this->headlights[0].Direction.RotateY(datTimeManager::Seconds * vehCarModel::HeadlightFlashingSpeed);
+                this->headlights[1].Direction.RotateY(datTimeManager::Seconds * -vehCarModel::HeadlightFlashingSpeed);
             }
             else
             {
@@ -257,6 +260,45 @@ namespace MM2
 
                 auto light = &this->headlights[i];
                 auto lightPos = this->headlightPositions[i];
+                auto carMatrix = this->carSim->getWorldMatrix();
+
+                float lX = lightPos.Y * carMatrix->m10 + lightPos.Z * carMatrix->m20 + lightPos.X * carMatrix->m00 + carMatrix->m30;
+                float lY = lightPos.Y * carMatrix->m11 + lightPos.Z * carMatrix->m21 + lightPos.X * carMatrix->m01 + carMatrix->m31;
+                float lZ = lightPos.Y * carMatrix->m12 + lightPos.Z * carMatrix->m22 + lightPos.X * carMatrix->m02 + carMatrix->m32;
+                light->Position = Vector3(lX, lY, lZ);
+
+                Vector3* someCameraThing = (Vector3*)0x685490;
+                light->DrawGlow(someCameraThing);
+            }
+            ltLight::DrawGlowEnd();
+        }
+
+        AGE_API void DrawExtraHeadlights(bool rotate)
+        {
+            int geomSetId = this->getGeomSetId();
+            int geomSetIdOffset = geomSetId - 1;
+            float rotationSpeed = vehCarModel::HeadlightFlashingSpeed;
+
+            ltLight::DrawGlowBegin();
+            for (int i = 0; i < 6; i++)
+            {
+                auto headlightEntry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 73 + i);
+                if (headlightEntry->getHighLOD() == nullptr)
+                    continue;
+
+                if (rotate)
+                {
+                    this->extraHeadlights[i]->Direction.RotateY(datTimeManager::Seconds * rotationSpeed);
+                    rotationSpeed *= -1.f;
+                }
+                else
+                {
+                    auto carMatrix = this->carSim->getWorldMatrix();
+                    this->extraHeadlights[i]->Direction = Vector3(-carMatrix->m20, -carMatrix->m21, -carMatrix->m22);
+                }
+
+                auto light = this->extraHeadlights[i];
+                auto lightPos = this->extraHeadlightPositions[i];
                 auto carMatrix = this->carSim->getWorldMatrix();
 
                 float lX = lightPos.Y * carMatrix->m10 + lightPos.Z * carMatrix->m20 + lightPos.X * carMatrix->m00 + carMatrix->m30;
@@ -415,6 +457,15 @@ namespace MM2
                 lvlInstance::AddGeom(basename, "shub4", 0);
                 lvlInstance::AddGeom(basename, "shub5", 0);
 
+                //gfxForceLVERTEX = 1;
+                lvlInstance::AddGeom(basename, "headlight2", 0);
+                lvlInstance::AddGeom(basename, "headlight3", 0);
+                lvlInstance::AddGeom(basename, "headlight4", 0);
+                lvlInstance::AddGeom(basename, "headlight5", 0);
+                lvlInstance::AddGeom(basename, "headlight6", 0);
+                lvlInstance::AddGeom(basename, "headlight7", 0);
+                //gfxForceLVERTEX = 0;
+
                 //add variants
                 //supports up to 32 paintjobs
                 for (int i = 0; i < 32; i++)
@@ -490,13 +541,34 @@ namespace MM2
                     this->GetSurfaceColor(headlight0entry->getHighLOD(), &headlights[0].Color);
                     this->headlightPositions[0] = Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32);
 
-
                     GetPivot(outMatrix, basename, "headlight1");
                     headlights[1].Color = Vector3(1.f, 1.f, 1.f);
                     headlights[1].Type = 1;
                     headlights[1].SpotExponent = 3.f;
                     this->GetSurfaceColor(headlight1entry->getHighLOD(), &headlights[1].Color);
                     this->headlightPositions[1] = Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32);
+                }
+            }
+
+            //load extra headlights
+            if (this->getGeomSetId() != 0)
+            {
+                for (int i = 0; i < 6; i++)
+                {
+                    auto headlightEntry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 73 + i);
+                    if (headlightEntry->getHighLOD() == nullptr)
+                        continue;
+
+                    Matrix34 outMatrix;
+
+                    string_buf<16> buffer("headlight%d", i + 2);
+                    GetPivot(outMatrix, basename, buffer);
+                    extraHeadlights[i] = new ltLight();
+                    extraHeadlights[i]->Color = Vector3(1.f, 1.f, 1.f);
+                    extraHeadlights[i]->Type = 1;
+                    extraHeadlights[i]->SpotExponent = 3.f;
+                    this->GetSurfaceColor(headlightEntry->getHighLOD(), &extraHeadlights[i]->Color);
+                    this->extraHeadlightPositions[i] = Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32);
                 }
             }
 
@@ -575,7 +647,7 @@ namespace MM2
             InitBreakable(this->genBreakableMgr, basename, "break23", 36, 0);
             InitBreakable(this->genBreakableMgr, basename, "break03", 37, 0);
             
-            int variantGeomId = this->variant + 73;
+            int variantGeomId = this->variant + 79;
             string_buf<16> buffer("variant%d", this->variant);
             InitBreakable(this->genBreakableMgr, basename, buffer, variantGeomId, 0);
 
@@ -1145,20 +1217,23 @@ namespace MM2
             if (vehCarModel::HeadlightType < 3) {
                 if (vehCarModel::HeadlightType == 0 || vehCarModel::HeadlightType == 2) {
                     //MM2 headlights
-                    if (vehCarModel::EnableFlashingHeadlights) {
+                    if (vehCarModel::EnableHeadlightFlashing) {
                         if (siren != nullptr && siren->Active)
                         {
                             this->DrawHeadlights(true);
+                            this->DrawExtraHeadlights(true);
                         }
                         else if (car->IsPlayer() && vehCarModel::HeadlightsState || !car->IsPlayer() && vehCar::sm_DrawHeadlights)
                         {
                             this->DrawHeadlights(false);
+                            this->DrawExtraHeadlights(false);
                         }
                     }
                     else {
                         if (car->IsPlayer() && vehCarModel::HeadlightsState || !car->IsPlayer() && vehCar::sm_DrawHeadlights)
                         {
                             this->DrawHeadlights(false);
+                            this->DrawExtraHeadlights(false);
                         }
                     }
                 }
@@ -1231,7 +1306,7 @@ namespace MM2
         }
     };
 
-    ASSERT_SIZEOF(vehCarModel, 0xCC + 0xC + 0xC + 0xC + 0xC); //+4 extra fields
+    ASSERT_SIZEOF(vehCarModel, 0xCC + 0xC + 0xC + 0xC + 0xC + 0x18 + 0x48); //+6 extra fields
 
     // Lua initialization
 

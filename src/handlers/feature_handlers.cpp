@@ -3234,11 +3234,11 @@ void vehCarModelFeatureHandler::EjectOneShot() {
 }
 
 void vehCarModelFeatureHandler::Install() {
-    InstallPatch({ 0xFC }, {
+    InstallPatch({ 0x5C, 0x1 }, {
         0x42BB6E + 1, // Change size of vehCarModel on allocation
     });
 
-    InstallPatch({ 0xFC }, {
+    InstallPatch({ 0x5C, 0x1 }, {
         0x4CDFE0 + 1, // Change size of vehCarModel on SizeOf
     });
 
@@ -3268,18 +3268,20 @@ void vehCarModelFeatureHandler::Install() {
 
     ConfigValue<bool> cfgEnableSpinningWheels("EnableSpinningWheels", true);
     ConfigValue<bool> cfgPartReflections("ReflectionsOnCarParts", false);
-    ConfigValue<bool> cfgFlashingHeadlights("FlashingHeadlights", true);
+    ConfigValue<bool> cfgHeadlightFlashing("EnableHeadlightFlashing", true);
     ConfigValue<bool> cfgNfsMwStyleTotaledCar("NFSMWStyleTotaledCar", false);
     ConfigValue<int> cfgSirenStyle("SirenStyle", 0);
     ConfigValue<int> cfgHeadlightStyle("HeadlightStyle", 0);
     ConfigValue<float> cfgSirenCycleRate("SirenCycle", 0.25f);
+    ConfigValue<float> cfgHeadlightFlashingSpeed("HeadlightFlashingSpeed", 42.411503f);
 
     vehCarModel::EnableSpinningWheels = cfgEnableSpinningWheels.Get();
-    vehCarModel::EnableFlashingHeadlights = cfgFlashingHeadlights.Get();
+    vehCarModel::EnableHeadlightFlashing = cfgHeadlightFlashing.Get();
     vehCarModel::SirenType = cfgSirenStyle.Get();
     vehCarModel::HeadlightType = cfgHeadlightStyle.Get();
     vehCarModel::SirenCycle = cfgSirenCycleRate.Get();
     vehCarModel::MWStyleTotaledCar = cfgNfsMwStyleTotaledCar.Get();
+    vehCarModel::HeadlightFlashingSpeed = cfgHeadlightFlashingSpeed.Get();
 
     vehCarModel::PartReflections = cfgPartReflections.Get();
     vehCarModel::WheelReflections = vehCarModel::PartReflections;
