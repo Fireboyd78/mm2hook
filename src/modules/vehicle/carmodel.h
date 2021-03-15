@@ -478,7 +478,7 @@ namespace MM2
                 auto headlight0entry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 47);
                 auto headlight1entry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 48);
 
-                if (headlight0entry != nullptr && headlight1entry != nullptr)
+                if (headlight0entry->getHighLOD() != nullptr && headlight1entry->getHighLOD() != nullptr)
                 {
                     this->headlights = new ltLight[2];
                     Matrix34 outMatrix;
