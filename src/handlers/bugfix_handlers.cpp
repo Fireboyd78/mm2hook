@@ -103,6 +103,8 @@ void aiPedestrianHandler::Install() {
 static ConfigValue<bool> cfgPoliceAcademyFunding    ("PoliceAcademyFunding",    true);
 static ConfigValue<float> cfgDefaultSpeedLimit      ("DefaultSpeedLimit",       12.25f);
 static ConfigValue<float> cfgSpeedLimitTolerance    ("SpeedLimitTolerance",     1.125f);
+static ConfigValue<int> cfgMaximumCopsLimit         ("MaximumCopsLimit",        3);
+int maximumNumCops = 3;
 
 void aiPoliceForceHandler::Reset(void) {
     // reset number of cops pursuing player
@@ -154,32 +156,34 @@ BOOL aiPoliceForceHandler::IsPerpDrivingMadly(vehCar *perpCar) {
 
     // ignore perp if they're a cop
     if (!hook::StaticThunk<0x4D1A70>::Call<bool>(vehName)) {
-        if (hook::Thunk<0x53E2A0>::Call<BOOL>(this, perpCar))
-        {
-            float speed = perpCar->getCarSim()->getSpeedMPH();
-            float speedLimit = getSpeedLimit(perpCar) * 2.857142857142857f;
-
-            if (speed > (speedLimit * cfgSpeedLimitTolerance)) {
-                LogFile::Printf(1, "PERP DETECTED!!! He's doing %.4f over the speed limit (~%.4fmph)!\n", (speed - speedLimit), speedLimit);
-                return TRUE;
-            }
-            if (hook::Thunk<0x53E370>::Call<BOOL>(this, perpCar)) {
-                LogFile::Printf(1, "PERP IS DOING DAMAGE TO PROPERTY!");
-                return TRUE;
-            }
-            for (int i = 0; i < 4; i++)
+        if (vehPoliceCarAudio::iNumCopsPursuingPlayer != maximumNumCops || vehPoliceCarAudio::iNumCopsPursuingPlayer == 0) {
+            if (hook::Thunk<0x53E2A0>::Call<BOOL>(this, perpCar))
             {
-                auto wheel = perpCar->getCarSim()->getWheel(i);
+                float speed = perpCar->getCarSim()->getSpeedMPH();
+                float speedLimit = getSpeedLimit(perpCar) * 2.857142857142857f;
 
-                if (fabs(wheel->getRotationRate()) > 40.f && speed < 0.1f) {
-                    LogFile::Printf(1, "PERP IS DOING BURNOUTS!");
+                if (speed > (speedLimit * cfgSpeedLimitTolerance)) {
+                    LogFile::Printf(1, "PERP DETECTED!!! He's doing %.4f over the speed limit (~%.4fmph)!\n", (speed - speedLimit), speedLimit);
                     return TRUE;
                 }
+                if (hook::Thunk<0x53E370>::Call<BOOL>(this, perpCar)) {
+                    LogFile::Printf(1, "PERP IS DOING DAMAGE TO PROPERTY!");
+                    return TRUE;
+                }
+                for (int i = 0; i < 4; i++)
+                {
+                    auto wheel = perpCar->getCarSim()->getWheel(i);
+
+                    if (fabs(wheel->getRotationRate()) > 40.f && speed < 0.1f) {
+                        LogFile::Printf(1, "PERP IS DOING BURNOUTS!");
+                        return TRUE;
+                    }
+                }
             }
-        }
-        if (hook::Thunk<0x53E390>::Call<BOOL>(this, perpCar)) {
-            LogFile::Printf(1, "OFFICER INVOLVED COLLISION WITH PERP!");
-            return TRUE;
+            if (hook::Thunk<0x53E390>::Call<BOOL>(this, perpCar)) {
+                LogFile::Printf(1, "OFFICER INVOLVED COLLISION WITH PERP!");
+                return TRUE;
+            }
         }
     }
 
@@ -194,6 +198,7 @@ void aiPoliceForceHandler::Install() {
         }
     );
 
+    maximumNumCops = cfgMaximumCopsLimit.Get();
     if (cfgPoliceAcademyFunding) {
         // obviously doesn't belong in aiPoliceForceHandler, should either move it or make this a generic "PoliceHandler"
         InstallCallback("aiPoliceOfficer::DetectPerpetrator", "Experimenting with making cops a little smarter about chasing people.",
