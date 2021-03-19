@@ -156,7 +156,7 @@ BOOL aiPoliceForceHandler::IsPerpDrivingMadly(vehCar *perpCar) {
 
     // ignore perp if they're a cop
     if (!hook::StaticThunk<0x4D1A70>::Call<bool>(vehName)) {
-        if (vehPoliceCarAudio::iNumCopsPursuingPlayer != maximumNumCops || vehPoliceCarAudio::iNumCopsPursuingPlayer == 0) {
+        if (vehPoliceCarAudio::iNumCopsPursuingPlayer < maximumNumCops || maximumNumCops <= 0) {
             if (hook::Thunk<0x53E2A0>::Call<BOOL>(this, perpCar))
             {
                 float speed = perpCar->getCarSim()->getSpeedMPH();
