@@ -139,7 +139,23 @@ namespace MM2
         AGE_API void InitBreakable(vehBreakableMgr* manager, const char* basename, const char* breakableName, int geomId, int someId)
                                                             { hook::Thunk<0x4CDC50>::Call<void>(this, manager, basename, breakableName, geomId, someId); }
         AGE_API void InitSirenLight(const char* basename, const char* mtxName, int geomId)
-                                                            { hook::Thunk<0x4CDF60>::Call<void>(this, basename, mtxName, geomId); }
+        {
+            if (this->getGeomSetId() != 0)
+            {
+                auto sirenEntry = lvlInstance::GetGeomTableEntry((this->getGeomSetId() - 1) + geomId);
+
+                if (sirenEntry->getHighLOD() != nullptr)
+                {
+                    auto siren = this->car->getSiren();
+                    Matrix34 outMatrix;
+
+                    GetPivot(outMatrix, basename, mtxName);
+                    this->GetSurfaceColor(sirenEntry->getHighLOD(), &siren->ltLightPool->Color);
+                    siren->AddLight(&Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32), &siren->ltLightPool->Color);
+                }
+            }
+        }
+
         AGE_API void BreakElectrics(Vector3* a1)            { hook::Thunk<0x4CEFE0>::Call<void>(this, a1); }
         AGE_API void ClearDamage()                          { hook::Thunk<0x4CDFF0>::Call<void>(this); }
         AGE_API void EjectOneshot()
@@ -277,7 +293,7 @@ namespace MM2
         {
             int geomSetId = this->getGeomSetId();
             int geomSetIdOffset = geomSetId - 1;
-            float rotationSpeed = vehCarModel::HeadlightFlashingSpeed;
+            float rotationAmount = vehCarModel::HeadlightFlashingSpeed;
 
             ltLight::DrawGlowBegin();
             for (int i = 0; i < 6; i++)
@@ -288,8 +304,8 @@ namespace MM2
 
                 if (rotate)
                 {
-                    this->extraHeadlights[i]->Direction.RotateY(datTimeManager::Seconds * rotationSpeed);
-                    rotationSpeed *= -1.f;
+                    this->extraHeadlights[i]->Direction.RotateY(datTimeManager::Seconds * rotationAmount);
+                    rotationAmount *= -1.f;
                 }
                 else
                 {
@@ -466,6 +482,27 @@ namespace MM2
                 lvlInstance::AddGeom(basename, "headlight7", 0);
                 //gfxForceLVERTEX = 0;
 
+                lvlInstance::AddGeom(basename, "srn4", 0);
+                lvlInstance::AddGeom(basename, "srn5", 0);
+                lvlInstance::AddGeom(basename, "srn6", 0);
+                lvlInstance::AddGeom(basename, "srn7", 0);
+                lvlInstance::AddGeom(basename, "srn8", 0);
+                lvlInstance::AddGeom(basename, "srn9", 0);
+                lvlInstance::AddGeom(basename, "srn10", 0);
+                lvlInstance::AddGeom(basename, "srn11", 0);
+                lvlInstance::AddGeom(basename, "srn12", 0);
+                lvlInstance::AddGeom(basename, "srn13", 0);
+                lvlInstance::AddGeom(basename, "srn14", 0);
+                lvlInstance::AddGeom(basename, "srn15", 0);
+                lvlInstance::AddGeom(basename, "srn16", 0);
+                lvlInstance::AddGeom(basename, "srn17", 0);
+                lvlInstance::AddGeom(basename, "srn18", 0);
+                lvlInstance::AddGeom(basename, "srn19", 0);
+                lvlInstance::AddGeom(basename, "srn20", 0);
+                lvlInstance::AddGeom(basename, "srn21", 0);
+                lvlInstance::AddGeom(basename, "srn22", 0);
+                lvlInstance::AddGeom(basename, "srn23", 0);
+
                 //add variants
                 //supports up to 32 paintjobs
                 for (int i = 0; i < 32; i++)
@@ -521,6 +558,26 @@ namespace MM2
                 InitSirenLight(basename, "srn1", 44);
                 InitSirenLight(basename, "srn2", 45);
                 InitSirenLight(basename, "srn3", 46);
+                InitSirenLight(basename, "srn4", 79);
+                InitSirenLight(basename, "srn5", 80);
+                InitSirenLight(basename, "srn6", 81);
+                InitSirenLight(basename, "srn7", 82);
+                InitSirenLight(basename, "srn8", 83);
+                InitSirenLight(basename, "srn9", 84);
+                InitSirenLight(basename, "srn10", 85);
+                InitSirenLight(basename, "srn11", 86);
+                InitSirenLight(basename, "srn12", 87);
+                InitSirenLight(basename, "srn13", 88);
+                InitSirenLight(basename, "srn14", 89);
+                InitSirenLight(basename, "srn15", 90);
+                InitSirenLight(basename, "srn16", 91);
+                InitSirenLight(basename, "srn17", 92);
+                InitSirenLight(basename, "srn18", 93);
+                InitSirenLight(basename, "srn19", 94);
+                InitSirenLight(basename, "srn20", 95);
+                InitSirenLight(basename, "srn21", 96);
+                InitSirenLight(basename, "srn22", 97);
+                InitSirenLight(basename, "srn23", 98);
             }
 
             //load headlights
@@ -647,7 +704,7 @@ namespace MM2
             InitBreakable(this->genBreakableMgr, basename, "break23", 36, 0);
             InitBreakable(this->genBreakableMgr, basename, "break03", 37, 0);
             
-            int variantGeomId = this->variant + 79;
+            int variantGeomId = this->variant + 99;
             string_buf<16> buffer("variant%d", this->variant);
             InitBreakable(this->genBreakableMgr, basename, buffer, variantGeomId, 0);
 

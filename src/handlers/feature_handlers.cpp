@@ -54,6 +54,7 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<vehTrailerFeatureHandler>("vehTrailer"),
     CreateHandler<vehTrailerInstanceFeatureHandler>("vehTrailerInstance"),
     CreateHandler<vehCableCarInstanceHandler>("vehCableCarInstance"),
+    CreateHandler<vehSirenHandler>("vehSiren"),
 
     CreateHandler<Dialog_NewPlayerHandler>("New player dialog"),
 
@@ -4125,6 +4126,57 @@ void mmArrowHandler::Install()
             }
         );
     }
+}
+
+/*
+    vehSirenHandler
+*/
+
+static ConfigValue<float> cfgSirenRotationSpeed("SirenRotationSpeed", 3.1415927f);
+float rotationAmount = 3.1415927f;
+
+void vehSirenHandler::Update() {
+    auto siren = reinterpret_cast<vehSiren*>(this);
+
+    if (siren->ltLightPool != nullptr && siren->Active) {
+
+        for (int i = 0; i < siren->LightCount; i++)
+        {
+            siren->ltLightPool[i].Direction.RotateY(datTimeManager::Seconds * siren->RotationRate * rotationAmount);
+        }
+    }
+}
+
+void vehSirenHandler::SizeOf() {
+    hook::StaticThunk<0x577360>::Call<vehSiren*>(0x164);
+}
+
+void vehSirenHandler::Install() {
+    rotationAmount = cfgSirenRotationSpeed.Get();
+    InstallCallback("vehSiren::Update", "Use our vehSiren update.",
+        &Update, {
+            cb::call(0x42C920),
+        }
+    );
+
+    InstallCallback("vehSiren::SizeOf", "Change size of vehSiren on vehicle initialization.",
+        &SizeOf, {
+            cb::call(0x42BE30),
+        }
+    );
+
+    //jmp out ltLightPool destructor
+    InstallPatch({ 0xEB }, {
+        0x4D6638,
+    });
+
+    //don't draw Angels siren lights
+    InstallPatch({
+        0xE9, 0xD1, 0x0, 0x0, 0x0,
+        0x90,
+    }, {
+        0x4D68C1,
+    });
 }
 
 #ifndef FEATURES_DECLARED

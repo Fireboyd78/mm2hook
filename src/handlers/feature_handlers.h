@@ -365,3 +365,10 @@ public:
     void SetShape(LPCSTR modelName, LPCSTR dirName, bool useLVertex, MM2::Vector3* a4);
     static void Install();
 };
+
+class vehSirenHandler {
+public:
+    void Update();
+    void SizeOf();
+    static void Install();
+};
