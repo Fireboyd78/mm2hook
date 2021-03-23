@@ -2880,7 +2880,6 @@ void mmPlayerHandler::Update() {
     auto audio = car->getAudio();
     auto siren = car->getSiren();
     auto engine = car->getCarSim()->getEngine();
-    byte *sirenLights = *getPtr<byte*>(this, 0xF4);
 
     //check if we're out of the level
     int playerRoom = car->GetInst()->getRoomId();
@@ -2905,7 +2904,7 @@ void mmPlayerHandler::Update() {
             engine->setCurrentTorque(0.f);
             //play explosion sound if siren is activated
             if (siren != nullptr && siren->Active) {
-                sirenLights[1] = 0;
+                siren->Active = false;
                 audio->StopSiren();
                 PlayExplosion();
             }
@@ -2924,10 +2923,10 @@ void mmPlayerHandler::Reset() {
     auto car = player->getCar();
     auto audio = car->getAudio();
     auto siren = car->getSiren();
-    byte *sirenLights = *getPtr<byte*>(this, 0xF4);
+
     if (siren != nullptr && siren->Active) {
         // deactivate siren lights
-        sirenLights[1] = 0;
+        siren->Active = false;
         // deactivate siren sounds
         audio->StopSiren();
     }
