@@ -46,12 +46,6 @@ public:
     static void Install();
 };
 
-class vehCarBugfixHandler {
-public:
-    void Update();
-    static void Install();
-};
-
 class vehCarModelHandler {
 public:
     static void Install();

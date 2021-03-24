@@ -269,6 +269,9 @@ public:
     void InitCarAudio(LPCSTR a1, int a2);
     const MM2::phBound * GetModelBound(int a1);
 
+    void Mm1StyleTransmission();
+    void Update();
+
     static void Install(void);
 };
 

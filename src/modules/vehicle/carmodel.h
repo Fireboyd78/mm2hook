@@ -503,6 +503,9 @@ namespace MM2
                 lvlInstance::AddGeom(basename, "srn22", 0);
                 lvlInstance::AddGeom(basename, "srn23", 0);
 
+                lvlInstance::AddGeom(basename, "lightbar0", 0);
+                lvlInstance::AddGeom(basename, "lightbar1", 0);
+
                 //add variants
                 //supports up to 32 paintjobs
                 for (int i = 0; i < 32; i++)
@@ -703,8 +706,10 @@ namespace MM2
             InitBreakable(this->genBreakableMgr, basename, "break12", 35, 0);
             InitBreakable(this->genBreakableMgr, basename, "break23", 36, 0);
             InitBreakable(this->genBreakableMgr, basename, "break03", 37, 0);
+            InitBreakable(this->genBreakableMgr, basename, "lightbar0", 99, 1);
+            InitBreakable(this->genBreakableMgr, basename, "lightbar1", 100, 2);
             
-            int variantGeomId = this->variant + 99;
+            int variantGeomId = this->variant + 101;
             string_buf<16> buffer("variant%d", this->variant);
             InitBreakable(this->genBreakableMgr, basename, buffer, variantGeomId, 0);
 

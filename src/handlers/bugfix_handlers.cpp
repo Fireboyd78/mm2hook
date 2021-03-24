@@ -23,7 +23,6 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<mmInterfaceHandler>("mmInterface"),
     CreateHandler<mmPopupHandler>("mmPopupHandler"),
 
-    CreateHandler<vehCarBugfixHandler>("vehCar"),
     CreateHandler<vehCarAudioHandler>("vehCarAudio"),
     CreateHandler<vehCarAudioContainerBugfixHandler>("vehCarAudioContainer bugfixes"),
     CreateHandler<vehCarModelHandler>("vehCarModel"),
@@ -261,68 +260,6 @@ void gfxImageHandler::Install() {
             cb::call(0x401C75),
         }
     );
-}
-
-/*
-    vehCarBugfixHandler
-*/
-static ConfigValue<bool> cfgMm1StyleTransmission("MM1StyleTransmission", false);
-
-void vehCarBugfixHandler::Update() {
-    auto car = reinterpret_cast<vehCar*>(this);
-    auto carsim = car->getCarSim();
-    auto engine = carsim->getEngine();
-    auto drivetrain = carsim->getDrivetrain();
-    auto transmission = carsim->getTransmission();
-    auto curDamage = car->getCarDamage()->getCurDamage();
-    auto maxDamage = car->getCarDamage()->getMaxDamage();
-
-    if (curDamage < maxDamage) {
-        if (transmission->IsAuto()) {
-            if (carsim->getSpeedMPH() >= 1.f && carsim->OnGround()) {
-                if (engine->getThrottleInput() < 0.1f && transmission->getGear() != 1)
-                    engine->setThrottleInput(0.1f);
-            }
-            // activate Handbrake if car goes under 1mph (P gear)
-            if (carsim->getSpeedMPH() < 1.f && engine->getThrottleInput() < 0.1f) {
-                carsim->setHandbrake(1.f);
-            }
-        }
-        if (!transmission->IsAuto()) {
-            if (carsim->getBrake() < 0.1f && carsim->getHandbrake() < 0.1f) {
-                if (engine->getThrottleInput() < 0.1f && transmission->getGear() != 1)
-                    engine->setThrottleInput(0.1f);
-            }
-        }
-    }
-    // setting up this case for crash course
-    // fixes ai cops and opponents have no brakes if they're damaged out
-    if (curDamage >= maxDamage) {
-        carsim->setBrake(1.f);
-    }
-
-    // attach drive train if we just hit throttle
-    // fixes the short delay that happens before the car moves
-    if (engine->getThrottleInput() > 0.f) {
-        drivetrain->Attach();
-    }
-
-    // call original
-    hook::Thunk<0x42C690>::Call<void>(this);
-}
-
-void vehCarBugfixHandler::Install() {
-    if (cfgMm1StyleTransmission.Get()) {
-        InstallVTableHook("vehCar::Update",
-            &Update, {
-                0x5B0BB8,
-            });
-
-        // deactivate auto Handbrake system
-        InstallPatch({ 0xD8, 0x1D, 0x3C, 0x04, 0x5B, 0x00 }, {
-            0x405C81,
-        });
-    }
 }
 
 /*
@@ -575,7 +512,7 @@ void mmGearIndicatorHandler::Draw() {
 }
 
 void mmGearIndicatorHandler::Install() {
-    if (cfgMm1StyleTransmission.Get()) {
+    if (vehCarModel::mm1StyleTransmission) {
         InstallCallback("mmGearIndicatorHandler::Draw", "Adds the unused P gear indicator to the HUD.",
             &Draw, {
                 cb::call(0x431B26),
@@ -1581,7 +1518,7 @@ void vehSemiCarAudioBugfixHandler::SetNon3DParams()
 
 void vehSemiCarAudioBugfixHandler::Install()
 {
-    if (cfgMm1StyleTransmission.Get()) {
+    if (vehCarModel::mm1StyleTransmission) {
         InstallCallback("vehSemiCarAudio::Init", "Fix semi reverse audio.",
             &UpdateReverse, {
                 cb::call(0x4DCB35),
