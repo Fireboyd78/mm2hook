@@ -219,14 +219,22 @@ void aiPoliceForceHandler::Install() {
 */
 
 void aiPoliceOfficerHandler::PerpEscapes(bool a1) {
-    // stop siren lights when perp escapes
+    auto carAudioContainer = *getPtr<vehCarAudioContainer*>(this, 0x268);
+    auto policeCarAudio = carAudioContainer->GetPoliceCarAudioPtr();
+    auto AIMAP = &aiMap::Instance;
+
     $::aiPoliceOfficer::StopSiren(this);
 
-    $::aiPoliceOfficer::PerpEscapes(this, a1);
+    if (policeCarAudio != nullptr && a1)
+        policeCarAudio->PlayExplosion();
+
+    AIMAP->policeForce->UnRegisterCop(*getPtr<vehCar*>(this, 0x14), *getPtr<vehCar*>(this, 0x9774));
+    *getPtr<WORD>(this, 0x977A) = 0;
+    *getPtr<WORD>(this, 0x280) = 3;
 }
 
 void aiPoliceOfficerHandler::Install() {
-    InstallCallback("aiPoliceOfficer::PerpEscapes", "Fixes ai police siren lights being active if perp escaped.",
+    InstallCallback("aiPoliceOfficer::PerpEscapes", "Fixes infinite explosion sounds.",
         &PerpEscapes, {
             cb::call(0x53DD1F),
             cb::call(0x53DE83),
@@ -1193,9 +1201,9 @@ void vehTrailerHandler::Install()
 
 void vehPoliceCarAudioBugfixHandler::Install() {
     // fixes infinite explosion sounds
-    InstallPatch({ 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }, {
+    /*InstallPatch({ 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 }, {
         0x4D4C28,
-    });
+    });*/
 }
 
 /*

@@ -17,6 +17,8 @@ namespace MM2
     public:
         aiPoliceForce(void)                                 DONOTCALL;
         aiPoliceForce(const aiPoliceForce &&)               DONOTCALL;
+
+        AGE_API int UnRegisterCop(vehCar *a1, vehCar *a2)   { return hook::Thunk<0x551040>::Call<int>(this, a1, a2); }
     };
 
     // Lua initialization

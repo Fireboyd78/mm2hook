@@ -14,6 +14,9 @@ namespace MM2
     class vehPoliceCarAudio {
     public:
         static hook::Type<int> iNumCopsPursuingPlayer;
+
+        AGE_API void StopSiren()                          { hook::Thunk<0x4D4C20>::Call<void>(this); }
+        AGE_API void PlayExplosion()                      { hook::Thunk<0x4D4C90>::Call<void>(this); }
     };
 
     // Lua initialization
