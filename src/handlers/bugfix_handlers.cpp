@@ -271,7 +271,7 @@ void vehCarBugfixHandler::Update() {
 
     if (curDamage < maxDamage) {
         if (transmission->IsAuto()) {
-            if (carsim->getSpeedMPH() >= 1.f) {
+            if (carsim->getSpeedMPH() >= 1.f && carsim->OnGround()) {
                 if (engine->getThrottleInput() < 0.1f && transmission->getGear() != 1)
                     engine->setThrottleInput(0.1f);
             }
