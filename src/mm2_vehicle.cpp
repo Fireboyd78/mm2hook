@@ -40,6 +40,7 @@ bool vehCarModel::LeftSignalLightState = false;
 bool vehCarModel::RightSignalLightState = false;
 
 bool vehCarModel::mm1StyleTransmission = false;
+bool vehCarModel::breakableRenderTweak = false;
 
 /*
    vehBreakableMgr

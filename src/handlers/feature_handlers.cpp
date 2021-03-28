@@ -3353,6 +3353,7 @@ void vehCarModelFeatureHandler::Install() {
     ConfigValue<bool> cfgPartReflections("ReflectionsOnCarParts", false);
     ConfigValue<bool> cfgHeadlightFlashing("EnableHeadlightFlashing", true);
     ConfigValue<bool> cfgNfsMwStyleTotaledCar("NFSMWStyleTotaledCar", false);
+    ConfigValue<bool> cfgBreakableRenderTweak("BreakableRenderTweak", false);
     ConfigValue<int> cfgSirenStyle("SirenStyle", 0);
     ConfigValue<int> cfgHeadlightStyle("HeadlightStyle", 0);
     ConfigValue<float> cfgSirenCycleRate("SirenCycle", 0.25f);
@@ -3370,6 +3371,7 @@ void vehCarModelFeatureHandler::Install() {
     vehCarModel::WheelReflections = vehCarModel::PartReflections;
 
     vehCarModel::mm1StyleTransmission = cfgMm1StyleTransmission.Get();
+    vehCarModel::breakableRenderTweak = cfgBreakableRenderTweak.Get();
 }
 
 /*

@@ -34,6 +34,7 @@ namespace MM2
         static bool PartReflections;
         static bool WheelReflections;
         static bool mm1StyleTransmission; //god this is horrible...
+        static bool breakableRenderTweak;
 
         //light states
         static bool HeadlightsState;
@@ -800,9 +801,10 @@ namespace MM2
                     gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
                 }
             }
-            
-            //draw BREAK objects
-            this->genBreakableMgr->Draw(this->carSim->getWorldMatrix(), shaders, lod);
+
+            //draw BREAK objects above the body
+            if (breakableRenderTweak)
+                this->genBreakableMgr->Draw(this->carSim->getWorldMatrix(), shaders, lod);
 
             //setup renderer
             Matrix44::Convert(gfxRenderState::sm_World, this->carSim->getWorldMatrix());
@@ -812,6 +814,10 @@ namespace MM2
             auto bodyModel = mainGeomEntry->getLOD(lod);
             if (bodyModel != nullptr)
                 bodyModel->Draw(shaders);
+
+            //draw BREAK objects below the body
+            if (!breakableRenderTweak)
+                this->genBreakableMgr->Draw(this->carSim->getWorldMatrix(), shaders, lod);
 
             //draw decal
             auto decalModel = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 11)->getLOD(lod);
