@@ -990,7 +990,7 @@ namespace MM2
             //draw plight
             if (lod >= 1)
             {
-                if (vehCar::sm_DrawHeadlights)
+                if (car->IsPlayer() && vehCarModel::HeadlightsState || !car->IsPlayer() && vehCar::sm_DrawHeadlights)
                     //plighton
                     DrawPart(lod, 53, this->carSim->getWorldMatrix(), shaders, vehCarModel::PartReflections);
                 else
