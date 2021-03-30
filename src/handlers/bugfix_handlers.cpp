@@ -25,7 +25,6 @@ static init_handler g_bugfix_handlers[] = {
 
     CreateHandler<vehCarAudioHandler>("vehCarAudio"),
     CreateHandler<vehCarAudioContainerBugfixHandler>("vehCarAudioContainer bugfixes"),
-    CreateHandler<vehCarModelHandler>("vehCarModel"),
     CreateHandler<vehCarDamageHandler>("vehCarDamage"),
     CreateHandler<vehTrailerHandler>("vehTrailer"),
     CreateHandler<vehPoliceCarAudioBugfixHandler>("vehPoliceCarAudio"),
@@ -372,19 +371,6 @@ void vehCarAudioContainerBugfixHandler::Install() {
             cb::call(0x43D562), // mmNetObject::PositionUpdate
         }
     );
-}
-
-/*
-    vehCarModelHandler
-*/
-
-static ConfigValue<int> cfgMaxVehiclePaintjobs("MaxVehiclePaintjobs", 64);
-
-// Fixes gizmo models in cars by initializing 64 variant slots instead of 10
-void vehCarModelHandler::Install() {
-    InstallPatch({ (byte)cfgMaxVehiclePaintjobs }, {
-        0x4CD39E,
-    });
 }
 
 /*

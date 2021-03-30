@@ -46,11 +46,6 @@ public:
     static void Install();
 };
 
-class vehCarModelHandler {
-public:
-    static void Install();
-};
-
 class vehCarAudioHandler {
 public:
     bool IsAirBorne();
