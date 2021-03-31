@@ -103,6 +103,7 @@ static ConfigValue<float> cfgDefaultSpeedLimit      ("DefaultSpeedLimit",       
 static ConfigValue<float> cfgSpeedLimitTolerance    ("SpeedLimitTolerance",     1.125f);
 static ConfigValue<int> cfgMaximumCopsLimit         ("MaximumCopsLimit",        3);
 int maximumNumCops = 3;
+float soundPlayTime = 0.f;
 
 void aiPoliceForceHandler::Reset(void) {
     // reset number of cops pursuing player
@@ -149,6 +150,16 @@ float getSpeedLimit(vehCar *car) {
     return cfgDefaultSpeedLimit;
 }
 
+float hornPlayTime(vehCar *car) {
+    auto carAudio = car->getAudio()->GetCarAudioPtr();
+    auto hornSound = *getPtr<AudSoundBase*>(carAudio, 0x10C);
+
+    if (hornSound->IsPlaying())
+        return soundPlayTime += datTimeManager::Seconds;
+
+    return soundPlayTime = 0.f;
+}
+
 BOOL aiPoliceForceHandler::IsPerpDrivingMadly(vehCar *perpCar) {
     char *vehName = perpCar->getCarDamage()->GetName(); // we can't use vehCarSim because the game forces vpcop to vpmustang99...
 
@@ -180,6 +191,10 @@ BOOL aiPoliceForceHandler::IsPerpDrivingMadly(vehCar *perpCar) {
             }
             if (hook::Thunk<0x53E390>::Call<BOOL>(this, perpCar)) {
                 LogFile::Printf(1, "OFFICER INVOLVED COLLISION WITH PERP!");
+                return TRUE;
+            }
+            if (hornPlayTime(perpCar) > 3.f) {
+                LogFile::Printf(1, "PERP IS SPAMMING HORN!");
                 return TRUE;
             }
         }

@@ -2,6 +2,7 @@
 #include <modules\vehicle.h>
 
 #include "policecaraudio.h"
+#include "caraudio.h"
 
 namespace MM2
 {
@@ -62,6 +63,10 @@ namespace MM2
 
         AGE_API vehPoliceCarAudio * GetPoliceCarAudioPtr() {
             return hook::Thunk<0x4D1790>::Call<vehPoliceCarAudio *>(this);
+        };
+
+        AGE_API vehCarAudio * GetCarAudioPtr() {
+            return hook::Thunk<0x4D1770>::Call<vehCarAudio*>(this);
         };
 
         AGE_API AudImpact * GetAudImpactPtr() {
