@@ -830,7 +830,7 @@ namespace MM2
                     gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
                 }
 
-                decalModel->Draw(shaders);
+                DrawPart(decalModel, this->carSim->getWorldMatrix(), shaders);
 
                 if ((&RSTATE->Data)->AlphaRef != oldAlphaRef2)
                 {
