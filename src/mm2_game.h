@@ -1001,12 +1001,40 @@ namespace MM2
         }
     };
 
+    class mmDashView : public asNode {
+    public:
+        AGE_API void Activate()                     { hook::Thunk<0x430E80>::Call<void>(this); }
+        AGE_API void Deactivate()                   { hook::Thunk<0x430EA0>::Call<void>(this); }
+
+        /*
+            asNode virtuals
+        */
+
+        AGE_API void Reset() override               { hook::Thunk<0x430D90>::Call<void>(this); }
+        AGE_API void Update() override              { hook::Thunk<0x430ED0>::Call<void>(this); }
+        AGE_API void Cull() override                { hook::Thunk<0x430FB0>::Call<void>(this); }
+        AGE_API void FileIO(datParser &parser) override
+                                                    { hook::Thunk<0x4315D0>::Call<void>(this, &parser); }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginExtendClass<mmDashView, asNode>("mmDashView")
+                .addFunction("Activate", &Activate)
+                .addFunction("Deactivate", &Deactivate)
+                .endClass();
+        }
+    };
+
     class mmPlayer : public asNode {
     private:
         byte _buffer[0x23A4];
+
+        AGE_API camCarCS * GetCurrentCameraPtr()             { return hook::Thunk<0x4048E0>::Call<camCarCS*>(this); }
+
     protected:
         hook::Field<0x2C, vehCar> _car;
         hook::Field<0x288, mmHUD> _hud;
+
+        hook::Field<0x2A4, mmDashView> _dashView;
         
         hook::Field<0xE28, mmHudMap *> _hudmap;
         hook::Field<0xE2C, camViewCS *> _camView;
@@ -1028,6 +1056,8 @@ namespace MM2
         inline vehCar * getCar(void) const                  { return _car.ptr(this); }
         inline mmHUD * getHUD(void) const                   { return _hud.ptr(this); }
 
+        inline mmDashView * getDashView(void) const         { return _dashView.ptr(this); }
+
         inline mmHudMap * getHudmap(void) const             { return _hudmap.get(this); }
         inline camViewCS * getCamView(void) const           { return _camView.get(this); }
 
@@ -1045,9 +1075,12 @@ namespace MM2
         inline camCarCS * getPolarCamTwo(void) const        { return _polarCam2.ptr(this); }
         inline camCarCS * getPolarCamThree(void) const      { return _polarCam3.ptr(this); }
 
+        inline camCarCS * getCurrentCameraPtr(void)         { return this->GetCurrentCameraPtr(); }
+
         AGE_API void EnableRegen(bool a1)                   { hook::Thunk<0x406160>::Call<void>(this, a1); }
         AGE_API float FilterSteering(float a1)              { return hook::Thunk<0x404C90>::Call<float>(this, a1); }
         AGE_API bool IsMaxDamaged()                         { return hook::Thunk<0x406140>::Call<bool>(this); }
+        AGE_API bool IsPOV()                                { return hook::Thunk<0x404550>::Call<bool>(this); }
         AGE_API void ResetDamage()                          { hook::Thunk<0x406180>::Call<void>(this); }
         AGE_API void SetCamera(int a1, int a2)              { hook::Thunk<0x404710>::Call<void>(this, a1, a2); }
         AGE_API void SetMPPostCam(Matrix34 *a1, float a2)   { hook::Thunk<0x404460>::Call<void>(this, a1, a2); }

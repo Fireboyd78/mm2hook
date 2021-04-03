@@ -256,6 +256,14 @@ public:
     static void Install();
 };
 
+class mmSingleRoamHandler {
+public:
+    void ResetToNearestLocation();
+    void EscapeDeepWater();
+    void HitWaterHandler();
+    static void Install();
+};
+
 class dgBangerInstanceHandler {
 public:
     void DrawGlow();
