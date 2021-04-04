@@ -35,6 +35,7 @@ public:
 class aiPoliceOfficerHandler {
 public:
     void PerpEscapes(bool a1);
+    void Update();
 
     static void Install();
 };

@@ -246,15 +246,43 @@ void aiPoliceOfficerHandler::PerpEscapes(bool a1) {
     *getPtr<WORD>(this, 0x280) = 3;
 }
 
+void aiPoliceOfficerHandler::Update() {
+    auto policeOfficer = reinterpret_cast<aiPoliceOfficer*>(this);
+    auto vehiclePhysics = policeOfficer->getVehiclePhysics();
+    auto car = vehiclePhysics->getCar();
+    auto carsim = car->getCarSim();
+    auto carPos = car->getModel()->GetPosition();
+
+    if (*getPtr<WORD>(this, 0x977A) != 12) {
+        if (((*(float*)&lvlLevel::Singleton + 0x44) * carPos.Y) < carsim->getWorldMatrix()->m31) {
+            PerpEscapes(0);
+            *getPtr<WORD>(this, 0x977A) = 12;
+        }
+    }
+    
+    //call original
+    hook::Thunk<0x53DC70>::Call<void>(this);
+}
+
 void aiPoliceOfficerHandler::Install() {
     InstallCallback("aiPoliceOfficer::PerpEscapes", "Fixes infinite explosion sounds.",
         &PerpEscapes, {
-            cb::call(0x53DD1F),
             cb::call(0x53DE83),
             cb::call(0x53DE9F),
             cb::call(0x53DEC1),
         }
     );
+
+    InstallCallback("aiPoliceOfficer::Update", "Fixes ai cops being disabled when they jump over water areas.",
+        &Update, {
+            cb::call(0x537265),
+        }
+    );
+
+    //remove Angels water check
+    InstallPatch({ 0xEB }, {
+        0x53DD19
+    });
 }
 
 /*

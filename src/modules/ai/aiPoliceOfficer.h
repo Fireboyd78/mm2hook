@@ -21,6 +21,10 @@ namespace MM2
     public:
         aiPoliceOfficer(void)                               DONOTCALL;
         aiPoliceOfficer(const aiPoliceOfficer &&)           DONOTCALL;
+
+        inline aiVehiclePhysics * getVehiclePhysics() {
+            return &this->physics;
+        }
     };
 
     ASSERT_SIZEOF(aiPoliceOfficer, 0x9870);
