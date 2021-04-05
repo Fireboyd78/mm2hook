@@ -507,6 +507,11 @@ namespace MM2
                 lvlInstance::AddGeom(basename, "lightbar0", 0);
                 lvlInstance::AddGeom(basename, "lightbar1", 0);
 
+                //gfxForceLVERTEX = 1;
+                lvlInstance::AddGeom(basename, "tslight0", 0);
+                lvlInstance::AddGeom(basename, "tslight1", 0);
+                //gfxForceLVERTEX = 0;
+
                 //add variants
                 //supports up to 32 paintjobs
                 for (int i = 0; i < 32; i++)
@@ -710,7 +715,7 @@ namespace MM2
             InitBreakable(this->genBreakableMgr, basename, "lightbar0", 99, 1);
             InitBreakable(this->genBreakableMgr, basename, "lightbar1", 100, 2);
             
-            int variantGeomId = this->variant + 101;
+            int variantGeomId = this->variant + 103;
             string_buf<16> buffer("variant%d", this->variant);
             InitBreakable(this->genBreakableMgr, basename, buffer, variantGeomId, 0);
 
@@ -1216,6 +1221,10 @@ namespace MM2
             modStatic* slight0 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 5)->getHighestLOD();
             modStatic* slight1 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 6)->getHighestLOD();
 
+            //draw brake signals
+            modStatic* tslight0 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 101)->getHighestLOD();
+            modStatic* tslight1 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 102)->getHighestLOD();
+
             //check signal clock
             bool drawSignal = fmod(datTimeManager::ElapsedTime, 1.f) > 0.5f;
 
@@ -1224,10 +1233,58 @@ namespace MM2
                 if (LeftSignalLightState || HazardLightsState) {
                     if (slight0 != nullptr)
                         slight0->Draw(shaders);
+                    if (tslight0 != nullptr)
+                        tslight0->Draw(shaders);
                 }
                 if (RightSignalLightState || HazardLightsState) {
                     if (slight1 != nullptr)
                         slight1->Draw(shaders);
+                    if (tslight1 != nullptr)
+                        tslight1->Draw(shaders);
+                }
+            }
+
+            //draw brake signals for player
+            if (car->IsPlayer()) {
+                if (!LeftSignalLightState && !HazardLightsState) {
+                    if (tslight0 != nullptr) {
+                        //draw brake copy
+                        if (carsim->getBrake() > 0.1)
+                            tslight0->Draw(shaders);
+                        //draw headlight copy
+                        if (vehCarModel::HeadlightsState)
+                            tslight0->Draw(shaders);
+                    }
+                }
+                if (!RightSignalLightState && !HazardLightsState) {
+                    if (tslight1 != nullptr) {
+                        //draw brake copy
+                        if (carsim->getBrake() > 0.1)
+                            tslight1->Draw(shaders);
+                        //draw headlight copy
+                        if (vehCarModel::HeadlightsState)
+                            tslight1->Draw(shaders);
+                    }
+                }
+            }
+
+            //draw brake signals for cops and opponents
+            if (!car->IsPlayer()) {
+                if (tslight0 != nullptr) {
+                    //draw brake copy
+                    if (carsim->getBrake() > 0.1)
+                        tslight0->Draw(shaders);
+                    //draw headlight copy
+                    if (vehCar::sm_DrawHeadlights)
+                        tslight0->Draw(shaders);
+                }
+                if (tslight1 != nullptr) {
+                    //draw brake copy
+                    if (carsim->getBrake() > 0.1)
+                        tslight1->Draw(shaders);
+                    //draw headlight copy
+                    if (vehCar::sm_DrawHeadlights)
+                        tslight1->Draw(shaders);
                 }
             }
 

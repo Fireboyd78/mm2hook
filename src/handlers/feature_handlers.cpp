@@ -3816,6 +3816,8 @@ void aiVehicleInstanceFeatureHandler::DrawGlow() {
     modStatic* slight0 = lvlInstance::GetGeomTableEntry(geomID + 4)->getHighestLOD();
     modStatic* slight1 = lvlInstance::GetGeomTableEntry(geomID + 5)->getHighestLOD();
     modStatic* blight = lvlInstance::GetGeomTableEntry(geomID + 18)->getHighestLOD();
+    modStatic* tslight0 = lvlInstance::GetGeomTableEntry(geomID + 21)->getHighestLOD();
+    modStatic* tslight1 = lvlInstance::GetGeomTableEntry(geomID + 22)->getHighestLOD();
 
     //get lights stuff
     int *activate = *getPtr<int*>(this, 0x14);
@@ -3845,12 +3847,37 @@ void aiVehicleInstanceFeatureHandler::DrawGlow() {
         if ((aiVehicleManager::SignalClock + signalDelayTime) & 8) {
             if (slight0 != nullptr)
                 slight0->Draw(shaders);
+            if (tslight0 != nullptr)
+                tslight0->Draw(shaders);
         }
     }
+    else {
+        if (tslight0 != nullptr) {
+            //draw brake copy
+            if (brake < 0.f || speed == 0.f)
+                tslight0->Draw(shaders);
+            //draw headlight copy
+            if (aiMap::Instance->drawHeadlights)
+                tslight0->Draw(shaders);
+        }
+    }
+
     if (toggleSignal & 2) {
         if ((aiVehicleManager::SignalClock + signalDelayTime) & 8) {
             if (slight1 != nullptr)
                 slight1->Draw(shaders);
+            if (tslight1 != nullptr)
+                tslight1->Draw(shaders);
+        }
+    }
+    else {
+        if (tslight1 != nullptr) {
+            //draw brake copy
+            if (brake < 0.f || speed == 0.f)
+                tslight1->Draw(shaders);
+            //draw headlight copy
+            if (aiMap::Instance->drawHeadlights)
+                tslight1->Draw(shaders);
         }
     }
 
@@ -3902,6 +3929,8 @@ void aiVehicleInstanceFeatureHandler::AddGeomHook(const char* pkgName, const cha
     hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "blight", flags);
     hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "plighton", flags);
     hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "plightoff", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "tslight0", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "tslight1", flags);
 }
 
 static ConfigValue<int> cfgAmbientHeadlightStyle ("AmbientHeadlightStyle", 0);
@@ -4134,6 +4163,8 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
     modStatic* slight1 = lvlInstance::GetGeomTableEntry(geomSet + 12)->getHighestLOD();
     modStatic* siren0 = lvlInstance::GetGeomTableEntry(geomSet + 13)->getHighestLOD();
     modStatic* siren1 = lvlInstance::GetGeomTableEntry(geomSet + 14)->getHighestLOD();
+    modStatic* tslight0 = lvlInstance::GetGeomTableEntry(geomSet + 23)->getHighestLOD();
+    modStatic* tslight1 = lvlInstance::GetGeomTableEntry(geomSet + 24)->getHighestLOD();
 
     if (cfgMm1StyleTransmission.Get()) {
         auto throttle = carsim->getEngine()->getThrottleInput();
@@ -4188,10 +4219,40 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
         if (vehCarModel::LeftSignalLightState || vehCarModel::HazardLightsState) {
             if (slight0 != nullptr)
                 slight0->Draw(shaders);
+            if (tslight0 != nullptr)
+                tslight0->Draw(shaders);
         }
         if (vehCarModel::RightSignalLightState || vehCarModel::HazardLightsState) {
             if (slight1 != nullptr)
                 slight1->Draw(shaders);
+            if (tslight1 != nullptr)
+                tslight1->Draw(shaders);
+        }
+    }
+
+    if (!vehCarModel::LeftSignalLightState && !vehCarModel::HazardLightsState) {
+        if (tslight0 != nullptr) {
+            //draw night copy
+            if (vehCarModel::HeadlightsState)
+                tslight0->Draw(shaders);
+
+            //draw brake input copy
+            if (brakeInput > 0.1) {
+                tslight0->Draw(shaders);
+            }
+        }
+    }
+
+    if (!vehCarModel::RightSignalLightState && !vehCarModel::HazardLightsState) {
+        if (tslight1 != nullptr) {
+            //draw night copy
+            if (vehCarModel::HeadlightsState)
+                tslight1->Draw(shaders);
+
+            //draw brake input copy
+            if (brakeInput > 0.1) {
+                tslight1->Draw(shaders);
+            }
         }
     }
 
@@ -4231,6 +4292,8 @@ void vehTrailerInstanceFeatureHandler::AddGeomHook(const char* pkgName, const ch
     hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "tswhl3", flags);
     hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "tswhl4", flags);
     hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "tswhl5", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "tslight0", flags);
+    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "tslight1", flags);
 }
 
 void vehTrailerInstanceFeatureHandler::Install() {
