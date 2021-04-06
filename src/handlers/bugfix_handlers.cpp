@@ -29,7 +29,7 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<vehTrailerHandler>("vehTrailer"),
     CreateHandler<vehPoliceCarAudioBugfixHandler>("vehPoliceCarAudio"),
     CreateHandler<vehSemiCarAudioBugfixHandler>("vehSemiCarAudio"),
-    CreateHandler<mmDashViewBugfixHandler>("mmDashViewBugfix"),
+    CreateHandler<mmViewMgrBugfixHandler>("mmViewMgr"),
     CreateHandler<mmPlayerBugfixHandler>("mmPlayer"),
     CreateHandler<mmGearIndicatorHandler>("mmGearIndicator"),
     CreateHandler<mmSpeedIndicatorHandler>("mmSpeedIndicator"),
@@ -1294,26 +1294,30 @@ void modShaderHandler::Install()
 }
 
 /*
-    mmDashViewBugfixHandler
+    mmViewMgrBugfixHandler
 */
 
-void mmDashViewBugfixHandler::Init(char *basename, mmPlayer *a2)
+void mmViewMgrBugfixHandler::SetViewSetting(int a1)
 {
+    mmGameManager* mgr = mmGameManager::Instance;
+    auto player = mgr->getGame()->getPlayer();
+    auto basename = player->getCar()->getCarDamage()->GetName();
+
     //check if dashboard model is missing
     string_buf<80> buffer("%s_dash", basename);
     if (!datAssetManager::Exists("geometry", buffer, "pkg"))
-        basename = "vpcaddie"; //set vpcaddie's dash as a default dashboard
+        return;
 
     //call original
-    hook::Thunk<0x430890>::Call<void>(this, basename, a2);
+    hook::Thunk<0x431D10>::Call<void>(this, a1);
 }
 
-void mmDashViewBugfixHandler::Install()
+void mmViewMgrBugfixHandler::Install()
 {
     if (cfgMissingDashboardFix.Get()) {
-        InstallCallback("mmDashView::Init", "Fixes missing dashboard",
-            &Init, {
-                cb::call(0x42D60B),
+        InstallCallback("mmViewMgr::SetViewSetting", "Disables the dashboard view camera if a dashboard model is missing.",
+            &SetViewSetting, {
+                cb::call(0x41489A),
             }
         );
     }

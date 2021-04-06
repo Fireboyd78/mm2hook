@@ -230,9 +230,9 @@ public:
     static void Install();
 };
 
-class mmDashViewBugfixHandler {
+class mmViewMgrBugfixHandler {
 public:
-    void Init(char *basename, MM2::mmPlayer *a2);
+    void SetViewSetting(int a1);
     static void Install();
 };
 

@@ -2773,10 +2773,12 @@ void PUMainHandler::Install() {
 */
 static ConfigValue<bool> cfgEnableOutOfMapFix("OutOfMapFix", true);
 static ConfigValue<bool> cfgEnableWaterSplashSound("WaterSplashSound", true);
-static ConfigValue<bool> cfgEnableExplosionSound("ExplosionSound", false);
+static ConfigValue<bool> cfgEnableExplosionSound("ExplosionSound", true);
+static ConfigValue<bool> cfgEnableMissingDashboardFix("MissingDashboardFix", true);
 bool enableOutOfMapFixCached = true;
 bool enableWaterSplashSoundCached = true;
-bool enableExplosionSoundCached = false;
+bool enableExplosionSoundCached = true;
+bool enableMissingDashboardFixCached = true;
 
 void mmPlayerHandler::Zoink() {
     Warningf("Player is out of the world, teleporting!");
@@ -2887,6 +2889,7 @@ void mmPlayerHandler::Update() {
     auto audio = car->getAudio();
     auto siren = car->getSiren();
     auto engine = car->getCarSim()->getEngine();
+    auto basename = player->getCar()->getCarDamage()->GetName();
 
     //check if we're out of the level
     int playerRoom = car->GetInst()->getRoomId();
@@ -2918,6 +2921,17 @@ void mmPlayerHandler::Update() {
         }
         if (!player->IsMaxDamaged()) {
             audio->SilenceEngine(0);
+        }
+    }
+
+    //check if dashboard model is missing
+    if (enableMissingDashboardFixCached) {
+        string_buf<80> buffer("%s_dash", basename);
+        if (!datAssetManager::Exists("geometry", buffer, "pkg")) {
+            if (MMSTATE->ShowDash) {
+                player->getHUD()->DeactivateDash();
+                player->getCamView()->SetCam(player->getPovCam());
+            }
         }
     }
 
@@ -2953,9 +2967,10 @@ void mmPlayerHandler::Install() {
     enableOutOfMapFixCached = cfgEnableOutOfMapFix.Get();
     enableWaterSplashSoundCached = cfgEnableWaterSplashSound.Get();
     enableExplosionSoundCached = cfgEnableExplosionSound.Get();
+    enableMissingDashboardFixCached = cfgEnableMissingDashboardFix.Get();
 
     if (enableOutOfMapFixCached || enableWaterSplashSoundCached ||
-        enableExplosionSoundCached) {
+        enableExplosionSoundCached || enableMissingDashboardFixCached) {
         InstallVTableHook("mmPlayer::Update",
             &Update, {
                 0x5B03BC
