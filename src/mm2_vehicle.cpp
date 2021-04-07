@@ -46,3 +46,8 @@ bool vehCarModel::breakableRenderTweak = false;
    vehBreakableMgr
 */
 bool vehBreakableMgr::EnableReflections = false;
+
+/*
+    vehSiren
+*/
+float vehSiren::SirenRotationSpeed = 3.1415927f;

@@ -14,6 +14,8 @@ namespace MM2
     class vehSiren
     {
     public:
+        static float SirenRotationSpeed;
+    public:
         bool HasLights;
         bool Active;
         int LightCount;
@@ -97,7 +99,19 @@ namespace MM2
             this->Active = false;
         }
 
-        AGE_API void Update()                        { hook::Thunk<0x4D6830>::Call<void>(this); }
+        AGE_API void Update()
+        {
+            float rotationAmount = vehSiren::SirenRotationSpeed;
+
+            if (this->ltLightPool != nullptr && this->Active)
+            {
+                for (int i = 0; i < this->LightCount; i++)
+                {
+                    this->ltLightPool[i].Direction.RotateY(datTimeManager::Seconds * this->RotationRate * rotationAmount);
+                }
+            }
+        }
+
         AGE_API void Draw(Matrix34* a1)
         {
             if (this->ltLightPool == nullptr)

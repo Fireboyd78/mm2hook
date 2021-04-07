@@ -4488,19 +4488,9 @@ void mmArrowHandler::Install()
     vehSirenHandler
 */
 
-static ConfigValue<float> cfgSirenRotationSpeed("SirenRotationSpeed", 3.1415927f);
-float rotationAmount = 3.1415927f;
-
 void vehSirenHandler::Update() {
     auto siren = reinterpret_cast<vehSiren*>(this);
-
-    if (siren->ltLightPool != nullptr && siren->Active) {
-
-        for (int i = 0; i < siren->LightCount; i++)
-        {
-            siren->ltLightPool[i].Direction.RotateY(datTimeManager::Seconds * siren->RotationRate * rotationAmount);
-        }
-    }
+    siren->vehSiren::Update();
 }
 
 void vehSirenHandler::Reset() {
@@ -4513,7 +4503,6 @@ void vehSirenHandler::SizeOf() {
 }
 
 void vehSirenHandler::Install() {
-    rotationAmount = cfgSirenRotationSpeed.Get();
     InstallCallback("vehSiren::Update", "Use our vehSiren update.",
         &Update, {
             cb::call(0x42C920),
@@ -4544,6 +4533,10 @@ void vehSirenHandler::Install() {
     }, {
         0x4D68C1,
     });
+
+    ConfigValue<float> cfgSirenRotationSpeed("SirenRotationSpeed", 3.1415927f);
+
+    vehSiren::SirenRotationSpeed = cfgSirenRotationSpeed.Get();
 }
 
 #ifndef FEATURES_DECLARED
