@@ -1002,7 +1002,15 @@ namespace MM2
     };
 
     class mmDashView : public asNode {
+    private:
+        byte _buffer[0x6C0];
+    protected:
+        hook::Field<0x80, mmPlayer> _player;
     public:
+        inline mmPlayer * getPlayer(void) const {
+            return _player.ptr(this);
+        };
+
         AGE_API void Activate()                     { hook::Thunk<0x430E80>::Call<void>(this); }
         AGE_API void Deactivate()                   { hook::Thunk<0x430EA0>::Call<void>(this); }
 
@@ -1023,6 +1031,7 @@ namespace MM2
                 .endClass();
         }
     };
+    ASSERT_SIZEOF(mmDashView, 0x6DC);
 
     class mmPlayer : public asNode {
     private:

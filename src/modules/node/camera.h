@@ -154,6 +154,10 @@ namespace MM2
         vehCar *car;
         int unk_10C; // one of: -1, 0, 1?
     public:
+        inline vehCar * getCar(void) const {
+            return this->car;
+        }
+
         AGE_API camCarCS(void) {
             scoped_vtable x(this);
             hook::Thunk<0x521470>::Call<void>(this);
