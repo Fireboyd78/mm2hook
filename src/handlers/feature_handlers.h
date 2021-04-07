@@ -81,6 +81,7 @@ public:
 class vehPoliceCarAudioHandler {
 public:
     void InitSirenAudio(MM2::vehCarSim *a1, MM2::vehCarDamage *a2, LPCSTR basename, LPCSTR sirenCsvFile, bool a5);
+    void Reset();
     static void Install();
 };
 
@@ -380,6 +381,7 @@ public:
 class vehSirenHandler {
 public:
     void Update();
+    void Reset();
     void SizeOf();
     static void Install();
 };

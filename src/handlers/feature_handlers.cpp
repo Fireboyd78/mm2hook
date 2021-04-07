@@ -1252,7 +1252,6 @@ void vehCarAudioContainerHandler::Install() {
     );
 }
 
-
 /*
     vehPoliceCarAudioHandler
 */
@@ -1268,10 +1267,24 @@ void vehPoliceCarAudioHandler::InitSirenAudio(vehCarSim *a1, vehCarDamage *a2, L
     hook::Thunk<0x4D46F0>::Call<void>(this, a1, a2, basename, sirenCsvFile, a5);
 }
 
+void vehPoliceCarAudioHandler::Reset() {
+    auto policeAudio = reinterpret_cast<vehPoliceCarAudio*>(this);
+    policeAudio->StopSiren();
+
+    //call original
+    hook::Thunk<0x4D5290>::Call<void>(this);
+}
+
 void vehPoliceCarAudioHandler::Install() {
     InstallCallback("vehPoliceCarAudio::Init", "Allows vehicles to use their own custom sirens instead of default ones for each city.",
         &InitSirenAudio, {
             cb::call(0x4D44A3),
+        }
+    );
+
+    InstallCallback("vehPoliceCarAudio::Reset", "Deactivates siren sounds upon reset.",
+        &Reset, {
+            cb::call(0x4D19D6),
         }
     );
 }
@@ -2940,18 +2953,6 @@ void mmPlayerHandler::Update() {
 }
 
 void mmPlayerHandler::Reset() {
-    auto player = reinterpret_cast<mmPlayer*>(this);
-    auto car = player->getCar();
-    auto audio = car->getAudio();
-    auto siren = car->getSiren();
-
-    if (siren != nullptr && siren->Active) {
-        // deactivate siren lights
-        siren->Active = false;
-        // deactivate siren sounds
-        audio->StopSiren();
-    }
-
     // deactivate signal lights if they're active
     vehCarModel::HazardLightsState = false;
     vehCarModel::LeftSignalLightState = false;
@@ -4502,6 +4503,11 @@ void vehSirenHandler::Update() {
     }
 }
 
+void vehSirenHandler::Reset() {
+    auto siren = reinterpret_cast<vehSiren*>(this);
+    siren->vehSiren::Reset();
+}
+
 void vehSirenHandler::SizeOf() {
     hook::StaticThunk<0x577360>::Call<vehSiren*>(0x164);
 }
@@ -4511,6 +4517,12 @@ void vehSirenHandler::Install() {
     InstallCallback("vehSiren::Update", "Use our vehSiren update.",
         &Update, {
             cb::call(0x42C920),
+        }
+    );
+
+    InstallCallback("vehSiren::Reset", "Deactivates siren lights upon reset.",
+        &Reset, {
+            cb::call(0x42C3A6),
         }
     );
 

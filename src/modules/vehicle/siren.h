@@ -92,7 +92,11 @@ namespace MM2
             return false;
         }
 
-        AGE_API void Reset()                         { hook::Thunk<0x4D6820>::Call<void>(this); }
+        AGE_API void Reset()
+        {
+            this->Active = false;
+        }
+
         AGE_API void Update()                        { hook::Thunk<0x4D6830>::Call<void>(this); }
         AGE_API void Draw(Matrix34* a1)
         {
