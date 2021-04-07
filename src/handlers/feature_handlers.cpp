@@ -2962,6 +2962,7 @@ void mmPlayerHandler::Reset() {
 }
 
 static ConfigValue<bool> cfgAmbientSoundsWithMusic ("AmbientSoundsWithMusic", true);
+static ConfigValue<bool> cfgEnableModelVisibility ("ModelVisibility", false);
 
 void mmPlayerHandler::Install() {
     enableOutOfMapFixCached = cfgEnableOutOfMapFix.Get();
@@ -2988,6 +2989,12 @@ void mmPlayerHandler::Install() {
             0x5B03C0,
         }
     );
+
+    if (cfgEnableModelVisibility.Get()) {
+        InstallPatch("Enables vehicle's body visibility from the dashboard and bumper camera.", { 0x90, 0x90, 0x90 }, {
+            0x405ED4,
+        });
+    }
 }
 
 /*
