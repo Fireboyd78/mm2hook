@@ -151,8 +151,8 @@ namespace MM2
                     Matrix34 outMatrix;
 
                     GetPivot(outMatrix, basename, mtxName);
-                    this->GetSurfaceColor(sirenEntry->getHighLOD(), &siren->ltLightPool->Color);
-                    siren->AddLight(&Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32), &siren->ltLightPool->Color);
+                    this->GetSurfaceColor(sirenEntry->getHighLOD(), &siren->ltLightPool[siren->LightCount].Color);
+                    siren->AddLight(&Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32), &siren->ltLightPool[siren->LightCount].Color);
                 }
             }
         }
