@@ -15,6 +15,7 @@ namespace MM2
     {
     public:
         static float SirenRotationSpeed;
+        static int SirenLightStyle;
     public:
         bool HasLights;
         bool Active;

@@ -512,11 +512,14 @@ void gfxPipelineHandler::gfxApplySettings(void) {
 }
 
 static bool g_bConsoleOpen = false;
+bool sirenSoundState = false;
 
 int HeadlightsToggleKey = 76;
 int HazardLightsToggleKey = 189;
 int LeftTurnSignalToggleKey = 188;
 int RightTurnSignalToggleKey = 190;
+int SirenLightStyleToggleKey = 75;
+int SirenSoundToggleKey = 74;
 
 bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
 {
@@ -616,6 +619,51 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
                 vehCarModel::RightSignalLightState = !vehCarModel::RightSignalLightState;
                 vehCarModel::HazardLightsState = false;
                 vehCarModel::LeftSignalLightState = false;
+            }
+        }
+        return true;
+    }
+
+    if (vKey == SirenLightStyleToggleKey) {
+        mmGameManager* mgr = mmGameManager::Instance;
+        auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
+        auto popup = gamePtr->getPopup();
+        auto siren = gamePtr->getPlayer()->getCar()->getSiren();
+
+        if (gamePtr != NULL && popup != NULL) {
+            if (!popup->IsEnabled()) {
+                // toggle siren light styles
+                if (siren != nullptr && siren->HasLights) {
+                    siren->Active = true;
+                    ++vehSiren::SirenLightStyle;
+                    if (vehSiren::SirenLightStyle >= 4) {
+                        vehSiren::SirenLightStyle = 0;
+                        siren->Active = false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    if (vKey == SirenSoundToggleKey) {
+        mmGameManager* mgr = mmGameManager::Instance;
+        auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
+        auto popup = gamePtr->getPopup();
+        auto audio = gamePtr->getPlayer()->getCar()->getAudio();
+        auto policeAudio = audio->GetPoliceCarAudioPtr();
+
+        if (gamePtr != NULL && popup != NULL) {
+            if (!popup->IsEnabled()) {
+                if (policeAudio != nullptr) {
+                    // toggle siren sounds
+                    sirenSoundState = !sirenSoundState;
+
+                    if (sirenSoundState)
+                        policeAudio->StartSiren(0);
+                    else
+                        policeAudio->StopSiren();
+                }
             }
         }
         return true;
@@ -927,11 +975,15 @@ void gfxPipelineHandler::Install() {
     ConfigValue<int> cfgHazardLightsToggleKey("HazardLightsToggleKey", 189);
     ConfigValue<int> cfgLeftTurnSignalToggleKey("LeftTurnSignalToggleKey", 188);
     ConfigValue<int> cfgRightTurnSignalToggleKey("RightTurnSignalToggleKey", 190);
+    ConfigValue<int> cfgSirenLightStyleToggleKey("SirenLightStyleToggleKey", 75);
+    ConfigValue<int> cfgSirenSoundToggleKey("SirenSoundToggleKey", 74);
 
     HeadlightsToggleKey = cfgHeadlightsToggleKey.Get();
     HazardLightsToggleKey = cfgHazardLightsToggleKey.Get();
     LeftTurnSignalToggleKey = cfgLeftTurnSignalToggleKey.Get();
     RightTurnSignalToggleKey = cfgRightTurnSignalToggleKey.Get();
+    SirenLightStyleToggleKey = cfgSirenLightStyleToggleKey.Get();
+    SirenSoundToggleKey = cfgSirenSoundToggleKey.Get();
 }
 
 /*
@@ -2957,6 +3009,9 @@ void mmPlayerHandler::Reset() {
     vehCarModel::HazardLightsState = false;
     vehCarModel::LeftSignalLightState = false;
     vehCarModel::RightSignalLightState = false;
+
+    // reset siren light style
+    vehSiren::SirenLightStyle = 0;
 
     // call original
     hook::Thunk<0x404A60>::Call<void>(this);

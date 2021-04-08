@@ -1377,7 +1377,7 @@ namespace MM2
                 }
             }
 
-            if (vehCarModel::SirenType < 3) {
+            if (vehCarModel::SirenType < 3 && !car->IsPlayer()) {
                 if (vehCarModel::SirenType == 0 || vehCarModel::SirenType == 2) {
                     //MM2 siren
                     if (siren != nullptr && siren->HasLights && siren->Active)
@@ -1386,6 +1386,31 @@ namespace MM2
                     }
                 }
                 if (vehCarModel::SirenType == 1 || vehCarModel::SirenType == 2) {
+                    //MM1 siren
+                    Matrix44::Convert(gfxRenderState::sm_World, this->carSim->getWorldMatrix());
+                    gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
+
+                    if (siren != nullptr && siren->Active) {
+                        int sirenStage = fmod(datTimeManager::ElapsedTime, 2 * vehCarModel::SirenCycle) >= vehCarModel::SirenCycle ? 1 : 0;
+                        if (sirenStage == 0 && siren0 != nullptr) {
+                            siren0->Draw(shaders);
+                        }
+                        else if (sirenStage == 1 && siren1 != nullptr) {
+                            siren1->Draw(shaders);
+                        }
+                    }
+                }
+            }
+
+            if (car->IsPlayer()) {
+                if (vehSiren::SirenLightStyle >= 0 && vehSiren::SirenLightStyle < 3) {
+                    //MM2 siren
+                    if (siren != nullptr && siren->HasLights && siren->Active)
+                    {
+                        siren->Draw(this->carSim->getWorldMatrix());
+                    }
+                }
+                if (vehSiren::SirenLightStyle >= 0 && vehSiren::SirenLightStyle != 2) {
                     //MM1 siren
                     Matrix44::Convert(gfxRenderState::sm_World, this->carSim->getWorldMatrix());
                     gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
