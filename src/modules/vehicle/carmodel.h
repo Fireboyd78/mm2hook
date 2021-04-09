@@ -1382,15 +1382,7 @@ namespace MM2
                     //MM2 siren
                     if (siren != nullptr && siren->HasLights && siren->Active)
                     {
-                        if (car->IsPlayer()) {
-                            if (vehSiren::SirenLightStyle >= 0 && vehSiren::SirenLightStyle < 3)
-                            {
-                                siren->Draw(this->carSim->getWorldMatrix());
-                            }
-                        }
-                        else {
-                            siren->Draw(this->carSim->getWorldMatrix());
-                        }
+                        siren->Draw(this->carSim->getWorldMatrix());
                     }
                 }
                 if (vehCarModel::SirenType == 1 || vehCarModel::SirenType == 2) {
@@ -1399,26 +1391,12 @@ namespace MM2
                     gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
                     if (siren != nullptr && siren->Active) {
-                        if (car->IsPlayer()) {
-                            if (vehSiren::SirenLightStyle >= 0 && vehSiren::SirenLightStyle != 2)
-                            {
-                                int sirenStage = fmod(datTimeManager::ElapsedTime, 2 * vehCarModel::SirenCycle) >= vehCarModel::SirenCycle ? 1 : 0;
-                                if (sirenStage == 0 && siren0 != nullptr) {
-                                    siren0->Draw(shaders);
-                                }
-                                else if (sirenStage == 1 && siren1 != nullptr) {
-                                    siren1->Draw(shaders);
-                                }
-                            }
+                        int sirenStage = fmod(datTimeManager::ElapsedTime, 2 * vehCarModel::SirenCycle) >= vehCarModel::SirenCycle ? 1 : 0;
+                        if (sirenStage == 0 && siren0 != nullptr) {
+                            siren0->Draw(shaders);
                         }
-                        else {
-                            int sirenStage = fmod(datTimeManager::ElapsedTime, 2 * vehCarModel::SirenCycle) >= vehCarModel::SirenCycle ? 1 : 0;
-                            if (sirenStage == 0 && siren0 != nullptr) {
-                                siren0->Draw(shaders);
-                            }
-                            else if (sirenStage == 1 && siren1 != nullptr) {
-                                siren1->Draw(shaders);
-                            }
+                        else if (sirenStage == 1 && siren1 != nullptr) {
+                            siren1->Draw(shaders);
                         }
                     }
                 }

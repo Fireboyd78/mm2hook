@@ -51,4 +51,3 @@ bool vehBreakableMgr::EnableReflections = false;
     vehSiren
 */
 float vehSiren::SirenRotationSpeed = 3.1415927f;
-int vehSiren::SirenLightStyle = 0;

@@ -518,7 +518,7 @@ int HeadlightsToggleKey = 76;
 int HazardLightsToggleKey = 189;
 int LeftTurnSignalToggleKey = 188;
 int RightTurnSignalToggleKey = 190;
-int SirenLightStyleToggleKey = 75;
+int SirenLightToggleKey = 75;
 int SirenSoundToggleKey = 74;
 
 bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
@@ -624,7 +624,7 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
         return true;
     }
 
-    if (vKey == SirenLightStyleToggleKey) {
+    if (vKey == SirenLightToggleKey) {
         mmGameManager* mgr = mmGameManager::Instance;
         auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
         auto popup = gamePtr->getPopup();
@@ -632,19 +632,9 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
 
         if (gamePtr != NULL && popup != NULL) {
             if (!popup->IsEnabled()) {
-                // toggle siren light styles
+                // toggle siren light
                 if (siren != nullptr && siren->HasLights) {
-                    if (vehCarModel::SirenType == 0 || vehCarModel::SirenType == 1) {
-                        siren->Active = !siren->Active;
-                    }
-                    if (vehCarModel::SirenType == 2) {
-                        siren->Active = true;
-                        ++vehSiren::SirenLightStyle;
-                        if (vehSiren::SirenLightStyle >= 4) {
-                            vehSiren::SirenLightStyle = 0;
-                            siren->Active = false;
-                        }
-                    }
+                    siren->Active = !siren->Active;
                 }
             }
         }
@@ -980,14 +970,14 @@ void gfxPipelineHandler::Install() {
     ConfigValue<int> cfgHazardLightsToggleKey("HazardLightsToggleKey", 189);
     ConfigValue<int> cfgLeftTurnSignalToggleKey("LeftTurnSignalToggleKey", 188);
     ConfigValue<int> cfgRightTurnSignalToggleKey("RightTurnSignalToggleKey", 190);
-    ConfigValue<int> cfgSirenLightStyleToggleKey("SirenLightStyleToggleKey", 75);
+    ConfigValue<int> cfgSirenLightToggleKey("SirenLightToggleKey", 75);
     ConfigValue<int> cfgSirenSoundToggleKey("SirenSoundToggleKey", 74);
 
     HeadlightsToggleKey = cfgHeadlightsToggleKey.Get();
     HazardLightsToggleKey = cfgHazardLightsToggleKey.Get();
     LeftTurnSignalToggleKey = cfgLeftTurnSignalToggleKey.Get();
     RightTurnSignalToggleKey = cfgRightTurnSignalToggleKey.Get();
-    SirenLightStyleToggleKey = cfgSirenLightStyleToggleKey.Get();
+    SirenLightToggleKey = cfgSirenLightToggleKey.Get();
     SirenSoundToggleKey = cfgSirenSoundToggleKey.Get();
 }
 
@@ -3014,9 +3004,6 @@ void mmPlayerHandler::Reset() {
     vehCarModel::HazardLightsState = false;
     vehCarModel::LeftSignalLightState = false;
     vehCarModel::RightSignalLightState = false;
-
-    // reset siren light style
-    vehSiren::SirenLightStyle = 0;
 
     // call original
     hook::Thunk<0x404A60>::Call<void>(this);
