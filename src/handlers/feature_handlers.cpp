@@ -634,11 +634,16 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
             if (!popup->IsEnabled()) {
                 // toggle siren light styles
                 if (siren != nullptr && siren->HasLights) {
-                    siren->Active = true;
-                    ++vehSiren::SirenLightStyle;
-                    if (vehSiren::SirenLightStyle >= 4) {
-                        vehSiren::SirenLightStyle = 0;
-                        siren->Active = false;
+                    if (vehCarModel::SirenType == 0 || vehCarModel::SirenType == 1) {
+                        siren->Active = !siren->Active;
+                    }
+                    if (vehCarModel::SirenType == 2) {
+                        siren->Active = true;
+                        ++vehSiren::SirenLightStyle;
+                        if (vehSiren::SirenLightStyle >= 4) {
+                            vehSiren::SirenLightStyle = 0;
+                            siren->Active = false;
+                        }
                     }
                 }
             }
