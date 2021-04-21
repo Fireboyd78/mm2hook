@@ -239,6 +239,7 @@ namespace MM2
         AGE_API void Lock(void)                             { hook::Thunk<0x42B4F0>::Call<void>(this); };
         AGE_API void Unlock(void)                           { hook::Thunk<0x42B500>::Call<void>(this); };
         AGE_API void ProcessChat(void)                      { hook::Thunk<0x42A400>::Call<void>(this); };
+        AGE_API void ProcessEscape(int a1)                  { hook::Thunk<0x42A320>::Call<void>(this, a1); };
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<mmPopup>("mmPopup")

@@ -25,6 +25,8 @@ namespace MM2
         inline aiVehiclePhysics * getVehiclePhysics() {
             return &this->physics;
         }
+
+        AGE_API void StopSiren()                            { hook::Thunk<0x53DC40>::Call<void>(this); }
     };
 
     ASSERT_SIZEOF(aiPoliceOfficer, 0x9870);

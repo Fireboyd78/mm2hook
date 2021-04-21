@@ -62,8 +62,12 @@ namespace MM2
             return description;
         }
 
-        inline char* GetColors(void) {
+        inline char * GetColors(void) {
             return colors;
+        }
+
+        inline int GetFlags(void) {
+            return flags;
         }
 
         inline unsigned int GetTuningCRC(void) {

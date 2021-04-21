@@ -98,13 +98,6 @@ void aiPedestrianHandler::Install() {
     aiPoliceForceHandler
 */
 
-static ConfigValue<bool> cfgPoliceAcademyFunding    ("PoliceAcademyFunding",    true);
-static ConfigValue<float> cfgDefaultSpeedLimit      ("DefaultSpeedLimit",       12.25f);
-static ConfigValue<float> cfgSpeedLimitTolerance    ("SpeedLimitTolerance",     1.125f);
-static ConfigValue<int> cfgMaximumCopsLimit         ("MaximumCopsLimit",        3);
-int maximumNumCops = 3;
-float soundPlayTime = 0.f;
-
 void aiPoliceForceHandler::Reset(void) {
     // reset number of cops pursuing player
     // fixes incorrect music bug
@@ -113,7 +106,27 @@ void aiPoliceForceHandler::Reset(void) {
     $::aiPoliceForce::Reset(this);
 }
 
-aiVehicle * findVehicle(vehCar *car) {
+void aiPoliceForceHandler::Install() {
+    InstallCallback("aiPoliceForce::Reset", "Resets the number of cops pursuing the player upon reset.",
+        &Reset, {
+            cb::call(0x536AAE),
+            cb::call(0x550ECA),
+        }
+    );
+}
+
+/*
+    aiPoliceOfficerHandler
+*/
+
+static ConfigValue<bool> cfgPoliceAcademyFunding("PoliceAcademyFunding", true);
+static ConfigValue<float> cfgDefaultSpeedLimit("DefaultSpeedLimit", 12.25f);
+static ConfigValue<float> cfgSpeedLimitTolerance("SpeedLimitTolerance", 1.125f);
+static ConfigValue<int> cfgMaximumCopsLimit("MaximumCopsLimit", 3);
+int maximumNumCops = 3;
+float soundPlayTime = 0.f;
+
+aiVehicle* findVehicle(vehCar *car) {
     auto AIMAP = &aiMap::Instance;
 
     // check players
@@ -160,7 +173,7 @@ float hornPlayTime(vehCar *car) {
     return soundPlayTime = 0.f;
 }
 
-BOOL aiPoliceForceHandler::IsPerpDrivingMadly(vehCar *perpCar) {
+BOOL aiPoliceOfficerHandler::IsPerpDrivingMadly(vehCar *perpCar) {
     char *vehName = perpCar->getCarDamage()->GetName(); // we can't use vehCarSim because the game forces vpcop to vpmustang99...
 
     // ignore perp if they're a cop
@@ -203,33 +216,25 @@ BOOL aiPoliceForceHandler::IsPerpDrivingMadly(vehCar *perpCar) {
     return FALSE;
 }
 
-void aiPoliceForceHandler::Install() {
-    InstallCallback("aiPoliceForce::Reset", "Resets the number of cops pursuing the player upon reset.",
-        &Reset, {
-            cb::call(0x536AAE),
-            cb::call(0x550ECA),
-        }
-    );
+BOOL aiPoliceOfficerHandler::IsOppDrivingMadly(vehCar *perpCar) {
+    if (hook::Thunk<0x53E2A0>::Call<BOOL>(this, perpCar))
+    {
+        float speed = perpCar->getCarSim()->getSpeedMPH();
+        float speedLimit = getSpeedLimit(perpCar) * 2.857142857142857f;
 
-    maximumNumCops = cfgMaximumCopsLimit.Get();
-    if (cfgPoliceAcademyFunding) {
-        // obviously doesn't belong in aiPoliceForceHandler, should either move it or make this a generic "PoliceHandler"
-        InstallCallback("aiPoliceOfficer::DetectPerpetrator", "Experimenting with making cops a little smarter about chasing people.",
-            &IsPerpDrivingMadly, {
-                cb::call(0x53E057), // aiPoliceOfficer::Fov
-            }
-        );
+        if (speed > (speedLimit * cfgSpeedLimitTolerance)) {
+            return TRUE;
+        }
+        if (hook::Thunk<0x53E370>::Call<BOOL>(this, perpCar)) {
+            return TRUE;
+        }
+    }
+    if (hook::Thunk<0x53E390>::Call<BOOL>(this, perpCar)) {
+        return TRUE;
     }
 
-    // fix aiPoliceOfficer::Collision
-    InstallPatch({ 0x8B, 0x91, 0xF4, 0x00, 0x00, 0x00 }, {
-        0x53E37E,
-    });
+    return FALSE;
 }
-
-/*
-    aiPoliceOfficerHandler
-*/
 
 void aiPoliceOfficerHandler::PerpEscapes(bool a1) {
     auto carAudioContainer = *getPtr<vehCarAudioContainer*>(this, 0x268);
@@ -254,17 +259,35 @@ void aiPoliceOfficerHandler::Update() {
     auto carPos = car->getModel()->GetPosition();
 
     if (*getPtr<WORD>(this, 0x977A) != 12) {
-        if (((*(float*)&lvlLevel::Singleton + 0x44) * carPos.Y) < carsim->getWorldMatrix()->m31) {
+        if (((*(float*)&lvlLevel::Singleton + 0x44) * carPos.Y) < carsim->getWorldMatrix()->m31 && !carsim->OnGround()) {
             PerpEscapes(0);
             *getPtr<WORD>(this, 0x977A) = 12;
         }
     }
-    
+
+    if (*getPtr<WORD>(this, 0x977A) == 0)
+        *getPtr<WORD>(this, 0x280) = 3;
+
     //call original
     hook::Thunk<0x53DC70>::Call<void>(this);
 }
 
 void aiPoliceOfficerHandler::Install() {
+    maximumNumCops = cfgMaximumCopsLimit.Get();
+    if (cfgPoliceAcademyFunding) {
+        InstallCallback("aiPoliceOfficer::DetectPerpetrator", "Experimenting with making cops a little smarter about chasing people.",
+            &IsPerpDrivingMadly, {
+                cb::call(0x53E057), // aiPoliceOfficer::Fov
+            }
+        );
+
+        InstallCallback("aiPoliceOfficer::DetectPerpetrator", "Experimenting with making cops a little smarter about chasing opponents.",
+            &IsOppDrivingMadly, {
+                cb::call(0x53E11A), // aiPoliceOfficer::Fov
+            }
+        );
+    }
+
     InstallCallback("aiPoliceOfficer::PerpEscapes", "Fixes infinite explosion sounds.",
         &PerpEscapes, {
             cb::call(0x53DE83),
@@ -279,9 +302,19 @@ void aiPoliceOfficerHandler::Install() {
         }
     );
 
-    //remove Angels water check
+    // fix aiPoliceOfficer::Collision
+    InstallPatch({ 0x8B, 0x91, 0xF4, 0x0, 0x0, 0x0 }, {
+        0x53E37E,
+    });
+
+    // remove Angels water check
     InstallPatch({ 0xEB }, {
         0x53DD19
+    });
+
+    // fix cops being freezed when they're away from the player
+    InstallPatch({ 0x75 }, {
+        0x53DF4A
     });
 }
 
@@ -1220,20 +1253,80 @@ void aiGoalAvoidPlayerHandler::Install() {
     aiRouteRacerHandler
 */
 
+static ConfigValue<int> cfgBustedTarget("BustedTarget", 3);
+static ConfigValue<float> cfgBustedMaxSpeed("BustedMaxSpeed", 20.f);
+int aiOppBustedTarget = 3;
+float aiOppBustedMaxSpeed = 20.f;
+float aiOppBustedTimer = 0.f;
+
 void aiRouteRacerHandler::Update() {
     auto opponent = reinterpret_cast<aiRouteRacer*>(this);
 
     if (opponent->Finished())
         *getPtr<int>(this, 0x27C) = 3;
 
+    if (aiOppBustedTarget >= 2) {
+        auto carsim = opponent->getCar()->getCarSim();
+        auto AIMAP = &aiMap::Instance;
+
+        for (int i = 0; i < AIMAP->numCops; i++)
+        {
+            auto police = AIMAP->Police(i);
+            auto car = police->getVehiclePhysics()->getCar();
+
+            auto opponentPos = opponent->getCar()->getModel()->GetPosition();
+            auto policePos = car->getModel()->GetPosition();
+
+            if (*getPtr<WORD>(police, 0x977A) != 0 && *getPtr<WORD>(police, 0x977A) != 12) {
+                if (*getPtr<vehCar*>(police, 0x9774) == opponent->getCar()) {
+                    if (*getPtr<int>(this, 0x27C) != 3) {
+                        if (opponentPos.Dist(policePos) <= 12.5f) {
+                            if (carsim->getSpeedMPH() <= aiOppBustedMaxSpeed) {
+                                aiOppBustedTimer += datTimeManager::Seconds;
+                                if (aiOppBustedTimer > 4.f) {
+                                    *getPtr<int>(this, 0x27C) = 3;
+                                }
+                            }
+                            else {
+                                aiOppBustedTimer = 0.f;
+                            }
+                        }
+                    }
+                    if (*getPtr<int>(this, 0x27C) == 3) {
+                        police->StopSiren();
+                        AIMAP->policeForce->UnRegisterCop(*getPtr<vehCar*>(police, 0x14), *getPtr<vehCar*>(police, 0x9774));
+                        *getPtr<WORD>(police, 0x977A) = 0;
+                        *getPtr<WORD>(police, 0x280) = 3;
+                    }
+                }
+            }
+        }
+    }
+
     //call original
     hook::Thunk<0x53D3B0>::Call<void>(this);
 }
 
+void aiRouteRacerHandler::Reset() {
+    //reset busted timer
+    aiOppBustedTimer = 0.f;
+
+    //call original
+    hook::Thunk<0x53D390>::Call<void>(this);
+}
+
 void aiRouteRacerHandler::Install() {
-    InstallCallback("aiRouteRacer::Update", "Fixes opponents fight each other for their spots at the finish line",
+    aiOppBustedTarget = cfgBustedTarget.Get();
+    aiOppBustedMaxSpeed = cfgBustedMaxSpeed.Get();
+    InstallCallback("aiRouteRacer::Update", "Fixes opponents fight each other for their spots at the finish line.",
         &Update, {
             cb::call(0x53705B), // aiMap::Update
+        }
+    );
+
+    InstallCallback("aiRouteRacer::Reset", "Resets opponent busted timer upon reset.",
+        &Reset, {
+            cb::call(0x536B4D), // aiMap::Reset
         }
     );
 }

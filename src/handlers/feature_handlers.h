@@ -232,6 +232,8 @@ public:
     void Update();
     void Reset();
     void PlayExplosion();
+    void BustPerp();
+    void BustOpp();
     static void Install();
 };
 
@@ -383,5 +385,11 @@ public:
     void Update();
     void Reset();
     void SizeOf();
+    static void Install();
+};
+
+class aiPoliceOfficerFeatureHandler {
+public:
+    void DetectPerpetrator();
     static void Install();
 };

@@ -75,6 +75,7 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<pedestrianInstanceHandler>("pedestrianInstanceHandler"),
 
     CreateHandler<aiVehicleInstanceFeatureHandler>("aiVehicleInstance"),
+    CreateHandler<aiPoliceOfficerFeatureHandler>("aiPoliceOfficer"),
 
     CreateHandler<luaDrawableHandler>("luaDrawableHandler")
 };
@@ -2967,13 +2968,115 @@ void mmPlayerHandler::PlayExplosion() {
     }
 }
 
+static ConfigValue<int> cfgBustedTarget("BustedTarget", 3);
+static ConfigValue<float> cfgBustedMaxSpeed("BustedMaxSpeed", 20.f);
+int bustedTarget = 3;
+float bustedMaxSpeed = 20.f;
+float bustedTimer = 0.f;
+float oppBustedTimer = 0.f;
+float resetTimer = 0.f;
+bool enableBustedTimer = false;
+bool enableOppBustedTimer = false;
+bool enableResetTimer = false;
+
+void mmPlayerHandler::BustPerp() {
+    auto player = reinterpret_cast<mmPlayer*>(this);
+    auto carsim = player->getCar()->getCarSim();
+    auto AIMAP = &aiMap::Instance;
+
+    if (enableBustedTimer)
+        bustedTimer += datTimeManager::Seconds;
+
+    if (vehPoliceCarAudio::iNumCopsPursuingPlayer == 0)
+        enableBustedTimer = false;
+
+    for (int i = 0; i < AIMAP->numCops; i++)
+    {
+        auto police = AIMAP->Police(i);
+        auto copCarSim = police->getVehiclePhysics()->getCar()->getCarSim();
+
+        auto playerPos = player->getCar()->getModel()->GetPosition();
+        auto policePos = police->getVehiclePhysics()->getCar()->getModel()->GetPosition();
+
+        if (*getPtr<WORD>(police, 0x977A) != 0 && *getPtr<WORD>(police, 0x977A) != 12) {
+            if (*getPtr<vehCar*>(police, 0x9774) == player->getCar()) {
+                if (playerPos.Dist(policePos) <= 12.5f) {
+                    if (carsim->getSpeedMPH() <= bustedMaxSpeed && copCarSim->getSpeedMPH() <= bustedMaxSpeed) {
+                        enableBustedTimer = true;
+                    }
+                    else {
+                        enableBustedTimer = false;
+                        bustedTimer = 0.f;
+                    }
+                }
+                if (bustedTimer > 4.f) {
+                    player->getHUD()->SetMessage("Busted!", 4.f, 0);
+                    police->StopSiren();
+                    AIMAP->policeForce->UnRegisterCop(*getPtr<vehCar*>(police, 0x14), *getPtr<vehCar*>(police, 0x9774));
+                    *getPtr<WORD>(police, 0x977A) = 12;
+                    *getPtr<WORD>(police, 0x280) = 3;
+                    enableBustedTimer = false;
+                    enableResetTimer = true;
+                }
+                if (*getPtr<int>(player, 0x2258)) {
+                    police->StopSiren();
+                    AIMAP->policeForce->UnRegisterCop(*getPtr<vehCar*>(police, 0x14), *getPtr<vehCar*>(police, 0x9774));
+                    *getPtr<WORD>(police, 0x977A) = 0;
+                    *getPtr<WORD>(police, 0x280) = 3;
+                }
+            }
+        }
+    }
+}
+
+void mmPlayerHandler::BustOpp() {
+    auto player = reinterpret_cast<mmPlayer*>(this);
+    auto audio = player->getCar()->getAudio();
+    auto siren = player->getCar()->getSiren();
+    auto AIMAP = &aiMap::Instance;
+
+    if (enableOppBustedTimer)
+        oppBustedTimer += datTimeManager::Seconds;
+
+    for (int i = 0; i < AIMAP->numOpponents; i++)
+    {
+        auto opponent = AIMAP->Opponent(i);
+        auto carsim = opponent->getCar()->getCarSim();
+
+        auto opponentPos = opponent->getCar()->getModel()->GetPosition();
+        auto playerPos = player->getCar()->getModel()->GetPosition();
+
+        if (*getPtr<int>(opponent, 0x27C) != 3) {
+            if (opponentPos.Dist(playerPos) <= 12.5f) {
+                if (carsim->getSpeedMPH() <= bustedMaxSpeed) {
+                    enableOppBustedTimer = true;
+                    if (oppBustedTimer > 4.f) {
+                        *getPtr<int>(opponent, 0x27C) = 3;
+                        siren->Active = false;
+                        audio->StopSiren();
+                        enableOppBustedTimer = false;
+                        oppBustedTimer = 0.f;
+                    }
+                }
+                else {
+                    enableOppBustedTimer = false;
+                    oppBustedTimer = 0.f;
+                }
+            }
+        }
+    }
+}
+
 void mmPlayerHandler::Update() {
     auto player = reinterpret_cast<mmPlayer*>(this);
     auto car = player->getCar();
     auto audio = car->getAudio();
     auto siren = car->getSiren();
-    auto engine = car->getCarSim()->getEngine();
+    auto carsim = car->getCarSim();
+    auto engine = carsim->getEngine();
     auto basename = player->getCar()->getCarDamage()->GetName();
+    auto flagsId = VehicleListPtr->GetVehicleInfo(basename)->GetFlags();
+    auto AIMAP = &aiMap::Instance;
 
     //check if we're out of the level
     int playerRoom = car->GetInst()->getRoomId();
@@ -3019,6 +3122,40 @@ void mmPlayerHandler::Update() {
         }
     }
 
+    if (bustedTarget != 0) {
+        if (audio->IsPolice(basename) && flagsId == 8) {
+            if (siren != nullptr && siren->Active)
+                BustOpp();
+        }
+
+        if (bustedTarget == 1 || bustedTarget >= 3) {
+            if (!audio->IsPolice(basename)) {
+                BustPerp();
+                if (bustedTimer > 4.f) {
+                    carsim->setBrake(1.f);
+                    engine->setThrottleInput(0.f);
+                }
+            }
+
+            if (enableResetTimer) {
+                resetTimer += datTimeManager::Seconds;
+                if (resetTimer > 4.f) {
+                    if (MMSTATE->GameMode == 0) {
+                        player->Reset();
+                        AIMAP->Reset();
+                    }
+                    else {
+                        mmGameManager *mgr = mmGameManager::Instance;
+                        mgr->getGame()->getPopup()->ProcessEscape(0);
+                        player->getHUD()->StopTimers();
+                        enableResetTimer = false;
+                        resetTimer = 0.f;
+                    }
+                }
+            }
+        }
+    }
+
     //call original
     hook::Thunk<0x405760>::Call<void>(this);
 }
@@ -3028,6 +3165,14 @@ void mmPlayerHandler::Reset() {
     vehCarModel::HazardLightsState = false;
     vehCarModel::LeftSignalLightState = false;
     vehCarModel::RightSignalLightState = false;
+
+    // disable and reset timers
+    enableBustedTimer = false;
+    enableOppBustedTimer = false;
+    enableResetTimer = false;
+    bustedTimer = 0.f;
+    oppBustedTimer = 0.f;
+    resetTimer = 0.f;
 
     // call original
     hook::Thunk<0x404A60>::Call<void>(this);
@@ -3041,9 +3186,12 @@ void mmPlayerHandler::Install() {
     enableWaterSplashSoundCached = cfgEnableWaterSplashSound.Get();
     enableExplosionSoundCached = cfgEnableExplosionSound.Get();
     enableMissingDashboardFixCached = cfgEnableMissingDashboardFix.Get();
+    bustedTarget = cfgBustedTarget.Get();
+    bustedMaxSpeed = cfgBustedMaxSpeed.Get();
 
     if (enableOutOfMapFixCached || enableWaterSplashSoundCached ||
-        enableExplosionSoundCached || enableMissingDashboardFixCached) {
+        enableExplosionSoundCached || enableMissingDashboardFixCached ||
+        bustedTarget != 0) {
         InstallVTableHook("mmPlayer::Update",
             &Update, {
                 0x5B03BC
@@ -4608,6 +4756,29 @@ void vehSirenHandler::Install() {
     ConfigValue<float> cfgSirenRotationSpeed("SirenRotationSpeed", 3.1415927f);
 
     vehSiren::SirenRotationSpeed = cfgSirenRotationSpeed.Get();
+}
+
+/*
+    aiPoliceOfficerFeatureHandler
+*/
+
+void aiPoliceOfficerFeatureHandler::DetectPerpetrator() {
+    mmGameManager *mgr = mmGameManager::Instance;
+    auto player = mgr->getGame()->getPlayer();
+
+    if (*getPtr<int>(player, 0x2258) || bustedTimer > 4.f)
+        return;
+
+    //call original
+    hook::Thunk<0x53DFD0>::Call<void>(this);
+}
+
+void aiPoliceOfficerFeatureHandler::Install() {
+    InstallCallback("aiPoliceOfficer::DetectPerpetrator", "Doesn't make cops detect the player once they cross the finish line.",
+        &DetectPerpetrator, {
+            cb::call(0x53DC91),
+        }
+    );
 }
 
 #ifndef FEATURES_DECLARED

@@ -15,10 +15,10 @@ namespace MM2
     private:
         byte _buffer[0x3C];
     public:
-        aiPoliceForce(void)                                 DONOTCALL;
-        aiPoliceForce(const aiPoliceForce &&)               DONOTCALL;
+        aiPoliceForce(void)                                       DONOTCALL;
+        aiPoliceForce(const aiPoliceForce &&)                     DONOTCALL;
 
-        AGE_API int UnRegisterCop(vehCar *a1, vehCar *a2)   { return hook::Thunk<0x551040>::Call<int>(this, a1, a2); }
+        AGE_API int UnRegisterCop(vehCar *perp, vehCar *cop)      { return hook::Thunk<0x551040>::Call<int>(this, perp, cop); }
     };
 
     // Lua initialization
