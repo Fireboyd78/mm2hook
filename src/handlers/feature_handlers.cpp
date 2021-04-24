@@ -40,6 +40,9 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<Aud3DObjectManagerHandler>("Aud3DObjectManagerHandler"),
     CreateHandler<mmArrowHandler>("mmArrowHandler"),
     CreateHandler<mmSingleRaceHandler>("mmSingleRace"),
+    CreateHandler<mmSingleBlitzHandler>("mmSingleBlitz"),
+    CreateHandler<mmSingleCircuitHandler>("mmSingleCircuit"),
+    CreateHandler<mmSingleStuntHandler>("mmSingleStunt"),
     CreateHandler<mmSingleRoamHandler>("mmSingleRoam"),
 
     CreateHandler<dgBangerInstanceHandler>("dgBangerInstance"),
@@ -3001,7 +3004,7 @@ void mmPlayerHandler::BustPerp() {
         if (*getPtr<WORD>(police, 0x977A) != 0 && *getPtr<WORD>(police, 0x977A) != 12) {
             if (*getPtr<vehCar*>(police, 0x9774) == player->getCar()) {
                 if (playerPos.Dist(policePos) <= 12.5f) {
-                    if (carsim->getSpeedMPH() <= bustedMaxSpeed && copCarSim->getSpeedMPH() <= bustedMaxSpeed) {
+                    if (carsim->getSpeedMPH() <= bustedMaxSpeed && copCarSim->getSpeed() <= bustedMaxSpeed) {
                         enableBustedTimer = true;
                     }
                     else {
@@ -3018,11 +3021,13 @@ void mmPlayerHandler::BustPerp() {
                     enableBustedTimer = false;
                     enableResetTimer = true;
                 }
-                if (*getPtr<int>(player, 0x2258)) {
-                    police->StopSiren();
-                    AIMAP->policeForce->UnRegisterCop(*getPtr<vehCar*>(police, 0x14), *getPtr<vehCar*>(police, 0x9774));
-                    *getPtr<WORD>(police, 0x977A) = 0;
-                    *getPtr<WORD>(police, 0x280) = 3;
+                if (MMSTATE->GameMode != 6) {
+                    if (*getPtr<int>(player, 0x2258)) {
+                        police->StopSiren();
+                        AIMAP->policeForce->UnRegisterCop(*getPtr<vehCar*>(police, 0x14), *getPtr<vehCar*>(police, 0x9774));
+                        *getPtr<WORD>(police, 0x977A) = 0;
+                        *getPtr<WORD>(police, 0x280) = 3;
+                    }
                 }
             }
         }
@@ -3141,12 +3146,22 @@ void mmPlayerHandler::Update() {
                 resetTimer += datTimeManager::Seconds;
                 if (resetTimer > 4.f) {
                     if (MMSTATE->GameMode == 0) {
-                        player->Reset();
-                        AIMAP->Reset();
+                        *getPtr<byte>(mmReplayManager::Instance, 0x19) = 1;
                     }
                     else {
                         mmGameManager *mgr = mmGameManager::Instance;
-                        mgr->getGame()->getPopup()->ProcessEscape(0);
+                        auto game = mgr->getGame();
+                        auto soundBase = *getPtr<AudSoundBase*>(game, 0x8C);
+                        if (MMSTATE->GameMode == 1)
+                            soundBase->SetSoundHandleIndex(6);
+                        if (MMSTATE->GameMode == 4 || MMSTATE->GameMode == 6) {
+                            soundBase->SetSoundHandleIndex(7);
+                            player->getTimer()->Stop();
+                        }
+                        if (MMSTATE->GameMode == 3)
+                            soundBase->SetSoundHandleIndex(5);
+                        soundBase->PlayOnce(-1.f, -1.f);
+                        game->getPopup()->ProcessEscape(0);
                         player->getHUD()->StopTimers();
                         enableResetTimer = false;
                         resetTimer = 0.f;
@@ -3269,6 +3284,15 @@ void mmSingleRaceHandler::QueueCopVoice(float a1) {
         rsPtr->PlayDamagePenalty();
 }
 
+void mmSingleRaceHandler::SetPriority(int a1) {
+    // AudSoundBase::Load
+    hook::Thunk<0x50DE90>::Call<BOOL>(this, "arrest", 6, false);
+    // AudSoundBase::SetVolume
+    hook::Thunk<0x50DA30>::Call<void>(this, 1.f);
+    // AudSoundBase::SetPriority
+    hook::Thunk<0x50DB10>::Call<void>(this, a1);
+}
+
 void mmSingleRaceHandler::Install() {
     InstallCallback("mmSingleRace::UpdateGame", "Plays damage out voices in checkpoint race.",
         &QueueCopVoice, {
@@ -3276,9 +3300,78 @@ void mmSingleRaceHandler::Install() {
         }
     );
 
+    InstallCallback("mmSingleRace::InitGameObjects", "Implements arrest wav sound in checkpoint race.",
+        &SetPriority, {
+            cb::call(0x41E48F),
+        }
+    );
+
     InstallPatch("Skips Aud3DObjectManager check, since we aren't using it.", { 0x90, 0x90 }, {
         0x41E9E8,
     });
+}
+
+/*
+    mmSingleBlitzHandler
+*/
+
+void mmSingleBlitzHandler::SetPriority(int a1) {
+    // AudSoundBase::Load
+    hook::Thunk<0x50DE90>::Call<BOOL>(this, "arrest", 7, false);
+    // AudSoundBase::SetVolume
+    hook::Thunk<0x50DA30>::Call<void>(this, 1.f);
+    // AudSoundBase::SetPriority
+    hook::Thunk<0x50DB10>::Call<void>(this, a1);
+}
+
+void mmSingleBlitzHandler::Install() {
+    InstallCallback("mmSingleBlitz::InitGameObjects", "Implements arrest wav sound in blitz race.",
+        &SetPriority, {
+            cb::call(0x41B30A),
+        }
+    );
+}
+
+/*
+    mmSingleCircuitHandler
+*/
+
+void mmSingleCircuitHandler::SetPriority(int a1) {
+    // AudSoundBase::Load
+    hook::Thunk<0x50DE90>::Call<BOOL>(this, "arrest", 5, false);
+    // AudSoundBase::SetVolume
+    hook::Thunk<0x50DA30>::Call<void>(this, 1.f);
+    // AudSoundBase::SetPriority
+    hook::Thunk<0x50DB10>::Call<void>(this, a1);
+}
+
+void mmSingleCircuitHandler::Install() {
+    InstallCallback("mmSingleCircuit::InitGameObjects", "Implements arrest wav sound in circuit race.",
+        &SetPriority, {
+            cb::call(0x41C9EF),
+        }
+    );
+}
+
+/*
+    mmSingleStuntHandler
+*/
+
+void mmSingleStuntHandler::SetPriority(int a1) {
+    // AudSoundBase::Load
+    hook::Thunk<0x50DE90>::Call<BOOL>(this, "arrest", 7, false);
+    // AudSoundBase::SetVolume
+    hook::Thunk<0x50DA30>::Call<void>(this, 1.f);
+    // AudSoundBase::SetPriority
+    hook::Thunk<0x50DB10>::Call<void>(this, a1);
+}
+
+void mmSingleStuntHandler::Install() {
+    InstallCallback("mmSingleStunt::InitGameObjects", "Implements arrest wav sound in crash course.",
+        &SetPriority, {
+            cb::call(0x4166EE),
+        }
+    );
 }
 
 /*

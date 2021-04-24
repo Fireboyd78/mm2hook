@@ -1033,6 +1033,26 @@ namespace MM2
     };
     ASSERT_SIZEOF(mmDashView, 0x6DC);
 
+    class mmTimer : public asNode {
+    public:
+        AGE_API void Start()                        { hook::Thunk<0x42E610>::Call<void>(this); }
+        AGE_API void Stop()                         { hook::Thunk<0x42E630>::Call<void>(this); }
+
+        /*
+            asNode virtuals
+        */
+
+        AGE_API void Update() override              { hook::Thunk<0x42E4D0>::Call<void>(this); }
+        AGE_API void Reset() override               { hook::Thunk<0x42E5F0>::Call<void>(this); }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginExtendClass<mmTimer, asNode>("mmTimer")
+                .addFunction("Start", &Start)
+                .addFunction("Stop", &Stop)
+                .endClass();
+        }
+    };
+
     class mmPlayer : public asNode {
     private:
         byte _buffer[0x23A4];
@@ -1044,6 +1064,7 @@ namespace MM2
         hook::Field<0x288, mmHUD> _hud;
 
         hook::Field<0x2A4, mmDashView> _dashView;
+        hook::Field<0xD0C, mmTimer> _timer;
         
         hook::Field<0xE28, mmHudMap *> _hudmap;
         hook::Field<0xE2C, camViewCS *> _camView;
@@ -1066,6 +1087,7 @@ namespace MM2
         inline mmHUD * getHUD(void) const                   { return _hud.ptr(this); }
 
         inline mmDashView * getDashView(void) const         { return _dashView.ptr(this); }
+        inline mmTimer * getTimer(void) const               { return _timer.ptr(this); }
 
         inline mmHudMap * getHudmap(void) const             { return _hudmap.get(this); }
         inline camViewCS * getCamView(void) const           { return _camView.get(this); }

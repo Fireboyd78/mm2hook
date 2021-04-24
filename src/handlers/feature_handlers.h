@@ -256,6 +256,25 @@ public:
 class mmSingleRaceHandler {
 public:
     void QueueCopVoice(float a1);
+    void SetPriority(int a1);
+    static void Install();
+};
+
+class mmSingleBlitzHandler {
+public:
+    void SetPriority(int a1);
+    static void Install();
+};
+
+class mmSingleCircuitHandler {
+public:
+    void SetPriority(int a1);
+    static void Install();
+};
+
+class mmSingleStuntHandler {
+public:
+    void SetPriority(int a1);
     static void Install();
 };
 
