@@ -3285,12 +3285,10 @@ void mmSingleRaceHandler::QueueCopVoice(float a1) {
 }
 
 void mmSingleRaceHandler::SetPriority(int a1) {
-    // AudSoundBase::Load
-    hook::Thunk<0x50DE90>::Call<BOOL>(this, "arrest", 6, false);
-    // AudSoundBase::SetVolume
-    hook::Thunk<0x50DA30>::Call<void>(this, 1.f);
-    // AudSoundBase::SetPriority
-    hook::Thunk<0x50DB10>::Call<void>(this, a1);
+    auto soundBase = reinterpret_cast<AudSoundBase*>(this);
+    soundBase->Load("arrest", 6, false);
+    soundBase->SetVolume(1.f);
+    soundBase->SetPriority(a1);
 }
 
 void mmSingleRaceHandler::Install() {
@@ -3316,12 +3314,10 @@ void mmSingleRaceHandler::Install() {
 */
 
 void mmSingleBlitzHandler::SetPriority(int a1) {
-    // AudSoundBase::Load
-    hook::Thunk<0x50DE90>::Call<BOOL>(this, "arrest", 7, false);
-    // AudSoundBase::SetVolume
-    hook::Thunk<0x50DA30>::Call<void>(this, 1.f);
-    // AudSoundBase::SetPriority
-    hook::Thunk<0x50DB10>::Call<void>(this, a1);
+    auto soundBase = reinterpret_cast<AudSoundBase*>(this);
+    soundBase->Load("arrest", 7, false);
+    soundBase->SetVolume(1.f);
+    soundBase->SetPriority(a1);
 }
 
 void mmSingleBlitzHandler::Install() {
@@ -3337,12 +3333,10 @@ void mmSingleBlitzHandler::Install() {
 */
 
 void mmSingleCircuitHandler::SetPriority(int a1) {
-    // AudSoundBase::Load
-    hook::Thunk<0x50DE90>::Call<BOOL>(this, "arrest", 5, false);
-    // AudSoundBase::SetVolume
-    hook::Thunk<0x50DA30>::Call<void>(this, 1.f);
-    // AudSoundBase::SetPriority
-    hook::Thunk<0x50DB10>::Call<void>(this, a1);
+    auto soundBase = reinterpret_cast<AudSoundBase*>(this);
+    soundBase->Load("arrest", 5, false);
+    soundBase->SetVolume(1.f);
+    soundBase->SetPriority(a1);
 }
 
 void mmSingleCircuitHandler::Install() {
@@ -3358,12 +3352,10 @@ void mmSingleCircuitHandler::Install() {
 */
 
 void mmSingleStuntHandler::SetPriority(int a1) {
-    // AudSoundBase::Load
-    hook::Thunk<0x50DE90>::Call<BOOL>(this, "arrest", 7, false);
-    // AudSoundBase::SetVolume
-    hook::Thunk<0x50DA30>::Call<void>(this, 1.f);
-    // AudSoundBase::SetPriority
-    hook::Thunk<0x50DB10>::Call<void>(this, a1);
+    auto soundBase = reinterpret_cast<AudSoundBase*>(this);
+    soundBase->Load("arrest", 7, false);
+    soundBase->SetVolume(1.f);
+    soundBase->SetPriority(a1);
 }
 
 void mmSingleStuntHandler::Install() {
