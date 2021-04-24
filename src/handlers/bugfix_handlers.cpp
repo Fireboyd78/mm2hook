@@ -1255,8 +1255,10 @@ void aiGoalAvoidPlayerHandler::Install() {
 
 static ConfigValue<int> cfgBustedTarget("BustedTarget", 3);
 static ConfigValue<float> cfgBustedMaxSpeed("BustedMaxSpeed", 20.f);
+static ConfigValue<float> cfgBustedTimeout("BustedTimeout", 4.f);
 int aiOppBustedTarget = 3;
 float aiOppBustedMaxSpeed = 20.f;
+float aiOppBustedTimeout = 4.f;
 float aiOppBustedTimer = 0.f;
 
 void aiRouteRacerHandler::Update() {
@@ -1283,7 +1285,7 @@ void aiRouteRacerHandler::Update() {
                         if (opponentPos.Dist(policePos) <= 12.5f) {
                             if (carsim->getSpeedMPH() <= aiOppBustedMaxSpeed) {
                                 aiOppBustedTimer += datTimeManager::Seconds;
-                                if (aiOppBustedTimer > 4.f) {
+                                if (aiOppBustedTimer > aiOppBustedTimeout) {
                                     *getPtr<int>(this, 0x27C) = 3;
                                 }
                             }
@@ -1318,6 +1320,7 @@ void aiRouteRacerHandler::Reset() {
 void aiRouteRacerHandler::Install() {
     aiOppBustedTarget = cfgBustedTarget.Get();
     aiOppBustedMaxSpeed = cfgBustedMaxSpeed.Get();
+    aiOppBustedTimeout = cfgBustedTimeout.Get();
     InstallCallback("aiRouteRacer::Update", "Fixes opponents fight each other for their spots at the finish line.",
         &Update, {
             cb::call(0x53705B), // aiMap::Update
