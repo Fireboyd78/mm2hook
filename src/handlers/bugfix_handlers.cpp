@@ -124,6 +124,7 @@ static ConfigValue<float> cfgDefaultSpeedLimit("DefaultSpeedLimit", 12.25f);
 static ConfigValue<float> cfgSpeedLimitTolerance("SpeedLimitTolerance", 1.125f);
 static ConfigValue<int> cfgMaximumCopsLimit("MaximumCopsLimit", 3);
 int maximumNumCops = 3;
+float burnoutTimer = 0.f;
 float soundPlayTime = 0.f;
 
 aiVehicle* findVehicle(vehCar *car) {
@@ -163,6 +164,20 @@ float getSpeedLimit(vehCar *car) {
     return cfgDefaultSpeedLimit;
 }
 
+float burnoutTime(vehCar *car) {
+    float speed = car->getCarSim()->getSpeedMPH();
+
+    for (int i = 0; i < 4; i++)
+    {
+        auto wheel = car->getCarSim()->getWheel(i);
+
+        if (fabs(wheel->getRotationRate()) > 26.f && speed < 10.f)
+            return burnoutTimer += datTimeManager::Seconds;
+    }
+
+    return burnoutTimer = 0.f;
+}
+
 float hornPlayTime(vehCar *car) {
     auto carAudio = car->getAudio()->GetCarAudioPtr();
     auto hornSound = *getPtr<AudSoundBase*>(carAudio, 0x10C);
@@ -192,18 +207,13 @@ BOOL aiPoliceOfficerHandler::IsPerpDrivingMadly(vehCar *perpCar) {
                     LogFile::Printf(1, "PERP IS DOING DAMAGE TO PROPERTY!");
                     return TRUE;
                 }
-                for (int i = 0; i < 4; i++)
-                {
-                    auto wheel = perpCar->getCarSim()->getWheel(i);
-
-                    if (fabs(wheel->getRotationRate()) > 40.f && speed < 0.1f) {
-                        LogFile::Printf(1, "PERP IS DOING BURNOUTS!");
-                        return TRUE;
-                    }
-                }
             }
             if (hook::Thunk<0x53E390>::Call<BOOL>(this, perpCar)) {
                 LogFile::Printf(1, "OFFICER INVOLVED COLLISION WITH PERP!");
+                return TRUE;
+            }
+            if (burnoutTime(perpCar) > 3.f) {
+                LogFile::Printf(1, "PERP IS DOING BURNOUTS!");
                 return TRUE;
             }
             if (hornPlayTime(perpCar) > 3.f) {
