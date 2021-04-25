@@ -652,11 +652,13 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
         {
             auto popup = gamePtr->getPopup();
             auto siren = gamePtr->getPlayer()->getCar()->getSiren();
+            char *vehName = gamePtr->getPlayer()->getCar()->getCarDamage()->GetName();
+            int flagsId = VehicleListPtr->GetVehicleInfo(vehName)->GetFlags();
 
             if (popup != NULL) {
                 if (!popup->IsEnabled()) {
                     // toggle siren lights
-                    if (siren != nullptr && siren->HasLights) {
+                    if (siren != nullptr && siren->HasLights || flagsId == 8) {
                         siren->Active = !siren->Active;
                     }
                 }
@@ -3603,6 +3605,8 @@ const phBound * vehCarHandler::GetModelBound(int a1) {
 
 void vehCarHandler::InitCarAudio(LPCSTR a1, BOOL a2) {
     auto car = reinterpret_cast<vehCar*>(this);
+    char *vehName = car->getCarDamage()->GetName();
+    int flagsId = VehicleListPtr->GetVehicleInfo(vehName)->GetFlags();
 
     // debug if enabled
     if (cfgVehicleDebug.Get()) {
@@ -3615,7 +3619,7 @@ void vehCarHandler::InitCarAudio(LPCSTR a1, BOOL a2) {
         vehicleHasSiren = car->getSiren()->HasLights && car->getSiren()->LightCount > 0;
     }
 
-    if (vehicleHasSiren && !vehCarAudioContainer::IsPolice(a1)) {
+    if (vehicleHasSiren || flagsId == 8 && !vehCarAudioContainer::IsPolice(a1)) {
         Displayf("%s has a lightbar, but is not in the vehtypes file. Adding it.");
         string_buf<128> sirenBuffer("%s,ENDOFDATA", a1);
         vehCarAudioContainer::RegisterPoliceNames(NULL, (LPCSTR)sirenBuffer);
