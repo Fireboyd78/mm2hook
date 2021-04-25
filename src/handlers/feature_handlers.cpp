@@ -3233,6 +3233,12 @@ void mmPlayerHandler::Install() {
             0x405ED4,
         });
     }
+
+    InstallPatch("Makes vpcop use its own vehCarSim file.", { 0xEB }, {
+        0x403BF5, // mmPlayer::Init
+        0x43C558, // mmNetObject::Init
+        0x43C6C4, // mmNetObject::ReInit
+    });
 }
 
 /*
