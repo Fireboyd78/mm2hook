@@ -567,7 +567,7 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
     }
 
     if (vKey == HeadlightsToggleKey) {
-        mmGameManager* mgr = mmGameManager::Instance;
+        mmGameManager *mgr = mmGameManager::Instance;
         auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
 
         if (gamePtr != NULL)
@@ -585,7 +585,7 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
     }
 
     if (vKey == HazardLightsToggleKey) {
-        mmGameManager* mgr = mmGameManager::Instance;
+        mmGameManager *mgr = mmGameManager::Instance;
         auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
         
         if (gamePtr != NULL)
@@ -605,7 +605,7 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
     }
 
     if (vKey == LeftTurnSignalToggleKey) {
-        mmGameManager* mgr = mmGameManager::Instance;
+        mmGameManager *mgr = mmGameManager::Instance;
         auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
 
         if (gamePtr != NULL)
@@ -625,7 +625,7 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
     }
 
     if (vKey == RightTurnSignalToggleKey) {
-        mmGameManager* mgr = mmGameManager::Instance;
+        mmGameManager *mgr = mmGameManager::Instance;
         auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
 
         if (gamePtr != NULL)
@@ -645,7 +645,7 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
     }
 
     if (vKey == SirenLightsToggleKey) {
-        mmGameManager* mgr = mmGameManager::Instance;
+        mmGameManager *mgr = mmGameManager::Instance;
         auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
 
         if (gamePtr != NULL)
@@ -666,7 +666,7 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
     }
 
     if (vKey == SirenSoundsToggleKey) {
-        mmGameManager* mgr = mmGameManager::Instance;
+        mmGameManager *mgr = mmGameManager::Instance;
         auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
 
         if (gamePtr != NULL)
@@ -2976,7 +2976,7 @@ static ConfigValue<float> cfgBustedMaxSpeed("BustedMaxSpeed", 20.f);
 static ConfigValue<float> cfgBustedTimeout("BustedTimeout", 4.f);
 int bustedTarget = 3;
 float bustedMaxSpeed = 20.f;
-float BustedTimeout = 4.f;
+float bustedTimeout = 4.f;
 float bustedTimer = 0.f;
 float oppBustedTimer = 0.f;
 float resetTimer = 0.f;
@@ -3014,7 +3014,7 @@ void mmPlayerHandler::BustPerp() {
                         bustedTimer = 0.f;
                     }
                 }
-                if (bustedTimer > BustedTimeout) {
+                if (bustedTimer > bustedTimeout) {
                     player->getHUD()->SetMessage("Busted!", 4.f, 0);
                     police->StopSiren();
                     AIMAP->policeForce->UnRegisterCop(*getPtr<vehCar*>(police, 0x14), *getPtr<vehCar*>(police, 0x9774));
@@ -3057,7 +3057,7 @@ void mmPlayerHandler::BustOpp() {
             if (opponentPos.Dist(playerPos) <= 12.5f) {
                 if (carsim->getSpeedMPH() <= bustedMaxSpeed) {
                     enableOppBustedTimer = true;
-                    if (oppBustedTimer > BustedTimeout) {
+                    if (oppBustedTimer > bustedTimeout) {
                         *getPtr<int>(opponent, 0x27C) = 3;
                         siren->Active = false;
                         audio->StopSiren();
@@ -3138,7 +3138,7 @@ void mmPlayerHandler::Update() {
         if (bustedTarget == 1 || bustedTarget >= 3) {
             if (!audio->IsPolice(basename)) {
                 BustPerp();
-                if (bustedTimer > BustedTimeout) {
+                if (bustedTimer > bustedTimeout) {
                     carsim->setBrake(1.f);
                     engine->setThrottleInput(0.f);
                 }
@@ -3205,7 +3205,7 @@ void mmPlayerHandler::Install() {
     enableMissingDashboardFixCached = cfgEnableMissingDashboardFix.Get();
     bustedTarget = cfgBustedTarget.Get();
     bustedMaxSpeed = cfgBustedMaxSpeed.Get();
-    BustedTimeout = cfgBustedTimeout.Get();
+    bustedTimeout = cfgBustedTimeout.Get();
 
     if (enableOutOfMapFixCached || enableWaterSplashSoundCached ||
         enableExplosionSoundCached || enableMissingDashboardFixCached ||

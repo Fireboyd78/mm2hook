@@ -1405,7 +1405,7 @@ void modShaderHandler::Install()
 
 void mmViewMgrBugfixHandler::SetViewSetting(int a1)
 {
-    mmGameManager* mgr = mmGameManager::Instance;
+    mmGameManager *mgr = mmGameManager::Instance;
     auto player = mgr->getGame()->getPlayer();
     auto basename = player->getCar()->getCarDamage()->GetName();
 
