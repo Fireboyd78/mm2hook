@@ -282,6 +282,8 @@ void aiPoliceOfficerHandler::Update() {
     hook::Thunk<0x53DC70>::Call<void>(this);
 }
 
+static ConfigValue<bool> cfgFlyingCopFix("FlyingCopFix", true);
+
 void aiPoliceOfficerHandler::Install() {
     maximumNumCops = cfgMaximumCopsLimit.Get();
     if (cfgPoliceAcademyFunding) {
@@ -326,6 +328,13 @@ void aiPoliceOfficerHandler::Install() {
     InstallPatch({ 0x75 }, {
         0x53DF4A
     });
+
+    // fix the physics bug that causes cops to rapidly accelerate while in the air
+    if (cfgFlyingCopFix.Get()) {
+        InstallPatch({ 0xEB }, {
+            0x53DCA7
+        });
+    }
 }
 
 /*
@@ -785,13 +794,6 @@ void BugfixPatchHandler::Install() {
     }, {
         0x424982,   // mmMultiCR::ImpactCallback
     });
-
-    InstallPatch("Fixes a bug where makes the cops fly away.", {
-        0xEB, 0x41, // jmp short loc_53DCEA
-    }, {
-        0x53DCA7,   // aiPoliceOfficer::Update
-    });
-
 }
 
 /*
