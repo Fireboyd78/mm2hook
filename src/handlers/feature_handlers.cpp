@@ -3182,7 +3182,7 @@ void mmPlayerHandler::Update() {
 
     if (playerCanFly) {
         auto ics = getPtr<Vector3>(carsim->getICS(), 0x3C);
-        if (engine->getThrottleInput() > 0.f && !player->IsMaxDamaged()) {
+        if (engine->getThrottleInput() > 0.f && carsim->getSpeed() < 50.f && !player->IsMaxDamaged()) {
             ics->X *= 1.03f;
             ics->Y *= 1.03f;
             ics->Z *= 1.03f;
