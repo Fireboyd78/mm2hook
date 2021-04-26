@@ -1539,6 +1539,7 @@ hook::Type<float> bridgeSpeed(0x5DBFA4);
 hook::Type<float> bridgeAngle(0x5DBFA8);
 
 static bool showMeCops = false;
+bool playerCanFly = false;
 
 void mmGameHandler::SendChatMessage(char *message) {
     if (g_bConsoleOpen) {
@@ -1589,6 +1590,10 @@ void mmGameHandler::SendChatMessage(char *message) {
         if (!strcmp(message, "/bridge")) {
             bridgeSpeed.set(bridgeSpeed.get() == 0.05f ? 2.5f : 0.05f);
             bridgeAngle.set(bridgeAngle.get() == 0.471238941f ? 1.f : 0.471238941f);
+        }
+
+        if (!strcmp(message, "/fly")) {
+            playerCanFly = !playerCanFly;
         }
 
         //send to dispatcher
@@ -3175,6 +3180,15 @@ void mmPlayerHandler::Update() {
         }
     }
 
+    if (playerCanFly) {
+        auto ics = getPtr<Vector3>(carsim->getICS(), 0x3C);
+        if (engine->getThrottleInput() > 0.f && !player->IsMaxDamaged()) {
+            ics->X *= 1.03;
+            ics->Y *= 1.03;
+            ics->Z *= 1.03;
+        }
+    }
+
     //call original
     hook::Thunk<0x405760>::Call<void>(this);
 }
@@ -3209,14 +3223,10 @@ void mmPlayerHandler::Install() {
     bustedMaxSpeed = cfgBustedMaxSpeed.Get();
     bustedTimeout = cfgBustedTimeout.Get();
 
-    if (enableOutOfMapFixCached || enableWaterSplashSoundCached ||
-        enableExplosionSoundCached || enableMissingDashboardFixCached ||
-        bustedTarget != 0) {
-        InstallVTableHook("mmPlayer::Update",
-            &Update, {
-                0x5B03BC
-            });
-    }
+    InstallVTableHook("mmPlayer::Update",
+        &Update, {
+            0x5B03BC
+    });
 
     if (cfgAmbientSoundsWithMusic) {
         InstallPatch("Enables positional ambient sounds with music.", { 0x90, 0x90 }, {
