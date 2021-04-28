@@ -3154,13 +3154,15 @@ void mmPlayerHandler::Update() {
             if (enableResetTimer) {
                 resetTimer += datTimeManager::Seconds;
                 if (resetTimer > 4.f) {
+                    mmGameManager *mgr = mmGameManager::Instance;
+                    auto game = mgr->getGame();
+                    auto soundBase = *getPtr<AudSoundBase*>(game, 0x8C);
                     if (MMSTATE->GameMode == 0) {
                         *getPtr<byte>(mmReplayManager::Instance, 0x19) = 1;
+                        soundBase->SetSoundHandleIndex(1);
+                        soundBase->PlayOnce(-1.f, -1.f);
                     }
                     else {
-                        mmGameManager *mgr = mmGameManager::Instance;
-                        auto game = mgr->getGame();
-                        auto soundBase = *getPtr<AudSoundBase*>(game, 0x8C);
                         if (MMSTATE->GameMode == 1)
                             soundBase->SetSoundHandleIndex(6);
                         if (MMSTATE->GameMode == 4 || MMSTATE->GameMode == 6) {
@@ -3520,10 +3522,22 @@ void mmSingleRoamHandler::HitWaterHandler() {
     }
 }
 
+void mmSingleRoamHandler::SetPriority(int a1) {
+    auto soundBase = reinterpret_cast<AudSoundBase*>(this);
+    soundBase->Load("arrest", 1, false);
+    soundBase->SetPriority(a1);
+}
+
 void mmSingleRoamHandler::Install() {
     InstallVTableHook("mmSingleRoam::HitWaterHandler",
         &HitWaterHandler, {
             0x5B0828
+        }
+    );
+
+    InstallCallback("mmSingleRoam::InitGameObjects", "Implements arrest wav sound in cruise mode.",
+        &SetPriority, {
+            cb::call(0x41FBE6),
         }
     );
 }
