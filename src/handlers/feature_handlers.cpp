@@ -1576,7 +1576,7 @@ void mmGameHandler::SendChatMessage(char *message) {
         if (!strcmp(message, "/fuzz")) {
             showMeCops = !showMeCops;
         }
-        if (!strcmp(message, "/gravity")) {
+        if (!strcmp(message, "/grav")) {
             dgPhysManager::Gravity.set(dgPhysManager::Gravity.get() == -19.6f ? -9.8f : -19.6f);
         }
         if (!strcmp(message, "/slide")) {
