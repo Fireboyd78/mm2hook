@@ -1538,7 +1538,6 @@ void memSafeHeapHandler::Install() {
 hook::Type<float> bridgeSpeed(0x5DBFA4);
 hook::Type<float> bridgeAngle(0x5DBFA8);
 
-static bool showMeCops = false;
 bool playerCanFly = false;
 
 void mmGameHandler::SendChatMessage(char *message) {
@@ -1574,7 +1573,15 @@ void mmGameHandler::SendChatMessage(char *message) {
             }
         }
         if (!strcmp(message, "/fuzz")) {
-            showMeCops = !showMeCops;
+            mmGameManager *mgr = mmGameManager::Instance;
+            auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
+            auto playerPtr = (gamePtr != NULL) ? gamePtr->getPlayer() : NULL;
+
+            if (gamePtr != NULL && playerPtr != NULL)
+            {
+                //ShowAllCops
+                *getPtr<BOOL>(playerPtr->getHudmap(), 0x38) = !*getPtr<BOOL>(playerPtr->getHudmap(), 0x38);
+            }
         }
         if (!strcmp(message, "/grav")) {
             dgPhysManager::Gravity.set(dgPhysManager::Gravity.get() == -19.6f ? -9.8f : -19.6f);
@@ -1591,7 +1598,6 @@ void mmGameHandler::SendChatMessage(char *message) {
             bridgeSpeed.set(bridgeSpeed.get() == 0.05f ? 2.5f : 0.05f);
             bridgeAngle.set(bridgeAngle.get() == 0.471238941f ? 1.f : 0.471238941f);
         }
-
         if (!strcmp(message, "/fly")) {
             playerCanFly = !playerCanFly;
         }
@@ -2147,14 +2153,15 @@ void mmHudMapFeatureHandler::DrawCops() {
     auto AIMAP = &aiMap::Instance;
     bool elapsedTime1 = fmod(datTimeManager::ElapsedTime, 0.15f) > 0.1f;
     bool elapsedTime2 = fmod(datTimeManager::ElapsedTime, 0.125f) > 0.1f;
+    BOOL ShowAllCops = *getPtr<BOOL>(this, 0x38);
 
     for (int i = 0; i < AIMAP->numCops; i++) {
-        auto cop = AIMAP->Police(i);
-        auto copMtx = getPtr<Matrix34>(*getPtr<Matrix34*>(cop, 0xCC), 0x6C);
-        WORD pursuitState = *getPtr<WORD>(cop, 0x977A);
+        auto police = AIMAP->Police(i);
+        auto policeMtx = getPtr<Matrix34>(*getPtr<Matrix34*>(police, 0xCC), 0x6C);
+        WORD policeState = *getPtr<WORD>(police, 0x977A);
 
         // check if the cop in pursuit
-        if (pursuitState || showMeCops) {
+        if (policeState || ShowAllCops) {
             if (hudMapColorStyle < 5) {
                 // draw triangle outline
                 float triSize = *getPtr<float>(this, 0x64) * 1.3f;
@@ -2162,41 +2169,41 @@ void mmHudMapFeatureHandler::DrawCops() {
                 *getPtr<float>(this, 0x64) = triSize;
 
                 if (hudMapColorStyle == 0) {
-                    DrawIcon(0, copMtx);
+                    DrawIcon(0, policeMtx);
                     *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-                    DrawIcon(1, copMtx);
+                    DrawIcon(1, policeMtx);
                 }
                 if (hudMapColorStyle == 1) {
-                    DrawIcon(2, copMtx);
+                    DrawIcon(2, policeMtx);
                     *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-                    DrawIcon(1, copMtx);
+                    DrawIcon(1, policeMtx);
                 }
                 if (hudMapColorStyle == 2) {
-                    DrawIcon(0, copMtx);
+                    DrawIcon(0, policeMtx);
                     *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-                    DrawIcon(2, copMtx);
+                    DrawIcon(2, policeMtx);
                     if (elapsedTime1)
-                        DrawIcon(1, copMtx);
+                        DrawIcon(1, policeMtx);
                     if (elapsedTime2)
-                        DrawIcon(-1, copMtx);
-                    if (pursuitState == 12 || pursuitState == 0)
-                        DrawIcon(-1, copMtx);
+                        DrawIcon(-1, policeMtx);
+                    if (policeState == 12 || policeState == 0)
+                        DrawIcon(-1, policeMtx);
                 }
                 if (hudMapColorStyle == 3) {
-                    DrawIcon(0, copMtx);
+                    DrawIcon(0, policeMtx);
                     *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-                    DrawIcon(2, copMtx);
+                    DrawIcon(2, policeMtx);
                     if (elapsedTime1)
-                        DrawIcon(1, copMtx);
+                        DrawIcon(1, policeMtx);
                     if (elapsedTime2)
-                        DrawIcon(-1, copMtx);
-                    if (pursuitState == 12 || pursuitState == 0)
-                        DrawIcon(4, copMtx);
+                        DrawIcon(-1, policeMtx);
+                    if (policeState == 12 || policeState == 0)
+                        DrawIcon(4, policeMtx);
                 }
                 if (hudMapColorStyle == 4) {
-                    DrawIcon(policeTriOutlineColor, copMtx);
+                    DrawIcon(policeTriOutlineColor, policeMtx);
                     *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-                    DrawIcon(policeTriColor, copMtx);
+                    DrawIcon(policeTriColor, policeMtx);
                 }
             }
         }
