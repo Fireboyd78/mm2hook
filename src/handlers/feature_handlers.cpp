@@ -2098,9 +2098,9 @@ void mmHudMapFeatureHandler::DrawPlayer() {
                 DrawIcon(1, playerMtx);
             }
             if (!audio->IsPolice(vehName)) {
-                DrawIcon(0, playerMtx);
-                *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
                 DrawIcon(-1, playerMtx);
+                *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
+                DrawIcon(0, playerMtx);
             }
         }
         if (hudMapColorStyle == 2) {
