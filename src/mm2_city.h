@@ -2,6 +2,8 @@
 #include "mm2_common.h"
 #include "mm2_level.h"
 
+#include <modules\city.h>
+
 namespace MM2
 {
     // Forward declarations
@@ -47,25 +49,6 @@ namespace MM2
             declhook(0x45BF90, _Func<MM2::sdlPage16 *>, LoadBinary);
         }
     }
-
-    class cityLevel : public lvlLevel {
-    public:
-        int FindRoomId(const Vector3* position, int a2) {
-            return hook::Thunk<0x446A60>::Call<int>(this, position, a2);
-        }
-
-        int GetRoomPerimeter(int room, const Vector3* output, int outputLength) {
-            return hook::Thunk<0x446FA0>::Call<int>(this, room, output, outputLength);
-        }
-
-        void SetObjectDetail(int a1) {
-            hook::Thunk<0x443E50>::Call<void>(this, a1);
-        }
-
-        void DrawRooms(const MM2::gfxViewport* a1, unsigned int a2, const void* a3, int a4) {
-            hook::Thunk<0x445820>::Call<void>(this, a1, a2, a3, a4);
-        }
-    };
 
     class cityTimeWeatherLighting {
     public:
@@ -285,6 +268,6 @@ namespace MM2
 
     template<>
     void luaAddModule<module_city>(LuaState L) {
-
+        luaBind<cityLevel>(L);
     }
 }
