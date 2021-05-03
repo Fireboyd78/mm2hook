@@ -117,21 +117,21 @@ LUAMOD_API int luaopen_MM2(lua_State *L)
     luaAddModule<module_bound>(modL);
     luaAddModule<module_breakable>(modL);
     luaAddModule<module_camera>(modL);
-    luaAddModule<module_city>(modL);
     luaAddModule<module_common>(modL);
     luaAddModule<module_creature>(modL);
     luaAddModule<module_data>(modL);
     luaAddModule<module_game>(modL);
     luaAddModule<module_gfx>(modL);
     luaAddModule<module_input>(modL);
+    luaAddModule<module_particle>(modL);
     luaAddModule<module_level>(modL);
+    luaAddModule<module_city>(modL);
     luaAddModule<module_model>(modL);
     luaAddModule<module_network>(modL);
     luaAddModule<module_phys>(modL);
     luaAddModule<module_rgl>(modL);
     luaAddModule<module_stream>(modL);
     luaAddModule<module_ui>(modL);
-    luaAddModule<module_particle>(modL);
     luaAddModule<module_vehicle>(modL);
 
     mod.pushToStack();
