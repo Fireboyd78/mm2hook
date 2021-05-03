@@ -83,6 +83,264 @@ namespace MM2
         }
     }
 
+    class Vector2 {
+    public:
+        float X;
+        float Y;
+
+        AGE_API Vector2() {}
+        AGE_API Vector2(float x, float y) : X(x), Y(y) {}
+
+        AGE_API float Mag(void) const {
+            return $::Vector2::Mag(this);
+        }
+        AGE_API float Mag2(void) const {
+            return $::Vector2::Mag2(this);
+        }
+
+        AGE_API void Set(float x, float y) {
+            X = x;
+            Y = y;
+        }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<Vector2>("Vector2")
+                .addFactory([](float x = 0.0, float y = 0.0) {
+                auto vec = new Vector2;
+                vec->X = x;
+                vec->Y = y;
+                return vec;
+            }, LUA_ARGS(_opt<float>, _opt<float>))
+                .addVariableRef("x", &Vector2::X)
+                .addVariableRef("y", &Vector2::Y)
+                .endClass();
+        }
+    };
+
+    class Vector3 {
+    public:
+        float X;
+        float Y;
+        float Z;
+
+        AGE_API Vector3(void) {}
+        AGE_API Vector3(float x, float y, float z) : X(x), Y(y), Z(z) {}
+
+        AGE_API float InvMag(void) const {
+            return $::Vector3::InvMag(this);
+        }
+        AGE_API float Mag(void) const {
+            return $::Vector3::Mag(this);
+        }
+        AGE_API float Mag2(void) const {
+            return $::Vector3::Mag2(this);
+        }
+
+        AGE_API void Set(float x, float y, float z) {
+            $::Vector3::Set$1(this, x, y, z);
+        }
+        AGE_API void Set(const Vector3& vec) {
+            $::Vector3::Set$2(this, &vec);
+        }
+
+        AGE_API void Add(const Vector3& vec) {
+            $::Vector3::Add(this, &vec);
+        }
+        AGE_API void AddScaled(const Vector3& vec1, const Vector3& vec2, float scale) {
+            $::Vector3::AddScaled(this, &vec1, &vec2, scale);
+        }
+        AGE_API void Subtract(const Vector3& vec) {
+            $::Vector3::Subtract(this, &vec);
+        }
+        AGE_API void SubtractScaled(const Vector3& vec, float scale) {
+            $::Vector3::SubtractScaled(this, &vec, scale);
+        }
+        AGE_API void Scale(float scale) {
+            $::Vector3::Scale$1(this, scale);
+        }
+        AGE_API void Scale(const Vector3& vec, float scale) {
+            $::Vector3::Scale$2(this, &vec, scale);
+        }
+        AGE_API void InvScale(float scale) {
+            $::Vector3::InvScale(this, scale);
+        }
+        AGE_API void RotateX(float angle) {
+            $::Vector3::RotateX(this, angle);
+        }
+        AGE_API void RotateY(float angle) {
+            $::Vector3::RotateY(this, angle);
+        }
+        AGE_API void RotateZ(float angle) {
+            $::Vector3::RotateZ(this, angle);
+        }
+        AGE_API void RotateAboutAxis(float angle, int axis) {
+            $::Vector3::RotateAboutAxis(this, angle, axis);
+        }
+
+        AGE_API float Angle(const Vector3& vec) const {
+            return $::Vector3::Angle(this, &vec);
+        }
+        AGE_API float FastAngle(const Vector3& vec) const {
+            return $::Vector3::FastAngle(this, &vec);
+        }
+        AGE_API bool Approach(const Vector3& vec, float p2, float p3) {
+            return $::Vector3::Approach(this, &vec, p2, p3);
+        }
+        AGE_API void Cross(const Vector3& vec) {
+            $::Vector3::Cross$1(this, &vec);
+        }
+        AGE_API void Cross(const Vector3& vec1, const Vector3& vec2) {
+            $::Vector3::Cross$2(this, &vec1, &vec2);
+        }
+        AGE_API float Dist(const Vector3& vec) const {
+            return $::Vector3::Dist(this, &vec);
+        }
+        AGE_API float FlatDist(const Vector3& vec) const {
+            return $::Vector3::FlatDist(this, &vec);
+        }
+        AGE_API float Dot(const Vector3& vec) const {
+            return $::Vector3::Dot$1(this, &vec);
+        }
+        AGE_API void Dot(const Vector3& vec, const Matrix34& mtx) {
+            $::Vector3::Dot$2(this, &vec, &mtx);
+        }
+        AGE_API void Dot3x3(const Matrix34& mtx) {
+            $::Vector3::Dot3x3(this, &mtx);
+        }
+        AGE_API void Dot3x3Transpose(const Matrix34& mtx) {
+            $::Vector3::Dot3x3Transpose(this, &mtx);
+        }
+        AGE_API void Lerp(float p1, const Vector3& vec1, const Vector3& vec2) {
+            $::Vector3::Lerp(this, p1, &vec1, &vec2);
+        }
+        AGE_API void Negate(const Vector3& vec) {
+            $::Vector3::Negate(this, &vec);
+        }
+
+        AGE_API bool IsEqual(const Vector3& vec) const {
+            return $::Vector3::IsEqual(this, &vec);
+        }
+
+        AGE_API void operator*=(const Vector3& vec) {
+            $::Vector3::$$op_e_mul(this, &vec);
+        }
+        AGE_API void operator+=(const Vector3& vec) {
+            $::Vector3::$$op_e_add$1(this, &vec);
+        }
+        AGE_API void operator-=(const Vector3& vec) {
+            $::Vector3::$$op_e_sub$1(this, &vec);
+        }
+        AGE_API void operator+=(Vector3& vec) {
+            $::Vector3::$$op_e_add$2(this, &vec);
+        }
+        AGE_API void operator-=(Vector3& vec) {
+            $::Vector3::$$op_e_sub$2(this, &vec);
+        }
+
+        AGE_API Vector3 operator-(const Vector3& vec) const {
+            return $::Vector3::$$op_sub(this, &vec);
+        }
+        AGE_API Vector3 operator/(float value) const {
+            return $::Vector3::$$op_div(this, value);
+        }
+        AGE_API Vector3 operator%(const Vector3& vec) const {
+            return $::Vector3::$$op_mod(this, &vec);
+        }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<Vector3>("Vector3")
+                .addFactory([](float x = 0.0, float y = 0.0, float z = 0.0) {
+                auto vec = new Vector3;
+                vec->X = x;
+                vec->Y = y;
+                vec->Z = z;
+                return vec;
+            }, LUA_ARGS(_opt<float>, _opt<float>, _opt<float>))
+                .addVariableRef("x", &Vector3::X)
+                .addVariableRef("y", &Vector3::Y)
+                .addVariableRef("z", &Vector3::Z)
+                .addFunction("Mag", &Mag)
+                .addFunction("Mag2", &Mag2)
+                .addFunction("InvMag", &InvMag)
+                .addFunction("RotateX", &RotateX)
+                .addFunction("RotateY", &RotateY)
+                .addFunction("RotateZ", &RotateZ)
+                .addFunction("RotateAboutAxis", &RotateAboutAxis)
+                .addFunction("Lerp", &Lerp)
+                .addFunction("Dist", &Dist)
+                .addFunction("Angle", &Angle)
+                .addFunction("FastAngle", &FastAngle)
+                .addFunction("FlatDist", &FlatDist)
+                .addFunction("Approach", &Approach)
+                .addFunction("Negate", &Negate)
+
+
+                .endClass();
+        }
+    };
+
+    class Vector4 {
+    public:
+        float X;
+        float Y;
+        float Z;
+        float W;
+
+        AGE_API Vector4() {}
+        AGE_API Vector4(float x, float y, float z, float w) : X(x), Y(y), Z(z), W(w) {}
+
+        AGE_API void Set(float x, float y, float z, float w) {
+            $::Vector4::Set(this, x, y, z, w);
+        }
+        AGE_API void Cross(const Vector4& vec1, const Vector4& vec2) {
+            $::Vector4::Cross(this, &vec1, &vec2);
+        }
+        AGE_API void Subtract(const Vector3& vec1, const Vector3& vec2) {
+            $::Vector4::Subtract(this, &vec1, &vec2);
+        }
+        AGE_API float Dot(const Vector4& vec) const {
+            return $::Vector4::Dot$1(this, &vec);
+        }
+        AGE_API float Dot3(const Vector4& vec) const {
+            return $::Vector4::Dot3(this, &vec);
+        }
+        AGE_API Vector4& Dot(const Vector4& vec, Matrix44 const& mtx) {
+            return $::Vector4::Dot$2(this, &vec, &mtx);
+        }
+        AGE_API Vector4& Dot3x3(const Vector4& vec, Matrix44 const& mtx) {
+            return $::Vector4::Dot3x3(this, &vec, &mtx);
+        }
+        AGE_API void ComputePlane(const Vector3& vec1, const Vector3& vec2, const Vector3& vec3) {
+            $::Vector4::ComputePlane$1(this, &vec1, &vec2, &vec3);
+        }
+        AGE_API void ComputePlane(const Vector3& vec1, const Vector3& vec2) {
+            $::Vector4::ComputePlane$2(this, &vec1, &vec2);
+        }
+        AGE_API void Min(const Vector4& vec1, const Vector4& vec2) {
+            $::Vector4::Min(this, &vec1, &vec2);
+        }
+        AGE_API void Max(const Vector4& vec1, const Vector4& vec2) {
+            $::Vector4::Max(this, &vec1, &vec2);
+        }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<Vector4>("Vector4")
+                .addFactory([](float x = 0.0, float y = 0.0, float z = 0.0, float w = 0.0) {
+                auto vec = new Vector4;
+                vec->X = x;
+                vec->Y = y;
+                vec->Z = z;
+                vec->W = w;
+                return vec;
+            }, LUA_ARGS(_opt<float>, _opt<float>, _opt<float>, _opt<float>))
+                .addVariableRef("x", &Vector4::X)
+                .addVariableRef("y", &Vector4::Y)
+                .addVariableRef("z", &Vector4::Z)
+                .addVariableRef("w", &Vector4::W)
+                .endClass();
+        }
+    };
+
     class Matrix34 {
     public:
         float m00;
@@ -363,6 +621,20 @@ namespace MM2
             this->m22 = 1.0;
         }
 
+        void Transform(const Vector3& vector, Vector3& out) 
+        {
+           out.X = this->m00 * vector.X + this->m10 * vector.Y + this->m20 * vector.Z + this->m30;
+           out.Y = this->m01 * vector.X + this->m11 * vector.Y + this->m21 * vector.Z + this->m31;
+           out.Z = this->m02 * vector.X + this->m12 * vector.Y + this->m22 * vector.Z + this->m32;
+        }
+
+        Vector3 Transform(const Vector3& vector) 
+        {
+            Vector3 returnVec;
+            Transform(vector, returnVec);
+            return returnVec;
+        }
+
         AGE_API void Set(const Matrix34* a1)                { hook::Thunk<0x4BBFB0>::Call<void>(this, a1); }
 
         static void BindLua(LuaState L) {
@@ -415,6 +687,7 @@ namespace MM2
                 .addFunction("MakeRotateY", &Matrix34::MakeRotateY)
                 .addFunction("MakeRotateZ", &Matrix34::MakeRotateZ)
                 .addFunction("MakeScale", static_cast<void(Matrix34::*)(float, float, float)>(&Matrix34::MakeScale))
+                .addFunction("Transform", static_cast<Vector3(Matrix34::*)(const Vector3&)>(&Matrix34::Transform))
                 .addFunction("RotateX", &Matrix34::RotateX)
                 .addFunction("RotateY", &Matrix34::RotateY)
                 .addFunction("RotateZ", &Matrix34::RotateZ)
@@ -537,264 +810,6 @@ namespace MM2
                 .addFunction("Set", &Set)
                 .addFunction("Transform4", &Transform4)
                 .addFunction("Determinant", &Determinant)
-            .endClass();
-        }
-    };
-
-    class Vector2 {
-    public:
-        float X;
-        float Y;
-
-        AGE_API Vector2() {}
-        AGE_API Vector2(float x, float y) : X(x), Y(y) {}
-
-        AGE_API float Mag(void) const {
-            return $::Vector2::Mag(this);
-        }
-        AGE_API float Mag2(void) const {
-            return $::Vector2::Mag2(this);
-        }
-
-        AGE_API void Set(float x, float y) {
-            X = x;
-            Y = y;
-        }
-
-        static void BindLua(LuaState L) {
-            LuaBinding(L).beginClass<Vector2>("Vector2")
-                .addFactory([](float x = 0.0, float y = 0.0) {
-                    auto vec = new Vector2;
-                    vec->X = x;
-                    vec->Y = y;
-                    return vec;
-                }, LUA_ARGS(_opt<float>, _opt<float>))
-                .addVariableRef("x", &Vector2::X)
-                .addVariableRef("y", &Vector2::Y)
-            .endClass();
-        }
-    };
-
-    class Vector3 {
-    public:
-        float X;
-        float Y;
-        float Z;
-
-        AGE_API Vector3(void) {}
-        AGE_API Vector3(float x, float y, float z) : X(x), Y(y), Z(z) {}
-
-        AGE_API float InvMag(void) const {
-            return $::Vector3::InvMag(this);
-        }
-        AGE_API float Mag(void) const {
-            return $::Vector3::Mag(this);
-        }
-        AGE_API float Mag2(void) const {
-            return $::Vector3::Mag2(this);
-        }
-
-        AGE_API void Set(float x, float y, float z) {
-            $::Vector3::Set$1(this, x, y, z);
-        }
-        AGE_API void Set(const Vector3 &vec) {
-            $::Vector3::Set$2(this, &vec);
-        }
-
-        AGE_API void Add(const Vector3 &vec) {
-            $::Vector3::Add(this, &vec);
-        }
-        AGE_API void AddScaled(const Vector3 &vec1, const Vector3 &vec2, float scale) {
-            $::Vector3::AddScaled(this, &vec1, &vec2, scale);
-        }
-        AGE_API void Subtract(const Vector3 &vec) {
-            $::Vector3::Subtract(this, &vec);
-        }
-        AGE_API void SubtractScaled(const Vector3 &vec, float scale) {
-            $::Vector3::SubtractScaled(this, &vec, scale);
-        }
-        AGE_API void Scale(float scale) {
-            $::Vector3::Scale$1(this, scale);
-        }
-        AGE_API void Scale(const Vector3 &vec, float scale) {
-            $::Vector3::Scale$2(this, &vec, scale);
-        }
-        AGE_API void InvScale(float scale) {
-            $::Vector3::InvScale(this, scale);
-        }
-        AGE_API void RotateX(float angle) {
-            $::Vector3::RotateX(this, angle);
-        }
-        AGE_API void RotateY(float angle) {
-            $::Vector3::RotateY(this, angle);
-        }
-        AGE_API void RotateZ(float angle) {
-            $::Vector3::RotateZ(this, angle);
-        }
-        AGE_API void RotateAboutAxis(float angle, int axis) {
-            $::Vector3::RotateAboutAxis(this, angle, axis);
-        }
-
-        AGE_API float Angle(const Vector3 &vec) const {
-            return $::Vector3::Angle(this, &vec);
-        }
-        AGE_API float FastAngle(const Vector3 &vec) const {
-            return $::Vector3::FastAngle(this, &vec);
-        }
-        AGE_API bool Approach(const Vector3 &vec, float p2, float p3) {
-            return $::Vector3::Approach(this, &vec, p2, p3);
-        }
-        AGE_API void Cross(const Vector3 &vec) {
-            $::Vector3::Cross$1(this, &vec);
-        }
-        AGE_API void Cross(const Vector3 &vec1, const Vector3 &vec2) {
-            $::Vector3::Cross$2(this, &vec1, &vec2);
-        }
-        AGE_API float Dist(const Vector3 &vec) const {
-            return $::Vector3::Dist(this, &vec);
-        }
-        AGE_API float FlatDist(const Vector3 &vec) const {
-            return $::Vector3::FlatDist(this, &vec);
-        }
-        AGE_API float Dot(const Vector3 &vec) const {
-            return $::Vector3::Dot$1(this, &vec);
-        }
-        AGE_API void Dot(const Vector3 &vec, const Matrix34 &mtx) {
-            $::Vector3::Dot$2(this, &vec, &mtx);
-        }
-        AGE_API void Dot3x3(const Matrix34 &mtx) {
-            $::Vector3::Dot3x3(this, &mtx);
-        }
-        AGE_API void Dot3x3Transpose(const Matrix34 &mtx) {
-            $::Vector3::Dot3x3Transpose(this, &mtx);
-        }
-        AGE_API void Lerp(float p1, const Vector3 &vec1, const Vector3 &vec2) {
-            $::Vector3::Lerp(this, p1, &vec1, &vec2);
-        }
-        AGE_API void Negate(const Vector3 &vec) {
-            $::Vector3::Negate(this, &vec);
-        }
-
-        AGE_API bool IsEqual(const Vector3 &vec) const {
-            return $::Vector3::IsEqual(this, &vec);
-        }
-
-        AGE_API void operator*=(const Vector3 &vec) {
-            $::Vector3::$$op_e_mul(this, &vec);
-        }
-        AGE_API void operator+=(const Vector3 &vec) {
-            $::Vector3::$$op_e_add$1(this, &vec);
-        }
-        AGE_API void operator-=(const Vector3 &vec) {
-            $::Vector3::$$op_e_sub$1(this, &vec);
-        }
-        AGE_API void operator+=(Vector3 &vec) {
-            $::Vector3::$$op_e_add$2(this, &vec);
-        }
-        AGE_API void operator-=(Vector3 &vec) {
-            $::Vector3::$$op_e_sub$2(this, &vec);
-        }
-
-        AGE_API Vector3 operator-(const Vector3 &vec) const {
-            return $::Vector3::$$op_sub(this, &vec);
-        }
-        AGE_API Vector3 operator/(float value) const {
-            return $::Vector3::$$op_div(this, value);
-        }
-        AGE_API Vector3 operator%(const Vector3 &vec) const {
-            return $::Vector3::$$op_mod(this, &vec);
-        }
-
-        static void BindLua(LuaState L) {
-            LuaBinding(L).beginClass<Vector3>("Vector3")
-                .addFactory([](float x = 0.0, float y = 0.0, float z = 0.0) {
-                    auto vec = new Vector3;
-                    vec->X = x;
-                    vec->Y = y;
-                    vec->Z = z;
-                    return vec;
-                }, LUA_ARGS(_opt<float>, _opt<float>, _opt<float>))
-                .addVariableRef("x", &Vector3::X)
-                .addVariableRef("y", &Vector3::Y)
-                .addVariableRef("z", &Vector3::Z)
-                .addFunction("Mag", &Mag)
-                .addFunction("Mag2", &Mag2)
-                .addFunction("InvMag", &InvMag)
-                .addFunction("RotateX", &RotateX)
-                .addFunction("RotateY", &RotateY)
-                .addFunction("RotateZ", &RotateZ)
-                .addFunction("RotateAboutAxis", &RotateAboutAxis)
-                .addFunction("Lerp", &Lerp)
-                .addFunction("Dist", &Dist)
-                .addFunction("Angle", &Angle)
-                .addFunction("FastAngle", &FastAngle)
-                .addFunction("FlatDist", &FlatDist)
-                .addFunction("Approach", &Approach)
-                .addFunction("Negate", &Negate)                
-                    
-                    
-            .endClass();
-        }
-    };
-
-    class Vector4 {
-    public:
-        float X;
-        float Y;
-        float Z;
-        float W;
-
-        AGE_API Vector4() {}
-        AGE_API Vector4(float x, float y, float z, float w) : X(x), Y(y), Z(z), W(w) {}
-
-        AGE_API void Set(float x, float y, float z, float w) {
-            $::Vector4::Set(this, x, y, z, w);
-        }
-        AGE_API void Cross(const Vector4 &vec1, const Vector4 &vec2) {
-            $::Vector4::Cross(this, &vec1, &vec2);
-        }
-        AGE_API void Subtract(const Vector3 &vec1, const Vector3 &vec2) {
-            $::Vector4::Subtract(this, &vec1, &vec2);
-        }
-        AGE_API float Dot(const Vector4 &vec) const {
-            return $::Vector4::Dot$1(this, &vec);
-        }
-        AGE_API float Dot3(const Vector4 &vec) const {
-            return $::Vector4::Dot3(this, &vec);
-        }
-        AGE_API Vector4 & Dot(const Vector4 &vec, Matrix44 const &mtx) {
-            return $::Vector4::Dot$2(this, &vec, &mtx);
-        }
-        AGE_API Vector4 & Dot3x3(const Vector4 &vec, Matrix44 const &mtx) {
-            return $::Vector4::Dot3x3(this, &vec, &mtx);
-        }
-        AGE_API void ComputePlane(const Vector3 &vec1, const Vector3 &vec2, const Vector3 &vec3) {
-            $::Vector4::ComputePlane$1(this, &vec1, &vec2, &vec3);
-        }
-        AGE_API void ComputePlane(const Vector3 &vec1, const Vector3 &vec2) {
-            $::Vector4::ComputePlane$2(this, &vec1, &vec2);
-        }
-        AGE_API void Min(const Vector4 &vec1, const Vector4 &vec2) {
-            $::Vector4::Min(this, &vec1, &vec2);
-        }
-        AGE_API void Max(const Vector4 &vec1, const Vector4 &vec2) {
-            $::Vector4::Max(this, &vec1, &vec2);
-        }
-
-        static void BindLua(LuaState L) {
-            LuaBinding(L).beginClass<Vector4>("Vector4")
-                .addFactory([](float x = 0.0, float y = 0.0, float z = 0.0, float w = 0.0) {
-                    auto vec = new Vector4;
-                    vec->X = x;
-                    vec->Y = y;
-                    vec->Z = z;
-                    vec->W = w;
-                    return vec;
-                }, LUA_ARGS(_opt<float>, _opt<float>, _opt<float>, _opt<float>))
-                .addVariableRef("x", &Vector4::X)
-                .addVariableRef("y", &Vector4::Y)
-                .addVariableRef("z", &Vector4::Z)
-                .addVariableRef("w", &Vector4::W)
             .endClass();
         }
     };
