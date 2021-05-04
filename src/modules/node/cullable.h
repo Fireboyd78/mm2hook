@@ -24,6 +24,7 @@ namespace MM2
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<asCullable, Base>("asCullable")
+                .addFunction("Cull", &Cull)
                 .endClass();
         }
     };

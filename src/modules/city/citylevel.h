@@ -17,6 +17,16 @@ namespace MM2
     public:
         static hook::Type<lvlSky> Sky;
 
+        AGE_API cityLevel() {
+            scoped_vtable x(this);
+            hook::Thunk<0x443860>::Call<void>(this);
+        };
+
+        virtual AGE_API ~cityLevel() {
+            scoped_vtable x(this);
+            hook::Thunk<0x443910>::Call<void>(this);
+        };
+
         /*
             lvlLevel virtuals
         */
@@ -93,6 +103,14 @@ namespace MM2
                 .addStaticFunction("LoadPathSet", &LoadPathSet)
                 .addStaticFunction("LoadProp", &LoadProp)
                 
+                //singleton
+                .addStaticProperty("Singleton", [] 
+                { 
+                    //MM2 only uses cityLevel so this works
+                    auto level = lvlLevel::Singleton.get();
+                    return reinterpret_cast<cityLevel*>(level);
+                })
+
                 //sky singleton
                 .addStaticProperty("Sky", [] { return &Sky; })
                 .endClass();
