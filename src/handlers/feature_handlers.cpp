@@ -3511,7 +3511,16 @@ void mmSingleRoamHandler::EscapeDeepWater() {
     auto carPos = car->getModel()->GetPosition();
     auto state = &MMSTATE;
 
-    if (((*(float*)&lvlLevel::Singleton + 0x44) * carPos.Y) > carsim->getWorldMatrix()->m31 || carsim->OnGround()) {
+    if (**(BYTE**)(*getPtr<int>(lvlLevel::Singleton, 8) + 4 * car->getModel()->getRoomId()) & 4 &&
+        (*getPtr<float>(lvlLevel::Singleton, 0x44) * carPos.Y) < carsim->getWorldMatrix()->m31) {
+        if (cfgResetToNearestLocation.Get()) {
+            ResetToNearestLocation();
+        }
+        else {
+            player->Reset();
+        }
+    }
+    else {
         //update splash cam
         *getPtr<int>(player, 0x2344) = 0;
 
@@ -3540,14 +3549,6 @@ void mmSingleRoamHandler::EscapeDeepWater() {
         }
 
         player->SetWideFOV(state->UseWideFOV);
-    }
-    else {
-        if (cfgResetToNearestLocation.Get()) {
-            ResetToNearestLocation();
-        }
-        else {
-            player->Reset();
-        }
     }
 }
 
