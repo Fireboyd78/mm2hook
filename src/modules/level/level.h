@@ -24,6 +24,16 @@ namespace MM2
     public:
         static hook::Type<lvlLevel*> Singleton;
 
+        AGE_API lvlLevel() {
+            scoped_vtable x(this);
+            hook::Thunk<0x4653A0>::Call<void>(this);
+        };
+
+        virtual AGE_API ~lvlLevel() {
+            scoped_vtable x(this);
+            hook::Thunk<0x465400>::Call<void>(this);
+        };
+
         /* 
             lvlLevel virtuals
         */
@@ -90,7 +100,7 @@ namespace MM2
                     LUA_ARGS(LuaRef, LuaRef, _opt<int>)) //register a LuaCallback
 
                 //singleton
-                .addStaticProperty("Singleton", [] { return &Singleton; })
+                .addStaticProperty("Singleton", [] { return Singleton.get(); })
                 .endClass();
         }
     };
