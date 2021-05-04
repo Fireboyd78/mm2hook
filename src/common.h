@@ -33,6 +33,7 @@
 // Lua 5.3.2 embedded
 # include <lua/lua.hpp>
 # ifndef NO_LUAINTF
+# define LUAINTF_AUTO_DOWNCAST 0
 #  include <LuaIntf/LuaIntf.h>
 using namespace LuaIntf;
 # endif // !NO_LUAINTF
