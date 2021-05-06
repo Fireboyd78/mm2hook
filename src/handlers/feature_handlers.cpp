@@ -3060,11 +3060,13 @@ void mmPlayerHandler::BustPerp() {
                     mmGameManager *mgr = mmGameManager::Instance;
                     auto game = mgr->getGame();
                     auto soundBase = *getPtr<AudSoundBase*>(game, 0x8C);
-                    int i = rand() % 20 + 1;
-                    string_buf<80> buffer("ACOPAPP%02d%s", i, MMSTATE->CityName);
-                    if (soundBase->Load(buffer, i + 7, false)) {
-                        soundBase->SetSoundHandleIndex(i + 7);
-                        soundBase->PlayOnce(-1.f, -1.f);
+                    if (!soundBase->IsPlaying()) {
+                        int i = rand() % 20 + 1;
+                        string_buf<80> buffer("ACOPAPP%02d%s", i, MMSTATE->CityName);
+                        if (soundBase->Load(buffer, i + 7, false)) {
+                            soundBase->SetSoundHandleIndex(i + 7);
+                            soundBase->PlayOnce(-1.f, -1.f);
+                        }
                     }
                     player->getHUD()->SetMessage("Busted!", 4.f, 0);
                     police->StopSiren();
