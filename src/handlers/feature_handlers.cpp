@@ -1601,6 +1601,30 @@ void mmGameHandler::SendChatMessage(char *message) {
         if (!strcmp(message, "/fly")) {
             playerCanFly = !playerCanFly;
         }
+        if (!strcmp(message, "/nodamage")) {
+            mmGameManager *mgr = mmGameManager::Instance;
+            auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
+            auto playerPtr = (gamePtr != NULL) ? gamePtr->getPlayer() : NULL;
+
+            if (gamePtr != NULL && playerPtr != NULL)
+            {
+                auto carDamage = playerPtr->getCar()->getCarDamage();
+                if (carDamage->getImpactThreshold() <= 10000.f)
+                    carDamage->setImpactThreshold(carDamage->getImpactThreshold() * 100.f);
+            }
+        }
+        if (!strcmp(message, "/damage")) {
+            mmGameManager *mgr = mmGameManager::Instance;
+            auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
+            auto playerPtr = (gamePtr != NULL) ? gamePtr->getPlayer() : NULL;
+
+            if (gamePtr != NULL && playerPtr != NULL)
+            {
+                auto carDamage = playerPtr->getCar()->getCarDamage();
+                if (carDamage->getImpactThreshold() > 10000.f)
+                    carDamage->setImpactThreshold(carDamage->getImpactThreshold() / 100.f);
+            }
+        }
 
         //send to dispatcher
         GameEventDispatcher::onChatMessage(message);

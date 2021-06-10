@@ -62,6 +62,14 @@ namespace MM2
             return this->MaxDamage;
         }
 
+        inline float getImpactThreshold(void) {
+            return this->ImpactThreshold;
+        }
+
+        inline void setImpactThreshold(float threshold) {
+            this->ImpactThreshold = threshold;
+        }
+
         inline vehCar* getCar(void) const {
             return this->vehCarPtr;
         }
