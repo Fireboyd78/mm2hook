@@ -87,6 +87,14 @@ namespace MM2
             CurrentTorque = torque;
         }
 
+        inline float getMaxHorsePower() {
+            return MaxHorsePower;
+        }
+
+        inline void setMaxHorsePower(float power) {
+            MaxHorsePower = power;
+        }
+
         inline Matrix34* getVisualMatrixPtr()
         {
             return this->EngineVisualMatrixPtr;

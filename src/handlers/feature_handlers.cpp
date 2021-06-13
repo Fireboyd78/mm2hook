@@ -3682,6 +3682,7 @@ void dgBangerInstanceHandler::Install()
 */
 
 static ConfigValue<bool> cfgVehicleDebug("VehicleDebug", "vehicleDebug", false);
+static ConfigValue<bool> cfgPhysicalEngineDamage("PhysicalEngineDamage", true);
 
 void vehCarHandler::InitCar(LPCSTR vehName, int a2, int a3, bool a4, bool a5) {
     Displayf("Initializing vehicle (\"%s\", %d, %d, %s, %s)", vehName, a2, a3, bool_str(a4), bool_str(a5));
@@ -3777,6 +3778,8 @@ void vehCarHandler::Update() {
     auto siren = car->getSiren();
     auto audio = car->getAudio();
     auto model = car->getModel();
+    auto damage = car->getCarDamage();
+    auto engine = car->getCarSim()->getEngine();
     auto lightbar0 = model->getGenBreakableMgr()->Get(1);
     auto lightbar1 = model->getGenBreakableMgr()->Get(2);
 
@@ -3790,6 +3793,13 @@ void vehCarHandler::Update() {
 
     if (vehCarModel::mm1StyleTransmission) {
         vehCarHandler::Mm1StyleTransmission();
+    }
+
+    if (cfgPhysicalEngineDamage.Get()) {
+        float damagePercent = (damage->getCurDamage() - damage->getMedDamage()) / (damage->getMaxDamage() - damage->getMedDamage());
+        if (damagePercent > 0.f && engine->getThrottleInput() > 0.1f) {
+            engine->setCurrentTorque((engine->getCurrentTorque() + (engine->getCurrentRPM() * 0.001f)) - (damagePercent * (engine->getMaxHorsePower() * 0.018f)));
+        }
     }
 
     // call original
