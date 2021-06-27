@@ -267,10 +267,11 @@ void aiPoliceOfficerHandler::Update() {
     auto car = vehiclePhysics->getCar();
     auto carsim = car->getCarSim();
     auto carPos = car->getModel()->GetPosition();
+    auto singleton = *lvlLevel::Singleton;
 
     if (*getPtr<WORD>(this, 0x977A) != 12) {
         if (**(BYTE**)(*getPtr<int>(lvlLevel::Singleton, 8) + 4 * car->getModel()->getRoomId()) & 4) {
-            if ((*getPtr<float>(lvlLevel::Singleton, 0x44) * carPos.Y) < carsim->getWorldMatrix()->m31) {
+            if (singleton->GetWaterLevel(0) > carsim->getWorldMatrix()->m31) {
                 PerpEscapes(0);
                 *getPtr<WORD>(this, 0x977A) = 12;
             }

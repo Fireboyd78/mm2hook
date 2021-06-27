@@ -3535,10 +3535,10 @@ void mmSingleRoamHandler::EscapeDeepWater() {
     auto car = player->getCar();
     auto carsim = car->getCarSim();
     auto carPos = car->getModel()->GetPosition();
-    auto state = &MMSTATE;
+    auto singleton = *lvlLevel::Singleton;
 
     if (**(BYTE**)(*getPtr<int>(lvlLevel::Singleton, 8) + 4 * car->getModel()->getRoomId()) & 4 &&
-        (*getPtr<float>(lvlLevel::Singleton, 0x44) * carPos.Y) < carsim->getWorldMatrix()->m31) {
+        singleton->GetWaterLevel(0) > carsim->getWorldMatrix()->m31) {
         if (cfgResetToNearestLocation.Get()) {
             ResetToNearestLocation();
         }
@@ -3559,8 +3559,8 @@ void mmSingleRoamHandler::EscapeDeepWater() {
         car->getSplash()->setActive(false);
         player->getCamView()->SetCam(player->getCurrentCameraPtr());
 
-        if (state->ShowDash || *getPtr<int>(player, 0x880)) {
-            state->unk_36C = 1;
+        if (MMSTATE->ShowDash || *getPtr<int>(player, 0x880)) {
+            MMSTATE->unk_36C = 1;
             *getPtr<int>(player, 0xE48) = 1;
             player->getCamView()->SetCam(player->getDashCam());
             player->getHUD()->ActivateDash();
@@ -3570,11 +3570,11 @@ void mmSingleRoamHandler::EscapeDeepWater() {
             player->getHUD()->DeactivateDash();
         }
 
-        if (!state->ShowDash) {
+        if (!MMSTATE->ShowDash) {
             player->getDashView()->Deactivate();
         }
 
-        player->SetWideFOV(state->UseWideFOV);
+        player->SetWideFOV(MMSTATE->UseWideFOV);
     }
 }
 
