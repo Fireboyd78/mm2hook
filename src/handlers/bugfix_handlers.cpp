@@ -188,6 +188,23 @@ float hornPlayTime(vehCar *car) {
     return soundPlayTime = 0.f;
 }
 
+BOOL aiPoliceOfficerHandler::OffRoad(vehCar *car) {
+    auto AIMAP = &aiMap::Instance;
+    auto veh = findVehicle(car);
+    float outVal = 0.f;
+
+    if (veh != nullptr) {
+        auto roomId = car->getModel()->getRoomId();
+        auto roadId = veh->CurrentRoadId();
+        auto path = AIMAP->paths[roadId];
+
+        if (path->IsPosOnRoad(&car->getCarSim()->getICS()->getPosition(), 0.f, &outVal) > 1 && roomId < 900)
+            return TRUE;
+    }
+
+    return FALSE;
+}
+
 BOOL aiPoliceOfficerHandler::IsPerpDrivingMadly(vehCar *perpCar) {
     char *vehName = perpCar->getCarDamage()->GetName(); // we can't use vehCarSim because the game forces vpcop to vpmustang99...
 
@@ -205,6 +222,10 @@ BOOL aiPoliceOfficerHandler::IsPerpDrivingMadly(vehCar *perpCar) {
                 }
                 if (hook::Thunk<0x53E370>::Call<BOOL>(this, perpCar)) {
                     LogFile::Printf(1, "PERP IS DOING DAMAGE TO PROPERTY!");
+                    return TRUE;
+                }
+                if (aiPoliceOfficerHandler::OffRoad(perpCar)) {
+                    LogFile::Printf(1, "PERP IS GOING OFFROAD!");
                     return TRUE;
                 }
             }
