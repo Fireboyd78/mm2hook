@@ -1609,8 +1609,8 @@ void mmGameHandler::SendChatMessage(char *message) {
             if (gamePtr != NULL && playerPtr != NULL)
             {
                 auto carDamage = playerPtr->getCar()->getCarDamage();
-                if (carDamage->getImpactThreshold() <= 10000.f)
-                    carDamage->setImpactThreshold(carDamage->getImpactThreshold() * 100.f);
+                if (carDamage->getImpactThreshold() < 1001500.f)
+                    carDamage->setImpactThreshold(carDamage->getImpactThreshold() + 1001500.f);
             }
         }
         if (!strcmp(message, "/damage")) {
@@ -1621,8 +1621,8 @@ void mmGameHandler::SendChatMessage(char *message) {
             if (gamePtr != NULL && playerPtr != NULL)
             {
                 auto carDamage = playerPtr->getCar()->getCarDamage();
-                if (carDamage->getImpactThreshold() > 10000.f)
-                    carDamage->setImpactThreshold(carDamage->getImpactThreshold() / 100.f);
+                if (carDamage->getImpactThreshold() >= 1001500.f)
+                    carDamage->setImpactThreshold(carDamage->getImpactThreshold() - 1001500.f);
             }
         }
 
