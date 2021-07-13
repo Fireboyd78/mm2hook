@@ -3261,6 +3261,9 @@ void mmPlayerHandler::Update() {
         }
     }
 
+    if (carsim->getWorldMatrix()->m11 <= 0.f)
+        car->getStuck()->setStuckTime(0.f);
+
     //call original
     hook::Thunk<0x405760>::Call<void>(this);
 }
@@ -3317,6 +3320,11 @@ void mmPlayerHandler::Install() {
             0x405ED4,
         });
     }
+
+    //fix collision detection
+    InstallPatch({ 0x8B, 0x81, 0xF4, 0x0, 0x0, 0x0 }, {
+        0x40493F, // mmPlayer::UpdateHOG
+    });
 }
 
 /*
