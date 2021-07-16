@@ -3059,18 +3059,32 @@ void mmPlayerHandler::BustPerp() {
     if (enableBustedTimer)
         bustedTimer += datTimeManager::Seconds;
 
-    if (vehPoliceCarAudio::iNumCopsPursuingPlayer == 0) {
-        enableBustedTimer = false;
-        bustedTimer = 0.f;
-    }
-
     for (int i = 0; i < AIMAP->numCops; i++)
     {
         auto police = AIMAP->Police(i);
-        auto copCarSim = police->getVehiclePhysics()->getCar()->getCarSim();
+        auto car = police->getVehiclePhysics()->getCar();
+        auto curDamage = car->getCarDamage()->getCurDamage();
+        auto maxDamage = car->getCarDamage()->getMaxDamage();
+        auto copCarSim = car->getCarSim();
+
+        if (vehPoliceCarAudio::iNumCopsPursuingPlayer == 0) {
+            enableBustedTimer = false;
+            if (**(BYTE**)(*getPtr<int>(lvlLevel::Singleton, 8) + 4 * car->getModel()->getRoomId()) & 4) {
+                if (lvlLevel::Singleton->GetWaterLevel(0) > carsim->getWorldMatrix()->m31) {
+                    bustedTimer = 0.f;
+                    enableResetTimer = false;
+                    resetTimer = 0.f;
+                }
+            }
+            if (curDamage >= maxDamage) {
+                bustedTimer = 0.f;
+                enableResetTimer = false;
+                resetTimer = 0.f;
+            }
+        }
 
         auto playerPos = player->getCar()->getModel()->GetPosition();
-        auto policePos = police->getVehiclePhysics()->getCar()->getModel()->GetPosition();
+        auto policePos = car->getModel()->GetPosition();
 
         if (*getPtr<WORD>(police, 0x977A) != 0 && *getPtr<WORD>(police, 0x977A) != 12) {
             if (*getPtr<vehCar*>(police, 0x9774) == player->getCar()) {
