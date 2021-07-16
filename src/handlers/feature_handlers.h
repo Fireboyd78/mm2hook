@@ -413,3 +413,8 @@ public:
     void DetectPerpetrator();
     static void Install();
 };
+
+class mmExternalViewHandler {
+public:
+    static void Install();
+};

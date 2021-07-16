@@ -33,6 +33,7 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<mmHudMapFeatureHandler>("mmHudMapFeatureHandler"),
     CreateHandler<mmIconsHandler>("mmIconsHandler"),
     CreateHandler<mmDashViewHandler>("mmDashView"),
+    CreateHandler<mmExternalViewHandler>("mmExternalView"),
     CreateHandler<mmDirSndHandler>("mmDirSnd"),
     CreateHandler<mmPlayerHandler>("mmPlayer"),
     CreateHandler<mmGameHandler>("mmGame"),
@@ -4984,6 +4985,20 @@ void aiPoliceOfficerFeatureHandler::Install() {
             cb::call(0x53DC91),
         }
     );
+}
+
+/*
+    mmExternalViewHandler
+*/
+
+void mmExternalViewHandler::Install() {
+    ConfigValue<bool> cfgEnableMouseBar("EnableMouseBar", false);
+
+    if (cfgEnableMouseBar.Get()) {
+        InstallPatch("Enables showing up the mouse bar for all input devices.", { 0x90, 0x90 }, {
+            0x431A56,
+        });
+    }
 }
 
 #ifndef FEATURES_DECLARED
