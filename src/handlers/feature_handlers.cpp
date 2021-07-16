@@ -3059,8 +3059,10 @@ void mmPlayerHandler::BustPerp() {
     if (enableBustedTimer)
         bustedTimer += datTimeManager::Seconds;
 
-    if (vehPoliceCarAudio::iNumCopsPursuingPlayer == 0)
+    if (vehPoliceCarAudio::iNumCopsPursuingPlayer == 0) {
         enableBustedTimer = false;
+        bustedTimer = 0.f;
+    }
 
     for (int i = 0; i < AIMAP->numCops; i++)
     {
