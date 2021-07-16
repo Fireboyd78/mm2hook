@@ -1327,6 +1327,7 @@ void aiRouteRacerHandler::Update() {
             auto maxDamage = car->getCarDamage()->getMaxDamage();
             auto opponentPos = car->getModel()->GetPosition();
             auto policePos = copCar->getModel()->GetPosition();
+            auto policeAud = copCar->getAudio()->GetPoliceCarAudioPtr();
 
             if (*getPtr<int>(car, 0xEC) != 0 && curDamage < maxDamage)
                 continue;
@@ -1347,7 +1348,13 @@ void aiRouteRacerHandler::Update() {
                         }
                     }
                     if (*getPtr<int>(this, 0x27C) == 3) {
-                        police->StopSiren();
+                        if (opponent->Finished()) {
+                            police->StopSiren();
+                        }
+                        else {
+                            if (policeAud != nullptr)
+                                policeAud->StopSiren();
+                        }
                         AIMAP->policeForce->UnRegisterCop(*getPtr<vehCar*>(police, 0x14), *getPtr<vehCar*>(police, 0x9774));
                         *getPtr<WORD>(police, 0x977A) = 0;
                         *getPtr<WORD>(police, 0x280) = 3;

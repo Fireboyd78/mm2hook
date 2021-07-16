@@ -3067,18 +3067,20 @@ void mmPlayerHandler::BustPerp() {
         auto maxDamage = car->getCarDamage()->getMaxDamage();
         auto copCarSim = car->getCarSim();
         auto policePos = car->getModel()->GetPosition();
+        auto policeAud = car->getAudio()->GetPoliceCarAudioPtr();
         auto playerPos = player->getCar()->getModel()->GetPosition();
 
         if (vehPoliceCarAudio::iNumCopsPursuingPlayer == 0) {
-            enableBustedTimer = false;
             if (**(BYTE**)(*getPtr<int>(lvlLevel::Singleton, 8) + 4 * car->getModel()->getRoomId()) & 4) {
                 if (lvlLevel::Singleton->GetWaterLevel(0) > copCarSim->getWorldMatrix()->m31) {
+                    enableBustedTimer = false;
                     bustedTimer = 0.f;
                     enableResetTimer = false;
                     resetTimer = 0.f;
                 }
             }
             if (curDamage >= maxDamage) {
+                enableBustedTimer = false;
                 bustedTimer = 0.f;
                 enableResetTimer = false;
                 resetTimer = 0.f;
@@ -3111,8 +3113,10 @@ void mmPlayerHandler::BustPerp() {
                             soundBase->PlayOnce(-1.f, -1.f);
                         }
                     }
+                    if (policeAud != nullptr) {
+                        policeAud->StopSiren();
+                    }
                     player->getHUD()->SetMessage("Busted!", 4.f, 0);
-                    police->StopSiren();
                     AIMAP->policeForce->UnRegisterCop(*getPtr<vehCar*>(police, 0x14), *getPtr<vehCar*>(police, 0x9774));
                     *getPtr<WORD>(police, 0x977A) = 12;
                     *getPtr<WORD>(police, 0x280) = 3;
