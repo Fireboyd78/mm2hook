@@ -267,6 +267,9 @@ BOOL aiPoliceOfficerHandler::IsOppDrivingMadly(vehCar *perpCar) {
         if (hook::Thunk<0x53E370>::Call<BOOL>(this, perpCar)) {
             return TRUE;
         }
+        if (aiPoliceOfficerHandler::OffRoad(perpCar)) {
+            return TRUE;
+        }
     }
     if (hook::Thunk<0x53E390>::Call<BOOL>(this, perpCar)) {
         return TRUE;
@@ -1312,16 +1315,21 @@ void aiRouteRacerHandler::Update() {
         *getPtr<int>(this, 0x27C) = 3;
 
     if (aiOppBustedTarget >= 2) {
-        auto carsim = opponent->getCar()->getCarSim();
+        auto car = opponent->getCar();
+        auto carsim = car->getCarSim();
         auto AIMAP = &aiMap::Instance;
 
         for (int i = 0; i < AIMAP->numCops; i++)
         {
             auto police = AIMAP->Police(i);
-            auto car = police->getVehiclePhysics()->getCar();
+            auto copCar = police->getVehiclePhysics()->getCar();
+            auto curDamage = car->getCarDamage()->getCurDamage();
+            auto maxDamage = car->getCarDamage()->getMaxDamage();
+            auto opponentPos = car->getModel()->GetPosition();
+            auto policePos = copCar->getModel()->GetPosition();
 
-            auto opponentPos = opponent->getCar()->getModel()->GetPosition();
-            auto policePos = car->getModel()->GetPosition();
+            if (*getPtr<int>(car, 0xEC) != 0 && curDamage < maxDamage)
+                continue;
 
             if (*getPtr<WORD>(police, 0x977A) != 0 && *getPtr<WORD>(police, 0x977A) != 12) {
                 if (*getPtr<vehCar*>(police, 0x9774) == opponent->getCar()) {

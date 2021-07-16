@@ -3085,6 +3085,9 @@ void mmPlayerHandler::BustPerp() {
             }
         }
 
+        if (*getPtr<int>(player->getCar(), 0xEC) != 0 && !player->IsMaxDamaged())
+            continue;
+
         if (*getPtr<WORD>(police, 0x977A) != 0 && *getPtr<WORD>(police, 0x977A) != 12) {
             if (*getPtr<vehCar*>(police, 0x9774) == player->getCar()) {
                 if (playerPos.Dist(policePos) <= 12.5f) {
@@ -3131,8 +3134,9 @@ void mmPlayerHandler::BustPerp() {
 
 void mmPlayerHandler::BustOpp() {
     auto player = reinterpret_cast<mmPlayer*>(this);
-    auto audio = player->getCar()->getAudio();
-    auto siren = player->getCar()->getSiren();
+    auto car = player->getCar();
+    auto audio = car->getAudio();
+    auto siren = car->getSiren();
     auto AIMAP = &aiMap::Instance;
 
     if (enableOppBustedTimer)
@@ -3141,10 +3145,15 @@ void mmPlayerHandler::BustOpp() {
     for (int i = 0; i < AIMAP->numOpponents; i++)
     {
         auto opponent = AIMAP->Opponent(i);
-        auto carsim = opponent->getCar()->getCarSim();
+        auto oppCar = opponent->getCar();
+        auto carsim = oppCar->getCarSim();
+        auto curDamage = oppCar->getCarDamage()->getCurDamage();
+        auto maxDamage = oppCar->getCarDamage()->getMaxDamage();
+        auto opponentPos = oppCar->getModel()->GetPosition();
+        auto playerPos = car->getModel()->GetPosition();
 
-        auto opponentPos = opponent->getCar()->getModel()->GetPosition();
-        auto playerPos = player->getCar()->getModel()->GetPosition();
+        if (*getPtr<int>(oppCar, 0xEC) != 0 && curDamage < maxDamage)
+            continue;
 
         if (*getPtr<int>(opponent, 0x27C) != 3) {
             if (opponentPos.Dist(playerPos) <= 12.5f) {
