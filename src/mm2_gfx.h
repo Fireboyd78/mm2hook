@@ -30,7 +30,7 @@ namespace MM2
         int field_11C;
         int Flags;
         float DefaultAspect;
-        int field_128;
+        byte field_128;
         float Near;
         float Far;
         float field_134;
@@ -47,7 +47,28 @@ namespace MM2
         float Fov;
         float Aspect;
     public:
+        inline byte getField_128(void) {
+            return field_128;
+        }
+
+        inline float getNear(void) {
+            return Near;
+        }
+
+        inline float getFar(void) {
+            return Far;
+        }
+
+        inline float getFov(void) {
+            return Fov;
+        }
+
+        inline float getAspect(void) {
+            return Aspect;
+        }
+
         void Ortho(float a1, float a2, float a3, float a4, float a5, float a6) { hook::Thunk<0x4B1800>::Call<void>(this, a1, a2, a3, a4, a5, a6); }
+        void Perspective(float Fov, float Aspect, float Near, float Far) { hook::Thunk<0x4B1640>::Call<void>(this, Fov, Aspect, Near, Far); }
     };
 
     class cltLight

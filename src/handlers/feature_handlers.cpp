@@ -2542,6 +2542,292 @@ void mmDashViewHandler::FileIO(datParser* parser) {
     parser->AddValue("MaxRPM", getPtr<float>(this, 0x5D4), 1);
 }
 
+static hook::Type<int> m_TouchedMask(0x685780);
+static hook::Type<int[2]> m_TouchedMasks(0x5CD604);
+Matrix34 dashMatrix = Matrix34();
+modShader *dGearShader;
+modShader *pGearShader;
+
+void mmDashViewHandler::Init(char* vehName, mmPlayer* player) {
+    //call original
+    hook::Thunk<0x430890>::Call<void>(this, vehName, player);
+
+    auto dashView = reinterpret_cast<mmDashView*>(this);
+    auto model = dashView->m_PlayerPtr->getCar()->getModel();
+    int geomId = model->getGeomSetId();
+    auto geomTableEntry = lvlInstance::GetGeomTableEntry(geomId);
+    int shaderCount = geomTableEntry->numShaders;
+    auto shaderSet = *dashView->ShaderSet;
+
+    dGearShader = new modShader[shaderCount];
+    pGearShader = new modShader[shaderCount];
+
+    for (int i = 0; i < shaderCount; i++)
+    {
+        dGearShader[i].Texture = shaderSet[i].Texture;
+        dGearShader[i].Material = shaderSet[i].Material;
+
+        pGearShader[i].Texture = shaderSet[i].Texture;
+        pGearShader[i].Material = shaderSet[i].Material;
+    }
+
+    for (int i = 0; i < dashView->GearIndicatorModStatic->PacketCount; i++)
+    {
+        int shaderIndex = dashView->GearIndicatorModStatic->ShaderIndices[i];
+        modShader* dShader = &dGearShader[shaderIndex];
+        dShader->PreLoad();
+
+        if (dShader->Texture != nullptr)
+        {
+            char gearTextureName[128];
+
+            strcpy_s(gearTextureName, dShader->Texture->Name);
+
+            char* _R = strstr(gearTextureName, "_r");
+
+            if (_R != NULL) {
+                strncpy(_R, "_d", 2);
+
+                gfxTexture* gearTexture = gfxGetTexture(gearTextureName, 1);
+
+                if (gearTexture != nullptr)
+                    dShader->Texture = gearTexture;
+                else
+                    dShader->Texture = gfxGetTexture("d", 1);
+            }
+            else {
+                dShader->Texture = gfxGetTexture("d", 1);
+            }
+        }
+
+        modShader* pShader = &pGearShader[shaderIndex];
+        pShader->PreLoad();
+
+        if (pShader->Texture != nullptr)
+        {
+            char gearTextureName[128];
+
+            strcpy_s(gearTextureName, pShader->Texture->Name);
+
+            char* _R = strstr(gearTextureName, "_r");
+
+            if (_R != NULL) {
+                strncpy(_R, "_p", 2);
+
+                gfxTexture* gearTexture = gfxGetTexture(gearTextureName, 1);
+
+                if (gearTexture != nullptr)
+                    pShader->Texture = gearTexture;
+                else
+                    pShader->Texture = gfxGetTexture("p", 1);
+            }
+            else {
+                pShader->Texture = gfxGetTexture("p", 1);
+            }
+        }
+    }
+}
+
+void mmDashViewHandler::Cull() {
+    auto dashView = reinterpret_cast<mmDashView*>(this);
+    int shaderCount = dashView->m_PlayerPtr->getCar()->getModel()->GetGeomTablePtr()->numShaders;
+
+    if (dashView->field_604) {
+        if (*getPtr<float>(dashView->m_PlayerPtr, 0x1D6C) == 0.f) {
+            RadialGauge::bDebugPivot = dashView->PivotDebug;
+            byte zEnable = RSTATE->Data.ZEnable;
+            bool lighting = RSTATE->Data.Lighting;
+            bool alphaEnable = RSTATE->Data.AlphaEnable;
+            bool zWriteEnable = RSTATE->Data.ZWriteEnable;
+
+            m_TouchedMask = m_TouchedMasks[0];
+            if (RSTATE->Data.Lighting)
+            {
+                RSTATE->Data.Lighting = 0;
+                gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+            }
+            if (RSTATE->Data.ZEnable)
+            {
+                RSTATE->Data.ZEnable = 0;
+                gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+            }
+            if (RSTATE->Data.ZWriteEnable)
+            {
+                RSTATE->Data.ZWriteEnable = 0;
+                gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+            }
+            if (!RSTATE->Data.AlphaEnable)
+            {
+                RSTATE->Data.AlphaEnable = 1;
+                gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+            }
+
+            float nearView = gfxCurrentViewport->getNear();
+            if (!(gfxCurrentViewport->getField_128() & 1)) {
+                gfxCurrentViewport->Perspective(
+                    gfxCurrentViewport->getFov(),
+                    gfxCurrentViewport->getAspect(),
+                    0.0099999998f,
+                    gfxCurrentViewport->getFar());
+            }
+
+            //draw dash
+            if (dashView->DashModStatic != nullptr && dashView->field_6d8) {
+                Matrix44::Convert(gfxRenderState::sm_World, &dashView->field_408.field_48);
+                gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
+                dashView->DashModStatic->Draw(*dashView->ShaderSet);
+            }
+            
+            //draw roof
+            if (dashView->RoofModStatic != nullptr) {
+                Matrix44::Convert(gfxRenderState::sm_World, &dashView->field_508.field_48);
+                gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
+                dashView->RoofModStatic->Draw(*dashView->ShaderSet);
+            }
+
+            //draw gear indicator
+            if (dashView->GearIndicatorModStatic != nullptr) {
+                auto carsim = dashView->m_PlayerPtr->getCar()->getCarSim();
+                auto transmission = carsim->getTransmission();
+                float trottleInput = carsim->getEngine()->getThrottleInput();
+                float speedMPH = carsim->getSpeedMPH();
+                int gearId = transmission->getGear();
+
+                dashMatrix.Set(&dashView->field_408.field_48);
+                float gearOffsetX = dashMatrix.m00 * dashView->GearPivotOffset.X + dashMatrix.m10 * dashView->GearPivotOffset.Y + dashMatrix.m20 * dashView->GearPivotOffset.Z;
+                float gearOffsetY = dashMatrix.m01 * dashView->GearPivotOffset.X + dashMatrix.m11 * dashView->GearPivotOffset.Y + dashMatrix.m21 * dashView->GearPivotOffset.Z;
+                float gearOffsetZ = dashMatrix.m02 * dashView->GearPivotOffset.X + dashMatrix.m12 * dashView->GearPivotOffset.Y + dashMatrix.m22 * dashView->GearPivotOffset.Z;
+                dashMatrix.m30 += gearOffsetX;
+                dashMatrix.m31 += gearOffsetY;
+                dashMatrix.m32 += gearOffsetZ;
+
+                Matrix44::Convert(gfxRenderState::sm_World, &dashMatrix);
+                gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
+
+                if (transmission->IsAuto()) {
+                    if (trottleInput > 0.f || speedMPH >= 1.f) {
+                        if (gearId >= 2)
+                            dashView->GearIndicatorModStatic->Draw(dGearShader);
+                        else
+                            dashView->GearIndicatorModStatic->Draw(dashView->ShaderSet[gearId]);
+                    }
+                    else {
+                        dashView->GearIndicatorModStatic->Draw(pGearShader);
+                    }
+                }
+                else {
+                    dashView->GearIndicatorModStatic->Draw(dashView->ShaderSet[gearId]);
+                }
+            }
+
+            if (dashView->PivotDebug)
+                rglDrawAxis(0.1f, dashMatrix);
+
+            //draw speed needle
+            dashView->SpeedGauge.Offset.X = dashView->SpeedOffset.X;
+            dashView->SpeedGauge.Offset.Y = dashView->SpeedOffset.Y;
+            dashView->SpeedGauge.Offset.Z = dashView->SpeedOffset.Z;
+            dashView->SpeedGauge.field_d8 = dashView->SpeedPivotOffset.X;
+            dashView->SpeedGauge.field_dc = dashView->SpeedPivotOffset.Y;
+            dashView->SpeedGauge.field_e0 = dashView->SpeedPivotOffset.Z;
+            dashView->SpeedGauge.Cull(&dashView->field_408.field_48);
+
+            //draw RPM needle
+            dashView->RPMGauge.Offset.X = dashView->TachOffset.X;
+            dashView->RPMGauge.Offset.Y = dashView->TachOffset.Y;
+            dashView->RPMGauge.Offset.Z = dashView->TachOffset.Z;
+            dashView->RPMGauge.field_d8 = dashView->TachPivotOffset.X;
+            dashView->RPMGauge.field_dc = dashView->TachPivotOffset.Y;
+            dashView->RPMGauge.field_e0 = dashView->TachPivotOffset.Z;
+            dashView->RPMGauge.Cull(&dashView->field_408.field_48);
+
+            //draw damage needle
+            dashView->DamageGauge.Offset.X = dashView->DmgOffset.X;
+            dashView->DamageGauge.Offset.Y = dashView->DmgOffset.Y;
+            dashView->DamageGauge.Offset.Z = dashView->DmgOffset.Z;
+            dashView->DamageGauge.field_d8 = dashView->DmgPivotOffset.X;
+            dashView->DamageGauge.field_dc = dashView->DmgPivotOffset.Y;
+            dashView->DamageGauge.field_e0 = dashView->DmgPivotOffset.Z;
+            dashView->DamageGauge.Cull(&dashView->field_408.field_48);
+
+            //draw extra dash
+            if (dashView->DashExtraModStatic != nullptr) {
+                Matrix44::Convert(gfxRenderState::sm_World, &dashView->field_408.field_48);
+                gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
+                dashView->DashExtraModStatic->Draw(*dashView->ShaderSet);
+            }
+
+            //draw steering wheel
+            if (dashView->WheelModStatic != nullptr) {
+                auto dWord_6a4 = ((Matrix34*)&dashView->field_6a4);
+                dWord_6a4->Identity();
+
+                float wheelPivotOffsetX = dashView->field_588 + dashView->WheelPivotOffset.X;
+                float wheelPivotOffsetY = dashView->field_58c + dashView->WheelPivotOffset.Y;
+                float wheelPivotOffsetZ = dashView->field_590 + dashView->WheelPivotOffset.Z;
+
+                dWord_6a4->RotateZ(-(*getPtr<float>(dashView->m_PlayerPtr, 0x2264) * dashView->WheelFact));
+
+                float wheelOffsetX = wheelPivotOffsetZ * dashView->field_6bc + wheelPivotOffsetY * dashView->field_6b0 + wheelPivotOffsetX * dashView->field_6a4;
+                float wheelOffsetY = wheelPivotOffsetZ * dashView->field_6c0 + wheelPivotOffsetY * dashView->field_6b4 + wheelPivotOffsetX * dashView->field_6a8;
+                float wheelOffsetZ = wheelPivotOffsetZ * dashView->field_6c4 + wheelPivotOffsetY * dashView->field_6b8 + wheelPivotOffsetX * dashView->field_6ac;
+
+                float wheelPosDifX = wheelPivotOffsetX - wheelOffsetX;
+                float wheelPosDifY = wheelPivotOffsetY - wheelOffsetY;
+                float wheelPosDifZ = wheelPivotOffsetZ - wheelOffsetZ;
+
+                dashView->field_6c8 += wheelPosDifX;
+                dashView->field_6cc += wheelPosDifY;
+                dashView->field_6d0 += wheelPosDifZ;
+
+                dWord_6a4->Dot(&dashView->field_408.field_48);
+
+                wheelPosDifX = dashView->field_408.field_48.m20 * dashView->WheelPos.Z + dashView->field_408.field_48.m10 * dashView->WheelPos.Y + dashView->field_408.field_48.m00 * dashView->WheelPos.X;
+                wheelPosDifY = dashView->field_408.field_48.m21 * dashView->WheelPos.Z + dashView->field_408.field_48.m11 * dashView->WheelPos.Y + dashView->field_408.field_48.m01 * dashView->WheelPos.X;
+                wheelPosDifZ = dashView->field_408.field_48.m22 * dashView->WheelPos.Z + dashView->field_408.field_48.m12 * dashView->WheelPos.Y + dashView->field_408.field_48.m02 * dashView->WheelPos.X;
+
+                dWord_6a4->m30 += wheelPosDifX;
+                dWord_6a4->m31 += wheelPosDifY;
+                dWord_6a4->m32 += wheelPosDifZ;
+
+                Matrix44::Convert(gfxRenderState::sm_World, dWord_6a4);
+                gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
+                dashView->WheelModStatic->Draw(*dashView->ShaderSet);
+            }
+
+            if (!(gfxCurrentViewport->getField_128() & 1)) {
+                gfxCurrentViewport->Perspective(
+                    gfxCurrentViewport->getFov(),
+                    gfxCurrentViewport->getAspect(),
+                    nearView,
+                    gfxCurrentViewport->getFar());
+            }
+
+            if (RSTATE->Data.AlphaEnable != alphaEnable)
+            {
+                RSTATE->Data.AlphaEnable = alphaEnable;
+                gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+            }
+            if (RSTATE->Data.ZWriteEnable != zWriteEnable)
+            {
+                RSTATE->Data.ZWriteEnable = zWriteEnable;
+                gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+            }
+            if (RSTATE->Data.ZEnable != zEnable)
+            {
+                RSTATE->Data.ZEnable = zEnable;
+                gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+            }
+            m_TouchedMask = m_TouchedMasks[lighting];
+            if (RSTATE->Data.Lighting != lighting)
+            {
+                RSTATE->Data.Lighting = lighting;
+                gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+            }
+        }
+    }
+}
+
 void mmDashViewHandler::Install() {
     if (cfgEnableHeadBobbing) {
         InstallCallback("mmDashView::Update", "Allows for a custom implementation of head-bobbing in dashboards.",
@@ -2551,9 +2837,19 @@ void mmDashViewHandler::Install() {
         );
     }
 
+    InstallCallback("mmDashView::Init", "Adds the unused D and P gears",
+        &Init, {
+            cb::call(0x42D60B),
+        }
+    );
+
     // rv6 stuff
     InstallVTableHook("mmDashView::FileIO", &FileIO, {
         0x5B0D90
+    });
+
+    InstallVTableHook("mmDashView::Cull", &Cull, {
+        0x5B0D7C
     });
 }
 
@@ -3266,7 +3562,9 @@ void mmPlayerHandler::Update() {
                             soundBase->SetSoundHandleIndex(6);
                         if (MMSTATE->GameMode == 4 || MMSTATE->GameMode == 6) {
                             soundBase->SetSoundHandleIndex(7);
-                            player->getTimer()->Stop();
+                            player->getHUD()->getTimer()->Stop();
+                            player->getHUD()->getTimer2()->Stop();
+                            player->getHUD()->getTimer3()->Stop();
                         }
                         if (MMSTATE->GameMode == 3)
                             soundBase->SetSoundHandleIndex(5);
@@ -3608,7 +3906,7 @@ void mmSingleRoamHandler::EscapeDeepWater() {
         }
 
         if (!MMSTATE->ShowDash) {
-            player->getDashView()->Deactivate();
+            player->getHUD()->getDashView()->Deactivate();
         }
 
         player->SetWideFOV(MMSTATE->UseWideFOV);

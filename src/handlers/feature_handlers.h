@@ -196,6 +196,8 @@ public:
 
     void UpdateCS();
     void FileIO(MM2::datParser* parser);
+    void Init(char *vehName, MM2::mmPlayer *player);
+    void Cull();
 
     static void Install();
 };
