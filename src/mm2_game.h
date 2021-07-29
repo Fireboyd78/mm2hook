@@ -875,12 +875,209 @@ namespace MM2
     };
     ASSERT_SIZEOF(mmArrow, 0x68);
 
+    class mmTimer : public asNode {
+    public:
+        AGE_API void Start()                                { hook::Thunk<0x42E610>::Call<void>(this); }
+        AGE_API void Stop()                                 { hook::Thunk<0x42E630>::Call<void>(this); }
+
+        /*
+            asNode virtuals
+        */
+
+        AGE_API void Update() override                      { hook::Thunk<0x42E4D0>::Call<void>(this); }
+        AGE_API void Reset() override                       { hook::Thunk<0x42E5F0>::Call<void>(this); }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginExtendClass<mmTimer, asNode>("mmTimer")
+                .addFunction("Start", &Start)
+                .addFunction("Stop", &Stop)
+                .endClass();
+        }
+    };
+
+    class RadialGauge : asNode {
+    public:
+        asLinearCS LinearCS;
+        float* ValuePtr;
+        float MaxValue;
+        float RotMin;
+        float RotMax;
+        float MinValue;
+        int field_ac;
+        int field_b0;
+        int field_b4;
+        modShader** ShaderSet;
+        modStatic* ModStatic;
+        Vector3 Pivot;
+        Vector3 Offset;
+        float field_d8;
+        float field_dc;
+        float field_e0;
+        int field_e4;
+        int field_e8;
+        int field_ec;
+        int field_f0;
+        int field_f4;
+        int field_f8;
+        int field_fc;
+        int field_100;
+        int field_104;
+        int field_108;
+        int field_10c;
+        int field_110;
+
+        static hook::Type<BOOL> bDebugPivot;
+
+        AGE_API void Cull(const Matrix34 *a1) { hook::Thunk<0x43E9F0>::Call<void>(this, a1); }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginExtendClass<RadialGauge, asNode>("RadialGauge")
+                .endClass();
+        }
+    };
+    ASSERT_SIZEOF(RadialGauge, 0x114);
+
+    class mmDashView : public asNode {
+    public:
+        int field_18;
+        int field_1c;
+        int field_20;
+        int field_24;
+        int field_28;
+        int field_2c;
+        int field_30;
+        int field_34;
+        int field_38;
+        int field_3c;
+        int field_40;
+        int field_44;
+        int field_48;
+        int field_4c;
+        int field_50;
+        int field_54;
+        int field_58;
+        int field_5c;
+        int field_60;
+        int field_64;
+        int field_68;
+        int field_6c;
+        int field_70;
+        int field_74;
+        int field_78;
+        int field_7c;
+        mmPlayer* m_PlayerPtr;
+        int field_84;
+        int field_88;
+        int field_8c;
+        RadialGauge RPMGauge;
+        RadialGauge SpeedGauge;
+        RadialGauge DamageGauge;
+        int field_3cc;
+        int field_3d0;
+        int field_3d4;
+        int field_3d8;
+        int field_3dc;
+        int field_3e0;
+        int field_3e4;
+        int field_3e8;
+        int field_3ec;
+        int field_3f0;
+        float field_3f4;
+        float field_3f8;
+        float field_3fc;
+        float WheelFact;
+        int field_404;
+        asLinearCS field_408;
+        asLinearCS field_488;
+        asLinearCS field_508;
+        float field_588;
+        float field_58c;
+        float field_590;
+        Vector3 DashPos;
+        Vector3 RoofPos;
+        int field_5ac;
+        int field_5b0;
+        int field_5b4;
+        int field_5b8;
+        int field_5bc;
+        int field_5c0;
+        int field_5c4;
+        int field_5c8;
+        int field_5cc;
+        float field_5d0;
+        float field_5d4;
+        float field_5d8;
+        int field_5dc;
+        modStatic* DamageNeedleModStatic;
+        modStatic* DashModStatic;
+        modStatic* DashExtraModStatic;
+        modStatic* GearIndicatorModStatic;
+        modStatic* RoofModStatic;
+        modStatic* SpeedNeedleModStatic;
+        modStatic* TachNeedleModStatic;
+        modStatic* WheelModStatic;
+        modShader** ShaderSet;
+        byte field_604;
+        Vector3 GearIndicatorPivot;
+        Vector3 DamageNeedlePivot;
+        Vector3 SpeedNeedlePivot;
+        Vector3 TachNeedlePivot;
+        Vector3 DmgOffset;
+        Vector3 SpeedOffset;
+        Vector3 TachOffset;
+        Vector3 WheelPos;
+        Vector3 DmgPivotOffset;
+        Vector3 SpeedPivotOffset;
+        Vector3 TachPivotOffset;
+        Vector3 WheelPivotOffset;
+        Vector3 GearPivotOffset;
+        float field_6a4;
+        float field_6a8;
+        float field_6ac;
+        float field_6b0;
+        float field_6b4;
+        float field_6b8;
+        float field_6bc;
+        float field_6c0;
+        float field_6c4;
+        float field_6c8;
+        float field_6cc;
+        float field_6d0;
+        BOOL PivotDebug;
+        int field_6d8;
+
+        AGE_API void Activate()                             { hook::Thunk<0x430E80>::Call<void>(this); }
+        AGE_API void Deactivate()                           { hook::Thunk<0x430EA0>::Call<void>(this); }
+
+        /*
+            asNode virtuals
+        */
+
+        AGE_API void Reset() override                       { hook::Thunk<0x430D90>::Call<void>(this); }
+        AGE_API void Update() override                      { hook::Thunk<0x430ED0>::Call<void>(this); }
+        AGE_API void Cull() override                        { hook::Thunk<0x430FB0>::Call<void>(this); }
+        AGE_API void FileIO(datParser& parser) override     { hook::Thunk<0x4315D0>::Call<void>(this, &parser); }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginExtendClass<mmDashView, asNode>("mmDashView")
+                .addFunction("Activate", &Activate)
+                .addFunction("Deactivate", &Deactivate)
+                .endClass();
+        }
+    };
+    ASSERT_SIZEOF(mmDashView, 0x6DC);
+
     class mmHUD : public asNode {
     private:
         byte _buffer[0xB9C]; // unconfirmed
     protected:
-        hook::Field<0x0B94, mmCDPlayer*> _cdplayer;
-        hook::Field<0x09BC, mmArrow> _arrow;
+        hook::Field<0xB94, mmCDPlayer*> _cdplayer;
+        hook::Field<0x9BC, mmArrow> _arrow;
+        hook::Field<0xA24, mmTimer> _timer;
+        hook::Field<0xA54, mmTimer> _timer2;
+        hook::Field<0xA84, mmTimer> _timer3;
+        hook::Field<0x1C, mmDashView> _dashView;
+        
     public:
         inline mmCDPlayer* getCdPlayer(void) const {
             return _cdplayer.get(this);
@@ -888,6 +1085,22 @@ namespace MM2
 
         inline mmArrow* getArrow(void) const {
             return _arrow.ptr(this);
+        };
+
+        inline mmTimer* getTimer(void) const {
+            return _timer.ptr(this);
+        };
+
+        inline mmTimer* getTimer2(void) const {
+            return _timer2.ptr(this);
+        };
+
+        inline mmTimer* getTimer3(void) const {
+            return _timer3.ptr(this);
+        };
+
+        inline mmDashView* getDashView(void) const {
+            return _dashView.ptr(this);
         };
 
         /*
@@ -1001,58 +1214,6 @@ namespace MM2
         }
     };
 
-    class mmDashView : public asNode {
-    private:
-        byte _buffer[0x6C0];
-    protected:
-        hook::Field<0x80, mmPlayer> _player;
-    public:
-        inline mmPlayer * getPlayer(void) const {
-            return _player.ptr(this);
-        };
-
-        AGE_API void Activate()                     { hook::Thunk<0x430E80>::Call<void>(this); }
-        AGE_API void Deactivate()                   { hook::Thunk<0x430EA0>::Call<void>(this); }
-
-        /*
-            asNode virtuals
-        */
-
-        AGE_API void Reset() override               { hook::Thunk<0x430D90>::Call<void>(this); }
-        AGE_API void Update() override              { hook::Thunk<0x430ED0>::Call<void>(this); }
-        AGE_API void Cull() override                { hook::Thunk<0x430FB0>::Call<void>(this); }
-        AGE_API void FileIO(datParser &parser) override
-                                                    { hook::Thunk<0x4315D0>::Call<void>(this, &parser); }
-
-        static void BindLua(LuaState L) {
-            LuaBinding(L).beginExtendClass<mmDashView, asNode>("mmDashView")
-                .addFunction("Activate", &Activate)
-                .addFunction("Deactivate", &Deactivate)
-                .endClass();
-        }
-    };
-    ASSERT_SIZEOF(mmDashView, 0x6DC);
-
-    class mmTimer : public asNode {
-    public:
-        AGE_API void Start()                        { hook::Thunk<0x42E610>::Call<void>(this); }
-        AGE_API void Stop()                         { hook::Thunk<0x42E630>::Call<void>(this); }
-
-        /*
-            asNode virtuals
-        */
-
-        AGE_API void Update() override              { hook::Thunk<0x42E4D0>::Call<void>(this); }
-        AGE_API void Reset() override               { hook::Thunk<0x42E5F0>::Call<void>(this); }
-
-        static void BindLua(LuaState L) {
-            LuaBinding(L).beginExtendClass<mmTimer, asNode>("mmTimer")
-                .addFunction("Start", &Start)
-                .addFunction("Stop", &Stop)
-                .endClass();
-        }
-    };
-
     class mmPlayer : public asNode {
     private:
         byte _buffer[0x23A4];
@@ -1062,9 +1223,6 @@ namespace MM2
     protected:
         hook::Field<0x2C, vehCar> _car;
         hook::Field<0x288, mmHUD> _hud;
-
-        hook::Field<0x2A4, mmDashView> _dashView;
-        hook::Field<0xD0C, mmTimer> _timer;
         
         hook::Field<0xE28, mmHudMap *> _hudmap;
         hook::Field<0xE2C, camViewCS *> _camView;
@@ -1085,9 +1243,6 @@ namespace MM2
     public:
         inline vehCar * getCar(void) const                  { return _car.ptr(this); }
         inline mmHUD * getHUD(void) const                   { return _hud.ptr(this); }
-
-        inline mmDashView * getDashView(void) const         { return _dashView.ptr(this); }
-        inline mmTimer * getTimer(void) const               { return _timer.ptr(this); }
 
         inline mmHudMap * getHudmap(void) const             { return _hudmap.get(this); }
         inline camViewCS * getCamView(void) const           { return _camView.get(this); }
