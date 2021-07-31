@@ -2593,7 +2593,7 @@ void mmDashViewHandler::Init(char* vehName, mmPlayer* player) {
                 if (gearTexture != nullptr)
                     dShader->Texture = gearTexture;
                 else
-                    dShader->Texture = gfxGetTexture("d", 1);
+                    dShader->Texture = gfxGetTexture("gear_d", 1);
             }
             else {
                 dShader->Texture = gfxGetTexture("d", 1);
@@ -2619,7 +2619,7 @@ void mmDashViewHandler::Init(char* vehName, mmPlayer* player) {
                 if (gearTexture != nullptr)
                     pShader->Texture = gearTexture;
                 else
-                    pShader->Texture = gfxGetTexture("p", 1);
+                    pShader->Texture = gfxGetTexture("gear_p", 1);
             }
             else {
                 pShader->Texture = gfxGetTexture("p", 1);
