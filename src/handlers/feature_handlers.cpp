@@ -1660,9 +1660,9 @@ void mmGameHandler::UpdateSteeringBrakes(void) {
     int autoReverse = *getPtr<int>(gameInputPtr, 0x18C);
     int *pedalsSwapped = getPtr<int>(gameInputPtr, 0x1D4); // swaps throttle and brake inputs if true
 
-    float v1 = *getPtr<float>(this, 0x40C);
-    float v2 = *getPtr<float>(this, 0x68);
-    float v3 = *getPtr<float>(this, 0x6C);
+    float throttleValue = *getPtr<float>(this, 0x40C);
+    float brakesValue = *getPtr<float>(this, 0x68);
+    float speedValue = *getPtr<float>(this, 0x6C);
     float speedMPH = carsim->getSpeedMPH();
     float brakes = inst->GetBrakes();
     float throttle = inst->GetThrottle();
@@ -1675,8 +1675,8 @@ void mmGameHandler::UpdateSteeringBrakes(void) {
 
     if (NETMGR->SessionOpen && reverse >= 2) {
         if (throttle >= 0.f) {
-            if (throttle > v1)
-                throttle = v1;
+            if (throttle > throttleValue)
+                throttle = throttleValue;
             engine->setThrottleInput(throttle);
         }
         else {
@@ -1689,19 +1689,19 @@ void mmGameHandler::UpdateSteeringBrakes(void) {
 
     if (transmission->IsAuto() && autoReverse) {
         if (reverse) {
-            if (speedMPH <= v3 && brakes >= v2 && throttle <= 0.1f) {
+            if (speedMPH <= speedValue && brakes >= brakesValue && throttle <= 0.1f) {
                 *pedalsSwapped = true;
                 transmission->SetReverse();
             }
         }
         else if (!reverse && *pedalsSwapped) {
-            if (speedMPH <= v3 && brakes >= v2 && throttle <= 0.1f) {
+            if (speedMPH <= speedValue && brakes >= brakesValue && throttle <= 0.1f) {
                 *pedalsSwapped = false;
                 transmission->SetForward();
             }
         }
         else if (!reverse && !*pedalsSwapped) {
-            if (speedMPH <= v3 && brakes >= v2 && throttle <= 0.1f) {
+            if (speedMPH <= speedValue && brakes >= brakesValue && throttle <= 0.1f) {
                 *pedalsSwapped = true;
             }
         }
@@ -2691,7 +2691,7 @@ void mmDashViewHandler::Cull() {
                 auto transmission = carsim->getTransmission();
                 float trottleInput = carsim->getEngine()->getThrottleInput();
                 float speedMPH = carsim->getSpeedMPH();
-                int gearId = transmission->getGear();
+                int gear = transmission->getGear();
 
                 dashMatrix.Set(&dashView->field_408.field_48);
                 float gearOffsetX = dashMatrix.m00 * dashView->GearPivotOffset.X + dashMatrix.m10 * dashView->GearPivotOffset.Y + dashMatrix.m20 * dashView->GearPivotOffset.Z;
@@ -2705,18 +2705,20 @@ void mmDashViewHandler::Cull() {
                 gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
                 if (transmission->IsAuto()) {
-                    if (trottleInput > 0.f || speedMPH >= 1.f) {
-                        if (gearId >= 2)
-                            dashView->GearIndicatorModStatic->Draw(dGearShader);
-                        else
-                            dashView->GearIndicatorModStatic->Draw(dashView->ShaderSet[gearId]);
+                    if (gear == 0) {
+                        dashView->GearIndicatorModStatic->Draw(dashView->ShaderSet[gear]);      // R
                     }
-                    else {
-                        dashView->GearIndicatorModStatic->Draw(pGearShader);
+                    else if (trottleInput <= 0.f && speedMPH < 1.f) {
+                        dashView->GearIndicatorModStatic->Draw(pGearShader);                    // P
                     }
+                    else if (gear == 1) {
+                        dashView->GearIndicatorModStatic->Draw(dashView->ShaderSet[gear]);      // N
+                    }
+                    else
+                        dashView->GearIndicatorModStatic->Draw(dGearShader);                    // D
                 }
                 else {
-                    dashView->GearIndicatorModStatic->Draw(dashView->ShaderSet[gearId]);
+                    dashView->GearIndicatorModStatic->Draw(dashView->ShaderSet[gear]);
                 }
             }
 
@@ -4077,6 +4079,9 @@ void vehCarHandler::Mm1StyleTransmission() {
     auto curDamage = car->getCarDamage()->getCurDamage();
     auto maxDamage = car->getCarDamage()->getMaxDamage();
 
+    void *gameInputPtr = *reinterpret_cast<void**>(0x6B1CF0);
+    int *pedalsSwapped = getPtr<int>(gameInputPtr, 0x1D4);
+
     if (curDamage < maxDamage) {
         if (transmission->IsAuto()) {
             if (carsim->getSpeedMPH() >= 1.f && carsim->OnGround()) {
@@ -4086,6 +4091,10 @@ void vehCarHandler::Mm1StyleTransmission() {
             // activate Handbrake if car goes under 1mph (P gear)
             if (carsim->getSpeedMPH() < 1.f && engine->getThrottleInput() < 0.1f) {
                 carsim->setHandbrake(1.f);
+                if (transmission->getGear() == 0 && carsim->getBrake() < 0.1f) {
+                    *pedalsSwapped = false;
+                    transmission->SetForward();
+                }
             }
         }
         else {
@@ -4940,27 +4949,9 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
     modStatic* tslight0 = lvlInstance::GetGeomTableEntry(geomSet + 23)->getHighestLOD();
     modStatic* tslight1 = lvlInstance::GetGeomTableEntry(geomSet + 24)->getHighestLOD();
 
-    if (cfgMm1StyleTransmission.Get()) {
-        auto throttle = carsim->getEngine()->getThrottleInput();
-        auto speedMPH = carsim->getSpeedMPH();
-        auto transmission = carsim->getTransmission();
-
-        //draw rlight
-        if (rlight != nullptr && gear == 0) {
-            if (transmission->IsAuto()) {
-                if (throttle > 0.f || speedMPH >= 1.f)
-                    rlight->Draw(shaders);
-            }
-            else {
-                rlight->Draw(shaders);
-            }
-        }
-    }
-    else {
-        //draw rlight
-        if (rlight != nullptr && gear == 0) {
-            rlight->Draw(shaders);
-        }
+    //draw rlight
+    if (rlight != nullptr && gear == 0) {
+        rlight->Draw(shaders);
     }
 
     //draw blight

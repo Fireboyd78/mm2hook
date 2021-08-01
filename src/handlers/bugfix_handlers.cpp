@@ -576,34 +576,38 @@ void mmBillInstanceHandler::Install() {
 */
 
 void mmGearIndicatorHandler::Draw() {
-    int *gearIndicator = *getPtr<int*>(this, 0x3C);
-    int *vehCarPtr = *getPtr<int*>(gearIndicator, 0x284);
-    int reverse = *getPtr<int>(vehCarPtr, 0x304);
-    int autoTransmission = *getPtr<int>(vehCarPtr, 0x300);
-    int gearID = -1;
-    float speedMPH = *getPtr<float>(vehCarPtr, 0x24C);
-    float throttle = *getPtr<float>(vehCarPtr, 0x2BC);
+    auto player = *getPtr<mmPlayer*>(this, 0x3C);
+    auto car = player->getCar();
+    auto carsim = car->getCarSim();
+    auto transmission = carsim->getTransmission();
+    float speedMPH = carsim->getSpeedMPH();
+    float throttle = carsim->getEngine()->getThrottleInput();
+    int gear = transmission->getGear();
 
-    if (autoTransmission) {
-        if (throttle > 0.f || speedMPH >= 1.f) {
-            if (!reverse)
-                gearID = 9;
-            else if (reverse == 1)
-                gearID = 10;
-            else
-                gearID = 11;
+    if (transmission->IsAuto()) {
+        if (gear == 0) {
+            gear = 9;  // R
+        }
+        else if (throttle <= 0.f && speedMPH < 1.f) {
+            gear = 10; // P
+        }
+        else if (gear == 1) {
+            gear = 0;  // N
         }
         else {
-            gearID = 0;
+            gear = 11; // D
         }
     }
-    if (!autoTransmission) {
-        if (!reverse)
-            gearID = 9;
-        else if (reverse == 1)
-            gearID = 10;
-        else
-            gearID = reverse - 1;
+    else {
+        if (gear == 0) {
+            gear = 9;  // R
+        }
+        else if (gear == 1) {
+            gear = 0;  // N
+        }
+        else {
+            gear = gear - 1;
+        }
     }
 
     // get gfxPipeline::CopyBitmap stuff
@@ -612,9 +616,9 @@ void mmGearIndicatorHandler::Draw() {
     int *v3 = *getPtr<int*>(this, 0x38);
     int v4 = *getPtr<int>(v3, 0x20);
     int v5 = *getPtr<int>(v3, 0x24);
-    auto *bitmap = *getPtr<gfxBitmap*>(this, gearID * 4);
+    auto bitmap = *getPtr<gfxBitmap*>(this, gear * 4);
     int width = bitmap->Width;
-    int height = bitmap ->Height;
+    int height = bitmap->Height;
     
     gfxPipeline::CopyBitmap(
         v1 + v4,     // destX
@@ -628,29 +632,11 @@ void mmGearIndicatorHandler::Draw() {
 }
 
 void mmGearIndicatorHandler::Install() {
-    if (vehCarModel::mm1StyleTransmission) {
-        InstallCallback("mmGearIndicatorHandler::Draw", "Adds the unused P gear indicator to the HUD.",
-            &Draw, {
-                cb::call(0x431B26),
-            }
-        );
-    }
-
-    InstallPatch("Replace N letter with P", {
-        0xB8, 0xD4, 0x52, 0x5C, 0x00,    // mov eax, offset aDigitac_gear_p
-        0x75, 0x05,                      // jnz short loc_43F132
-        0xB8, 0xE8, 0x52, 0x5C, 0x00,    // mov eax, offset aDigitac_gear_0
-    }, {
-        0x43F126 // mmGearIndicator::Init
-    });
-
-    InstallPatch("Replace P letter with N", {
-        0xB8, 0x64, 0x52, 0x5C, 0x00,    // mov eax, offset aDigitac_gear_n
-        0x75, 0x05,                      // jnz short loc_43F1AF
-        0xB8, 0x78, 0x52, 0x5C, 0x00,    // mov eax, offset aDigitac_gear_3
-    }, {
-        0x43F1A3 // mmGearIndicator::Init
-    });
+    InstallCallback("mmGearIndicatorHandler::Draw", "Adds the unused P gear indicator to the HUD.",
+        &Draw, {
+            cb::call(0x431B26),
+        }
+    );
 }
 
 /*
@@ -1610,43 +1596,6 @@ void vehSemiCarAudioBugfixHandler::UpdateAirBlow()
     }
 }
 
-void vehSemiCarAudioBugfixHandler::UpdateReverse()
-{
-    auto carAudio = reinterpret_cast<vehCarAudio*>(this);
-    auto carsim = carAudio->getCarSim();
-    auto reverseSound = *getPtr<AudSoundBase*>(this, 0x138);
-    auto transmission = carsim->getTransmission();
-    float throttle = carsim->getEngine()->getThrottleInput();
-    float speed = carsim->getSpeedMPH();
-
-    if (transmission->IsAuto() && reverseSound != nullptr) {
-        if (transmission->getGear() == 0) {
-            if (throttle > 0.f || speed >= 1.f) {
-                if (!reverseSound->IsPlaying())
-                    reverseSound->PlayLoop(-1.f, -1.f);
-            }
-            else {
-                if (reverseSound->IsPlaying())
-                    reverseSound->Stop();
-            }
-        }
-        else {
-            if (reverseSound->IsPlaying())
-                reverseSound->Stop();
-        }
-    }
-    if (!transmission->IsAuto() && reverseSound != nullptr) {
-        if (transmission->getGear() == 0) {
-            if (!reverseSound->IsPlaying())
-                reverseSound->PlayLoop(-1.f, -1.f);
-        }
-        else {
-            if (reverseSound->IsPlaying())
-                reverseSound->Stop();
-        }
-    }
-}
-
 void vehSemiCarAudioBugfixHandler::Init(MM2::vehCarSim * carsim, MM2::vehCarDamage * cardamage, char * basename, bool a5, bool a6, bool a7)
 {
     //set some things in the semi audio class
@@ -1706,15 +1655,6 @@ void vehSemiCarAudioBugfixHandler::SetNon3DParams()
 
 void vehSemiCarAudioBugfixHandler::Install()
 {
-    if (vehCarModel::mm1StyleTransmission) {
-        InstallCallback("vehSemiCarAudio::Init", "Fix semi reverse audio.",
-            &UpdateReverse, {
-                cb::call(0x4DCB35),
-                cb::call(0x4DCB5A),
-            }
-        );
-    }
-
     if (!cfgAirbrakeFix.Get())
         return;
 

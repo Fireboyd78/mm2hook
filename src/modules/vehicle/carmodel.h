@@ -33,7 +33,7 @@ namespace MM2
         static float HeadlightFlashingSpeed;
         static bool PartReflections;
         static bool WheelReflections;
-        static bool mm1StyleTransmission; //god this is horrible...
+        static bool mm1StyleTransmission;
         static bool breakableRenderTweak;
 
         //light states
@@ -1312,25 +1312,8 @@ namespace MM2
 
                 //draw rlight
                 modStatic* rlight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 4)->getHighestLOD();
-                if (mm1StyleTransmission) {
-                    auto throttle = carsim->getEngine()->getThrottleInput();
-                    auto speedMPH = carsim->getSpeedMPH();
-                    auto transmission = carsim->getTransmission();
-
-                    if (rlight != nullptr && gear == 0) {
-                        if (transmission->IsAuto()) {
-                            if (throttle > 0.f || speedMPH >= 1.f)
-                                rlight->Draw(shaders);
-                        }
-                        else {
-                            rlight->Draw(shaders);
-                        }
-                    }
-                }
-                else {
-                    if (rlight != nullptr && gear == 0) {
-                        rlight->Draw(shaders);
-                    }
+                if (rlight != nullptr && gear == 0) {
+                    rlight->Draw(shaders);
                 }
             }
 
