@@ -2553,6 +2553,10 @@ void mmDashViewHandler::Init(char* vehName, mmPlayer* player) {
     hook::Thunk<0x430890>::Call<void>(this, vehName, player);
 
     auto dashView = reinterpret_cast<mmDashView*>(this);
+
+    if (!dashView->field_604)
+        return;
+
     auto model = dashView->m_PlayerPtr->getCar()->getModel();
     int geomId = model->getGeomSetId();
     auto geomTableEntry = lvlInstance::GetGeomTableEntry(geomId);
