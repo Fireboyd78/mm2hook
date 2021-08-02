@@ -3528,8 +3528,7 @@ void mmPlayerHandler::Update() {
 
     //check if dashboard model is missing
     if (enableMissingDashboardFixCached) {
-        string_buf<80> buffer("%s_dash", basename);
-        if (!datAssetManager::Exists("geometry", buffer, "pkg")) {
+        if (!player->getHUD()->getDashView()->field_604) {
             if (MMSTATE->ShowDash) {
                 player->getHUD()->DeactivateDash();
                 player->getCamView()->SetCam(player->getPovCam());

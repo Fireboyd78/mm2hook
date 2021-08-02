@@ -1442,11 +1442,9 @@ void mmViewMgrBugfixHandler::SetViewSetting(int a1)
 {
     mmGameManager *mgr = mmGameManager::Instance;
     auto player = mgr->getGame()->getPlayer();
-    auto basename = player->getCar()->getCarDamage()->GetName();
 
     //check if dashboard model is missing
-    string_buf<80> buffer("%s_dash", basename);
-    if (!datAssetManager::Exists("geometry", buffer, "pkg"))
+    if (!player->getHUD()->getDashView()->field_604)
         return;
 
     //call original
