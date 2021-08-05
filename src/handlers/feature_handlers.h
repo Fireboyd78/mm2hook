@@ -420,3 +420,9 @@ class mmExternalViewHandler {
 public:
     static void Install();
 };
+
+class vehEngineHandler {
+public:
+    void Update();
+    static void Install();
+};

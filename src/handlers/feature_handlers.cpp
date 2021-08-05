@@ -60,6 +60,7 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<vehTrailerInstanceFeatureHandler>("vehTrailerInstance"),
     CreateHandler<vehCableCarInstanceHandler>("vehCableCarInstance"),
     CreateHandler<vehSirenHandler>("vehSiren"),
+    CreateHandler<vehEngineHandler>("vehEngine"),
 
     CreateHandler<Dialog_NewPlayerHandler>("New player dialog"),
 
@@ -3491,7 +3492,6 @@ void mmPlayerHandler::Update() {
     auto engine = carsim->getEngine();
     auto basename = player->getCar()->getCarDamage()->GetName();
     auto flagsId = VehicleListPtr->GetVehicleInfo(basename)->GetFlags();
-    auto AIMAP = &aiMap::Instance;
 
     //check if we're out of the level
     int playerRoom = car->GetInst()->getRoomId();
@@ -4120,6 +4120,8 @@ void vehCarHandler::Mm1StyleTransmission() {
     }
 }
 
+float damageAmount = 0.f;
+
 void vehCarHandler::Update() {
     auto car = reinterpret_cast<vehCar*>(this);
     auto siren = car->getSiren();
@@ -4144,8 +4146,15 @@ void vehCarHandler::Update() {
 
     if (cfgPhysicalEngineDamage.Get()) {
         float damagePercent = (damage->getCurDamage() - damage->getMedDamage()) / (damage->getMaxDamage() - damage->getMedDamage());
-        if (damagePercent > 0.f && engine->getThrottleInput() > 0.1f) {
-            engine->setCurrentTorque((engine->getCurrentTorque() + (engine->getCurrentRPM() * 0.001f)) - (damagePercent * (engine->getMaxHorsePower() * 0.018f)));
+
+        if (damagePercent >= 0.f) {
+            if (damagePercent <= 1.f)
+                damageAmount = damagePercent;
+            else
+                damageAmount = 1.f;
+        }
+        else {
+            damageAmount = 0.f;
         }
     }
 
@@ -5319,6 +5328,52 @@ void mmExternalViewHandler::Install() {
             0x431A56,
         });
     }
+}
+
+/*
+    vehEngineHandler
+*/
+
+void vehEngineHandler::Update() {
+    auto engine = reinterpret_cast<vehEngine*>(this);
+
+    if (cfgPhysicalEngineDamage.Get()) {
+        float torque = engine->CalcTorque(engine->getThrottleInput());
+
+        float damage = 1.f - damageAmount - -0.3f;
+
+        if (damage > 0.f) {
+            if (damage >= 1.f)
+                damage = 1.f;
+        }
+        else {
+            damage = 0.f;
+        }
+        engine->setThrottleTorque(damage * torque);
+    }
+
+    //call original
+    hook::Thunk<0x4D8F30>::Call<void>(this);
+}
+
+void vehEngineHandler::Install() {
+    InstallVTableHook("vehEngine::Update",
+        &Update, {
+            0x5B2FF4,
+        }
+    );
+
+    if (!cfgPhysicalEngineDamage.Get())
+        return;
+
+    //remove Angels torque calculation
+    InstallPatch({
+        0x90, 0x90, 0x90, 0x90, 0x90, 0x90,
+        0x8B, 0x8B, 0x80, 0x0, 0x0, 0x0,
+        0x90, 0x90, 0x90
+    }, {
+        0x4D8F64,
+    });
 }
 
 #ifndef FEATURES_DECLARED
