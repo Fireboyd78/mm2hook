@@ -108,6 +108,11 @@ namespace MM2
             return this->EngineVisualMatrixPtr;
         }
 
+        inline vehCarSim* getCarSim()
+        {
+            return this->VehCarSimPtr;
+        }
+
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<vehEngine, asNode>("vehEngine")
                 //properties

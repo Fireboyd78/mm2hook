@@ -4113,14 +4113,11 @@ void vehCarHandler::Mm1StyleTransmission() {
         carsim->setBrake(1.f);
     }
 
-    // attach drive train if we just hit throttle
-    // fixes the short delay that happens before the car moves
-    if (engine->getThrottleInput() > 0.f) {
+    // attach drivetrain to avoid engine stuttering
+    if (transmission->getGear() != 1) {
         drivetrain->Attach();
     }
 }
-
-float damageAmount = 0.f;
 
 void vehCarHandler::Update() {
     auto car = reinterpret_cast<vehCar*>(this);
@@ -4142,20 +4139,6 @@ void vehCarHandler::Update() {
 
     if (vehCarModel::mm1StyleTransmission) {
         vehCarHandler::Mm1StyleTransmission();
-    }
-
-    if (cfgPhysicalEngineDamage.Get()) {
-        float damagePercent = (damage->getCurDamage() - damage->getMedDamage()) / (damage->getMaxDamage() - damage->getMedDamage());
-
-        if (damagePercent >= 0.f) {
-            if (damagePercent <= 1.f)
-                damageAmount = damagePercent;
-            else
-                damageAmount = 1.f;
-        }
-        else {
-            damageAmount = 0.f;
-        }
     }
 
     // call original
@@ -5334,46 +5317,29 @@ void mmExternalViewHandler::Install() {
     vehEngineHandler
 */
 
-void vehEngineHandler::Update() {
+float vehEngineHandler::CalcTorque(float a1) {
     auto engine = reinterpret_cast<vehEngine*>(this);
 
-    if (cfgPhysicalEngineDamage.Get()) {
-        float torque = engine->CalcTorque(engine->getThrottleInput());
+    auto carDamage = reinterpret_cast<vehCarModel*>(engine->getCarSim()->getInstance())->getCar()->getCarDamage();
+    float damagePercent = (carDamage->getCurDamage() - carDamage->getMedDamage()) / (carDamage->getMaxDamage() - carDamage->getMedDamage());
 
-        float damage = 1.f - damageAmount - -0.3f;
+    //clamp from 0-70%
+    damagePercent = fmaxf(0.f, fminf(damagePercent, 0.7f));
+    float invDamagePercent = 1.f - damagePercent;
 
-        if (damage > 0.f) {
-            if (damage >= 1.f)
-                damage = 1.f;
-        }
-        else {
-            damage = 0.f;
-        }
-        engine->setThrottleTorque(damage * torque);
-    }
-
-    //call original
-    hook::Thunk<0x4D8F30>::Call<void>(this);
+    float torque = hook::Thunk<0x4D8ED0>::Call<float>(this, a1);
+    return torque * invDamagePercent;
 }
 
-void vehEngineHandler::Install() {
-    InstallVTableHook("vehEngine::Update",
-        &Update, {
-            0x5B2FF4,
-        }
-    );
-
+void vehEngineHandler::Install(void) {
     if (!cfgPhysicalEngineDamage.Get())
         return;
 
-    //remove Angels torque calculation
-    InstallPatch({
-        0x90, 0x90, 0x90, 0x90, 0x90, 0x90,
-        0x8B, 0x8B, 0x80, 0x0, 0x0, 0x0,
-        0x90, 0x90, 0x90
-    }, {
-        0x4D8F64,
-    });
+    InstallCallback("vehEngine::CalcTorque", "Overwrite torque calculation for engine damage",
+        &CalcTorque, {
+            cb::call(0x4D8F65),
+        }
+    );
 }
 
 #ifndef FEATURES_DECLARED

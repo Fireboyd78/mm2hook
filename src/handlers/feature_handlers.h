@@ -423,6 +423,6 @@ public:
 
 class vehEngineHandler {
 public:
-    void Update();
+    float CalcTorque(float a1);
     static void Install();
 };
