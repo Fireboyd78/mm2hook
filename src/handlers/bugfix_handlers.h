@@ -79,19 +79,6 @@ public:
     static void Install();
 };
 
-class mmGearIndicatorHandler
-{
-public:
-    void Draw();
-    static void Install();
-};
-
-class mmSpeedIndicatorHandler
-{
-public:
-    static void Install();
-};
-
 class cityLevelBugfixHandler
 {
 public:

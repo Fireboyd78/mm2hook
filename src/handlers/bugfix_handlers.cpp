@@ -31,8 +31,6 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<vehSemiCarAudioBugfixHandler>("vehSemiCarAudio"),
     CreateHandler<mmViewMgrBugfixHandler>("mmViewMgr"),
     CreateHandler<mmPlayerBugfixHandler>("mmPlayer"),
-    CreateHandler<mmGearIndicatorHandler>("mmGearIndicator"),
-    CreateHandler<mmSpeedIndicatorHandler>("mmSpeedIndicator"),
     CreateHandler<mmHudMapHandler>("mmHudMap"),
     CreateHandler<mmCDPlayerHandler>("mmCDPlayer"),
     CreateHandler<mmMirrorHandler>("mmMirror"),
@@ -569,109 +567,6 @@ void mmBillInstanceHandler::Install() {
 
     Installf("Installing fix for vertical billboarding of CnR checkpoints...");
     mem::nop(0x43F8FD, (6 * 3)); // 6 fld/fstp instructions (size: 3)
-}
-
-/*
-    mmGearIndicatorHandler
-*/
-
-void mmGearIndicatorHandler::Draw() {
-    auto player = *getPtr<mmPlayer*>(this, 0x3C);
-    auto car = player->getCar();
-    auto carsim = car->getCarSim();
-    auto transmission = carsim->getTransmission();
-    float speedMPH = carsim->getSpeedMPH();
-    float throttle = carsim->getEngine()->getThrottleInput();
-    int gear = transmission->getGear();
-
-    if (transmission->IsAuto()) {
-        if (gear == 0) {
-            gear = 9;  // R
-        }
-        else if (throttle <= 0.f && speedMPH < 1.f) {
-            gear = 10; // P
-        }
-        else if (gear == 1) {
-            gear = 0;  // N
-        }
-        else {
-            gear = 11; // D
-        }
-    }
-    else {
-        if (gear == 0) {
-            gear = 9;  // R
-        }
-        else if (gear == 1) {
-            gear = 0;  // N
-        }
-        else {
-            gear = gear - 1;
-        }
-    }
-
-    // get gfxPipeline::CopyBitmap stuff
-    int v1 = *getPtr<int>(this, 0x30);
-    int v2 = *getPtr<int>(this, 0x34);
-    int *v3 = *getPtr<int*>(this, 0x38);
-    int v4 = *getPtr<int>(v3, 0x20);
-    int v5 = *getPtr<int>(v3, 0x24);
-    auto bitmap = *getPtr<gfxBitmap*>(this, gear * 4);
-    int width = bitmap->Width;
-    int height = bitmap->Height;
-    
-    gfxPipeline::CopyBitmap(
-        v1 + v4,     // destX
-        v2 + v5,     // destY
-        bitmap,      // bitmap
-        0,           // srcX
-        0,           // srcY
-        width,       // width
-        height,      // height
-        true);       // srcColorKey
-}
-
-void mmGearIndicatorHandler::Install() {
-    InstallCallback("mmGearIndicatorHandler::Draw", "Adds the unused P gear indicator to the HUD.",
-        &Draw, {
-            cb::call(0x431B26),
-        }
-    );
-}
-
-/*
-    mmSpeedIndicator
-*/
-
-static ConfigValue<bool> cfgSpeedoUseUpperLimit("SpeedoUseUpperLimit", true);
-
-// due to _ftol's non-standard calling convention (and because we patched the call),
-// we have to make the compiler think there's an int in ECX (for __fastcall)
-// otherwise, it'll try popping a float from the stack :/
-int __fastcall Float2Long(int fValueNotAnInt) {
-    // this compiles down to moving ECX into a stack variable
-    // which then allows us to _properly_ convert the value
-    float actualValue = *(float*)&fValueNotAnInt;
-    int result = (int)actualValue;
-
-    return (result < 1000) ? result : 999;
-}
-
-void mmSpeedIndicatorHandler::Install() {
-    if (cfgSpeedoUseUpperLimit)
-    {
-        InstallCallback("mmSpeedIndicator::Draw", "Fixes graphical UI errors that occur when a vehicle travels too fast.",
-            &Float2Long, {
-                cb::call(0x43F345),
-            }
-        );
-
-        // change 'fld (...)' to 'mov ecx, (...)'
-        // this way we can pass it to Float2Long
-        InstallPatch({ 0x8B, 0x88 }, {
-            0x43F33F,
-        });
-    }
 }
 
 /*

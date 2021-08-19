@@ -22,7 +22,7 @@ declfield(vehCarDamage::EngineSmokeRule)(0x6AFED4);
 declfield(vehWheel::WeatherFriction)(0x5CF6B8);
 
 /*
-*   vehCarModel
+    vehCarModel
 */
 bool vehCarModel::EnableSpinningWheels = true;
 bool vehCarModel::EnableHeadlightFlashing = true;
@@ -43,7 +43,7 @@ bool vehCarModel::mm1StyleTransmission = false;
 bool vehCarModel::breakableRenderTweak = false;
 
 /*
-   vehBreakableMgr
+    vehBreakableMgr
 */
 bool vehBreakableMgr::EnableReflections = false;
 
