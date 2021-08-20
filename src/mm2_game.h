@@ -16,10 +16,14 @@ namespace MM2
     class mmCDPlayer;
     class mmArrow;
     class mmHUD;
+    class RadialGauge;
+    class mmDashView;
+    class mmExternalView;
     class mmPlayer;
     
     // External declarations
     extern class asNode;
+    extern class asLinearCS;
     extern class dgPhysEntity;
     extern class mmPopup;
     extern class vehCar;
@@ -895,7 +899,7 @@ namespace MM2
         }
     };
 
-    class RadialGauge : asNode {
+    class RadialGauge : public asNode {
     public:
         asLinearCS LinearCS;
         float* ValuePtr;
@@ -1056,7 +1060,7 @@ namespace MM2
         AGE_API void Reset() override                       { hook::Thunk<0x430D90>::Call<void>(this); }
         AGE_API void Update() override                      { hook::Thunk<0x430ED0>::Call<void>(this); }
         AGE_API void Cull() override                        { hook::Thunk<0x430FB0>::Call<void>(this); }
-        AGE_API void FileIO(datParser& parser) override     { hook::Thunk<0x4315D0>::Call<void>(this, &parser); }
+        AGE_API void FileIO(datParser &parser) override     { hook::Thunk<0x4315D0>::Call<void>(this, &parser); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<mmDashView, asNode>("mmDashView")
@@ -1066,6 +1070,318 @@ namespace MM2
         }
     };
     ASSERT_SIZEOF(mmDashView, 0x6DC);
+
+    class mmLinearGauge {
+    private:
+        float* MinValue;
+        float* MaxValue;
+        int DestX;
+        int DestY;
+        gfxBitmap* BitmapGauge;
+        gfxBitmap* BitmapLabel;
+        int DimensionType;
+        mmExternalView* ExternalView;
+    public:
+        inline float* getMinValue(void) {
+            return this->MinValue;
+        }
+
+        inline float* getMaxValue(void) {
+            return this->MaxValue;
+        }
+
+        inline int getDestX(void) {
+            return this->DestX;
+        }
+
+        inline void setDestX(int destX) {
+            this->DestX = destX;
+        }
+
+        inline int getDestY(void) {
+            return this->DestY;
+        }
+
+        inline void setDestY(int destY) {
+            this->DestY = destY;
+        }
+
+        inline gfxBitmap* getBitmapGauge(void) {
+            return this->BitmapGauge;
+        }
+
+        inline gfxBitmap* getBitmapLabel(void) {
+            return this->BitmapLabel;
+        }
+
+        inline int getDimensionType(void) {
+            return this->DimensionType;
+        }
+
+        inline mmExternalView* getExternalView(void) {
+            return this->ExternalView;
+        }
+
+        AGE_API void Init(char *bitmapName, float *curRPM, float *maxRPM, int dimensionType, mmExternalView *externalView)
+        {
+            hook::Thunk<0x43EE70>::Call<void>(this, bitmapName, curRPM, maxRPM, dimensionType, externalView);
+        }
+
+        AGE_API void InitOverlay(char *bitmapName)
+        {
+            hook::Thunk<0x43EED0>::Call<void>(this, bitmapName);
+        }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<mmLinearGauge>("mmLinearGauge")
+                .endClass();
+        }
+    };
+    ASSERT_SIZEOF(mmLinearGauge, 0x20);
+
+    class mmSlidingGauge : public mmLinearGauge {
+    private:
+        int BitmapDimension;
+    public:
+        inline int getBitmapDimension(void) {
+            return this->BitmapDimension;
+        }
+
+        AGE_API void Init(char *bitmapName, float *curDamage, float *maxDamage, int dimensionType, mmExternalView *externalView, int bitmapDimension)
+        {
+            hook::Thunk<0x43EFB0>::Call<void>(this, bitmapName, curDamage, maxDamage, dimensionType, externalView, bitmapDimension);
+        }
+
+    };
+    ASSERT_SIZEOF(mmSlidingGauge, 0x24);
+
+    class mmGearIndicator {
+    private:
+        gfxBitmap* BitmapGears[12];
+        int DestX;
+        int DestY;
+        mmExternalView* ExternalView;
+        mmPlayer* Player;
+    public:
+        inline gfxBitmap* getBitmapGears(int gear) {
+            if (gear < 0 || gear >= 12)
+                return nullptr;
+
+            return this->BitmapGears[gear];
+        }
+
+        inline int getDestX(void) {
+            return this->DestX;
+        }
+
+        inline void setDestX(int destX) {
+            this->DestX = destX;
+        }
+
+        inline int getDestY(void) {
+            return this->DestY;
+        }
+
+        inline void setDestY(int destY) {
+            this->DestY = destY;
+        }
+
+        inline mmExternalView* getExternalView(void) {
+            return this->ExternalView;
+        }
+
+        inline mmPlayer* getPlayer(void) {
+            return this->Player;
+        }
+
+        AGE_API void Init(mmExternalView *externalView, mmPlayer *player)
+        {
+            hook::Thunk<0x43F0C0>::Call<void>(this, externalView, player);
+        }
+    };
+    ASSERT_SIZEOF(mmGearIndicator, 0x40);
+
+    class mmSpeedIndicator {
+    private:
+        gfxBitmap* BitmapSpeeds[10];
+        int DestX;
+        int DestY;
+        mmExternalView* ExternalView;
+        vehCarSim* CarSim;
+    public:
+        inline gfxBitmap* getBitmapSpeeds(int speed) {
+            if (speed < 0 || speed >= 10)
+                return nullptr;
+
+            return this->BitmapSpeeds[speed];
+        }
+
+        inline int getDestX(void) {
+            return this->DestX;
+        }
+
+        inline void setDestX(int destX) {
+            this->DestX = destX;
+        }
+
+        inline int getDestY(void) {
+            return this->DestY;
+        }
+
+        inline void setDestY(int destY) {
+            this->DestY = destY;
+        }
+
+        inline mmExternalView* getExternalView(void) {
+            return this->ExternalView;
+        }
+
+        inline vehCarSim* getCarSim(void) {
+            return this->CarSim;
+        }
+
+        AGE_API void Init(mmExternalView *externalView, vehCarSim *carSim)
+        {
+            hook::Thunk<0x43F280>::Call<void>(this, externalView, carSim);
+        }
+    };
+    ASSERT_SIZEOF(mmSpeedIndicator, 0x38);
+
+    class mmExternalView : public asNode {
+    public:
+        static bool EnableMM1StyleHud;
+        static bool EnableMouseBar;
+        static bool SwitchFromMPH2KPH;
+    private:
+        vehCarSim* CarSim;
+        mmPlayer* Player;
+        int DestX;
+        int DestY;
+        gfxBitmap* MouseBar;
+        gfxBitmap* MouseAr;
+        int field_30;
+        int field_34;
+        int field_38;
+        int field_3c;
+        int field_40;
+        int field_44;
+        mmLinearGauge LinearGauge;
+        mmSlidingGauge SlidingGauge;
+        mmGearIndicator GearIndicator;
+        mmSpeedIndicator SpeedIndicator;
+    public:
+        inline vehCarSim* getCarSim(void) {
+            return this->CarSim;
+        }
+
+        inline mmPlayer* getPlayer(void) {
+            return this->Player;
+        }
+
+        inline int getDestX(void) {
+            return this->DestX;
+        }
+
+        inline void setDestX(int destX) {
+            this->DestX = destX;
+        }
+
+        inline int getDestY(void) {
+            return this->DestY;
+        }
+
+        inline void setDestY(int destY) {
+            this->DestY = destY;
+        }
+
+        inline gfxBitmap* getMouseBar(void) {
+            return this->MouseBar;
+        }
+
+        inline gfxBitmap* getMouseAr(void) {
+            return this->MouseAr;
+        }
+
+        inline int getField_30(void) {
+            return this->field_30;
+        }
+
+        inline void setField_30(int a1) {
+            this->field_30 = a1;
+        }
+
+        inline int getField_34(void) {
+            return this->field_34;
+        }
+
+        inline void setField_34(int a1) {
+            this->field_34 = a1;
+        }
+
+        inline int getField_38(void) {
+            return this->field_38;
+        }
+
+        inline void setField_38(int a1) {
+            this->field_38 = a1;
+        }
+
+        inline int getField_3c(void) {
+            return this->field_3c;
+        }
+
+        inline void setField_3c(int a1) {
+            this->field_3c = a1;
+        }
+
+        inline int getField_40(void) {
+            return this->field_40;
+        }
+
+        inline void setField_40(int a1) {
+            this->field_40 = a1;
+        }
+
+        inline int getField_44(void) {
+            return this->field_44;
+        }
+
+        inline void setField_44(int a1) {
+            this->field_44 = a1;
+        }
+
+        inline mmLinearGauge* getLinearGauge(void) {
+            return &this->LinearGauge;
+        }
+
+        inline mmSlidingGauge* getSlidingGauge(void) {
+            return &this->SlidingGauge;
+        }
+
+        inline mmGearIndicator* getGearIndicator(void) {
+            return &this->GearIndicator;
+        }
+
+        inline mmSpeedIndicator* getSpeedIndicator(void) {
+            return &this->SpeedIndicator;
+        }
+
+        /*
+            asNode virtuals
+        */
+
+        AGE_API void Cull() override                        { hook::Thunk<0x4319F0>::Call<void>(this); }
+        AGE_API void Update() override                      { hook::Thunk<0x4319E0>::Call<void>(this); }
+        AGE_API void Reset() override                       { hook::Thunk<0x4319D0>::Call<void>(this); }
+        AGE_API void ResChange(int width, int height) override
+                                                            { hook::Thunk<0x431880>::Call<void>(this, width, height); }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginExtendClass<mmExternalView, asNode>("mmExternalView")
+                .endClass();
+        }
+    };
+    ASSERT_SIZEOF(mmExternalView, 0x104);
 
     class mmHUD : public asNode {
     private:
@@ -1077,6 +1393,7 @@ namespace MM2
         hook::Field<0xA54, mmTimer> _timer2;
         hook::Field<0xA84, mmTimer> _timer3;
         hook::Field<0x1C, mmDashView> _dashView;
+        hook::Field<0x6F8, mmExternalView> _externalView;
         
     public:
         inline mmCDPlayer* getCdPlayer(void) const {
@@ -1101,6 +1418,10 @@ namespace MM2
 
         inline mmDashView* getDashView(void) const {
             return _dashView.ptr(this);
+        };
+
+        inline mmExternalView* getExternalView(void) const {
+            return _externalView.ptr(this);
         };
 
         /*
