@@ -48,28 +48,33 @@ namespace MM2
         float Aspect;
     public:
         inline byte getField_128(void) {
-            return field_128;
+            return this->field_128;
         }
 
         inline float getNear(void) {
-            return Near;
+            return this->Near;
         }
 
         inline float getFar(void) {
-            return Far;
+            return this->Far;
         }
 
         inline float getFov(void) {
-            return Fov;
+            return this->Fov;
         }
 
         inline float getAspect(void) {
-            return Aspect;
+            return this->Aspect;
+        }
+
+        inline D3DVIEWPORT7* getViewport() {
+            return &this->m_Viewport;
         }
 
         void Ortho(float a1, float a2, float a3, float a4, float a5, float a6) { hook::Thunk<0x4B1800>::Call<void>(this, a1, a2, a3, a4, a5, a6); }
         void Perspective(float Fov, float Aspect, float Near, float Far) { hook::Thunk<0x4B1640>::Call<void>(this, Fov, Aspect, Near, Far); }
     };
+    ASSERT_SIZEOF(gfxViewport, 0x17C);
 
     class cltLight
     {
@@ -475,6 +480,10 @@ namespace MM2
         static void SetFade(uint color) {
             hook::StaticThunk<0x4B2D20>::Call<void>(color);
         }
+
+        static void ClearRect(int a1, int a2, int a3, int a4, uint a5) {
+            hook::StaticThunk<0x4AB520>::Call<void>(a1, a2, a3, a4, a5);
+        }
     };
 
     // yes, this is actually how it is in MM2
@@ -697,6 +706,10 @@ namespace MM2
     // Statically available functions
     static gfxTexture * gfxGetTexture(const char *a1, bool a2 = true) {
         return hook::StaticThunk<0x4B30F0>::Call<gfxTexture*>(a1, a2);
+    }
+
+    static gfxBitmap * gfxGetBitmap(const char *a1, bool a2 = true, bool a3 = true) {
+        return hook::StaticThunk<0x4B3210>::Call<gfxBitmap*>(a1, a2, a3);
     }
 
     //

@@ -390,6 +390,10 @@ namespace MM2
             hook::Thunk<0x51FE20>::Call<void>(this);
         }
 
+        inline int getUnk_18(void) {
+            return this->unk_18;
+        }
+
         inline camCarCS * getCurrentCamera(void) const      { return carCS; }
         bool isCurrentCamera(camCarCS *cam)                 { return carCS == cam; }
 

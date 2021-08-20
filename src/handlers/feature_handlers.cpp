@@ -4022,7 +4022,6 @@ void dgBangerInstanceHandler::Install()
 */
 
 static ConfigValue<bool> cfgVehicleDebug("VehicleDebug", "vehicleDebug", false);
-static ConfigValue<bool> cfgPhysicalEngineDamage("PhysicalEngineDamage", true);
 
 void vehCarHandler::InitCar(LPCSTR vehName, int a2, int a3, bool a4, bool a5) {
     Displayf("Initializing vehicle (\"%s\", %d, %d, %s, %s)", vehName, a2, a3, bool_str(a4), bool_str(a5));
@@ -5300,22 +5299,10 @@ void aiPoliceOfficerFeatureHandler::Install() {
 }
 
 /*
-    mmExternalViewHandler
-*/
-
-void mmExternalViewHandler::Install() {
-    ConfigValue<bool> cfgEnableMouseBar("EnableMouseBar", false);
-
-    if (cfgEnableMouseBar.Get()) {
-        InstallPatch("Enables showing up the mouse bar for all input devices.", { 0x90, 0x90 }, {
-            0x431A56,
-        });
-    }
-}
-
-/*
     vehEngineHandler
 */
+
+static ConfigValue<bool> cfgPhysicalEngineDamage("PhysicalEngineDamage", true);
 
 float vehEngineHandler::CalcTorque(float a1) {
     auto engine = reinterpret_cast<vehEngine*>(this);
@@ -5340,6 +5327,412 @@ void vehEngineHandler::Install(void) {
             cb::call(0x4D8F65),
         }
     );
+}
+
+/*
+    mmExternalViewHandler
+*/
+
+void mmExternalViewHandler::ResChange(int width, int height) {
+    auto externalView = reinterpret_cast<mmExternalView*>(this);
+    auto linearGauge = externalView->getLinearGauge();
+    auto slidingGauge = externalView->getSlidingGauge();
+    auto gearIndicator = externalView->getGearIndicator();
+    auto speedIndicator = externalView->getSpeedIndicator();
+
+    auto player = externalView->getPlayer();
+    auto carsim = externalView->getCarSim();
+
+    int window_width = window_iWidth < 640;
+
+    externalView->setDestX(0);
+    externalView->setDestY(window_iHeight - (100 >> window_width));
+
+    if (mmExternalView::EnableMM1StyleHud) {
+        linearGauge->setDestX(8 >> window_width);
+        linearGauge->setDestY(74 >> window_width);
+    }
+    else {
+        linearGauge->setDestX(8 >> window_width);
+        linearGauge->setDestY(41 >> window_width);
+    }
+
+    char* speedBitmapName = "speed_ticks_half";
+    if (!window_width)
+        speedBitmapName = "speed_ticks";
+
+    linearGauge->Init(
+        speedBitmapName,
+        &*getPtr<float>(carsim, 0x2C4),
+        &*getPtr<float>(carsim, 0x280),
+        1, // 1 = Width, 0 = Height
+        externalView);
+
+    if (mmExternalView::EnableMM1StyleHud) {
+        slidingGauge->setDestX(72 >> window_width);
+        slidingGauge->setDestY(1 >> window_width);
+    }
+    else {
+        slidingGauge->setDestX(8 >> window_width);
+        slidingGauge->setDestY(88 >> window_width);
+    }
+
+    char* damageBitmapName = "damage_half";
+    if (!window_width)
+        damageBitmapName = "damage";
+
+    slidingGauge->Init(
+        damageBitmapName,
+        &*getPtr<float>(*getPtr<vehCarDamage*>(player, 0xEC), 0x30),
+        &*getPtr<float>(*getPtr<vehCarDamage*>(player, 0xEC), 0x34),
+        1, // 1 = Width, 0 = Height
+        externalView,
+        linearGauge->getBitmapGauge()->Width);
+
+    if (mmExternalView::EnableMM1StyleHud) {
+        char* labelBitmapName = "speed_half";
+        if (!window_width)
+            labelBitmapName = "speed";
+
+        slidingGauge->InitOverlay(labelBitmapName);
+    }
+    else {
+        char* labelBitmapName = "damage_lable_half";
+        if (!window_width)
+            labelBitmapName = "damage_lable";
+
+        slidingGauge->InitOverlay(labelBitmapName);
+    }
+
+    if (mmExternalView::EnableMM1StyleHud) {
+        gearIndicator->setDestX(136 >> window_width);
+        gearIndicator->setDestY(48 >> window_width);
+    }
+    else {
+        gearIndicator->setDestX(16 >> window_width);
+        gearIndicator->setDestY(46 >> window_width);
+    }
+
+    gearIndicator->Init(externalView, player);
+
+    if (mmExternalView::EnableMM1StyleHud) {
+        speedIndicator->setDestX(19 >> window_width);
+        speedIndicator->setDestY(31 >> window_width);
+    }
+    else {
+        speedIndicator->setDestX(19 >> window_width);
+        speedIndicator->setDestY(-14 >> window_width);
+    }
+
+    speedIndicator->Init(externalView, carsim);
+
+    //call asNode::ResChange
+    hook::Thunk<0x4A0E30>::Call<void>(this, width, height);
+}
+
+void mmExternalViewHandler::Cull() {
+    auto externalView = reinterpret_cast<mmExternalView*>(this);
+    auto player = externalView->getPlayer();
+    auto linearGauge = externalView->getLinearGauge();
+    auto slidingGauge = externalView->getSlidingGauge();
+    auto gearIndicator = externalView->getGearIndicator();
+    auto speedIndicator = externalView->getSpeedIndicator();
+
+    int window_width = window_iWidth;
+    int window_height = window_iHeight;
+
+    if (player->getCamView()->getUnk_18()) {
+        if (MMSTATE->MapMode != 3 && MMSTATE->MapMode != 2) {
+            int height = gfxCurrentViewport->getViewport()->dwY + gfxCurrentViewport->getViewport()->dwHeight;
+            gfxPipeline::ClearRect(0, height, (int)(window_width * 0.3f), window_height - height, 0xFF000000);
+        }
+    }
+
+    if (MMSTATE->InputDevice == 0 || mmExternalView::EnableMouseBar) {
+        auto mouseBar = externalView->getMouseBar();
+        auto mouseAr = externalView->getMouseAr();
+
+        externalView->setField_40((mouseBar->Width >> 1) - 15);
+        externalView->setField_44(mouseAr->Width >> 1);
+
+        externalView->setField_30((window_width - mouseBar->Width) >> 1);
+        externalView->setField_34(window_height - 2 * mouseBar->Height);
+
+        externalView->setField_38((window_width >> 1) + (int)(externalView->getField_40() * *getPtr<float>(player, 0x2264)) - externalView->getField_44());
+        externalView->setField_3c(externalView->getField_34() - 16);
+
+        gfxPipeline::CopyBitmap(externalView->getField_38(), externalView->getField_3c(), mouseAr, 0, 0, mouseAr->Width, mouseAr->Height, true);
+        gfxPipeline::CopyBitmap(externalView->getField_30(), externalView->getField_34(), mouseBar, 0, 0, mouseBar->Width, mouseBar->Height, true);
+    }
+
+    DrawSlidingGauge();
+    DrawGearIndicator();
+    DrawLinearGauge();
+    DrawSpeedIndicator();
+}
+
+void mmExternalViewHandler::DrawSlidingGauge() {
+    auto externalView = reinterpret_cast<mmExternalView*>(this);
+    auto slidingGauge = externalView->getSlidingGauge();
+    auto bitmapGauge = slidingGauge->getBitmapGauge();
+    auto bitmapLabel = slidingGauge->getBitmapLabel();
+
+    if (mmExternalView::EnableMM1StyleHud) {
+        int window_width = window_iWidth < 640;
+
+        auto carDamage = externalView->getPlayer()->getCar()->getCarDamage();
+
+        float damagePercent = (carDamage->getCurDamage() - carDamage->getMedDamage()) / (carDamage->getMaxDamage() - carDamage->getMedDamage());
+
+        bool elapsedTime = fmod(datTimeManager::ElapsedTime, 1.f) > 0.5f;
+
+        if (bitmapLabel != nullptr)
+            gfxPipeline::CopyBitmap(
+                externalView->getDestX(),
+                externalView->getDestY() - (11 >> window_width),
+                bitmapLabel,
+                0,
+                0,
+                bitmapLabel->Width,
+                bitmapLabel->Height,
+                true);
+
+        if (damagePercent > 0.75f && elapsedTime)
+            gfxPipeline::CopyBitmap(
+                slidingGauge->getDestX() + externalView->getDestX(),
+                slidingGauge->getDestY() + externalView->getDestY(),
+                bitmapGauge,
+                0,
+                0,
+                bitmapGauge->Width,
+                bitmapGauge->Height,
+                true);
+    }
+    else {
+        int dimensionType = slidingGauge->getDimensionType();
+        int bitmapDimension = slidingGauge->getBitmapDimension();
+        int dimension = 0;
+
+        if (dimensionType)
+            dimension = bitmapGauge->Width;
+        else
+            dimension = bitmapGauge->Height;
+
+        float damage = (*slidingGauge->getMinValue() / *slidingGauge->getMaxValue()) * (dimension - bitmapDimension);
+
+        int actualValue = (int)damage;
+
+        int result = (actualValue < (dimension - bitmapDimension)) ? actualValue : (dimension - bitmapDimension);
+
+        if (dimensionType)
+            gfxPipeline::CopyBitmap(
+                slidingGauge->getDestX() + externalView->getDestX(),
+                slidingGauge->getDestY() + externalView->getDestY(),
+                bitmapGauge,
+                result,
+                0,
+                bitmapDimension,
+                bitmapGauge->Height,
+                true);
+        else
+            gfxPipeline::CopyBitmap(
+                slidingGauge->getDestX() + externalView->getDestX(),
+                slidingGauge->getDestY() + externalView->getDestY(),
+                bitmapGauge,
+                0,
+                result,
+                bitmapGauge->Width,
+                bitmapDimension,
+                true);
+
+        if (bitmapLabel != nullptr)
+            gfxPipeline::CopyBitmap(
+                slidingGauge->getDestX() + externalView->getDestX(),
+                slidingGauge->getDestY() + externalView->getDestY(),
+                bitmapLabel,
+                0,
+                0,
+                bitmapLabel->Width,
+                bitmapLabel->Height,
+                true);
+    }
+}
+
+void mmExternalViewHandler::DrawGearIndicator() {
+    auto externalView = reinterpret_cast<mmExternalView*>(this);
+    auto gearIndicator = externalView->getGearIndicator();
+    auto player = gearIndicator->getPlayer();
+    auto carsim = player->getCar()->getCarSim();
+    auto transmission = carsim->getTransmission();
+    float speedMPH = carsim->getSpeedMPH();
+    float throttle = carsim->getEngine()->getThrottleInput();
+    int gear = transmission->getGear();
+
+    if (transmission->IsAuto()) {
+        if (gear == 0) {
+            gear = 9;  // R
+        }
+        else if (throttle <= 0.f && speedMPH < 1.f) {
+            gear = 10; // P
+        }
+        else if (gear == 1) {
+            gear = 0;  // N
+        }
+        else {
+            gear = 11; // D
+        }
+    }
+    else {
+        if (gear == 0) {
+            gear = 9;  // R
+        }
+        else if (gear == 1) {
+            gear = 0;  // N
+        }
+        else {
+            gear = gear - 1;
+        }
+    }
+
+    gfxPipeline::CopyBitmap(
+        gearIndicator->getDestX() + gearIndicator->getExternalView()->getDestX(),
+        gearIndicator->getDestY() + gearIndicator->getExternalView()->getDestY(),
+        gearIndicator->getBitmapGears(gear),
+        0,
+        0,
+        gearIndicator->getBitmapGears(gear)->Width,
+        gearIndicator->getBitmapGears(gear)->Height,
+        true);
+}
+
+void mmExternalViewHandler::DrawLinearGauge() {
+    auto externalView = reinterpret_cast<mmExternalView*>(this);
+    auto linearGauge = externalView->getLinearGauge();
+    auto bitmapGauge = linearGauge->getBitmapGauge();
+    auto bitmapLabel = linearGauge->getBitmapLabel();
+    int dimensionType = linearGauge->getDimensionType();
+    int dimension = 0;
+
+    if (dimensionType)
+        dimension = bitmapGauge->Width;
+    else
+        dimension = bitmapGauge->Height;
+
+    float RPM = (*linearGauge->getMinValue() / *linearGauge->getMaxValue()) * dimension;
+
+    int actualValue = (int)RPM;
+
+    int result = (actualValue < dimension) ? actualValue : dimension;
+
+    if (result) {
+        if (dimensionType)
+            gfxPipeline::CopyBitmap(
+                linearGauge->getDestX() + externalView->getDestX(),
+                linearGauge->getDestY() + externalView->getDestY(),
+                bitmapGauge,
+                0,
+                0,
+                result,
+                bitmapGauge->Height,
+                true);
+        else
+            gfxPipeline::CopyBitmap(
+                linearGauge->getDestX() + externalView->getDestX(),
+                linearGauge->getDestY() + externalView->getDestY(),
+                bitmapGauge,
+                0,
+                0,
+                bitmapGauge->Width,
+                result,
+                true);
+    }
+
+    if (bitmapLabel != nullptr)
+        gfxPipeline::CopyBitmap(
+            linearGauge->getDestX() + externalView->getDestX(),
+            linearGauge->getDestY() + externalView->getDestY(),
+            bitmapLabel,
+            0,
+            0,
+            bitmapLabel->Width,
+            bitmapLabel->Height,
+            true);
+}
+
+void mmExternalViewHandler::DrawSpeedIndicator() {
+    auto externalView = reinterpret_cast<mmExternalView*>(this);
+    auto speedIndicator = externalView->getSpeedIndicator();
+    auto carsim = speedIndicator->getCarSim();
+    float speedMPH = carsim->getSpeedMPH();
+
+    if (mmExternalView::SwitchFromMPH2KPH)
+        speedMPH *= 1.609344f;
+
+    int actualValue = (int)speedMPH;
+
+    int result = (actualValue < 1000) ? actualValue : 999;
+
+    int resultA = result / 100;
+    int resultB = result % 100 / 10;
+    int resultC = result % 10;
+
+    if (resultA) {
+        if (resultA < 10) {
+            gfxPipeline::CopyBitmap(
+                speedIndicator->getDestX() + externalView->getDestX(),
+                speedIndicator->getDestY() + externalView->getDestY(),
+                speedIndicator->getBitmapSpeeds(resultA),
+                0,
+                0,
+                speedIndicator->getBitmapSpeeds(resultA)->Width,
+                speedIndicator->getBitmapSpeeds(resultA)->Height,
+                true);
+        }
+    }
+
+    if (resultB || resultA) {
+        gfxPipeline::CopyBitmap(
+            speedIndicator->getDestX() + externalView->getDestX() + speedIndicator->getBitmapSpeeds(resultB)->Width + 1,
+            speedIndicator->getDestY() + externalView->getDestY(),
+            speedIndicator->getBitmapSpeeds(resultB),
+            0,
+            0,
+            speedIndicator->getBitmapSpeeds(resultB)->Width,
+            speedIndicator->getBitmapSpeeds(resultB)->Height,
+            true);
+    }
+
+    gfxPipeline::CopyBitmap(
+        speedIndicator->getDestX() + externalView->getDestX() + 2 * speedIndicator->getBitmapSpeeds(resultC)->Width + 1,
+        speedIndicator->getDestY() + externalView->getDestY(),
+        speedIndicator->getBitmapSpeeds(resultC),
+        0,
+        0,
+        speedIndicator->getBitmapSpeeds(resultC)->Width,
+        speedIndicator->getBitmapSpeeds(resultC)->Height,
+        true);
+}
+
+void mmExternalViewHandler::Install() {
+    InstallVTableHook("mmExternalView::ResChange",
+        &ResChange, {
+            0x5B0DC0,
+        }
+    );
+
+    InstallVTableHook("mmExternalView::Cull",
+        &Cull, {
+            0x5B0DB4,
+        }
+    );
+
+    ConfigValue<bool> cfgMm1StyleHud("MM1StyleHud", false);
+    ConfigValue<bool> cfgEnableMouseBar("EnableMouseBar", false);
+    ConfigValue<bool> cfgSwitchFromMPH2KPH("SwitchFromMPH2KPH", false);
+
+    mmExternalView::EnableMM1StyleHud = cfgMm1StyleHud.Get();
+    mmExternalView::EnableMouseBar = cfgEnableMouseBar.Get();
+    mmExternalView::SwitchFromMPH2KPH = cfgSwitchFromMPH2KPH.Get();
 }
 
 #ifndef FEATURES_DECLARED

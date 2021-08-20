@@ -416,13 +416,19 @@ public:
     static void Install();
 };
 
-class mmExternalViewHandler {
-public:
-    static void Install();
-};
-
 class vehEngineHandler {
 public:
     float CalcTorque(float a1);
+    static void Install();
+};
+
+class mmExternalViewHandler {
+public:
+    void ResChange(int width, int height);
+    void Cull();
+    void DrawSlidingGauge();
+    void DrawGearIndicator();
+    void DrawLinearGauge();
+    void DrawSpeedIndicator();
     static void Install();
 };
