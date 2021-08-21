@@ -5590,7 +5590,7 @@ void mmExternalViewHandler::DrawGearIndicator() {
             gear = 0;  // N
         }
         else {
-            gear = gear - 1;
+            gear -= 1; // R N 1 2 3 4 5 6
         }
     }
 
