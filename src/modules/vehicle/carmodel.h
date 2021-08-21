@@ -1209,7 +1209,7 @@ namespace MM2
             auto curDamage = car->getCarDamage()->getCurDamage();
             auto maxDamage = car->getCarDamage()->getMaxDamage();
             int gear = carsim->getTransmission()->getGear();
-            if (curDamage >= maxDamage && vehCarModel::MWStyleTotaledCar)
+            if (curDamage > maxDamage && vehCarModel::MWStyleTotaledCar)
                 return;
 
             //setup renderer

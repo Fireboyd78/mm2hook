@@ -1707,7 +1707,7 @@ void mmGameHandler::UpdateSteeringBrakes(void) {
             }
         }
         // reset throttle and brake inputs when the vehicle is destroyed
-        if (curDamage >= maxDamage && *pedalsSwapped)
+        if (curDamage > maxDamage && *pedalsSwapped)
             *pedalsSwapped = false;
     }
 }
@@ -2282,7 +2282,7 @@ void mmHudMapFeatureHandler::DrawOpponents() {
                 auto curDamage = car->getCarDamage()->getCurDamage();
                 auto maxDamage = car->getCarDamage()->getMaxDamage();
 
-                if (curDamage < maxDamage) {
+                if (curDamage <= maxDamage) {
                     if (hudMapColorStyle == 0) {
                         DrawIcon(0, opponentMtx);
                         *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
@@ -3382,7 +3382,7 @@ void mmPlayerHandler::BustPerp() {
                     resetTimer = 0.f;
                 }
             }
-            if (curDamage >= maxDamage) {
+            if (curDamage > maxDamage) {
                 enableBustedTimer = false;
                 bustedTimer = 0.f;
                 enableResetTimer = false;
@@ -3459,7 +3459,7 @@ void mmPlayerHandler::BustOpp() {
         auto opponentPos = oppCar->getModel()->GetPosition();
         auto playerPos = car->getModel()->GetPosition();
 
-        if (*getPtr<int>(oppCar, 0xEC) != 0 && curDamage < maxDamage)
+        if (*getPtr<int>(oppCar, 0xEC) != 0 && curDamage <= maxDamage)
             continue;
 
         if (*getPtr<int>(opponent, 0x27C) != 3) {
@@ -4084,7 +4084,7 @@ void vehCarHandler::Mm1StyleTransmission() {
     void *gameInputPtr = *reinterpret_cast<void**>(0x6B1CF0);
     int *pedalsSwapped = getPtr<int>(gameInputPtr, 0x1D4);
 
-    if (curDamage < maxDamage) {
+    if (curDamage <= maxDamage) {
         if (transmission->IsAuto()) {
             if (carsim->getSpeedMPH() >= 1.f && carsim->OnGround()) {
                 if (engine->getThrottleInput() < 0.1f && transmission->getGear() != 1)
@@ -4108,7 +4108,7 @@ void vehCarHandler::Mm1StyleTransmission() {
     }
     // setting up this case for crash course
     // fixes ai cops and opponents have no brakes if they're damaged out
-    if (curDamage >= maxDamage) {
+    if (curDamage > maxDamage) {
         carsim->setBrake(1.f);
     }
 
@@ -4123,8 +4123,6 @@ void vehCarHandler::Update() {
     auto siren = car->getSiren();
     auto audio = car->getAudio();
     auto model = car->getModel();
-    auto damage = car->getCarDamage();
-    auto engine = car->getCarSim()->getEngine();
     auto lightbar0 = model->getGenBreakableMgr()->Get(1);
     auto lightbar1 = model->getGenBreakableMgr()->Get(2);
 

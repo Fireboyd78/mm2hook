@@ -1210,7 +1210,7 @@ void aiRouteRacerHandler::Update() {
             auto policePos = copCar->getModel()->GetPosition();
             auto policeAud = copCar->getAudio()->GetPoliceCarAudioPtr();
 
-            if (*getPtr<int>(car, 0xEC) != 0 && curDamage < maxDamage)
+            if (*getPtr<int>(car, 0xEC) != 0 && curDamage <= maxDamage)
                 continue;
 
             if (*getPtr<WORD>(police, 0x977A) != 0 && *getPtr<WORD>(police, 0x977A) != 12) {
