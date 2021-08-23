@@ -3488,10 +3488,10 @@ int mmPlayerHandler::GetClosestOpp() {
     for (int i = 0; i < AIMAP->numOpponents; i++)
     {
         auto opponent = AIMAP->Opponent(j);
-        auto opponent2 = AIMAP->Police(closestOppId);
+        auto opponent2 = AIMAP->Opponent(closestOppId);
 
         float opponentDist = opponent->getCar()->getModel()->GetPosition().Dist(playerPos);
-        float opponent2Dist = opponent->getCar()->getModel()->GetPosition().Dist(playerPos);
+        float opponent2Dist = opponent2->getCar()->getModel()->GetPosition().Dist(playerPos);
 
         if (opponent2Dist > opponentDist)
             closestOppId = i;
