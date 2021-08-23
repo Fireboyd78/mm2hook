@@ -236,6 +236,8 @@ public:
     void PlayExplosion();
     void BustPerp();
     void BustOpp();
+    int GetClosestCop();
+    int GetClosestOpp();
     static void Install();
 };
 
