@@ -3504,11 +3504,15 @@ int mmPlayerHandler::GetClosestOpp() {
 
 void mmPlayerHandler::BustOpp() {
     auto player = reinterpret_cast<mmPlayer*>(this);
+    auto AIMAP = &aiMap::Instance;
+
+    if (AIMAP->numOpponents == 0)
+        return;
+
     auto car = player->getCar();
     auto audio = car->getAudio();
     auto siren = car->getSiren();
     auto playerPos = car->getModel()->GetPosition();
-    auto AIMAP = &aiMap::Instance;
     auto opponent = AIMAP->Opponent(GetClosestOpp());
     auto oppCar = opponent->getCar();
     auto carsim = oppCar->getCarSim();
@@ -3591,9 +3595,11 @@ void mmPlayerHandler::Update() {
     }
 
     if (bustedTarget != 0) {
-        if (audio->IsPolice(basename) && flagsId == 8) {
-            if (siren != nullptr && siren->Active)
-                BustOpp();
+        if (bustedTarget >= 2) {
+            if (audio->IsPolice(basename) && flagsId == 8) {
+                if (siren != nullptr && siren->Active)
+                    BustOpp();
+            }
         }
 
         if (bustedTarget == 1 || bustedTarget >= 3) {
