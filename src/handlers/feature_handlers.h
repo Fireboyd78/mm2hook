@@ -426,6 +426,7 @@ public:
 
 class mmExternalViewHandler {
 public:
+    void Init(MM2::mmPlayer *player);
     void ResChange(int width, int height);
     void Cull();
     void DrawSlidingGauge();

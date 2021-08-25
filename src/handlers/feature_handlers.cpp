@@ -5391,6 +5391,17 @@ void vehEngineHandler::Install(void) {
     mmExternalViewHandler
 */
 
+gfxBitmap* BustedBar;
+gfxBitmap* BustedIndicator;
+
+void mmExternalViewHandler::Init(mmPlayer *player) {
+    auto externalView = reinterpret_cast<mmExternalView*>(this);
+    externalView->Init(player);
+
+    BustedBar = gfxGetBitmap("busted_bar", 0, 0);
+    BustedIndicator = gfxGetBitmap("busted_indicator", 0, 0);
+}
+
 void mmExternalViewHandler::ResChange(int width, int height) {
     auto externalView = reinterpret_cast<mmExternalView*>(this);
     auto linearGauge = externalView->getLinearGauge();
@@ -5527,6 +5538,21 @@ void mmExternalViewHandler::Cull() {
     DrawGearIndicator();
     DrawLinearGauge();
     DrawSpeedIndicator();
+
+    if (bustedTarget == 1 || bustedTarget >= 3) {
+        if (BustedBar != nullptr && BustedIndicator != nullptr) {
+            int bustedBarDistX = (window_width - BustedBar->Width) >> 1;
+            int bustedBarDistY = (window_height - 3 * BustedBar->Height);
+
+            if (vehPoliceCarAudio::iNumCopsPursuingPlayer) {
+                float bustedPercent = BustedIndicator->Width - (BustedIndicator->Width * (bustedTimer / bustedTimeout));
+
+                gfxPipeline::CopyBitmap(bustedBarDistX, bustedBarDistY, BustedIndicator, 0, 0, (int)bustedPercent, BustedIndicator->Height, true);
+
+                gfxPipeline::CopyBitmap(bustedBarDistX, bustedBarDistY, BustedBar, 0, 0, BustedBar->Width, BustedBar->Height, true);
+            }
+        }
+    }
 }
 
 void mmExternalViewHandler::DrawSlidingGauge() {
@@ -5772,6 +5798,12 @@ void mmExternalViewHandler::DrawSpeedIndicator() {
 }
 
 void mmExternalViewHandler::Install() {
+    InstallCallback("mmExternalView::Init", "Use our external view initialization",
+        &Init, {
+            cb::call(0x42D617),
+        }
+    );
+
     InstallVTableHook("mmExternalView::ResChange",
         &ResChange, {
             0x5B0DC0,
