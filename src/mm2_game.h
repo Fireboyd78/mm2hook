@@ -1247,142 +1247,6 @@ namespace MM2
     };
     ASSERT_SIZEOF(mmSpeedIndicator, 0x38);
 
-    class mmExternalView : public asNode {
-    public:
-        static bool EnableMM1StyleHud;
-        static bool EnableMouseBar;
-        static bool SwitchFromMPH2KPH;
-    private:
-        vehCarSim* CarSim;
-        mmPlayer* Player;
-        int DestX;
-        int DestY;
-        gfxBitmap* MouseBar;
-        gfxBitmap* MouseAr;
-        int field_30;
-        int field_34;
-        int field_38;
-        int field_3c;
-        int field_40;
-        int field_44;
-        mmLinearGauge LinearGauge;
-        mmSlidingGauge SlidingGauge;
-        mmGearIndicator GearIndicator;
-        mmSpeedIndicator SpeedIndicator;
-    public:
-        inline vehCarSim* getCarSim(void) {
-            return this->CarSim;
-        }
-
-        inline mmPlayer* getPlayer(void) {
-            return this->Player;
-        }
-
-        inline int getDestX(void) {
-            return this->DestX;
-        }
-
-        inline void setDestX(int destX) {
-            this->DestX = destX;
-        }
-
-        inline int getDestY(void) {
-            return this->DestY;
-        }
-
-        inline void setDestY(int destY) {
-            this->DestY = destY;
-        }
-
-        inline gfxBitmap* getMouseBar(void) {
-            return this->MouseBar;
-        }
-
-        inline gfxBitmap* getMouseAr(void) {
-            return this->MouseAr;
-        }
-
-        inline int getField_30(void) {
-            return this->field_30;
-        }
-
-        inline void setField_30(int a1) {
-            this->field_30 = a1;
-        }
-
-        inline int getField_34(void) {
-            return this->field_34;
-        }
-
-        inline void setField_34(int a1) {
-            this->field_34 = a1;
-        }
-
-        inline int getField_38(void) {
-            return this->field_38;
-        }
-
-        inline void setField_38(int a1) {
-            this->field_38 = a1;
-        }
-
-        inline int getField_3c(void) {
-            return this->field_3c;
-        }
-
-        inline void setField_3c(int a1) {
-            this->field_3c = a1;
-        }
-
-        inline int getField_40(void) {
-            return this->field_40;
-        }
-
-        inline void setField_40(int a1) {
-            this->field_40 = a1;
-        }
-
-        inline int getField_44(void) {
-            return this->field_44;
-        }
-
-        inline void setField_44(int a1) {
-            this->field_44 = a1;
-        }
-
-        inline mmLinearGauge* getLinearGauge(void) {
-            return &this->LinearGauge;
-        }
-
-        inline mmSlidingGauge* getSlidingGauge(void) {
-            return &this->SlidingGauge;
-        }
-
-        inline mmGearIndicator* getGearIndicator(void) {
-            return &this->GearIndicator;
-        }
-
-        inline mmSpeedIndicator* getSpeedIndicator(void) {
-            return &this->SpeedIndicator;
-        }
-
-        /*
-            asNode virtuals
-        */
-
-        AGE_API void Cull() override                        { hook::Thunk<0x4319F0>::Call<void>(this); }
-        AGE_API void Update() override                      { hook::Thunk<0x4319E0>::Call<void>(this); }
-        AGE_API void Reset() override                       { hook::Thunk<0x4319D0>::Call<void>(this); }
-        AGE_API void ResChange(int width, int height) override
-                                                            { hook::Thunk<0x431880>::Call<void>(this, width, height); }
-
-        static void BindLua(LuaState L) {
-            LuaBinding(L).beginExtendClass<mmExternalView, asNode>("mmExternalView")
-                .endClass();
-        }
-    };
-    ASSERT_SIZEOF(mmExternalView, 0x104);
-
     class mmHUD : public asNode {
     private:
         byte _buffer[0xB9C]; // unconfirmed
@@ -1643,6 +1507,150 @@ namespace MM2
             .endClass();
         }
     };
+
+    class mmExternalView : public asNode {
+    public:
+        static bool EnableMM1StyleHud;
+        static bool EnableMouseBar;
+        static bool SwitchFromMPH2KPH;
+    private:
+        vehCarSim* CarSim;
+        mmPlayer* Player;
+        int DestX;
+        int DestY;
+        gfxBitmap* MouseBar;
+        gfxBitmap* MouseAr;
+        int field_30;
+        int field_34;
+        int field_38;
+        int field_3c;
+        int field_40;
+        int field_44;
+        mmLinearGauge LinearGauge;
+        mmSlidingGauge SlidingGauge;
+        mmGearIndicator GearIndicator;
+        mmSpeedIndicator SpeedIndicator;
+    public:
+        inline vehCarSim* getCarSim(void) {
+            return this->CarSim;
+        }
+
+        inline mmPlayer* getPlayer(void) {
+            return this->Player;
+        }
+
+        inline int getDestX(void) {
+            return this->DestX;
+        }
+
+        inline void setDestX(int destX) {
+            this->DestX = destX;
+        }
+
+        inline int getDestY(void) {
+            return this->DestY;
+        }
+
+        inline void setDestY(int destY) {
+            this->DestY = destY;
+        }
+
+        inline gfxBitmap* getMouseBar(void) {
+            return this->MouseBar;
+        }
+
+        inline gfxBitmap* getMouseAr(void) {
+            return this->MouseAr;
+        }
+
+        inline int getField_30(void) {
+            return this->field_30;
+        }
+
+        inline void setField_30(int a1) {
+            this->field_30 = a1;
+        }
+
+        inline int getField_34(void) {
+            return this->field_34;
+        }
+
+        inline void setField_34(int a1) {
+            this->field_34 = a1;
+        }
+
+        inline int getField_38(void) {
+            return this->field_38;
+        }
+
+        inline void setField_38(int a1) {
+            this->field_38 = a1;
+        }
+
+        inline int getField_3c(void) {
+            return this->field_3c;
+        }
+
+        inline void setField_3c(int a1) {
+            this->field_3c = a1;
+        }
+
+        inline int getField_40(void) {
+            return this->field_40;
+        }
+
+        inline void setField_40(int a1) {
+            this->field_40 = a1;
+        }
+
+        inline int getField_44(void) {
+            return this->field_44;
+        }
+
+        inline void setField_44(int a1) {
+            this->field_44 = a1;
+        }
+
+        inline mmLinearGauge* getLinearGauge(void) {
+            return &this->LinearGauge;
+        }
+
+        inline mmSlidingGauge* getSlidingGauge(void) {
+            return &this->SlidingGauge;
+        }
+
+        inline mmGearIndicator* getGearIndicator(void) {
+            return &this->GearIndicator;
+        }
+
+        inline mmSpeedIndicator* getSpeedIndicator(void) {
+            return &this->SpeedIndicator;
+        }
+
+        AGE_API void Init(mmPlayer* player)
+        {
+            this->Player = player;
+            this->CarSim = player->getCar()->getCarSim();
+            this->MouseBar = gfxGetBitmap("mouse_bar", 0, 0);
+            this->MouseAr = gfxGetBitmap("mouse_ar", 0, 0);
+        }
+
+        /*
+            asNode virtuals
+        */
+
+        AGE_API void Cull() override                        { hook::Thunk<0x4319F0>::Call<void>(this); }
+        AGE_API void Update() override                      { hook::Thunk<0x4319E0>::Call<void>(this); }
+        AGE_API void Reset() override                       { hook::Thunk<0x4319D0>::Call<void>(this); }
+        AGE_API void ResChange(int width, int height) override
+                                                            { hook::Thunk<0x431880>::Call<void>(this, width, height); }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginExtendClass<mmExternalView, asNode>("mmExternalView")
+                .endClass();
+        }
+    };
+    ASSERT_SIZEOF(mmExternalView, 0x104);
 
     template<>
     void luaAddModule<module_game>(LuaState L) {
