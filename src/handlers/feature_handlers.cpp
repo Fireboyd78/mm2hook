@@ -3378,6 +3378,7 @@ float resetTimer = 0.f;
 bool enableBustedTimer = false;
 bool enableOppBustedTimer = false;
 bool enableResetTimer = false;
+hook::Func<int> irand(0x4BBDF0);
 
 void mmPlayerHandler::BustPerp() {
     auto player = reinterpret_cast<mmPlayer*>(this);
@@ -3444,15 +3445,18 @@ void mmPlayerHandler::BustPerp() {
             if (*getPtr<vehCar*>(police, 0x9774) == player->getCar()) {
                 if (bustedTimer > bustedTimeout) {
                     mmGameManager *mgr = mmGameManager::Instance;
-                    auto game = mgr->getGame();
-                    auto soundBase = *getPtr<AudSoundBase*>(game, 0x8C);
+                    auto soundBase = *getPtr<AudSoundBase*>(mgr->getGame(), 0x8C);
                     if (!soundBase->IsPlaying()) {
-                        int i = rand() % 20 + 1;
-                        string_buf<80> buffer("ACOPAPP%02d%s", i, MMSTATE->CityName);
-                        if (soundBase->Load(buffer, i + 7, false)) {
+                        int i = irand() % 20 + 1;
+                        if (MMSTATE->GameMode == 0)
+                            soundBase->SetSoundHandleIndex(i + 1);
+                        if (MMSTATE->GameMode == 1)
+                            soundBase->SetSoundHandleIndex(i + 6);
+                        if (MMSTATE->GameMode == 3)
+                            soundBase->SetSoundHandleIndex(i + 5);
+                        if (MMSTATE->GameMode == 4 || MMSTATE->GameMode == 6)
                             soundBase->SetSoundHandleIndex(i + 7);
-                            soundBase->PlayOnce(-1.f, -1.f);
-                        }
+                        soundBase->PlayOnce(-1.f, -1.f);
                     }
                     if (policeAud != nullptr) {
                         policeAud->StopSiren();
@@ -3775,6 +3779,13 @@ void mmSingleRaceHandler::SetPriority(int a1) {
     auto soundBase = reinterpret_cast<AudSoundBase*>(this);
     soundBase->Load("arrest", 6, false);
     soundBase->SetVolume(1.f);
+
+    for (int i = 1; i <= 20; i++)
+    {
+        string_buf<128> buffer("ACOPAPP%02d%s", i, MMSTATE->CityName);
+        soundBase->Load(buffer, i + 6, false);
+    }
+
     soundBase->SetPriority(a1);
 }
 
@@ -3785,7 +3796,7 @@ void mmSingleRaceHandler::Install() {
         }
     );
 
-    InstallCallback("mmSingleRace::InitGameObjects", "Implements arrest wav sound in checkpoint race.",
+    InstallCallback("mmSingleRace::InitGameObjects", "Implements arrest and cop speech wav sounds in checkpoint race.",
         &SetPriority, {
             cb::call(0x41E48F),
         }
@@ -3793,6 +3804,11 @@ void mmSingleRaceHandler::Install() {
 
     InstallPatch("Skips Aud3DObjectManager check, since we aren't using it.", { 0x90, 0x90 }, {
         0x41E9E8,
+    });
+
+    //increase num wav sounds
+    InstallPatch({ 27 }, {
+        0x41E393 + 1,
     });
 }
 
@@ -3804,15 +3820,27 @@ void mmSingleBlitzHandler::SetPriority(int a1) {
     auto soundBase = reinterpret_cast<AudSoundBase*>(this);
     soundBase->Load("arrest", 7, false);
     soundBase->SetVolume(1.f);
+
+    for (int i = 1; i <= 20; i++)
+    {
+        string_buf<128> buffer("ACOPAPP%02d%s", i, MMSTATE->CityName);
+        soundBase->Load(buffer, i + 7, false);
+    }
+
     soundBase->SetPriority(a1);
 }
 
 void mmSingleBlitzHandler::Install() {
-    InstallCallback("mmSingleBlitz::InitGameObjects", "Implements arrest wav sound in blitz race.",
+    InstallCallback("mmSingleBlitz::InitGameObjects", "Implements arrest and cop speech wav sounds in blitz race.",
         &SetPriority, {
             cb::call(0x41B30A),
         }
     );
+
+    //increase num wav sounds
+    InstallPatch({ 28 }, {
+        0x41B1EE + 1,
+    });
 }
 
 /*
@@ -3823,15 +3851,27 @@ void mmSingleCircuitHandler::SetPriority(int a1) {
     auto soundBase = reinterpret_cast<AudSoundBase*>(this);
     soundBase->Load("arrest", 5, false);
     soundBase->SetVolume(1.f);
+
+    for (int i = 1; i <= 20; i++)
+    {
+        string_buf<128> buffer("ACOPAPP%02d%s", i, MMSTATE->CityName);
+        soundBase->Load(buffer, i + 5, false);
+    }
+
     soundBase->SetPriority(a1);
 }
 
 void mmSingleCircuitHandler::Install() {
-    InstallCallback("mmSingleCircuit::InitGameObjects", "Implements arrest wav sound in circuit race.",
+    InstallCallback("mmSingleCircuit::InitGameObjects", "Implements arrest and cop speech wav sounds in circuit race.",
         &SetPriority, {
             cb::call(0x41C9EF),
         }
     );
+
+    //increase num wav sounds
+    InstallPatch({ 26 }, {
+        0x41C917 + 1,
+    });
 }
 
 /*
@@ -3842,15 +3882,27 @@ void mmSingleStuntHandler::SetPriority(int a1) {
     auto soundBase = reinterpret_cast<AudSoundBase*>(this);
     soundBase->Load("arrest", 7, false);
     soundBase->SetVolume(1.f);
+
+    for (int i = 1; i <= 20; i++)
+    {
+        string_buf<128> buffer("ACOPAPP%02d%s", i, MMSTATE->CityName);
+        soundBase->Load(buffer, i + 7, false);
+    }
+
     soundBase->SetPriority(a1);
 }
 
 void mmSingleStuntHandler::Install() {
-    InstallCallback("mmSingleStunt::InitGameObjects", "Implements arrest wav sound in crash course.",
+    InstallCallback("mmSingleStunt::InitGameObjects", "Implements arrest and cop speech wav sounds in crash course.",
         &SetPriority, {
             cb::call(0x4166EE),
         }
     );
+
+    //increase num wav sounds
+    InstallPatch({ 28 }, {
+        0x4165DA + 1,
+    });
 }
 
 /*
@@ -3996,6 +4048,13 @@ void mmSingleRoamHandler::HitWaterHandler() {
 void mmSingleRoamHandler::SetPriority(int a1) {
     auto soundBase = reinterpret_cast<AudSoundBase*>(this);
     soundBase->Load("arrest", 1, false);
+
+    for (int i = 1; i <= 20; i++)
+    {
+        string_buf<128> buffer("ACOPAPP%02d%s", i, MMSTATE->CityName);
+        soundBase->Load(buffer, i + 1, false);
+    }
+
     soundBase->SetPriority(a1);
 }
 
@@ -4006,11 +4065,16 @@ void mmSingleRoamHandler::Install() {
         }
     );
 
-    InstallCallback("mmSingleRoam::InitGameObjects", "Implements arrest wav sound in cruise mode.",
+    InstallCallback("mmSingleRoam::InitGameObjects", "Implements arrest and cop speech wav sounds in cruise mode.",
         &SetPriority, {
             cb::call(0x41FBE6),
         }
     );
+
+    //increase num wav sounds
+    InstallPatch({ 22 }, {
+        0x41FBB0 + 1,
+    });
 }
 
 /*
