@@ -3422,22 +3422,24 @@ void mmPlayerHandler::BustPerp() {
         if (*getPtr<int>(player->getCar(), 0xEC) != 0 && !player->IsMaxDamaged())
             continue;
 
-        if (*getPtr<WORD>(police2, 0x977A) != 0 && *getPtr<WORD>(police2, 0x977A) != 12 && *getPtr<vehCar*>(police2, 0x9774) == player->getCar()) {
-            if (playerPos.Dist(police2Pos) <= 12.5f && carsim->getSpeedMPH() <= bustedMaxSpeed) {
-                enableBustedTimer = true;
+        if (bustedTimer <= bustedTimeout) {
+            if (*getPtr<WORD>(police2, 0x977A) != 0 && *getPtr<WORD>(police2, 0x977A) != 12 && *getPtr<vehCar*>(police2, 0x9774) == player->getCar()) {
+                if (playerPos.Dist(police2Pos) <= 12.5f && carsim->getSpeedMPH() <= bustedMaxSpeed) {
+                    enableBustedTimer = true;
+                }
+                else {
+                    enableBustedTimer = false;
+                    bustedTimer = 0.f;
+                }
             }
-            else {
-                enableBustedTimer = false;
-                bustedTimer = 0.f;
-            }
-        }
-        else if (*getPtr<WORD>(police, 0x977A) != 0 && *getPtr<WORD>(police, 0x977A) != 12 && *getPtr<vehCar*>(police, 0x9774) == player->getCar()) {
-            if (playerPos.Dist(policePos) <= 12.5f && carsim->getSpeedMPH() <= bustedMaxSpeed) {
-                enableBustedTimer = true;
-            }
-            else {
-                enableBustedTimer = false;
-                bustedTimer = 0.f;
+            else if (*getPtr<WORD>(police, 0x977A) != 0 && *getPtr<WORD>(police, 0x977A) != 12 && *getPtr<vehCar*>(police, 0x9774) == player->getCar()) {
+                if (playerPos.Dist(policePos) <= 12.5f && carsim->getSpeedMPH() <= bustedMaxSpeed) {
+                    enableBustedTimer = true;
+                }
+                else {
+                    enableBustedTimer = false;
+                    bustedTimer = 0.f;
+                }
             }
         }
         
