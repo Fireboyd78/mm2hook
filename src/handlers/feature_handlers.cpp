@@ -3547,6 +3547,9 @@ void mmPlayerHandler::BustOpp() {
     }
 }
 
+static ConfigValue<bool> cfgMm1StyleFlipOver("MM1StyleFlipOver", false);
+bool mm1StyleFlipOver = false;
+
 void mmPlayerHandler::Update() {
     auto player = reinterpret_cast<mmPlayer*>(this);
     auto car = player->getCar();
@@ -3659,8 +3662,9 @@ void mmPlayerHandler::Update() {
         }
     }
 
-    if (carsim->getWorldMatrix()->m11 <= 0.f)
+    if (mm1StyleFlipOver && carsim->getWorldMatrix()->m11 <= 0.f) {
         car->getStuck()->setStuckTime(0.f);
+    }
 
     //call original
     hook::Thunk<0x405760>::Call<void>(this);
@@ -3695,6 +3699,7 @@ void mmPlayerHandler::Install() {
     bustedTarget = cfgBustedTarget.Get();
     bustedMaxSpeed = cfgBustedMaxSpeed.Get();
     bustedTimeout = cfgBustedTimeout.Get();
+    mm1StyleFlipOver = cfgMm1StyleFlipOver.Get();
 
     InstallVTableHook("mmPlayer::Update",
         &Update, {
@@ -3719,10 +3724,12 @@ void mmPlayerHandler::Install() {
         });
     }
 
-    //fix collision detection
-    InstallPatch({ 0x8B, 0x81, 0xF4, 0x0, 0x0, 0x0 }, {
-        0x40493F, // mmPlayer::UpdateHOG
-    });
+    if (cfgMm1StyleFlipOver.Get()) {
+        //fix collision detection
+        InstallPatch({ 0x8B, 0x81, 0xF4, 0x0, 0x0, 0x0 }, {
+            0x40493F, // mmPlayer::UpdateHOG
+        });
+    }
 }
 
 /*
