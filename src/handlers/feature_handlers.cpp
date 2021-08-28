@@ -3450,13 +3450,13 @@ void mmPlayerHandler::BustPerp() {
                     auto soundBase = *getPtr<AudSoundBase*>(mgr->getGame(), 0x8C);
                     if (!soundBase->IsPlaying()) {
                         int i = irand() % 20 + 1;
-                        if (MMSTATE->GameMode == 0)
+                        if (MMSTATE->GameMode == Cruise)
                             soundBase->SetSoundHandleIndex(i + 1);
-                        if (MMSTATE->GameMode == 1)
+                        if (MMSTATE->GameMode == Checkpoint)
                             soundBase->SetSoundHandleIndex(i + 6);
-                        if (MMSTATE->GameMode == 3)
+                        if (MMSTATE->GameMode == Circuit)
                             soundBase->SetSoundHandleIndex(i + 5);
-                        if (MMSTATE->GameMode == 4 || MMSTATE->GameMode == 6)
+                        if (MMSTATE->GameMode == Blitz || MMSTATE->GameMode == CrashCourse)
                             soundBase->SetSoundHandleIndex(i + 7);
                         soundBase->PlayOnce(-1.f, -1.f);
                     }
@@ -3470,7 +3470,7 @@ void mmPlayerHandler::BustPerp() {
                     enableBustedTimer = false;
                     enableResetTimer = true;
                 }
-                if (MMSTATE->GameMode != 6) {
+                if (MMSTATE->GameMode != CrashCourse) {
                     if (*getPtr<int>(player, 0x2258)) {
                         police->StopSiren();
                         AIMAP->policeForce->UnRegisterCop(*getPtr<vehCar*>(police, 0x14), *getPtr<vehCar*>(police, 0x9774));
@@ -3623,22 +3623,22 @@ void mmPlayerHandler::Update() {
                     mmGameManager *mgr = mmGameManager::Instance;
                     auto game = mgr->getGame();
                     auto soundBase = *getPtr<AudSoundBase*>(game, 0x8C);
-                    if (MMSTATE->GameMode == 0) {
+                    if (MMSTATE->GameMode == Cruise) {
                         *getPtr<byte>(mmReplayManager::Instance, 0x19) = 1;
                         soundBase->SetSoundHandleIndex(1);
                         soundBase->PlayOnce(-1.f, -1.f);
                     }
                     else {
-                        if (MMSTATE->GameMode == 1)
+                        if (MMSTATE->GameMode == Checkpoint)
                             soundBase->SetSoundHandleIndex(6);
-                        if (MMSTATE->GameMode == 4 || MMSTATE->GameMode == 6) {
+                        if (MMSTATE->GameMode == Circuit)
+                            soundBase->SetSoundHandleIndex(5);
+                        if (MMSTATE->GameMode == Blitz || MMSTATE->GameMode == CrashCourse) {
                             soundBase->SetSoundHandleIndex(7);
                             player->getHUD()->getTimer()->Stop();
                             player->getHUD()->getTimer2()->Stop();
                             player->getHUD()->getTimer3()->Stop();
                         }
-                        if (MMSTATE->GameMode == 3)
-                            soundBase->SetSoundHandleIndex(5);
                         soundBase->PlayOnce(-1.f, -1.f);
                         game->getPopup()->ProcessEscape(0);
                         player->getHUD()->StopTimers();
