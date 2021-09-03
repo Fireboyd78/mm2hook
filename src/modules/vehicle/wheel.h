@@ -141,6 +141,14 @@ namespace MM2
         inline float getRotationRate(void) {
             return this->RotationRate;
         }
+
+        inline float getWobbleLimit(void) {
+            return this->WobbleLimit;
+        }
+
+        inline void setWobbleLimit(float limit) {
+            this->WobbleLimit = limit;
+        }
     public:
         AGE_API vehWheel()                                     { hook::Thunk<0x4D2190>::Call<void>(this); }
 

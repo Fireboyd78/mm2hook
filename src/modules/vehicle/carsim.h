@@ -253,6 +253,10 @@ namespace MM2
                 BackBackRightWheelPosDiff.Y = diffMatrix.m31 - getWheel(3)->getCenter().Y;
                 BackBackRightWheelPosDiff.Z = diffMatrix.m32 - getWheel(3)->getCenter().Z;
             }
+
+            //Copy WHL0 and WHL2 wobble limit values to WHL1 and WHL3 since their values aren't set by default
+            WheelFrontRight.setWobbleLimit(WheelFrontLeft.getWobbleLimit());
+            WheelBackRight.setWobbleLimit(WheelBackLeft.getWobbleLimit());
         }
 
         AGE_API int BottomedOut()                           { return hook::Thunk<0x4CBB40>::Call<int>(this); }
