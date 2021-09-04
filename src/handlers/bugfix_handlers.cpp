@@ -188,24 +188,36 @@ float hornPlayTime(vehCar *car) {
 
 BOOL aiPoliceOfficerHandler::OffRoad(vehCar *car) {
     auto AIMAP = &aiMap::Instance;
-    auto veh = findVehicle(car);
-    float outVal = 0.f;
 
-    if (veh != nullptr) {
-        auto roomId = car->getModel()->getRoomId();
-        auto roadId = veh->CurrentRoadId();
-        auto path = AIMAP->paths[roadId];
+    auto position = car->getModel()->GetPosition();
+    auto roomId = car->getModel()->getRoomId();
 
-        if (path->IsPosOnRoad(&car->getCarSim()->getICS()->getPosition(), 0.f, &outVal) > 1 && roomId < 900)
-            return TRUE;
-    }
+    short outId, outType;
+    float outDist;
 
-    for (int i = 0; i < 4; i++)
+    AIMAP->MapComponent(position, &outId, &outType, roomId);
+
+    aiMapComponentType component = (aiMapComponentType)outType;
+
+    if (component == aiMapComponentType::Road)
     {
-        auto wheel = car->getCarSim()->getWheel(i);
+        auto path = AIMAP->paths[outId];
 
-        if (!strcmp(wheel->getCurrentPhysicsMaterial()->getName(), "grass"))
+        if (path->IsPosOnRoad(&position, 0.f, &outDist) == 2) // 2 = Sidewalk
             return TRUE;
+
+        // This case is for roads with grass
+        for (int i = 0; i < 4; i++)
+        {
+            auto wheel = car->getCarSim()->getWheel(i);
+
+            if (!strcmp(wheel->getCurrentPhysicsMaterial()->getName(), "grass"))
+                return TRUE;
+        }
+    }
+    if (component == aiMapComponentType::None || component == aiMapComponentType::Shortcut)
+    {
+        return TRUE;
     }
 
     return FALSE;
