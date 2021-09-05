@@ -3347,11 +3347,10 @@ int mmPlayerHandler::GetClosestCop() {
     auto AIMAP = &aiMap::Instance;
 
     int closestCopId = 0;
-    int j = 0;
 
     for (int i = 0; i < AIMAP->numCops; i++)
     {
-        auto police = AIMAP->Police(j);
+        auto police = AIMAP->Police(i);
         auto police2 = AIMAP->Police(closestCopId);
 
         float policeDist = police->getVehiclePhysics()->getCar()->getModel()->GetPosition().Dist(playerPos);
@@ -3359,8 +3358,6 @@ int mmPlayerHandler::GetClosestCop() {
 
         if (police2Dist > policeDist)
             closestCopId = i;
-
-        ++j;
     }
 
     return closestCopId;
@@ -3489,11 +3486,10 @@ int mmPlayerHandler::GetClosestOpp() {
     auto AIMAP = &aiMap::Instance;
 
     int closestOppId = 0;
-    int j = 0;
 
     for (int i = 0; i < AIMAP->numOpponents; i++)
     {
-        auto opponent = AIMAP->Opponent(j);
+        auto opponent = AIMAP->Opponent(i);
         auto opponent2 = AIMAP->Opponent(closestOppId);
 
         float opponentDist = opponent->getCar()->getModel()->GetPosition().Dist(playerPos);
@@ -3501,8 +3497,6 @@ int mmPlayerHandler::GetClosestOpp() {
 
         if (opponent2Dist > opponentDist)
             closestOppId = i;
-
-        ++j;
     }
 
     return closestOppId;
