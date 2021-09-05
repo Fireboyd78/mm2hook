@@ -3787,6 +3787,7 @@ void mmSingleRaceHandler::SetPriority(int a1) {
     {
         string_buf<128> buffer("ACOPAPP%02d%s", i, MMSTATE->CityName);
         soundBase->Load(buffer, i + 6, false);
+        soundBase->SetVolume(1.f);
     }
 
     soundBase->SetPriority(a1);
@@ -3828,6 +3829,7 @@ void mmSingleBlitzHandler::SetPriority(int a1) {
     {
         string_buf<128> buffer("ACOPAPP%02d%s", i, MMSTATE->CityName);
         soundBase->Load(buffer, i + 7, false);
+        soundBase->SetVolume(1.f);
     }
 
     soundBase->SetPriority(a1);
@@ -3859,6 +3861,7 @@ void mmSingleCircuitHandler::SetPriority(int a1) {
     {
         string_buf<128> buffer("ACOPAPP%02d%s", i, MMSTATE->CityName);
         soundBase->Load(buffer, i + 5, false);
+        soundBase->SetVolume(1.f);
     }
 
     soundBase->SetPriority(a1);
@@ -3890,6 +3893,7 @@ void mmSingleStuntHandler::SetPriority(int a1) {
     {
         string_buf<128> buffer("ACOPAPP%02d%s", i, MMSTATE->CityName);
         soundBase->Load(buffer, i + 7, false);
+        soundBase->SetVolume(1.f);
     }
 
     soundBase->SetPriority(a1);
@@ -4051,11 +4055,13 @@ void mmSingleRoamHandler::HitWaterHandler() {
 void mmSingleRoamHandler::SetPriority(int a1) {
     auto soundBase = reinterpret_cast<AudSoundBase*>(this);
     soundBase->Load("arrest", 1, false);
+    soundBase->SetVolume(1.f);
 
     for (int i = 1; i <= 20; i++)
     {
         string_buf<128> buffer("ACOPAPP%02d%s", i, MMSTATE->CityName);
         soundBase->Load(buffer, i + 1, false);
+        soundBase->SetVolume(1.f);
     }
 
     soundBase->SetPriority(a1);
