@@ -1228,7 +1228,7 @@ void aiRouteRacerHandler::Update() {
             if (*getPtr<WORD>(police, 0x977A) != 0 && *getPtr<WORD>(police, 0x977A) != 12) {
                 if (*getPtr<vehCar*>(police, 0x9774) == opponent->getCar()) {
                     if (*getPtr<int>(this, 0x27C) != 3) {
-                        if (opponentPos.Dist(policePos) <= 12.5f) {
+                        if (opponentPos.Dist(policePos) <= 15.f) {
                             if (carsim->getSpeedMPH() <= aiOppBustedMaxSpeed) {
                                 aiOppBustedTimer += datTimeManager::Seconds;
                                 if (aiOppBustedTimer > aiOppBustedTimeout) {
