@@ -3341,6 +3341,22 @@ void mmPlayerHandler::PlayExplosion() {
     }
 }
 
+static ConfigValue<int> cfgBustedTarget("BustedTarget", 3);
+static ConfigValue<float> cfgBustedMaxSpeed("BustedMaxSpeed", 20.f);
+static ConfigValue<float> cfgBustedTimeout("BustedTimeout", 4.f);
+int bustedTarget = 3;
+float bustedMaxSpeed = 20.f;
+float bustedTimeout = 4.f;
+float bustedTimer = 0.f;
+float oppBustedTimer = 0.f;
+float resetTimer = 0.f;
+bool enableBustedTimer = false;
+bool invertBustedTimer = false;
+bool enableOppBustedTimer = false;
+bool invertOppBustedTimer = false;
+bool enableResetTimer = false;
+hook::Func<int> irand(0x4BBDF0);
+
 int mmPlayerHandler::GetClosestCop() {
     auto player = reinterpret_cast<mmPlayer*>(this);
     auto playerPos = player->getCar()->getModel()->GetPosition();
@@ -3363,20 +3379,6 @@ int mmPlayerHandler::GetClosestCop() {
     return closestCopId;
 }
 
-static ConfigValue<int> cfgBustedTarget("BustedTarget", 3);
-static ConfigValue<float> cfgBustedMaxSpeed("BustedMaxSpeed", 20.f);
-static ConfigValue<float> cfgBustedTimeout("BustedTimeout", 4.f);
-int bustedTarget = 3;
-float bustedMaxSpeed = 20.f;
-float bustedTimeout = 4.f;
-float bustedTimer = 0.f;
-float oppBustedTimer = 0.f;
-float resetTimer = 0.f;
-bool enableBustedTimer = false;
-bool enableOppBustedTimer = false;
-bool enableResetTimer = false;
-hook::Func<int> irand(0x4BBDF0);
-
 void mmPlayerHandler::BustPerp() {
     auto player = reinterpret_cast<mmPlayer*>(this);
     auto carsim = player->getCar()->getCarSim();
@@ -3385,6 +3387,9 @@ void mmPlayerHandler::BustPerp() {
 
     if (enableBustedTimer)
         bustedTimer += datTimeManager::Seconds;
+
+    if (invertBustedTimer && bustedTimer > 0.f)
+        bustedTimer -= datTimeManager::Seconds * 1.5f;
 
     for (int i = 0; i < AIMAP->numCops; i++)
     {
@@ -3423,19 +3428,25 @@ void mmPlayerHandler::BustPerp() {
             if (*getPtr<WORD>(police2, 0x977A) != 0 && *getPtr<WORD>(police2, 0x977A) != 12 && *getPtr<vehCar*>(police2, 0x9774) == player->getCar()) {
                 if (playerPos.Dist(police2Pos) <= 12.5f && carsim->getSpeedMPH() <= bustedMaxSpeed) {
                     enableBustedTimer = true;
+                    invertBustedTimer = false;
                 }
                 else {
                     enableBustedTimer = false;
-                    bustedTimer = 0.f;
+                    invertBustedTimer = true;
+                    if (bustedTimer < 0.f)
+                        bustedTimer = 0.f;
                 }
             }
             else if (*getPtr<WORD>(police, 0x977A) != 0 && *getPtr<WORD>(police, 0x977A) != 12 && *getPtr<vehCar*>(police, 0x9774) == player->getCar()) {
                 if (playerPos.Dist(policePos) <= 12.5f && carsim->getSpeedMPH() <= bustedMaxSpeed) {
                     enableBustedTimer = true;
+                    invertBustedTimer = false;
                 }
                 else {
                     enableBustedTimer = false;
-                    bustedTimer = 0.f;
+                    invertBustedTimer = true;
+                    if (bustedTimer < 0.f)
+                        bustedTimer = 0.f;
                 }
             }
         }
@@ -3521,21 +3532,28 @@ void mmPlayerHandler::BustOpp() {
     if (enableOppBustedTimer)
         oppBustedTimer += datTimeManager::Seconds;
 
+    if (invertOppBustedTimer && oppBustedTimer > 0.f)
+        oppBustedTimer -= datTimeManager::Seconds * 1.5f;
+
     if (*getPtr<int>(oppCar, 0xEC) == 0) {
         if (*getPtr<int>(opponent, 0x27C) != 3) {
             if (opponentPos.Dist(playerPos) <= 12.5f && carsim->getSpeedMPH() <= bustedMaxSpeed) {
                 enableOppBustedTimer = true;
+                invertOppBustedTimer = false;
                 if (oppBustedTimer > bustedTimeout) {
                     *getPtr<int>(opponent, 0x27C) = 3;
                     siren->Active = false;
                     audio->StopSiren();
                     enableOppBustedTimer = false;
+                    invertOppBustedTimer = false;
                     oppBustedTimer = 0.f;
                 }
             }
             else {
                 enableOppBustedTimer = false;
-                oppBustedTimer = 0.f;
+                invertOppBustedTimer = true;
+                if (oppBustedTimer < 0.f)
+                    oppBustedTimer = 0.f;
             }
         }
     }
