@@ -120,6 +120,10 @@ namespace MM2
             return &this->WorldMatrix;
         }
 
+        inline Vector3 getCenterOfGravity(void) {
+            return this->CenterOfGravity;
+        }
+
         inline float getMass(void) {
             return this->Mass;
         }

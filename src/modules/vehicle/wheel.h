@@ -149,6 +149,14 @@ namespace MM2
         inline void setWobbleLimit(float limit) {
             this->WobbleLimit = limit;
         }
+
+        inline float getWobbleAmount(void) {
+            return this->WobbleAmount;
+        }
+
+        inline vehCarSim* getCarSim() {
+            return this->m_CarSimPtr;
+        }
     public:
         AGE_API vehWheel()                                     { hook::Thunk<0x4D2190>::Call<void>(this); }
 

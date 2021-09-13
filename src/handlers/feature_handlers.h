@@ -327,6 +327,7 @@ public:
 class vehWheelHandler {
 public:
     float GetBumpDisplacement(float a1);
+    void Update();
     static void Install();
 };
 

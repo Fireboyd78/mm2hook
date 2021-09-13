@@ -3716,7 +3716,8 @@ void mmPlayerHandler::Install() {
     InstallVTableHook("mmPlayer::Update",
         &Update, {
             0x5B03BC
-    });
+        }
+    );
 
     if (cfgAmbientSoundsWithMusic) {
         InstallPatch("Enables positional ambient sounds with music.", { 0x90, 0x90 }, {
@@ -4454,32 +4455,37 @@ void vehCarModelFeatureHandler::Install() {
 
 static ConfigValue<bool> cfgWheelWobble("PhysicalWheelWobble", false);
 
-float vehWheelHandler::GetBumpDisplacement(float a1)
+void vehWheelHandler::Update()
 {
     //call original
-    float displacement = hook::Thunk<0x4D3440>::Call<float>(this, a1);
+    hook::Thunk<0x4D34E0>::Call<void>(this);
 
-    //get vars
-    float wheelWobble = *getPtr<float>(this, 0x218);
-    float totalWheelAngle = *getPtr<float>(this, 0x1E4);
-    float wobbleLimit = *getPtr<float>(this, 0x74);
+    auto wheel = reinterpret_cast<vehWheel*>(this);
+    auto carSim = wheel->getCarSim();
 
-    //no need to calculate if the vehicle isn't set up for this
-    if (wobbleLimit == 0.f) {
-        return displacement;
-    }
+    if (wheel->getWobbleLimit() == 0.f || carSim == nullptr || !carSim->OnGround())
+        return;
 
-    //calculate wobble factor
-    float wheelAngleAbs = fmodf(fabsf(totalWheelAngle), 6.28f);
-    float wheelAngleSub = wheelAngleAbs;
-    if (wheelAngleAbs > 3.14f) {
-        wheelAngleSub = 3.14f - (wheelAngleAbs - 3.14f);
-    }
-    float wheelWobbleFactor = (wheelAngleSub / 3.14f) * wobbleLimit;
+    auto carMatrix = carSim->getWorldMatrix();
+    auto icsMatrix = carSim->getICS()->getMatrix();
+    auto gravCenter = carSim->getCenterOfGravity();
 
-    //return displacement - wobble
-    float dispSubtraction = fabsf(wheelWobble) * wheelWobbleFactor;
-    return displacement - dispSubtraction;
+    carMatrix->Identity();
+
+    float angle = wheel->getMatrix().m11 * wheel->getWobbleAmount() * wheel->getWobbleLimit();
+
+    carMatrix->RotateX(angle * 0.25f);
+    carMatrix->RotateZ(angle * 0.25f);
+
+    carMatrix->Dot(icsMatrix);
+
+    float posX = icsMatrix->m00 * gravCenter.X + icsMatrix->m10 * gravCenter.Y + icsMatrix->m20 * gravCenter.Z;
+    float posY = icsMatrix->m01 * gravCenter.X + icsMatrix->m11 * gravCenter.Y + icsMatrix->m21 * gravCenter.Z;
+    float posZ = icsMatrix->m02 * gravCenter.X + icsMatrix->m12 * gravCenter.Y + icsMatrix->m22 * gravCenter.Z;
+
+    carMatrix->m30 += posX;
+    carMatrix->m31 += posY;
+    carMatrix->m32 += posZ;
 }
 
 void vehWheelHandler::Install()
@@ -4500,9 +4506,9 @@ void vehWheelHandler::Install()
     if (!cfgWheelWobble.Get())
         return;
 
-    InstallCallback("vehWheel::ComputeDwtdw", "Implementation of physical wheel wobbling.",
-        &GetBumpDisplacement, {
-            cb::call(0x4D2EDA), // vehWheel::ComputeDwtdw
+    InstallVTableHook("vehWheel::Update",
+        &Update, {
+            0x5B2DD4,
         }
     );
 }
