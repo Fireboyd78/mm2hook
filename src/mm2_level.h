@@ -10,6 +10,7 @@ namespace MM2
         luaBind<dgPath>(L);
         luaBind<dgPathSet>(L);
         luaBind<lvlSky>(L);
+        luaBind<lvlRoomInfo>(L);
         luaBind<lvlLevel>(L);
     }
 }

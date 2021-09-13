@@ -3405,8 +3405,8 @@ void mmPlayerHandler::BustPerp() {
         auto police2Pos = copCar->getModel()->GetPosition();
 
         if (vehPoliceCarAudio::iNumCopsPursuingPlayer == 0) {
-            if (**(BYTE**)(*getPtr<int>(lvlLevel::Singleton, 8) + 4 * copCar->getModel()->getRoomId()) & 4) {
-                if (lvlLevel::Singleton->GetWaterLevel(0) > copCarSim->getWorldMatrix()->m31) {
+            if (lvlLevel::Singleton->GetRoomInfo(car->getModel()->getRoomId())->Flags & static_cast<int>(RoomFlags::Water)) {
+                if (lvlLevel::Singleton->GetWaterLevel(car->getModel()->getRoomId()) > copCarSim->getWorldMatrix()->m31) {
                     enableBustedTimer = false;
                     bustedTimer = 0.f;
                     enableResetTimer = false;
@@ -4013,10 +4013,10 @@ void mmSingleRoamHandler::EscapeDeepWater() {
     auto car = player->getCar();
     auto carsim = car->getCarSim();
     auto carPos = car->getModel()->GetPosition();
-    auto singleton = *lvlLevel::Singleton;
+    auto level = *lvlLevel::Singleton;
 
-    if (**(BYTE**)(*getPtr<int>(lvlLevel::Singleton, 8) + 4 * car->getModel()->getRoomId()) & 4 &&
-        singleton->GetWaterLevel(0) > carsim->getWorldMatrix()->m31) {
+    if (level->GetRoomInfo(car->getModel()->getRoomId())->Flags & static_cast<int>(RoomFlags::Water) &&
+        level->GetWaterLevel(car->getModel()->getRoomId()) > carsim->getWorldMatrix()->m31) {
         if (cfgResetToNearestLocation.Get()) {
             ResetToNearestLocation();
         }

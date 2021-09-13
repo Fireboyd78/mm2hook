@@ -7,20 +7,72 @@ namespace MM2
 {
     // Forward declarations
     class lvlLevel;
+    struct lvlRoomInfo;
 
     // External declarations
     extern class asParticles;
     extern class gfxViewport;
 
     // Class definitions
+    enum class RoomFlags : unsigned __int8
+    {
+        Unknown = 0x1,
+        Subterranean = 0x2,
+        Water = 0x4,
+        Road = 0x8,
+        Intersection = 0x10,
+        SpecialBound = 0x20,
+        Warp = 0x40,
+        Instance = 0x80,
+    };
+
+
+    struct lvlRoomInfo
+    {
+        unsigned __int16 Flags;
+        unsigned __int16 InstanceFlags;
+        lvlInstance* FirstInstance;
+        lvlInstance* LastInstanceMaybe;
+        Vector4 BoundSphere;
+        int Color;
+        float MinY;
+        float MaxY;
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<lvlRoomInfo>("lvlRoomInfo")
+                .addVariable("Flags", &lvlRoomInfo::Flags, false)
+                .addVariable("InstanceFlags", &lvlRoomInfo::InstanceFlags, false)
+                .addVariable("FirstInstance", &lvlRoomInfo::FirstInstance, false)
+                .addVariable("LastInstance", &lvlRoomInfo::LastInstanceMaybe, false)
+                .addVariable("BoundSphere", &lvlRoomInfo::BoundSphere, false)
+                .addVariable("Color", &lvlRoomInfo::Color, false)
+                .addVariable("MinY", &lvlRoomInfo::MinY, false)
+                .addVariable("MaxY", &lvlRoomInfo::MaxY, false)
+                .endClass();
+        }
+    };
 
     class lvlLevel : public asCullable {
+    private:
+        int unk4;
+        lvlRoomInfo** RoomInfo;
+        int RoomCount;
+        lvlInstance* FirstInstance;
+        int InstanceCount;
+        char* Name;
     private:
         //lua drawables!
         inline void RegisterLuaDrawable(LuaRef self, LuaRef function, int phase = 1) {
             luaDrawableHandler::RegisterCallback(self, function, phase);
         }
 
+    public:
+        inline lvlRoomInfo* GetRoomInfo(int room)
+        {
+            if (this->RoomInfo == nullptr || room >= RoomCount)
+                return nullptr;
+            return this->RoomInfo[room];
+        }
     public:
         static hook::Type<lvlLevel*> Singleton;
 
@@ -92,6 +144,7 @@ namespace MM2
                 .addFunction("SetPtxHeight", &SetPtxHeight)
 
                 //functions
+                .addFunction("GetRoomInfo", &GetRoomInfo)
                 .addFunction("MoveToRoom", &MoveToRoom)
                 .addFunction("ResetInstances", &ResetInstances)
 
