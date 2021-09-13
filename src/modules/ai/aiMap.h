@@ -1,5 +1,4 @@
 #pragma once
-#include <modules\ai.h>
 
 #include "ArrayList.h"
 
@@ -30,7 +29,7 @@ namespace MM2
     extern class asNode;
 
     // Class definitions
-    enum aiMapComponentType
+    enum class aiMapComponentType
     {
         None = 0x0,
         Road = 0x1,
@@ -181,7 +180,7 @@ namespace MM2
 
         inline std::tuple<int, int> mapComponentTypeLua(int room) {
             int outId;
-            int componentType = this->MapComponentType(room, &outId);
+            int componentType = static_cast<int>(MapComponentType(room, &outId));
             return std::make_tuple(componentType, outId);
         }
 
