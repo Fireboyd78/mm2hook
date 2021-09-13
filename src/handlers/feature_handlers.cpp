@@ -4207,7 +4207,7 @@ void vehCarHandler::InitCarAudio(LPCSTR a1, BOOL a2) {
     }
 
     if (vehicleHasSiren || flagsId == 8 && !vehCarAudioContainer::IsPolice(a1)) {
-        Displayf("%s has a lightbar, but is not in the vehtypes file. Adding it.");
+        Displayf("%s has a lightbar, but is not in the vehtypes file. Adding it.", a1);
         string_buf<128> sirenBuffer("%s,ENDOFDATA", a1);
         vehCarAudioContainer::RegisterPoliceNames(NULL, (LPCSTR)sirenBuffer);
     }
@@ -4215,7 +4215,7 @@ void vehCarHandler::InitCarAudio(LPCSTR a1, BOOL a2) {
     string_buf<128> semiDataName("%s_semidata", a1);
     bool semiDataExists = datAssetManager::Exists("aud\\cardata\\shared", (LPCSTR)semiDataName, "csv");
     if (semiDataExists && !vehCarAudioContainer::IsSemiOrBus(a1)) {
-        Displayf("%s has semidata, but is not in the vehtypes file. Adding it.");
+        Displayf("%s has semidata, but is not in the vehtypes file. Adding it.", a1);
         string_buf<128> semiBuffer("%s,ENDOFDATA", a1);
         vehCarAudioContainer::RegisterSemiNames(NULL, (LPCSTR)semiBuffer);
     }
