@@ -160,7 +160,7 @@ namespace MM2
         AGE_API void BreakElectrics(Vector3* a1)            { hook::Thunk<0x4CEFE0>::Call<void>(this, a1); }
         AGE_API void ClearDamage()                          { hook::Thunk<0x4CDFF0>::Call<void>(this); }
         AGE_API void EjectOneshot()
-        { 
+        {
             if (!(byte)this->dword_a4) {
                 if (this->carSim->getSpeedMPH() > 100.f) {
                     this->wheelBreakableMgr->EjectAll(this->getRoomId());
@@ -172,7 +172,7 @@ namespace MM2
                     if (this->carSim->getSpeedMPH() <= 50.f)
                         return;
 
-                    int i = 3 * (rand() % 4);
+                    int i = 3 * (irand() % 4);
 
                     int wheelStatusFlag = 1 << i;
                     int hubStatusFlag = 1 << (i + 1);
@@ -184,7 +184,7 @@ namespace MM2
 
                     int ejectPackage = (wheelStatusFlag | hubStatusFlag | fenderStatusFlag);
 
-                    int ii = 3 * (rand() % 2);
+                    int ii = 3 * (irand() % 2);
 
                     int extraWheelStatusFlag = 1 << (ii + 12);
                     int extraHubStatusFlag = 1 << (ii + 13);
@@ -201,7 +201,7 @@ namespace MM2
                     return;
                 }
                 else {
-                    int i = 3 * (rand() % 4);
+                    int i = 3 * (irand() % 4);
 
                     int wheelStatusFlag = 1 << i;
                     int hubStatusFlag = 1 << (i + 1);
@@ -213,7 +213,7 @@ namespace MM2
 
                     int ejectPackage = (wheelStatusFlag | hubStatusFlag | fenderStatusFlag);
 
-                    int ii = 3 * (rand() % 4);
+                    int ii = 3 * (irand() % 4);
 
                     int wheelStatusFlag2 = 1 << ii;
                     int hubStatusFlag2 = 1 << (ii + 1);
@@ -225,7 +225,7 @@ namespace MM2
 
                     int ejectPackage2 = (wheelStatusFlag2 | hubStatusFlag2 | fenderStatusFlag2);
 
-                    int iii = 3 * (rand() % 2);
+                    int iii = 3 * (irand() % 2);
 
                     int extraWheelStatusFlag = 1 << (iii + 12);
                     int extraHubStatusFlag = 1 << (iii + 13);

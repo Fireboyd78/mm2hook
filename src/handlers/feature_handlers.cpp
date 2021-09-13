@@ -3355,7 +3355,6 @@ bool invertBustedTimer = false;
 bool enableOppBustedTimer = false;
 bool invertOppBustedTimer = false;
 bool enableResetTimer = false;
-hook::Func<int> irand(0x4BBDF0);
 
 int mmPlayerHandler::GetClosestCop() {
     auto player = reinterpret_cast<mmPlayer*>(this);

@@ -493,6 +493,8 @@ namespace MM2 {
 
     declhook(0x5346B0, _Func<int>::StdCall, $MyLoadStringA);
 
+    declhook(0x4BBDF0, _Func<int>, irand);
+
     declhook(0x5CED24, _Type<void(*)(int, LPCSTR, va_list)>, Printer);
 
     declhook(0x5E0CC4, _Type<void(*)(void)>, __VtResumeSampling);
