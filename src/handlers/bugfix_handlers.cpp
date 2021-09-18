@@ -177,11 +177,23 @@ float burnoutTime(vehCar *car) {
 }
 
 float hornPlayTime(vehCar *car) {
-    auto carAudio = car->getAudio()->GetCarAudioPtr();
-    auto hornSound = *getPtr<AudSoundBase*>(carAudio, 0x10C);
+    auto audio = car->getAudio();
+    char* vehName = car->getCarDamage()->GetName();
 
-    if (hornSound->IsPlaying())
-        return soundPlayTime += datTimeManager::Seconds;
+    if (audio->IsSemiOrBus(vehName)) {
+        auto semiAudio = audio->GetSemiCarAudioPtr();
+        auto hornSound = *getPtr<AudSoundBase*>(semiAudio, 0x10C);
+
+        if (hornSound->IsPlaying())
+            return soundPlayTime += datTimeManager::Seconds;
+    }
+    else {
+        auto carAudio = audio->GetCarAudioPtr();
+        auto hornSound = *getPtr<AudSoundBase*>(carAudio, 0x10C);
+
+        if (hornSound->IsPlaying())
+            return soundPlayTime += datTimeManager::Seconds;
+    }
 
     return soundPlayTime = 0.f;
 }
