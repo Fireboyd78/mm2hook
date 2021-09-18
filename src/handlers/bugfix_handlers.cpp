@@ -370,9 +370,9 @@ void aiPoliceOfficerHandler::Install() {
     });
 
     // fix cops being freezed when they're away from the player
-    InstallPatch({ 0x75 }, {
+    /*InstallPatch({ 0x75 }, {
         0x53DF4A
-    });
+    });*/
 
     // fix the physics bug that causes cops to rapidly accelerate while in the air
     if (cfgFlyingCopFix.Get()) {
