@@ -75,20 +75,28 @@ namespace MM2
     };
 
     class vehTrailerInstance : public lvlInstance {
-    protected:
-        hook::Field<0x14, vehTrailer *> _trailer;
+    private:
+        vehTrailer* Trailer;
+        int field_18;
+        Vector3 TrailerHitchPosition;
     public:
         inline vehTrailer * getTrailer(void) const {
-            return _trailer.get(this);
+            return this->Trailer;
+        }
+
+        inline Vector3 getTrailerHitchPosition(void) {
+            return this->TrailerHitchPosition;
         }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<vehTrailerInstance, lvlInstance>("vehTrailerInstance")
                 //properties
                 .addPropertyReadOnly("Trailer", &getTrailer)
+                .addProperty("TrailerHitchPosition", &getTrailerHitchPosition)
             .endClass();
         }
     };
+    ASSERT_SIZEOF(vehTrailerInstance, 0x28);
 
     // Lua initialization
 
