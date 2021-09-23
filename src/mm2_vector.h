@@ -54,6 +54,7 @@ namespace MM2
             declhook(0x4795C0, _MemberFunc<void>, Dot3x3Transpose);
             declhook(0x494C00, _MemberFunc<void>, Lerp);
             declhook(0x480AC0, _MemberFunc<void>, Negate);
+            declhook(0x45CD60, _MemberFunc<void>, Normalize);
 
             declhook(0x522B80, _MemberFunc<bool>, IsEqual);
 
@@ -217,6 +218,10 @@ namespace MM2
             $::Vector3::Negate(this, &vec);
         }
 
+        AGE_API void Normalize() {
+            $::Vector3::Normalize(this);
+        }
+
         AGE_API bool IsEqual(const Vector3& vec) const {
             return $::Vector3::IsEqual(this, &vec);
         }
@@ -273,7 +278,7 @@ namespace MM2
                 .addFunction("FlatDist", &FlatDist)
                 .addFunction("Approach", &Approach)
                 .addFunction("Negate", &Negate)
-
+                .addFunction("Normalize", &Normalize)
 
                 .endClass();
         }
