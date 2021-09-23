@@ -248,7 +248,7 @@ namespace MM2
             lvlInstance virtuals
         */
 
-        virtual AGE_API void Reset()                        PURE;
+        virtual AGE_API void Reset()                        { hook::Thunk<0x463280>::Call<void>(this); }
         virtual AGE_API const Vector3 & GetPosition()       PURE;
         virtual AGE_API int IsVisible(const gfxViewport *a1)
                                                             { return hook::Thunk<0x4649F0>::Call<int>(this, a1); }
