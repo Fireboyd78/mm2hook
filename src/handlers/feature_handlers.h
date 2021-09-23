@@ -360,6 +360,7 @@ public:
 
 class vehTrailerFeatureHandler {
 public:
+    void Update();
     static void Install();
 };
 

@@ -4911,13 +4911,50 @@ void aiVehicleInstanceFeatureHandler::Install() {
 }
 
 /*
-    vehTrailerHandler
+    vehTrailerFeatureHandler
 */
+
+void vehTrailerFeatureHandler::Update() {
+    auto trailer = reinterpret_cast<vehTrailer*>(this);
+    auto trailerJoint = trailer->getTrailerJoint();
+    auto carHitchOffset = trailer->getCarHitchOffset();
+    auto trailerHitchOffset = trailer->getTrailerHitchOffset();
+    auto carMatrix = trailerJoint->getCarSim()->getICS()->getMatrix();
+    auto trailerMatrix = trailer->getICS()->getMatrix();
+
+    float carHitchOffsetX = carMatrix->m00 * carHitchOffset.X + carMatrix->m10 * carHitchOffset.Y + carMatrix->m20 * carHitchOffset.Z + carMatrix->m30;
+    float carHitchOffsetY = carMatrix->m01 * carHitchOffset.X + carMatrix->m11 * carHitchOffset.Y + carMatrix->m21 * carHitchOffset.Z + carMatrix->m31;
+    float carHitchOffsetZ = carMatrix->m02 * carHitchOffset.X + carMatrix->m12 * carHitchOffset.Y + carMatrix->m22 * carHitchOffset.Z + carMatrix->m32;
+
+    Vector3 carHitchPos = Vector3(carHitchOffsetX, carHitchOffsetY, carHitchOffsetZ);
+
+    float trailerHitchOffsetX = trailerMatrix->m00 * trailerHitchOffset.X + trailerMatrix->m10 * trailerHitchOffset.Y + trailerMatrix->m20 * trailerHitchOffset.Z + trailerMatrix->m30;
+    float trailerHitchOffsetY = trailerMatrix->m01 * trailerHitchOffset.X + trailerMatrix->m11 * trailerHitchOffset.Y + trailerMatrix->m21 * trailerHitchOffset.Z + trailerMatrix->m31;
+    float trailerHitchOffsetZ = trailerMatrix->m02 * trailerHitchOffset.X + trailerMatrix->m12 * trailerHitchOffset.Y + trailerMatrix->m22 * trailerHitchOffset.Z + trailerMatrix->m32;
+    
+    Vector3 trailerHitchPos = Vector3(trailerHitchOffsetX, trailerHitchOffsetY, trailerHitchOffsetZ);
+
+    if (ioKeyboard::GetKeyState(DIK_N) && ioKeyboard::GetKeyState(DIK_LCONTROL) ||
+        ioKeyboard::GetKeyState(DIK_N) && ioKeyboard::GetKeyState(DIK_RCONTROL)) {
+
+        if (trailerJoint->IsBroken() && carHitchPos.Dist(trailerHitchPos) < 0.75f)
+            trailerJoint->UnbreakJoint();
+    }
+
+    //call original
+    hook::Thunk<0x4D7B00>::Call<void>(this);
+}
 
 void vehTrailerFeatureHandler::Install() {
     InstallCallback("vehTrailer::Init", "Reads TWHL4/5 MTX files",
         &vehTrailer::Init, {
             cb::call(0x42C023),
+        }
+    );
+
+    InstallVTableHook("vehTrailer::Update",
+        &Update, {
+            0x5B2F64,
         }
     );
 }
@@ -5031,7 +5068,7 @@ void vehTrailerInstanceFeatureHandler::Draw(int a1) {
 void vehTrailerInstanceFeatureHandler::DrawTwhl4(int a1, int a2, Matrix34* a3, modShader* a4) {
     auto inst = reinterpret_cast<vehTrailerInstance*>(this);
     auto trailer = inst->getTrailer();
-    auto carsim = trailer->getCarSim();
+    auto carsim = trailer->getTrailerJoint()->getCarSim();
 
     a3->Set(&trailer->getWheel(2)->getMatrix());
     auto trailerMtx = inst->GetMatrix(&trailerMatrix);
@@ -5049,7 +5086,7 @@ void vehTrailerInstanceFeatureHandler::DrawTwhl4(int a1, int a2, Matrix34* a3, m
 void vehTrailerInstanceFeatureHandler::DrawTwhl5(int a1, int a2, Matrix34* a3, modShader* a4) {
     auto inst = reinterpret_cast<vehTrailerInstance*>(this);
     auto trailer = inst->getTrailer();
-    auto carsim = trailer->getCarSim();
+    auto carsim = trailer->getTrailerJoint()->getCarSim();
 
     a3->Set(&trailer->getWheel(3)->getMatrix());
     auto trailerMtx = inst->GetMatrix(&trailerMatrix);
@@ -5067,11 +5104,11 @@ void vehTrailerInstanceFeatureHandler::DrawTwhl5(int a1, int a2, Matrix34* a3, m
 void vehTrailerInstanceFeatureHandler::DrawGlow() {
     auto inst = reinterpret_cast<vehTrailerInstance*>(this);
     //don't draw trailer lights if it's broken
-    if (inst->getTrailer()->getJoint()->IsBroken())
+    if (inst->getTrailer()->getTrailerJoint()->IsBroken())
         return;
 
     //get vars
-    auto carsim = inst->getTrailer()->getCarSim();
+    auto carsim = inst->getTrailer()->getTrailerJoint()->getCarSim();
     float brakeInput = carsim->getBrake();
     int gear = carsim->getTransmission()->getGear();
     int geomSet = inst->getGeomSetId() - 1;

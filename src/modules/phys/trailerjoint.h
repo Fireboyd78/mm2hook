@@ -35,6 +35,10 @@ namespace MM2
         float FreeRoll;
         vehCarSim* CarSim;
     public:
+        inline vehCarSim * getCarSim(void) {
+            return this->CarSim;
+        }
+
         ANGEL_ALLOCATOR
 
         AGE_API dgTrailerJoint() {
