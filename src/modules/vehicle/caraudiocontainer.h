@@ -2,6 +2,7 @@
 #include <modules\vehicle.h>
 
 #include "policecaraudio.h"
+#include "nitrocaraudio.h"
 #include "semicaraudio.h"
 #include "caraudio.h"
 
@@ -17,7 +18,42 @@ namespace MM2
     // Class definitions
 
     class vehCarAudioContainer {
+    private:
+        int field_0;
+        int VehType;
+        vehCarAudio* CarAudioPtr;
+        vehPoliceCarAudio* PoliceCarAudioPtr;
+        vehSemiCarAudio* SemiCarAudioPtr;
+        vehNitroCarAudio* NitroCarAudioPtr;
     public:
+        inline int GetVehType() {
+            return this->VehType;
+        }
+
+        inline void SetVehType(int type) {
+            this->VehType = type;
+        }
+
+        inline vehCarAudio * GetCarAudioPtr() {
+            return this->CarAudioPtr;
+        }
+
+        inline vehPoliceCarAudio * GetPoliceCarAudioPtr() {
+            return this->PoliceCarAudioPtr;
+        }
+
+        inline vehSemiCarAudio * GetSemiCarAudioPtr() {
+            return this->SemiCarAudioPtr;
+        }
+
+        inline vehNitroCarAudio * GetNitroCarAudio() {
+            return this->NitroCarAudioPtr;
+        }
+
+        inline bool IsPlayer() {
+            return this->VehType == 2;
+        }
+
         AGE_API static bool IsPolice(const char* name) {
             return hook::StaticThunk<0x4D1A70>::Call<bool>(name);
         }
@@ -62,22 +98,11 @@ namespace MM2
             hook::Thunk<0x4D1910>::Call<void>(this, a1);
         }
 
-        AGE_API vehPoliceCarAudio * GetPoliceCarAudioPtr() {
-            return hook::Thunk<0x4D1790>::Call<vehPoliceCarAudio *>(this);
-        };
-
-        AGE_API vehSemiCarAudio * GetSemiCarAudioPtr() {
-            return hook::Thunk<0x4D17A0>::Call<vehSemiCarAudio*>(this);
-        };
-
-        AGE_API vehCarAudio * GetCarAudioPtr() {
-            return hook::Thunk<0x4D1770>::Call<vehCarAudio*>(this);
-        };
-
         AGE_API AudImpact * GetAudImpactPtr() {
             return hook::Thunk<0x4D1730>::Call<AudImpact *>(this);
         };
     };
+    ASSERT_SIZEOF(vehCarAudioContainer, 0x18);
 
     // Lua initialization
 
