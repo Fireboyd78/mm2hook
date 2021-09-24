@@ -4935,7 +4935,7 @@ void vehTrailerFeatureHandler::Update() {
     Vector3 trailerHitchPos = Vector3(trailerHitchOffsetX, trailerHitchOffsetY, trailerHitchOffsetZ);
 
     if ((ioKeyboard::GetKeyState(DIK_LCONTROL) || ioKeyboard::GetKeyState(DIK_RCONTROL)) && ioKeyboard::GetKeyState(DIK_N)) {
-        if (trailerJoint->IsBroken() && carHitchPos.Dist(trailerHitchPos) <= 0.75f)
+        if (carHitchPos.Dist(trailerHitchPos) <= 0.75f)
             trailerJoint->UnbreakJoint();
     }
 
