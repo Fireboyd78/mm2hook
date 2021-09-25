@@ -1217,7 +1217,7 @@ namespace MM2
             modStatic* slight0 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 5)->getHighestLOD();
             modStatic* slight1 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 6)->getHighestLOD();
 
-            //draw brake signals
+            //draw taillight signals
             modStatic* tslight0 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 101)->getHighestLOD();
             modStatic* tslight1 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 102)->getHighestLOD();
 
@@ -1240,7 +1240,7 @@ namespace MM2
                 }
             }
 
-            //draw brake signals for player
+            //draw taillight signals for player
             if (car->IsPlayer()) {
                 if (!LeftSignalLightState && !HazardLightsState) {
                     if (tslight0 != nullptr) {
@@ -1264,7 +1264,7 @@ namespace MM2
                 }
             }
 
-            //draw brake signals for cops and opponents
+            //draw taillight signals for cops and opponents
             if (!car->IsPlayer()) {
                 if (tslight0 != nullptr) {
                     //draw brake copy

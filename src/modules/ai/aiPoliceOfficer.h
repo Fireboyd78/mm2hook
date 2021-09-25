@@ -1,5 +1,6 @@
 #pragma once
 #include <modules\ai.h>
+#include <modules\vehicle.h>
 
 #include "aiVehiclePhysics.h"
 
@@ -26,7 +27,33 @@ namespace MM2
             return &this->physics;
         }
 
-        AGE_API void StopSiren()                            { hook::Thunk<0x53DC40>::Call<void>(this); }
+        AGE_API void StartSiren()
+        {
+            auto trailer = this->getVehiclePhysics()->getCar()->getTrailer();
+
+            if (trailer != nullptr) {
+                auto siren = trailer->getSiren();
+
+                if (siren != nullptr)
+                    siren->Active = true;
+            }
+
+            hook::Thunk<0x53DBF0>::Call<void>(this);
+        }
+
+        AGE_API void StopSiren()
+        {
+            auto trailer = this->getVehiclePhysics()->getCar()->getTrailer();
+
+            if (trailer != nullptr) {
+                auto siren = trailer->getSiren();
+
+                if (siren != nullptr)
+                    siren->Active = false;
+            }
+
+            hook::Thunk<0x53DC40>::Call<void>(this);
+        }
     };
 
     ASSERT_SIZEOF(aiPoliceOfficer, 0x9870);

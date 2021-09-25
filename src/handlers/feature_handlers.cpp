@@ -1727,6 +1727,7 @@ void mmGameHandler::UpdateHorn(bool a1) {
     auto siren = car->getSiren();
     auto audio = car->getAudio();
     auto model = car->getModel();
+    auto trailer = car->getTrailer();
     auto lightbar0 = model->getGenBreakableMgr()->Get(1);
     auto lightbar1 = model->getGenBreakableMgr()->Get(2);
 
@@ -1762,11 +1763,25 @@ void mmGameHandler::UpdateHorn(bool a1) {
                 if (siren->Active) {
                     siren->Active = false;
                     audio->StopSiren();
+
+                    if (trailer != nullptr) {
+                        auto trailerSiren = trailer->getSiren();
+
+                        if (trailerSiren != nullptr)
+                            trailerSiren->Active = false;
+                    }
                 }
                 else
                 {
                     siren->Active = true;
                     audio->StartSiren();
+
+                    if (trailer != nullptr) {
+                        auto trailerSiren = trailer->getSiren();
+
+                        if (trailerSiren != nullptr)
+                            trailerSiren->Active = true;
+                    }
                 }
             }
         }
@@ -4188,15 +4203,14 @@ const phBound * vehCarHandler::GetModelBound(int a1) {
     return result;
 }
 
-
-void vehCarHandler::InitCarAudio(LPCSTR a1, BOOL a2) {
+void vehCarHandler::InitCarAudio(LPCSTR vehName, int vehType) {
     auto car = reinterpret_cast<vehCar*>(this);
-    char *vehName = car->getCarDamage()->GetName();
+    auto trailer = car->getTrailer();
     int flagsId = VehicleListPtr->GetVehicleInfo(vehName)->GetFlags();
 
     // debug if enabled
     if (cfgVehicleDebug.Get()) {
-        Displayf("Loading vehicle audio (\"%s\", %d)", a1, a2);
+        Displayf("Loading vehicle audio (\"%s\", %d)", vehName, vehType);
     }
 
     //Automatic vehtypes system
@@ -4205,22 +4219,26 @@ void vehCarHandler::InitCarAudio(LPCSTR a1, BOOL a2) {
         vehicleHasSiren = car->getSiren()->HasLights && car->getSiren()->LightCount > 0;
     }
 
-    if (vehicleHasSiren || flagsId == 8 && !vehCarAudioContainer::IsPolice(a1)) {
-        Displayf("%s has a lightbar, but is not in the vehtypes file. Adding it.", a1);
-        string_buf<128> sirenBuffer("%s,ENDOFDATA", a1);
+    if (vehicleHasSiren || flagsId == 8 && !vehCarAudioContainer::IsPolice(vehName)) {
+        Displayf("%s has a lightbar, but is not in the vehtypes file. Adding it.", vehName);
+        string_buf<128> sirenBuffer("%s,ENDOFDATA", vehName);
         vehCarAudioContainer::RegisterPoliceNames(NULL, (LPCSTR)sirenBuffer);
     }
 
-    string_buf<128> semiDataName("%s_semidata", a1);
+    string_buf<128> semiDataName("%s_semidata", vehName);
     bool semiDataExists = datAssetManager::Exists("aud\\cardata\\shared", (LPCSTR)semiDataName, "csv");
-    if (semiDataExists && !vehCarAudioContainer::IsSemiOrBus(a1)) {
-        Displayf("%s has semidata, but is not in the vehtypes file. Adding it.", a1);
-        string_buf<128> semiBuffer("%s,ENDOFDATA", a1);
+    if (semiDataExists && !vehCarAudioContainer::IsSemiOrBus(vehName)) {
+        Displayf("%s has semidata, but is not in the vehtypes file. Adding it.", vehName);
+        string_buf<128> semiBuffer("%s,ENDOFDATA", vehName);
         vehCarAudioContainer::RegisterSemiNames(NULL, (LPCSTR)semiBuffer);
     }
 
+    if (trailer != nullptr) {
+        trailer->setVehType(vehType);
+    }
+
     //pass back to original function
-    car->InitAudio(a1, a2);
+    car->InitAudio(vehName, vehType);
 }
 
 void vehCarHandler::Mm1StyleTransmission() {
@@ -4944,6 +4962,10 @@ void vehTrailerFeatureHandler::Update() {
 }
 
 void vehTrailerFeatureHandler::Install() {
+    InstallPatch({ 0xA0, 0x11 }, {
+        0x42BFD6 + 1, // Change size of vehTrailer on allocation
+    });
+
     InstallCallback("vehTrailer::Init", "Reads TWHL4/5 MTX files",
         &vehTrailer::Init, {
             cb::call(0x42C023),
@@ -5106,7 +5128,9 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
         return;
 
     //get vars
-    auto carsim = inst->getTrailer()->getTrailerJoint()->getCarSim();
+    auto trailer = inst->getTrailer();
+    auto siren = trailer->getSiren();
+    auto carsim = trailer->getTrailerJoint()->getCarSim();
     float brakeInput = carsim->getBrake();
     int gear = carsim->getTransmission()->getGear();
     int geomSet = inst->getGeomSetId() - 1;
@@ -5145,7 +5169,7 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
     //draw tlight
     if (tlight != nullptr) {
         //draw night copy
-        if (vehCarModel::HeadlightsState)
+        if (vehCarModel::HeadlightsState && trailer->getVehType() == 2 || vehCar::sm_DrawHeadlights && trailer->getVehType() != 2)
             tlight->Draw(shaders);
 
         //draw brake input copy
@@ -5156,14 +5180,14 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
 
     //draw hlight
     if (hlight != nullptr) {
-        if (vehCarModel::HeadlightsState)
+        if (vehCarModel::HeadlightsState && trailer->getVehType() == 2 || vehCar::sm_DrawHeadlights && trailer->getVehType() != 2)
             hlight->Draw(shaders);
     }
 
     //check signal clock
     bool drawSignal = fmod(datTimeManager::ElapsedTime, 1.f) > 0.5f;
     //draw stuff!
-    if (drawSignal) {
+    if (drawSignal && trailer->getVehType() == 2) {
         if (vehCarModel::LeftSignalLightState || vehCarModel::HazardLightsState) {
             if (slight0 != nullptr)
                 slight0->Draw(shaders);
@@ -5178,10 +5202,39 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
         }
     }
 
-    if (!vehCarModel::LeftSignalLightState && !vehCarModel::HazardLightsState) {
+    //draw taillight signals for player
+    if (trailer->getVehType() == 2) {
+        if (!vehCarModel::LeftSignalLightState && !vehCarModel::HazardLightsState) {
+            if (tslight0 != nullptr) {
+                //draw night copy
+                if (vehCarModel::HeadlightsState)
+                    tslight0->Draw(shaders);
+
+                //draw brake input copy
+                if (brakeInput > 0.1) {
+                    tslight0->Draw(shaders);
+                }
+            }
+        }
+        if (!vehCarModel::RightSignalLightState && !vehCarModel::HazardLightsState) {
+            if (tslight1 != nullptr) {
+                //draw night copy
+                if (vehCarModel::HeadlightsState)
+                    tslight1->Draw(shaders);
+
+                //draw brake input copy
+                if (brakeInput > 0.1) {
+                    tslight1->Draw(shaders);
+                }
+            }
+        }
+    }
+
+    //draw taillight signals for cops and opponents
+    if (trailer->getVehType() != 2) {
         if (tslight0 != nullptr) {
             //draw night copy
-            if (vehCarModel::HeadlightsState)
+            if (vehCar::sm_DrawHeadlights)
                 tslight0->Draw(shaders);
 
             //draw brake input copy
@@ -5189,12 +5242,9 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
                 tslight0->Draw(shaders);
             }
         }
-    }
-
-    if (!vehCarModel::RightSignalLightState && !vehCarModel::HazardLightsState) {
         if (tslight1 != nullptr) {
             //draw night copy
-            if (vehCarModel::HeadlightsState)
+            if (vehCar::sm_DrawHeadlights)
                 tslight1->Draw(shaders);
 
             //draw brake input copy
@@ -5203,13 +5253,6 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
             }
         }
     }
-
-    //get vehSiren since vehTrailer doesn't have one by default
-    auto mgr = *mmGameManager::Instance;
-    auto game = mgr->getGame();
-    auto player = game->getPlayer();
-    auto car = player->getCar();
-    auto siren = car->getSiren();
 
     //draw siren
     if (siren != nullptr && siren->Active) {
@@ -5483,6 +5526,18 @@ void aiPoliceOfficerFeatureHandler::Install() {
     InstallCallback("aiPoliceOfficer::DetectPerpetrator", "Doesn't make cops detect the player once they cross the finish line.",
         &DetectPerpetrator, {
             cb::call(0x53DC91),
+        }
+    );
+
+    InstallCallback("aiPoliceOfficer::StartSiren", "Activates trailer siren.",
+        &aiPoliceOfficer::StartSiren, {
+            cb::call(0x53E429),
+        }
+    );
+
+    InstallCallback("aiPoliceOfficer::StopSiren", "Deactivates trailer siren.",
+        &aiPoliceOfficer::StopSiren, {
+            cb::call(0x53DB45),
         }
     );
 }
