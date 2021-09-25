@@ -2,6 +2,7 @@
 #include <modules\vehicle.h>
 #include <modules\phys.h>
 #include "carsim.h"
+#include "siren.h"
 
 namespace MM2
 {
@@ -77,6 +78,9 @@ namespace MM2
         lvlTrackManager TrackFR;
         lvlTrackManager TrackBL;
         lvlTrackManager TrackBR;
+        //EXTRA FIELDS. The hook expands on this class, this is only possible because it's only used like a pointer in the original MM code
+        int VehType;
+        vehSiren Siren;
     public:
         inline dgTrailerJoint * getTrailerJoint(void) {
             return &this->TrailerJoint;
@@ -174,6 +178,18 @@ namespace MM2
             return nullptr;
         }
 
+        inline int getVehType() {
+            return this->VehType;
+        }
+
+        inline void setVehType(int type) {
+            this->VehType = type;
+        }
+
+        inline vehSiren * getSiren() {
+            return &this->Siren;
+        }
+
         AGE_API vehTrailer()                                            { hook::Thunk<0x4D6F40>::Call<void>(this); }
         AGE_API ~vehTrailer()                                           { hook::Thunk<0x4D71A0>::Call<void>(this); }
 
@@ -223,7 +239,7 @@ namespace MM2
                 .endClass();
         }
     };
-    ASSERT_SIZEOF(vehTrailer, 0x1038);
+    ASSERT_SIZEOF(vehTrailer, 0x1038 + 0x4 + 0x164); //+2 extra fields
 
     // Lua initialization
 
