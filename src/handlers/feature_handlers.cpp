@@ -653,8 +653,10 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
         if (gamePtr != NULL)
         {
             auto popup = gamePtr->getPopup();
-            auto siren = gamePtr->getPlayer()->getCar()->getSiren();
-            char *vehName = gamePtr->getPlayer()->getCar()->getCarDamage()->GetName();
+            auto car = gamePtr->getPlayer()->getCar();
+            auto siren = car->getSiren();
+            auto trailer = car->getTrailer();
+            char *vehName = car->getCarDamage()->GetName();
             int flagsId = VehicleListPtr->GetVehicleInfo(vehName)->GetFlags();
 
             if (popup != NULL) {
@@ -662,6 +664,14 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
                     // toggle siren lights
                     if (siren != nullptr && siren->HasLights || flagsId == 8) {
                         siren->Active = !siren->Active;
+
+                        // toggle trailer siren lights
+                        if (trailer != nullptr) {
+                            auto trailerSiren = trailer->getSiren();
+
+                            if (trailerSiren != nullptr)
+                                trailerSiren->Active = !trailerSiren->Active;
+                        }
                     }
                 }
             }
