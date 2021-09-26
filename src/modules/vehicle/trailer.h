@@ -20,15 +20,95 @@ namespace MM2
     class vehTrailerInstance : public lvlInstance {
     private:
         vehTrailer* Trailer;
-        int field_18;
+        int Variant;
         Vector3 TrailerHitchPosition;
     public:
         inline vehTrailer * getTrailer(void) {
             return this->Trailer;
         }
 
+        inline int getVariant(void) {
+            return this->Variant;
+        }
+
+        inline void setVariant(int variant) {
+            this->Variant = variant;
+        }
+
         inline Vector3 getTrailerHitchPosition(void) {
             return this->TrailerHitchPosition;
+        }
+
+        AGE_API void Init(const char* basename, const Vector3& vector, int variant)
+        {
+            this->setFlag(0xC8);
+
+            bool hasGeometry = false;
+
+            if (this->BeginGeom(basename, "trailer", 0xD))
+            {
+                lvlInstance::AddGeom(basename, "shadow", 0);
+                lvlInstance::AddGeom(basename, "tlight", 0);
+                lvlInstance::AddGeom(basename, "twhl0", 5);
+                lvlInstance::AddGeom(basename, "twhl1", 4);
+                lvlInstance::AddGeom(basename, "twhl2", 0);
+                lvlInstance::AddGeom(basename, "twhl3", 0);
+                lvlInstance::AddGeom(basename, "trailer_hitch", 0);
+
+                //NEW MM2HOOK OBJECTS
+                lvlInstance::AddGeom(basename, "rlight", 0);
+                lvlInstance::AddGeom(basename, "blight", 0);
+                lvlInstance::AddGeom(basename, "hlight", 0);
+                lvlInstance::AddGeom(basename, "slight0", 0);
+                lvlInstance::AddGeom(basename, "slight1", 0);
+                lvlInstance::AddGeom(basename, "siren0", 0);
+                lvlInstance::AddGeom(basename, "siren1", 0);
+
+                lvlInstance::AddGeom(basename, "twhl4", 0);
+                lvlInstance::AddGeom(basename, "twhl5", 0);
+
+                lvlInstance::AddGeom(basename, "tswhl0", 0);
+                lvlInstance::AddGeom(basename, "tswhl1", 0);
+                lvlInstance::AddGeom(basename, "tswhl2", 0);
+                lvlInstance::AddGeom(basename, "tswhl3", 0);
+                lvlInstance::AddGeom(basename, "tswhl4", 0);
+                lvlInstance::AddGeom(basename, "tswhl5", 0);
+
+                lvlInstance::AddGeom(basename, "tslight0", 0);
+                lvlInstance::AddGeom(basename, "tslight1", 0);
+
+                this->EndGeom();
+                hasGeometry = true;
+            }
+
+            //clamp variant value
+            int shadersPerVariant = 1;
+            if (this->getGeomSetId() != 0)
+                shadersPerVariant = lvlInstance::GetGeomTableEntry(this->getGeomSetId())->numShadersPerPaintjob;
+            this->Variant = variant % shadersPerVariant;
+
+            //get our geometry id
+            int geomSetId = this->getGeomSetId();
+            int geomSetIdOffset = geomSetId - 1;
+
+            //pre-load our variant
+            this->PreLoadShader(this->Variant);
+
+            //optimize this instance
+            if (hasGeometry)
+                this->Optimize(this->Variant);
+
+            //load trailer hitch offset
+            if (this->getGeomSetId() != 0)
+            {
+                auto hitchEntry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 7);
+                if (hitchEntry->getHighLOD() != nullptr)
+                {
+                    Matrix34 outMatrix;
+                    GetPivot(outMatrix, basename, "trailer_hitch");
+                    this->TrailerHitchPosition = Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32);
+                }
+            }
         }
 
         /*

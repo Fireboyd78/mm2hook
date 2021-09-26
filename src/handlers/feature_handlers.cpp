@@ -5266,31 +5266,10 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
     }
 }
 
-void vehTrailerInstanceFeatureHandler::AddGeomHook(const char* pkgName, const char* name, int flags) {
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, name, flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "rlight", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "blight", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "hlight", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "slight0", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "slight1", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "siren0", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "siren1", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "twhl4", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "twhl5", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "tswhl0", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "tswhl1", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "tswhl2", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "tswhl3", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "tswhl4", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "tswhl5", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "tslight0", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "tslight1", flags);
-}
-
 void vehTrailerInstanceFeatureHandler::Install() {
-    InstallCallback("vehTrailerInstance::Init", "Adds more lights geometries.",
-        &AddGeomHook, {
-            cb::call(0x4D7E79),
+    InstallCallback("vehTrailerInstance::Init", "Use rewritten vehTrailerInstance init.",
+        &vehTrailerInstance::Init, {
+            cb::call(0x4D7350),
         }
     );
 
