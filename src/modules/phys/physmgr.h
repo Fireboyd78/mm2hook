@@ -15,6 +15,7 @@ namespace MM2
     public:
         static hook::Type<dgPhysManager *> Instance;
         static hook::Type<float> Gravity;
+        static hook::Type<int> sm_OpponentOptimization;
 
         void IgnoreMover(lvlInstance* instance)                  { hook::Thunk<0x468860>::Call<void>(this, instance); }
         void DeclareMover(lvlInstance* instance, int a2, int a3) { hook::Thunk<0x468370>::Call<void>(this, instance, a2, a3); }

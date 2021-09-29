@@ -42,6 +42,9 @@ namespace MM2
             return _vehCar.ptr(this);
         }
 
+        AGE_API void DriveRoute(int a1)                     { hook::Thunk<0x55A8F0>::Call<void>(this, a1); }
+        AGE_API void Mirror(vehCar* car)                    { hook::Thunk<0x55A570>::Call<void>(this, car); }
+
         void Position(Vector3 &a1) override                 FORWARD_THUNK;
         float Speed(void) override                          FORWARD_THUNK;
         int CurrentRoadIdx(aiPath **a1, const bool *a2, int *a3) override

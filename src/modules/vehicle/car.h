@@ -90,7 +90,7 @@ namespace MM2
         AGE_API void Init(char const *a1, int a2, int a3, bool a4, bool a5)
                                                             { hook::Thunk<0x42BE10>::Call<void>(this, a1, a2, a3, a4, a5); }
         AGE_API void InitAudio(char const *a1, int a2)      { hook::Thunk<0x42C1F0>::Call<void>(this, a1, a2); }
-        AGE_API void SetDrivable(BOOL a1, int a2)           { hook::Thunk<0x42C2C0>::Call<void>(this, a1, a2); }
+        AGE_API void SetDrivable(bool drivable, int mode)   { hook::Thunk<0x42C2C0>::Call<void>(this, drivable, mode); }
 
         /*
             dgPhysEntity virtuals

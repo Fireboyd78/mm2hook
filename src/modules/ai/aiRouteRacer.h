@@ -21,6 +21,8 @@ namespace MM2
         aiRouteRacer(const aiRouteRacer &&)                 DONOTCALL;
 
         AGE_API int Finished()                              { return hook::Thunk<0x53D6E0>::Call<int>(this); }
+        AGE_API void Disabled()                             { hook::Thunk<0x53D6B0>::Call<void>(this); }
+        AGE_API void DriveRoute()                           { hook::Thunk<0x53D4B0>::Call<void>(this); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<aiRouteRacer, aiVehiclePhysics>("aiRouteRacer")

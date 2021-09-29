@@ -201,6 +201,7 @@ public:
 
 class aiRouteRacerHandler {
 public:
+    void BustOpp();
     void Update();
     void Reset();
     static void Install();

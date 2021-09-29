@@ -27,6 +27,7 @@ namespace MM2
             return &this->physics;
         }
 
+        AGE_API void Reset()                                { hook::Thunk<0x53DAA0>::Call<void>(this); }
         AGE_API void StartSiren()
         {
             auto trailer = this->getVehiclePhysics()->getCar()->getTrailer();
@@ -54,6 +55,11 @@ namespace MM2
 
             hook::Thunk<0x53DC40>::Call<void>(this);
         }
+
+        AGE_API void DetectPerpetrator()                    { hook::Thunk<0x53DFD0>::Call<void>(this); }
+        AGE_API void FollowPerpetrator()                    { hook::Thunk<0x53E410>::Call<void>(this); }
+        AGE_API void ApprehendPerpetrator()                 { hook::Thunk<0x53E580>::Call<void>(this); }
+        
     };
 
     ASSERT_SIZEOF(aiPoliceOfficer, 0x9870);
