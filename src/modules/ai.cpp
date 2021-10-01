@@ -21,3 +21,13 @@ declfield(aiMap::_fTotUpdate)(0x6B2FF4);
 */
 declfield(aiVehicleManager::Instance)(0x6B31AC);
 declfield(aiVehicleManager::SignalClock)(0x6B31F4);
+
+/*
+    aiPoliceOfficer
+*/
+float aiPoliceOfficer::DefaultSpeedLimit = 12.25f;
+float aiPoliceOfficer::SpeedLimitTolerance = 1.125f;
+float aiPoliceOfficer::BurnoutTimer = 0.f;
+float aiPoliceOfficer::HornPlayTime = 0.f;
+bool aiPoliceOfficer::FlyingCopFix = true;
+int aiPoliceOfficer::MaximumNumCops = 3;

@@ -3445,7 +3445,7 @@ void mmPlayerHandler::BustPerp() {
             }
         }
 
-        if (*getPtr<int>(player->getCar(), 0xEC) != 0 && !player->IsMaxDamaged())
+        if (*getPtr<int>(player->getCar(), 0xEC) != 0 && !player->IsMaxDamaged() || *getPtr<int>(player, 0x2258))
             continue;
 
         if (bustedTimer <= bustedTimeout) {
@@ -3501,14 +3501,6 @@ void mmPlayerHandler::BustPerp() {
                     *getPtr<WORD>(police, 0x280) = 3;
                     enableBustedTimer = false;
                     enableResetTimer = true;
-                }
-                if (MMSTATE->GameMode != CrashCourse) {
-                    if (*getPtr<int>(player, 0x2258)) {
-                        police->StopSiren();
-                        AIMAP->policeForce->UnRegisterCop(*getPtr<vehCar*>(police, 0x14), *getPtr<vehCar*>(police, 0x9774));
-                        *getPtr<WORD>(police, 0x977A) = 0;
-                        *getPtr<WORD>(police, 0x280) = 3;
-                    }
                 }
             }
         }
@@ -5500,23 +5492,440 @@ void vehSirenHandler::Install() {
     aiPoliceOfficerFeatureHandler
 */
 
+aiVehicle* findVehicle(vehCar *car) {
+    auto AIMAP = &aiMap::Instance;
+
+    // check players
+    for (int i = 0; i < 4; i++) {
+        auto player = &AIMAP->players[i];
+
+        if (player->getCar() == car)
+            return player;
+    }
+
+    // check opponents
+    for (int i = 0; i < AIMAP->numOpponents; i++) {
+        auto opponent = AIMAP->opponents[i];
+
+        if (opponent->getCar() == car)
+            return opponent;
+    }
+
+    // not found :(
+    return nullptr;
+}
+
+float getSpeedLimit(vehCar *car) {
+    auto AIMAP = &aiMap::Instance;
+    auto veh = findVehicle(car);
+
+    if (veh != nullptr) {
+        auto roadId = veh->CurrentRoadId();
+        auto path = AIMAP->paths[roadId];
+
+        return *getPtr<float>(path, 0x18);
+    }
+
+    return aiPoliceOfficer::DefaultSpeedLimit;
+}
+
+BOOL aiPoliceOfficerFeatureHandler::Burnout(vehCar *car) {
+    float speed = car->getCarSim()->getSpeedMPH();
+
+    for (int i = 0; i < 4; i++)
+    {
+        auto wheel = car->getCarSim()->getWheel(i);
+
+        if (fabs(wheel->getRotationRate()) > 26.f && speed < 10.f)
+            aiPoliceOfficer::BurnoutTimer += datTimeManager::Seconds;
+        else
+            aiPoliceOfficer::BurnoutTimer = 0.f;
+
+        if (aiPoliceOfficer::BurnoutTimer > 3.f)
+            return TRUE;
+    }
+
+    return FALSE;
+}
+
+BOOL aiPoliceOfficerFeatureHandler::HornSpamming(vehCar *car) {
+    auto audio = car->getAudio();
+    char* vehName = car->getCarDamage()->GetName();
+
+    if (audio->IsSemiOrBus(vehName)) {
+        auto semiAudio = audio->GetSemiCarAudioPtr();
+        auto hornSound = *getPtr<AudSoundBase*>(semiAudio, 0x10C);
+
+        if (hornSound->IsPlaying())
+            aiPoliceOfficer::HornPlayTime += datTimeManager::Seconds;
+        else
+            aiPoliceOfficer::HornPlayTime = 0.f;
+
+        if (aiPoliceOfficer::HornPlayTime > 3.f)
+            return TRUE;
+    }
+    else {
+        auto carAudio = audio->GetCarAudioPtr();
+        auto hornSound = *getPtr<AudSoundBase*>(carAudio, 0x10C);
+
+        if (hornSound->IsPlaying())
+            aiPoliceOfficer::HornPlayTime += datTimeManager::Seconds;
+        else
+            aiPoliceOfficer::HornPlayTime = 0.f;
+
+        if (aiPoliceOfficer::HornPlayTime > 3.f)
+            return TRUE;
+    }
+
+    return FALSE;
+}
+
+BOOL aiPoliceOfficerFeatureHandler::Offroad(vehCar *car) {
+    auto AIMAP = &aiMap::Instance;
+
+    auto position = car->getModel()->GetPosition();
+    auto roomId = car->getModel()->getRoomId();
+
+    short outId, outType;
+    float outDist;
+
+    AIMAP->MapComponent(position, &outId, &outType, roomId);
+
+    aiMapComponentType component = (aiMapComponentType)outType;
+
+    if (component == aiMapComponentType::Road)
+    {
+        auto path = AIMAP->paths[outId];
+
+        if (path->IsPosOnRoad(&position, 0.f, &outDist) == 2) // 2 = Sidewalk
+            return TRUE;
+
+        // This case is for roads with grass
+        for (int i = 0; i < 4; i++)
+        {
+            auto wheel = car->getCarSim()->getWheel(i);
+
+            if (!strcmp(wheel->getCurrentPhysicsMaterial()->getName(), "grass"))
+                return TRUE;
+        }
+    }
+    if (component == aiMapComponentType::None || component == aiMapComponentType::Shortcut)
+    {
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+BOOL aiPoliceOfficerFeatureHandler::IsPlayerDrivingMadly(vehCar *perpCar) {
+    auto police = reinterpret_cast<aiPoliceOfficer*>(this);
+    char* vehName = perpCar->getCarDamage()->GetName(); // we can't use vehCarSim because the game forces vpcop to vpmustang99...
+
+    if (!perpCar->getAudio()->IsPolice(vehName)) {
+        if (vehPoliceCarAudio::iNumCopsPursuingPlayer < aiPoliceOfficer::MaximumNumCops || aiPoliceOfficer::MaximumNumCops <= 0) {
+            if (police->Fov(perpCar))
+            {
+                float speed = perpCar->getCarSim()->getSpeedMPH();
+                float speedLimit = getSpeedLimit(perpCar) * 2.857142857142857f;
+
+                if (speed > (speedLimit * aiPoliceOfficer::SpeedLimitTolerance)) {
+                    LogFile::Printf(1, "PERP DETECTED!!! He's doing %.4f over the speed limit (~%.4fmph)!\n", (speed - speedLimit), speedLimit);
+                    return TRUE;
+                }
+                if (police->Collision(perpCar)) {
+                    LogFile::Printf(1, "PERP IS DOING DAMAGE TO PROPERTY!");
+                    return TRUE;
+                }
+                if (aiPoliceOfficerFeatureHandler::Offroad(perpCar)) {
+                    LogFile::Printf(1, "PERP IS GOING OFFROAD!");
+                    return TRUE;
+                }
+            }
+            if (police->HitMe(perpCar)) {
+                LogFile::Printf(1, "OFFICER INVOLVED COLLISION WITH PERP!");
+                return TRUE;
+            }
+            if (aiPoliceOfficerFeatureHandler::Burnout(perpCar)) {
+                LogFile::Printf(1, "PERP IS DOING BURNOUTS!");
+                return TRUE;
+            }
+            if (aiPoliceOfficerFeatureHandler::HornSpamming(perpCar)) {
+                LogFile::Printf(1, "PERP IS SPAMMING HORN!");
+                return TRUE;
+            }
+        }
+    }
+
+    return FALSE;
+}
+
+BOOL aiPoliceOfficerFeatureHandler::IsOppDrivingMadly(vehCar *perpCar) {
+    auto police = reinterpret_cast<aiPoliceOfficer*>(this);
+
+    if (police->Fov(perpCar))
+    {
+        float speed = perpCar->getCarSim()->getSpeedMPH();
+        float speedLimit = getSpeedLimit(perpCar) * 2.857142857142857f;
+
+        if (speed > (speedLimit * aiPoliceOfficer::SpeedLimitTolerance)) {
+            return TRUE;
+        }
+        if (police->Collision(perpCar)) {
+            return TRUE;
+        }
+        if (aiPoliceOfficerFeatureHandler::Offroad(perpCar)) {
+            return TRUE;
+        }
+    }
+    if (police->HitMe(perpCar)) {
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+void aiPoliceOfficerFeatureHandler::PerpEscapes(bool a1) {
+    auto police = reinterpret_cast<aiPoliceOfficer*>(this);
+    auto copCar = police->getVehiclePhysics()->getCar();
+    auto audio = copCar->getAudio();
+    auto policeAudio = audio->GetPoliceCarAudioPtr();
+    auto AIMAP = &aiMap::Instance;
+    auto perpCar = *getPtr<vehCar*>(this, 0x9774);
+
+    police->StopSiren();
+
+    if (policeAudio != nullptr && a1)
+        policeAudio->PlayExplosion();
+
+    AIMAP->policeForce->UnRegisterCop(copCar, perpCar);
+    *getPtr<WORD>(this, 0x977A) = 0;
+    *getPtr<WORD>(this, 0x280) = 3;
+}
+
 void aiPoliceOfficerFeatureHandler::DetectPerpetrator() {
-    mmGameManager *mgr = mmGameManager::Instance;
-    auto player = mgr->getGame()->getPlayer();
+    auto police = reinterpret_cast<aiPoliceOfficer*>(this);
+    auto copCar = police->getVehiclePhysics()->getCar();
+    auto AIMAP = &aiMap::Instance;
+    auto vehPlayer = AIMAP->lastPlayer;
 
-    if (*getPtr<int>(player, 0x2258) || bustedTimer > bustedTimeout)
-        return;
+    if (*getPtr<WORD>(this, 0x977A) != *getPtr<WORD>(this, 0x977C))
+        *getPtr<WORD>(this, 0x977C) = *getPtr<WORD>(this, 0x977A);
 
-    //call original
-    hook::Thunk<0x53DFD0>::Call<void>(this);
+    if (vehPlayer != nullptr)
+    {
+        float posDiffX = copCar->getModel()->GetPosition().X - vehPlayer->getCar()->getModel()->GetPosition().X;
+        float posDiffY = copCar->getModel()->GetPosition().Y - vehPlayer->getCar()->getModel()->GetPosition().Y;
+        float posDiffZ = copCar->getModel()->GetPosition().Z - vehPlayer->getCar()->getModel()->GetPosition().Z;
+
+        float dist = posDiffX * posDiffX + posDiffY * posDiffY + posDiffZ * posDiffZ;
+
+        if (dist < 5625.f && bustedTimer <= bustedTimeout)
+        {
+            if (IsPlayerDrivingMadly(vehPlayer->getCar()) && AIMAP->policeForce->RegisterPerp(copCar, vehPlayer->getCar()) >= 0)
+            {
+                *getPtr<vehCar*>(this, 0x9774) = vehPlayer->getCar();
+                *getPtr<WORD>(this, 0x280) = 0;
+                *getPtr<WORD>(this, 0x977A) = 2;
+
+                *getPtr<float>(this, 0x9794) = sqrt(posDiffX * posDiffX + posDiffZ * posDiffZ);
+
+                AIMAP->MapComponent(vehPlayer->getCar()->getModel()->GetPosition(), getPtr<short>(this, 0x97A4), getPtr<short>(this, 0x97A2), vehPlayer->getCar()->getModel()->getRoomId());
+                police->FollowPerpetrator();
+                return;
+            }
+        }
+    }
+
+    for (int i = 0; i < AIMAP->numOpponents; i++)
+    {
+        auto opponent = AIMAP->Opponent(i);
+
+        float posDiffX = copCar->getModel()->GetPosition().X - opponent->getCar()->getModel()->GetPosition().X;
+        float posDiffY = copCar->getModel()->GetPosition().Y - opponent->getCar()->getModel()->GetPosition().Y;
+        float posDiffZ = copCar->getModel()->GetPosition().Z - opponent->getCar()->getModel()->GetPosition().Z;
+
+        float dist = posDiffX * posDiffX + posDiffY * posDiffY + posDiffZ * posDiffZ;
+
+        if (dist < 5625.f && *getPtr<int>(opponent, 0x27C) != 3)
+        {
+            if (IsOppDrivingMadly(opponent->getCar()) && AIMAP->policeForce->RegisterPerp(copCar, opponent->getCar()) >= 0)
+            {
+                *getPtr<vehCar*>(this, 0x9774) = opponent->getCar();
+                *getPtr<WORD>(this, 0x280) = 0;
+                *getPtr<WORD>(this, 0x977A) = 2;
+
+                *getPtr<float>(this, 0x9794) = sqrt(posDiffX * posDiffX + posDiffZ * posDiffZ);
+
+                AIMAP->MapComponent(opponent->getCar()->getModel()->GetPosition(), getPtr<short>(this, 0x97A4), getPtr<short>(this, 0x97A2), opponent->getCar()->getModel()->getRoomId());
+                police->FollowPerpetrator();
+                return;
+            }
+        }
+    }
+}
+
+void aiPoliceOfficerFeatureHandler::Update() {
+    auto police = reinterpret_cast<aiPoliceOfficer*>(this);
+    auto vehPhysics = police->getVehiclePhysics();
+    auto copCar = vehPhysics->getCar();
+    auto trailer = copCar->getTrailer();
+    auto carsim = copCar->getCarSim();
+    auto level = *lvlLevel::Singleton;
+    auto AIMAP = &aiMap::Instance;
+    auto physMgr = *dgPhysManager::Instance;
+    auto player = AIMAP->lastPlayer;
+    auto perpCar = *getPtr<vehCar*>(this, 0x9774);
+    float curDist = 9999999.f;
+
+    if (*getPtr<WORD>(this, 0x977A) != 12)
+    {
+        if (*getPtr<WORD>(this, 0x977A))
+        {
+            AIMAP->MapComponent(
+                perpCar->getModel()->GetPosition(),
+                getPtr<short>(vehPhysics, 8),
+                getPtr<short>(vehPhysics, 4) + 1,
+                perpCar->getModel()->getRoomId());
+
+            float posDiffX = copCar->getModel()->GetPosition().X - perpCar->getModel()->GetPosition().X;
+            float posDiffZ = copCar->getModel()->GetPosition().Z - perpCar->getModel()->GetPosition().Z;
+
+            float dist = sqrt(posDiffX * posDiffX + posDiffZ * posDiffZ);
+
+            *getPtr<float>(this, 0x9794) = dist;
+
+            *getPtr<WORD>(this, 0x977A) = AIMAP->policeForce->State(copCar, perpCar, dist);
+
+            if (!*getPtr<int>(AIMAP->Player(0)->getCar()->getCarSim(), 0x304)
+                || *getPtr<WORD>(this, 0x280) == 1
+                || *getPtr<WORD>(this, 0x9798) == 0
+                || perpCar->getCarSim()->getSpeed() < 10.f)
+            {
+                *getPtr<WORD>(this, 0x977A) = 2;
+            }
+
+            if (*getPtr<WORD>(this, 0x977A) == 2)
+                police->FollowPerpetrator();
+            else
+                police->ApprehendPerpetrator();
+
+            // if cop is far away from perp
+            if (*getPtr<float>(AIMAP->raceData, 0x98) < *getPtr<float>(this, 0x9794))
+            {
+                PerpEscapes(0);
+                return;
+            }
+
+            // if cop is destroyed
+            if (*getPtr<WORD>(this, 0x968A))
+            {
+                PerpEscapes(1);
+                return;
+            }
+        }
+        else {
+            DetectPerpetrator();
+        }
+
+        if (!aiPoliceOfficer::FlyingCopFix)
+        {
+            auto ics = getPtr<Vector3>(carsim->getICS(), 0x3C);
+
+            if (carsim->getEngine()->getThrottleInput() > 0.f && carsim->getSpeed() < 50.f)
+            {
+                ics->X *= 1.03f;
+                ics->Y *= 1.03f;
+                ics->Z *= 1.03f;
+            }
+        }
+
+        // if cop has fallen into water
+        if (level->GetRoomInfo(copCar->getModel()->getRoomId())->Flags & static_cast<int>(RoomFlags::Water)) {
+            if (level->GetWaterLevel(copCar->getModel()->getRoomId()) > copCar->getModel()->GetPosition().Y) {
+                PerpEscapes(0);
+                *getPtr<WORD>(this, 0x977A) = 12;
+            }
+        }
+    }
+
+    if (*getPtr<WORD>(this, 0x977A) != 1 || *getPtr<WORD>(this, 0x977E) != 7)
+        vehPhysics->DriveRoute(0);
+    else
+        vehPhysics->Mirror(perpCar);
+
+    // if cop is destroyed
+    if (*getPtr<WORD>(this, 0x968A))
+    {
+        PerpEscapes(1);
+        *getPtr<WORD>(this, 0x977A) = 12;
+    }
+
+    if (*getPtr<WORD>(this, 0x977A) == 0)
+        *getPtr<WORD>(this, 0x280) = 3;
+
+    if (player != nullptr)
+    {
+        float posDiffX = copCar->getModel()->GetPosition().X - player->getCar()->getModel()->GetPosition().X;
+        float posDiffY = copCar->getModel()->GetPosition().Y - player->getCar()->getModel()->GetPosition().Y;
+        float posDiffZ = copCar->getModel()->GetPosition().Z - player->getCar()->getModel()->GetPosition().Z;
+
+        float dist = posDiffX * posDiffX + posDiffY * posDiffY + posDiffZ * posDiffZ;
+
+        if (dist < curDist)
+            curDist = dist;
+    }
+
+    if (curDist < 40000.f)
+    {
+        physMgr->DeclareMover(copCar->getModel(), 2, 0x1B);
+
+        if (trailer != nullptr)
+            physMgr->DeclareMover(trailer->getTrailerInstance(), 2, 0x1B);
+    }
+
+    if (*getPtr<WORD>(this, 0x977A) != 0 && *getPtr<WORD>(this, 0x977A) != 12)
+    {
+        if (physMgr->sm_OpponentOptimization)
+        {
+            physMgr->DeclareMover(copCar->getModel(), 2, 0x13);
+
+            if (trailer != nullptr)
+                physMgr->DeclareMover(trailer->getTrailerInstance(), 2, 0x13);
+        }
+        else {
+            physMgr->DeclareMover(copCar->getModel(), 2, 0x1B);
+
+            if (trailer != nullptr)
+                physMgr->DeclareMover(trailer->getTrailerInstance(), 2, 0x1B);
+        }
+    }
+
+    if (copCar->getModel()->GetPosition().Y < -200.f)
+    {
+        Warningf("Police Officer #%d, Has fallen through the geometry.", *getPtr<WORD>(this, 0x9778));
+        police->Reset();
+    }
 }
 
 void aiPoliceOfficerFeatureHandler::Install() {
-    InstallCallback("aiPoliceOfficer::DetectPerpetrator", "Doesn't make cops detect the player once they cross the finish line.",
-        &DetectPerpetrator, {
-            cb::call(0x53DC91),
-        }
-    );
+    ConfigValue<bool> cfgPoliceAcademyFunding("PoliceAcademyFunding", true);
+    ConfigValue<float> cfgDefaultSpeedLimit("DefaultSpeedLimit", 12.25f);
+    ConfigValue<float> cfgSpeedLimitTolerance("SpeedLimitTolerance", 1.125f);
+    ConfigValue<int> cfgMaximumCopsLimit("MaximumCopsLimit", 3);
+    ConfigValue<bool> cfgFlyingCopFix("FlyingCopFix", true);
+
+    aiPoliceOfficer::DefaultSpeedLimit = cfgDefaultSpeedLimit.Get();
+    aiPoliceOfficer::SpeedLimitTolerance = cfgSpeedLimitTolerance.Get();
+    aiPoliceOfficer::MaximumNumCops = cfgMaximumCopsLimit.Get();
+    aiPoliceOfficer::FlyingCopFix = cfgFlyingCopFix.Get();
+
+    if (cfgPoliceAcademyFunding.Get()) {
+        InstallCallback("aiPoliceOfficer::Update", "Use rewritten aiPoliceOfficer update.",
+            &Update, {
+                cb::call(0x537265),
+            }
+        );
+    }
 
     InstallCallback("aiPoliceOfficer::StartSiren", "Activates trailer siren.",
         &aiPoliceOfficer::StartSiren, {
@@ -5529,6 +5938,11 @@ void aiPoliceOfficerFeatureHandler::Install() {
             cb::call(0x53DB45),
         }
     );
+
+    // fix aiPoliceOfficer::Collision
+    InstallPatch({ 0x8B, 0x91, 0xF4, 0x0, 0x0, 0x0 }, {
+        0x53E37E,
+    });
 }
 
 /*

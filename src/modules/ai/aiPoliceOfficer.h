@@ -15,6 +15,13 @@ namespace MM2
     // Class definitions
 
     class aiPoliceOfficer {
+    public:
+        static float DefaultSpeedLimit;
+        static float SpeedLimitTolerance;
+        static float BurnoutTimer;
+        static float HornPlayTime;
+        static int MaximumNumCops;
+        static bool FlyingCopFix;
     private:
         int unk_00;
         aiVehiclePhysics physics;
@@ -59,7 +66,9 @@ namespace MM2
         AGE_API void DetectPerpetrator()                    { hook::Thunk<0x53DFD0>::Call<void>(this); }
         AGE_API void FollowPerpetrator()                    { hook::Thunk<0x53E410>::Call<void>(this); }
         AGE_API void ApprehendPerpetrator()                 { hook::Thunk<0x53E580>::Call<void>(this); }
-        
+        AGE_API BOOL Fov(vehCar *perpCar)                   { return hook::Thunk<0x53E2A0>::Call<BOOL>(this, perpCar); }
+        AGE_API BOOL Collision(vehCar *perpCar)             { return hook::Thunk<0x53E370>::Call<BOOL>(this, perpCar); }
+        AGE_API BOOL HitMe(vehCar *perpCar)                 { return hook::Thunk<0x53E390>::Call<BOOL>(this, perpCar); }
     };
 
     ASSERT_SIZEOF(aiPoliceOfficer, 0x9870);

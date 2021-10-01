@@ -416,7 +416,14 @@ public:
 
 class aiPoliceOfficerFeatureHandler {
 public:
+    BOOL IsPlayerDrivingMadly(MM2::vehCar* perpCar);
+    BOOL IsOppDrivingMadly(MM2::vehCar* perpCar);
+    BOOL Offroad(MM2::vehCar* perpCar);
+    BOOL Burnout(MM2::vehCar* perpCar);
+    BOOL HornSpamming(MM2::vehCar* perpCar);
+    void PerpEscapes(bool a1);
     void DetectPerpetrator();
+    void Update();
     static void Install();
 };
 
