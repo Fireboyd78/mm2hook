@@ -1054,17 +1054,6 @@ void aiRouteRacerHandler::Update() {
 }
 
 void aiRouteRacerHandler::Reset() {
-    auto opponent = reinterpret_cast<aiRouteRacer*>(this);
-    auto car = opponent->getCar();
-    auto trailer = car->getTrailer();
-
-    if (trailer != nullptr) {
-        auto siren = trailer->getSiren();
-
-        if (siren != nullptr)
-            siren->Active = false;
-    }
-
     //reset busted timer
     aiOppBustedTimer = 0.f;
 

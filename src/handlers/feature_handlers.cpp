@@ -4963,6 +4963,17 @@ void vehTrailerFeatureHandler::Update() {
     hook::Thunk<0x4D7B00>::Call<void>(this);
 }
 
+void vehTrailerFeatureHandler::Reset() {
+    auto trailer = reinterpret_cast<vehTrailer*>(this);
+    auto siren = trailer->getSiren();
+
+    if (siren != nullptr)
+        siren->Active = false;
+
+    //call original
+    hook::Thunk<0x4D79C0>::Call<void>(this);
+}
+
 void vehTrailerFeatureHandler::Install() {
     InstallPatch({ 0xA0, 0x11 }, {
         0x42BFD6 + 1, // Change size of vehTrailer on allocation
@@ -4977,6 +4988,12 @@ void vehTrailerFeatureHandler::Install() {
     InstallVTableHook("vehTrailer::Update",
         &Update, {
             0x5B2F64,
+        }
+    );
+
+    InstallVTableHook("vehTrailer::Reset",
+        &Reset, {
+            0x5B2F34,
         }
     );
 }

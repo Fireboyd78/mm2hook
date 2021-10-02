@@ -361,6 +361,7 @@ public:
 class vehTrailerFeatureHandler {
 public:
     void Update();
+    void Reset();
     static void Install();
 };
 
