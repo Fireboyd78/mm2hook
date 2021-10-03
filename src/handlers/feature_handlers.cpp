@@ -4008,8 +4008,7 @@ void mmSingleRoamHandler::EscapeDeepWater() {
     auto carPos = car->getModel()->GetPosition();
     auto level = *lvlLevel::Singleton;
 
-    if (level->GetRoomInfo(car->getModel()->getRoomId())->Flags & static_cast<int>(RoomFlags::Water) &&
-        level->GetWaterLevel(car->getModel()->getRoomId()) > carsim->getWorldMatrix()->m31) {
+    if (level->GetRoomInfo(car->getModel()->getRoomId())->Flags & static_cast<int>(RoomFlags::Water)) {
         if (cfgResetToNearestLocation.Get()) {
             ResetToNearestLocation();
         }
