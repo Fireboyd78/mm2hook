@@ -229,7 +229,6 @@ public:
 
 class mmPlayerHandler {
 public:
-    void Splash();
     void Zoink();
     void Update();
     void Reset();
@@ -305,6 +304,7 @@ public:
     const MM2::phBound * GetModelBound(int a1);
 
     void Mm1StyleTransmission();
+    void Splash();
     void Update();
 
     static void Install(void);

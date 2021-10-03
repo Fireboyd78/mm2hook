@@ -3255,11 +3255,9 @@ void PUMainHandler::Install() {
     mmPlayerHandler
 */
 static ConfigValue<bool> cfgEnableOutOfMapFix("OutOfMapFix", true);
-static ConfigValue<bool> cfgEnableWaterSplashSound("WaterSplashSound", true);
 static ConfigValue<bool> cfgEnableExplosionSound("ExplosionSound", true);
 static ConfigValue<bool> cfgEnableMissingDashboardFix("MissingDashboardFix", true);
 bool enableOutOfMapFixCached = true;
-bool enableWaterSplashSoundCached = true;
 bool enableExplosionSoundCached = true;
 bool enableMissingDashboardFixCached = true;
 
@@ -3342,17 +3340,6 @@ void mmPlayerHandler::Zoink() {
         car->Reset();
     }
 
-}
-
-bool prevSplashState = false;
-void mmPlayerHandler::Splash() {
-    auto player = reinterpret_cast<mmPlayer*>(this);
-    auto car = player->getCar();
-    float vehicleMph = car->getModel()->GetVelocity()->Mag() * 2.23694f;
-
-    //trigger ColliderId 22 with velocity of vehicleMph
-    auto impactAud = car->getAudio()->GetAudImpactPtr();
-    impactAud->Play(vehicleMph, 22);
 }
 
 void mmPlayerHandler::PlayExplosion() {
@@ -3594,15 +3581,6 @@ void mmPlayerHandler::Update() {
         Zoink();
     }
 
-    //play splash sound if we just hit the water
-    if (enableWaterSplashSoundCached) {
-        bool splashState = car->getSplash()->isActive();
-        if (splashState && splashState != prevSplashState) {
-            Splash();
-        }
-        prevSplashState = splashState;
-    }
-
     //check if we're damaged out
     if (enableExplosionSoundCached) {
         if (player->IsMaxDamaged()) {
@@ -3721,7 +3699,6 @@ static ConfigValue<bool> cfgEnableModelVisibility ("ModelVisibility", false);
 
 void mmPlayerHandler::Install() {
     enableOutOfMapFixCached = cfgEnableOutOfMapFix.Get();
-    enableWaterSplashSoundCached = cfgEnableWaterSplashSound.Get();
     enableExplosionSoundCached = cfgEnableExplosionSound.Get();
     enableMissingDashboardFixCached = cfgEnableMissingDashboardFix.Get();
     bustedTarget = cfgBustedTarget.Get();
@@ -4190,6 +4167,8 @@ void dgBangerInstanceHandler::Install()
 */
 
 static ConfigValue<bool> cfgVehicleDebug("VehicleDebug", "vehicleDebug", false);
+static ConfigValue<bool> cfgEnableWaterSplashSound("WaterSplashSound", true);
+bool enableWaterSplashSoundCached = true;
 
 void vehCarHandler::InitCar(LPCSTR vehName, int a2, int a3, bool a4, bool a5) {
     Displayf("Initializing vehicle (\"%s\", %d, %d, %s, %s)", vehName, a2, a3, bool_str(a4), bool_str(a5));
@@ -4289,6 +4268,18 @@ void vehCarHandler::Mm1StyleTransmission() {
     }
 }
 
+bool prevSplashState = false;
+void vehCarHandler::Splash() {
+    auto car = reinterpret_cast<vehCar*>(this);
+    float vehicleMph = car->getModel()->GetVelocity()->Mag() * 2.23694f;
+
+    //trigger ColliderId 22 with velocity of vehicleMph
+    auto impactAud = car->getAudio()->GetAudImpactPtr();
+
+    if (impactAud != nullptr)
+        impactAud->Play(vehicleMph, 22);
+}
+
 void vehCarHandler::Update() {
     auto car = reinterpret_cast<vehCar*>(this);
     auto siren = car->getSiren();
@@ -4296,6 +4287,7 @@ void vehCarHandler::Update() {
     auto model = car->getModel();
     auto lightbar0 = model->getGenBreakableMgr()->Get(1);
     auto lightbar1 = model->getGenBreakableMgr()->Get(2);
+    auto level = *lvlLevel::Singleton;
 
     if ((lightbar0 != nullptr && !lightbar0->isAttached) ||
         (lightbar1 != nullptr && !lightbar1->isAttached)) {
@@ -4309,11 +4301,24 @@ void vehCarHandler::Update() {
         vehCarHandler::Mm1StyleTransmission();
     }
 
+    //play splash sound if we just hit the water
+    if (enableWaterSplashSoundCached) {
+        bool splashState = car->getSplash()->isActive();
+        if (splashState && splashState != prevSplashState) {
+            Splash();
+        }
+        if (level->GetRoomInfo(model->getRoomId())->Flags & static_cast<int>(RoomFlags::Water) &&
+            level->GetWaterLevel(model->getRoomId()) < model->GetPosition().Y) {
+            prevSplashState = splashState;
+        }
+    }
+
     // call original
     hook::Thunk<0x42C690>::Call<void>(this);
 }
 
 void vehCarHandler::Install(void) {
+    enableWaterSplashSoundCached = cfgEnableWaterSplashSound.Get();
     InstallCallback("vehCar::InitAudio", "Enables debugging for vehicle initialization, and automatic vehtypes handling.",
         &InitCarAudio, {
             cb::call(0x55943A), // aiVehiclePhysics::Init
