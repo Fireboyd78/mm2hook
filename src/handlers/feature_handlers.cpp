@@ -4267,7 +4267,6 @@ void vehCarHandler::Mm1StyleTransmission() {
     }
 }
 
-bool prevSplashState = false;
 void vehCarHandler::Splash() {
     auto car = reinterpret_cast<vehCar*>(this);
     float vehicleMph = car->getModel()->GetVelocity()->Mag() * 2.23694f;
@@ -4303,12 +4302,10 @@ void vehCarHandler::Update() {
     //play splash sound if we just hit the water
     if (enableWaterSplashSoundCached) {
         bool splashState = car->getSplash()->isActive();
-        if (splashState && splashState != prevSplashState) {
+        if (splashState && car->getCarSim()->getSpeedMPH() > 3.f
+            && level->GetRoomInfo(model->getRoomId())->Flags & static_cast<int>(RoomFlags::Water)
+            && level->GetWaterLevel(model->getRoomId()) > model->GetPosition().Y) {
             Splash();
-        }
-        if (level->GetRoomInfo(model->getRoomId())->Flags & static_cast<int>(RoomFlags::Water) &&
-            level->GetWaterLevel(model->getRoomId()) < model->GetPosition().Y) {
-            prevSplashState = splashState;
         }
     }
 
