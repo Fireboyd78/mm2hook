@@ -1511,6 +1511,7 @@ namespace MM2
     class mmExternalView : public asNode {
     public:
         static bool EnableMM1StyleHud;
+        static bool EnableMM1StylePursuitBar;
         static bool EnableMouseBar;
         static bool SwitchFromMPH2KPH;
     private:

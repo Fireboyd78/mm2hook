@@ -443,5 +443,6 @@ public:
     void DrawGearIndicator();
     void DrawLinearGauge();
     void DrawSpeedIndicator();
+    void DrawPursuitBar();
     static void Install();
 };

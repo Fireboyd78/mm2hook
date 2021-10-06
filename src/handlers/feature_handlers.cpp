@@ -5998,15 +5998,29 @@ void vehEngineHandler::Install(void) {
     mmExternalViewHandler
 */
 
-gfxBitmap* BustedBar;
-gfxBitmap* BustedIndicator;
+gfxBitmap* PursuitBar;
+gfxBitmap* BustedMeter;
+gfxBitmap* BustedIcon;
+gfxBitmap* EscapeMeter;
+gfxBitmap* EscapeIcon;
+gfxBitmap* BarMask;
 
 void mmExternalViewHandler::Init(mmPlayer *player) {
     auto externalView = reinterpret_cast<mmExternalView*>(this);
     externalView->Init(player);
 
-    BustedBar = gfxGetBitmap("busted_bar", 0, 0);
-    BustedIndicator = gfxGetBitmap("busted_indicator", 0, 0);
+    PursuitBar = gfxGetBitmap("pursuit_bar", 0, 0);
+    BustedMeter = gfxGetBitmap("busted_meter", 0, 0);
+    BustedIcon = gfxGetBitmap("busted_icon", 0, 0);
+    EscapeMeter = gfxGetBitmap("escape_meter", 0, 0);
+    EscapeIcon = gfxGetBitmap("escape_icon", 0, 0);
+    BarMask = gfxGetBitmap("bar_mask", 0, 0);
+
+    if (mmExternalView::EnableMM1StylePursuitBar) {
+        PursuitBar = gfxGetBitmap("pursuit_bar_mm1", 0, 0);
+        BustedMeter = gfxGetBitmap("busted_ticks", 0, 0);
+        EscapeMeter = gfxGetBitmap("escape_ticks", 0, 0);
+    }
 }
 
 void mmExternalViewHandler::ResChange(int width, int height) {
@@ -6147,18 +6161,7 @@ void mmExternalViewHandler::Cull() {
     DrawSpeedIndicator();
 
     if (bustedTarget == 1 || bustedTarget >= 3) {
-        if (BustedBar != nullptr && BustedIndicator != nullptr) {
-            int bustedBarDistX = (window_width - BustedBar->Width) >> 1;
-            int bustedBarDistY = (window_height - 3 * BustedBar->Height);
-
-            if (vehPoliceCarAudio::iNumCopsPursuingPlayer) {
-                float bustedPercent = BustedIndicator->Width - (BustedIndicator->Width * (bustedTimer / bustedTimeout));
-
-                gfxPipeline::CopyBitmap(bustedBarDistX, bustedBarDistY, BustedIndicator, 0, 0, (int)bustedPercent, BustedIndicator->Height, true);
-
-                gfxPipeline::CopyBitmap(bustedBarDistX, bustedBarDistY, BustedBar, 0, 0, BustedBar->Width, BustedBar->Height, true);
-            }
-        }
+        DrawPursuitBar();
     }
 }
 
@@ -6404,6 +6407,87 @@ void mmExternalViewHandler::DrawSpeedIndicator() {
         true);
 }
 
+void mmExternalViewHandler::DrawPursuitBar() {
+    auto externalView = reinterpret_cast<mmExternalView*>(this);
+    auto player = externalView->getPlayer();
+    auto playerPos = player->getCar()->getModel()->GetPosition();
+    auto AIMAP = &aiMap::Instance;
+
+    if (PursuitBar == nullptr
+        || BustedMeter == nullptr
+        || BustedIcon == nullptr
+        || EscapeMeter == nullptr
+        || EscapeIcon == nullptr
+        || BarMask == nullptr)
+        return;
+
+    int window_width = window_iWidth;
+    int window_height = window_iHeight;
+
+    int closestCopId = 0;
+
+    for (int i = 0; i < AIMAP->numCops; i++)
+    {
+        auto police = AIMAP->Police(i);
+        auto police2 = AIMAP->Police(closestCopId);
+
+        float policeDist = police->getVehiclePhysics()->getCar()->getModel()->GetPosition().Dist(playerPos);
+        float police2Dist = police2->getVehiclePhysics()->getCar()->getModel()->GetPosition().Dist(playerPos);
+
+        if (police2Dist > policeDist)
+            closestCopId = i;
+
+        if (*getPtr<WORD>(police, 0x977A) != 0 && *getPtr<WORD>(police, 0x977A) != 12)
+        {
+            if (*getPtr<vehCar*>(police, 0x9774) == player->getCar())
+            {
+                int pursuitBarDistX = (window_width - PursuitBar->Width) >> 1;
+
+                float escapePercent = EscapeMeter->Width * (*getPtr<float>(police, 0x9794) / *getPtr<float>(AIMAP->raceData, 0x98));
+
+                if (police2Dist <= policeDist && *getPtr<WORD>(police2, 0x977A) != 0 && *getPtr<WORD>(police2, 0x977A) != 12 && *getPtr<vehCar*>(police2, 0x9774) == player->getCar())
+                {
+                    escapePercent = EscapeMeter->Width * (*getPtr<float>(police2, 0x9794) / *getPtr<float>(AIMAP->raceData, 0x98));
+                }
+
+                if (mmExternalView::EnableMM1StylePursuitBar)
+                {
+                    int pursuitBarDistY = (window_height - 2 * PursuitBar->Height);
+
+                    float bustedPercent = BustedMeter->Width - (BustedMeter->Width * (bustedTimer / bustedTimeout));
+
+                    gfxPipeline::CopyBitmap(pursuitBarDistX, pursuitBarDistY, PursuitBar, 0, 0, PursuitBar->Width, PursuitBar->Height, true);
+
+                    gfxPipeline::CopyBitmap(pursuitBarDistX + 8, pursuitBarDistY + 16, BustedMeter, 0, 0, BustedMeter->Width, BustedMeter->Height, true);
+
+                    gfxPipeline::CopyBitmap(pursuitBarDistX + 8, pursuitBarDistY + 16, BarMask, 0, 0, (int)bustedPercent, BustedMeter->Height, true);
+
+                    gfxPipeline::CopyBitmap(pursuitBarDistX + 152, pursuitBarDistY + 16, EscapeMeter, 0, 0, (int)escapePercent, EscapeMeter->Height, true);
+                }
+                else {
+                    int pursuitBarDistY = (window_height - 3 * PursuitBar->Height);
+
+                    float bustedPercent = BarMask->Width - (BarMask->Width * (bustedTimer / bustedTimeout));
+
+                    gfxPipeline::CopyBitmap(pursuitBarDistX, pursuitBarDistY, BarMask, 0, 0, BarMask->Width, BarMask->Height, true);
+
+                    gfxPipeline::CopyBitmap(pursuitBarDistX, pursuitBarDistY, BustedMeter, 0, 0, BustedMeter->Width, BustedMeter->Height, true);
+
+                    gfxPipeline::CopyBitmap(pursuitBarDistX, pursuitBarDistY, BarMask, 0, 0, (int)(bustedPercent * 0.5f), BarMask->Height, true);
+
+                    gfxPipeline::CopyBitmap(pursuitBarDistX + 128, pursuitBarDistY, EscapeMeter, 0, 0, (int)escapePercent, EscapeMeter->Height, true);
+
+                    gfxPipeline::CopyBitmap(pursuitBarDistX, pursuitBarDistY, PursuitBar, 0, 0, PursuitBar->Width, PursuitBar->Height, true);
+
+                    gfxPipeline::CopyBitmap(pursuitBarDistX - 13, pursuitBarDistY - 32, BustedIcon, 0, 0, BustedIcon->Width, BustedIcon->Height, true);
+
+                    gfxPipeline::CopyBitmap(pursuitBarDistX + 235, pursuitBarDistY - 32, EscapeIcon, 0, 0, EscapeIcon->Width, EscapeIcon->Height, true);
+                }
+            }
+        }
+    }
+}
+
 void mmExternalViewHandler::Install() {
     InstallCallback("mmExternalView::Init", "Use our external view initialization",
         &Init, {
@@ -6424,10 +6508,12 @@ void mmExternalViewHandler::Install() {
     );
 
     ConfigValue<bool> cfgMm1StyleHud("MM1StyleHud", false);
+    ConfigValue<bool> cfgMm1StylePursuitBar("MM1StylePursuitBar", false);
     ConfigValue<bool> cfgEnableMouseBar("EnableMouseBar", false);
     ConfigValue<bool> cfgSwitchFromMPH2KPH("SwitchFromMPH2KPH", false);
 
     mmExternalView::EnableMM1StyleHud = cfgMm1StyleHud.Get();
+    mmExternalView::EnableMM1StylePursuitBar = cfgMm1StylePursuitBar.Get();
     mmExternalView::EnableMouseBar = cfgEnableMouseBar.Get();
     mmExternalView::SwitchFromMPH2KPH = cfgSwitchFromMPH2KPH.Get();
 }

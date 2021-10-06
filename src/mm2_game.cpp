@@ -15,5 +15,6 @@ declfield(RadialGauge::bDebugPivot)(0x62762C);
     mmExternalView
 */
 bool mmExternalView::EnableMM1StyleHud = false;
+bool mmExternalView::EnableMM1StylePursuitBar = false;
 bool mmExternalView::EnableMouseBar = false;
 bool mmExternalView::SwitchFromMPH2KPH = false;
