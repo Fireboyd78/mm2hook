@@ -3255,10 +3255,8 @@ void PUMainHandler::Install() {
     mmPlayerHandler
 */
 static ConfigValue<bool> cfgEnableOutOfMapFix("OutOfMapFix", true);
-static ConfigValue<bool> cfgEnableExplosionSound("ExplosionSound", true);
 static ConfigValue<bool> cfgEnableMissingDashboardFix("MissingDashboardFix", true);
 bool enableOutOfMapFixCached = true;
-bool enableExplosionSoundCached = true;
 bool enableMissingDashboardFixCached = true;
 
 void mmPlayerHandler::Zoink() {
@@ -3340,17 +3338,6 @@ void mmPlayerHandler::Zoink() {
         car->Reset();
     }
 
-}
-
-void mmPlayerHandler::PlayExplosion() {
-    auto player = reinterpret_cast<mmPlayer*>(this);
-    auto car = player->getCar();
-    auto policeAudio = car->getAudio()->GetPoliceCarAudioPtr();
-    auto explosionSound = *getPtr<AudSoundBase*>(policeAudio, 0x138);
-    if (explosionSound != nullptr) {
-        if (!explosionSound->IsPlaying())
-            explosionSound->PlayOnce(-1.f, -1.f);
-    }
 }
 
 static ConfigValue<int> cfgBustedTarget("BustedTarget", 3);
@@ -3581,24 +3568,6 @@ void mmPlayerHandler::Update() {
         Zoink();
     }
 
-    //check if we're damaged out
-    if (enableExplosionSoundCached) {
-        if (player->IsMaxDamaged()) {
-            //turn off engine
-            audio->SilenceEngine(1);
-            engine->setCurrentTorque(0.f);
-            //play explosion sound if siren is activated
-            if (siren != nullptr && siren->Active) {
-                siren->Active = false;
-                audio->StopSiren();
-                PlayExplosion();
-            }
-        }
-        if (!player->IsMaxDamaged()) {
-            audio->SilenceEngine(0);
-        }
-    }
-
     //check if dashboard model is missing
     if (enableMissingDashboardFixCached) {
         if (!player->getHUD()->getDashView()->field_604) {
@@ -3699,7 +3668,6 @@ static ConfigValue<bool> cfgEnableModelVisibility ("ModelVisibility", false);
 
 void mmPlayerHandler::Install() {
     enableOutOfMapFixCached = cfgEnableOutOfMapFix.Get();
-    enableExplosionSoundCached = cfgEnableExplosionSound.Get();
     enableMissingDashboardFixCached = cfgEnableMissingDashboardFix.Get();
     bustedTarget = cfgBustedTarget.Get();
     bustedMaxSpeed = cfgBustedMaxSpeed.Get();
@@ -4167,7 +4135,9 @@ void dgBangerInstanceHandler::Install()
 
 static ConfigValue<bool> cfgVehicleDebug("VehicleDebug", "vehicleDebug", false);
 static ConfigValue<bool> cfgEnableWaterSplashSound("WaterSplashSound", true);
+static ConfigValue<bool> cfgEnableExplosionSound("ExplosionSound", true);
 bool enableWaterSplashSoundCached = true;
+bool enableExplosionSoundCached = true;
 
 void vehCarHandler::InitCar(LPCSTR vehName, int a2, int a3, bool a4, bool a5) {
     Displayf("Initializing vehicle (\"%s\", %d, %d, %s, %s)", vehName, a2, a3, bool_str(a4), bool_str(a5));
@@ -4278,6 +4248,16 @@ void vehCarHandler::Splash() {
         impactAud->Play(vehicleMph, 22);
 }
 
+void vehCarHandler::PlayExplosion() {
+    auto car = reinterpret_cast<vehCar*>(this);
+    auto policeAudio = car->getAudio()->GetPoliceCarAudioPtr();
+    auto explosionSound = *getPtr<AudSoundBase*>(policeAudio, 0x138);
+    if (explosionSound != nullptr) {
+        if (!explosionSound->IsPlaying())
+            explosionSound->PlayOnce(-1.f, -1.f);
+    }
+}
+
 void vehCarHandler::Update() {
     auto car = reinterpret_cast<vehCar*>(this);
     auto siren = car->getSiren();
@@ -4309,12 +4289,37 @@ void vehCarHandler::Update() {
         }
     }
 
+    //check if we're damaged out
+    if (enableExplosionSoundCached) {
+        auto curDamage = car->getCarDamage()->getCurDamage();
+        auto maxDamage = car->getCarDamage()->getMaxDamage();
+        if (curDamage > maxDamage) {
+            //turn off engine
+            audio->SilenceEngine(1);
+            car->getCarSim()->getEngine()->setCurrentTorque(0.f);
+            //play explosion sound if siren is activated
+            if (siren != nullptr && siren->Active) {
+                siren->Active = false;
+                audio->StopSiren();
+
+                if (audio->IsPlayer())
+                    PlayExplosion();
+                else
+                    audio->GetPoliceCarAudioPtr()->PlayExplosion();
+            }
+        }
+        if (curDamage <= maxDamage) {
+            audio->SilenceEngine(0);
+        }
+    }
+
     // call original
     hook::Thunk<0x42C690>::Call<void>(this);
 }
 
 void vehCarHandler::Install(void) {
     enableWaterSplashSoundCached = cfgEnableWaterSplashSound.Get();
+    enableExplosionSoundCached = cfgEnableExplosionSound.Get();
     InstallCallback("vehCar::InitAudio", "Enables debugging for vehicle initialization, and automatic vehtypes handling.",
         &InitCarAudio, {
             cb::call(0x55943A), // aiVehiclePhysics::Init

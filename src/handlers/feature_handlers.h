@@ -232,7 +232,6 @@ public:
     void Zoink();
     void Update();
     void Reset();
-    void PlayExplosion();
     void BustPerp();
     void BustOpp();
     int GetClosestCop();
@@ -304,6 +303,7 @@ public:
     const MM2::phBound * GetModelBound(int a1);
 
     void Mm1StyleTransmission();
+    void PlayExplosion();
     void Splash();
     void Update();
 
@@ -326,7 +326,6 @@ public:
 
 class vehWheelHandler {
 public:
-    float GetBumpDisplacement(float a1);
     void Update();
     static void Install();
 };
@@ -373,7 +372,6 @@ public:
     void DrawGlow();
     void DrawPart(int a1, int a2, MM2::Matrix34* a3, MM2::modShader* a4);
     void DrawPartReflections(MM2::modStatic* a1, MM2::Matrix34* a2, MM2::modShader* a3);
-    void AddGeomHook(const char* pkgName, const char* name, int flags);
     static void Install();
 };
 
