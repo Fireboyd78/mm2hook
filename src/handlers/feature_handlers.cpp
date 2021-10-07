@@ -1339,6 +1339,18 @@ void vehCarAudioContainerHandler::Install() {
             cb::call(0x412772),
         }
     );
+
+    InstallCallback("vehCarAudioContainer::PlayHorn", "Adds horn sound for cop cars.",
+        &vehCarAudioContainer::PlayHorn, {
+            cb::call(0x43D4ED),
+        }
+    );
+
+    InstallCallback("vehCarAudioContainer::StopHorn", "Adds horn sound for cop cars.",
+        &vehCarAudioContainer::StopHorn, {
+            cb::call(0x43D500),
+        }
+    );
 }
 
 /*
@@ -1800,15 +1812,12 @@ void mmGameHandler::UpdateHorn(bool a1) {
     //update horn audio
     if (isVehiclePolice)
     {
-        auto hornSound = *getPtr<AudSoundBase*>(policeAudio, 0x10C);
-        if (hornSound->IsPlaying() != a1) {
-            if (a1) {
-                if (!cancelHornInput)
-                    hornSound->PlayLoop(-1.f, -1.f);
-            }
-            else {
-                hornSound->Stop();
-            }
+        if (a1) {
+            if (!cancelHornInput)
+                audio->PlayHorn();
+        }
+        else {
+            audio->StopHorn();
         }
     }
     else

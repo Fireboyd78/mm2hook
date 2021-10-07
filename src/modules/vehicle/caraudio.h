@@ -20,6 +20,9 @@ namespace MM2
         inline vehCarSim * getCarSim(void) const {
             return _sim.get(this);
         };
+
+        AGE_API void PlayHorn()                           { hook::Thunk<0x4DC1D0>::Call<void>(this); }
+        AGE_API void StopHorn()                           { hook::Thunk<0x4DC210>::Call<void>(this); }
     };
 
     // Lua initialization

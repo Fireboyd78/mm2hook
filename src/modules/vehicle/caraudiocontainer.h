@@ -86,12 +86,51 @@ namespace MM2
             hook::Thunk<0x4D18C0>::Call<void>(this);
         }
 
-        AGE_API void PlayHorn() {
-            hook::Thunk<0x4D17C0>::Call<void>(this);
+        AGE_API void PlayHorn()
+        {
+            if (!this->field_0)
+            {
+                auto carAudio = this->CarAudioPtr;
+                if (carAudio != nullptr)
+                    carAudio->PlayHorn();
+
+                auto policeAudio = (vehCarAudio*)this->PoliceCarAudioPtr;
+                if (policeAudio != nullptr)
+                    policeAudio->PlayHorn();
+
+                auto semiAudio = (vehCarAudio*)this->SemiCarAudioPtr;
+                if (semiAudio != nullptr)
+                    semiAudio->PlayHorn();
+
+                auto nitroAudio = (vehCarAudio*)this->NitroCarAudioPtr;
+                if (nitroAudio != nullptr)
+                    nitroAudio->PlayHorn();
+
+                this->field_0 = 1;
+            }
         }
 
         AGE_API void StopHorn() {
-            hook::Thunk<0x4D1800>::Call<void>(this);
+            if (this->field_0)
+            {
+                auto carAudio = this->CarAudioPtr;
+                if (carAudio != nullptr)
+                    carAudio->StopHorn();
+
+                auto policeAudio = (vehCarAudio*)this->PoliceCarAudioPtr;
+                if (policeAudio != nullptr)
+                    policeAudio->StopHorn();
+
+                auto semiAudio = (vehCarAudio*)this->SemiCarAudioPtr;
+                if (semiAudio != nullptr)
+                    semiAudio->StopHorn();
+
+                auto nitroAudio = (vehCarAudio*)this->NitroCarAudioPtr;
+                if (nitroAudio != nullptr)
+                    nitroAudio->StopHorn();
+
+                this->field_0 = 0;
+            }
         }
 
         AGE_API void SilenceEngine(int a1) {
