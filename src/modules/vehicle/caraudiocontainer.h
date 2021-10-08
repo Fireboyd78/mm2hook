@@ -94,15 +94,15 @@ namespace MM2
                 if (carAudio != nullptr)
                     carAudio->PlayHorn();
 
-                auto policeAudio = (vehCarAudio*)this->PoliceCarAudioPtr;
+                auto policeAudio = this->PoliceCarAudioPtr;
                 if (policeAudio != nullptr)
                     policeAudio->PlayHorn();
 
-                auto semiAudio = (vehCarAudio*)this->SemiCarAudioPtr;
+                auto semiAudio = this->SemiCarAudioPtr;
                 if (semiAudio != nullptr)
                     semiAudio->PlayHorn();
 
-                auto nitroAudio = (vehCarAudio*)this->NitroCarAudioPtr;
+                auto nitroAudio = this->NitroCarAudioPtr;
                 if (nitroAudio != nullptr)
                     nitroAudio->PlayHorn();
 
@@ -117,15 +117,15 @@ namespace MM2
                 if (carAudio != nullptr)
                     carAudio->StopHorn();
 
-                auto policeAudio = (vehCarAudio*)this->PoliceCarAudioPtr;
+                auto policeAudio = this->PoliceCarAudioPtr;
                 if (policeAudio != nullptr)
                     policeAudio->StopHorn();
 
-                auto semiAudio = (vehCarAudio*)this->SemiCarAudioPtr;
+                auto semiAudio = this->SemiCarAudioPtr;
                 if (semiAudio != nullptr)
                     semiAudio->StopHorn();
 
-                auto nitroAudio = (vehCarAudio*)this->NitroCarAudioPtr;
+                auto nitroAudio = this->NitroCarAudioPtr;
                 if (nitroAudio != nullptr)
                     nitroAudio->StopHorn();
 

@@ -126,8 +126,7 @@ namespace MM2
         AGE_API void SetPan(float pan, int a2)              { hook::Thunk<0x50DB30>::Call<void>(this, pan, a2); }
         AGE_API void SetSoundHandleIndex(int index)         { hook::Thunk<0x50E2C0>::Call<void>(this, index); }
         AGE_API void SetSubPath(LPCSTR path)                { hook::Thunk<0x50D8D0>::Call<void>(this, path); }
-        AGE_API void SetPlayPosition(unsigned int position)
-                                                            { hook::Thunk<0x50E2E0>::Call<void>(this, position); }
+        AGE_API void SetPlayPosition(uint position)         { hook::Thunk<0x50E2E0>::Call<void>(this, position); }
         AGE_API void SetPriority(int a1)                    { hook::Thunk<0x50DB10>::Call<void>(this, a1); }
         AGE_API int GetSoundHandleIndex()                   { return hook::Thunk<0x50E2D0>::Call<int>(this); }
         AGE_API int GetNumSoundHandles()                    { return hook::Thunk<0x50E310>::Call<int>(this); }
