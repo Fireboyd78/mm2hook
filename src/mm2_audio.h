@@ -161,8 +161,46 @@ namespace MM2
     };
 
     class Aud3DObject {
+    private:
+        int VTBL;
+        float Pan;
+        float field_8;
+        float Attenuation;
+        float LastDoppler;
+        float MinDropOffSqr;
+        float MaxDropOffSqr;
+        int field_1c;
+        float PositionPtrPseudoDistChangeRate;
+        float PositionPtrPseudoDist;
+        float PositionPtrLastPseudoDist;
+        float LeftPositionPtrDistSqr;
+        float RightPositionPtrDistSqr;
+        float DropOffDivisor;
+        float LeftPercentToMaxDist;
+        float RightPercentToMaxDist;
+        int Priority;
+        int ObjectId3D;
+        bool Is3D;
+        byte field_49;
+        byte field_4a;
+        byte field_4b;
+        Vector3* LeftPositionPtr;
+        Vector3* RightPositionPtr;
+        Vector3** VectorPoints;
+        BOOL VectorPointMode;
+        int NumVectorPoints;
+    public:
+        AGE_API Aud3DObject() {
+            scoped_vtable x(this);
+            hook::Thunk<0x511AB0>::Call<void>(this);
+        };
 
+        AGE_API ~Aud3DObject() {
+            scoped_vtable x(this);
+            hook::Thunk<0x511B20>::Call<void>(this);
+        };
     };
+    ASSERT_SIZEOF(Aud3DObject, 0x60);
 
     class AudCreatureContainer : public Aud3DObject {
     public:
