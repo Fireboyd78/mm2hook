@@ -945,6 +945,9 @@
     <ClInclude Include="src\implot\implot.h">
       <Filter>Source Files\implot</Filter>
     </ClInclude>
+    <ClInclude Include="src\modules\vehicle\enginesamplewrapper.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
