@@ -1,6 +1,7 @@
 #pragma once
 #include <modules\vehicle.h>
-#include <mm2_audio.h>
+
+#include "caraudio.h"
 
 namespace MM2
 {
@@ -12,39 +13,17 @@ namespace MM2
 
     // Class definitions
 
-    class vehPoliceCarAudio {
+    class vehPoliceCarAudio : public vehCarAudio {
+    private:
+        byte _buffer[0x118];
     public:
         static hook::Type<int> iNumCopsPursuingPlayer;
 
         AGE_API void StartSiren(int a1)                   { hook::Thunk<0x4D4B20>::Call<void>(this, a1); }
         AGE_API void StopSiren()                          { hook::Thunk<0x4D4C20>::Call<void>(this); }
         AGE_API void PlayExplosion()                      { hook::Thunk<0x4D4C90>::Call<void>(this); }
-
-        AGE_API void PlayHorn()
-        {
-            auto hornSound = *getPtr<AudSoundBase*>(this, 0x10C);
-
-            if (hornSound != nullptr)
-            {
-                if (!hornSound->IsPlaying())
-                {
-                    hornSound->SetPlayPosition(0);
-                    hornSound->PlayLoop(-1.f, -1.f);
-                }
-            }
-        }
-
-        AGE_API void StopHorn()
-        {
-            auto hornSound = *getPtr<AudSoundBase*>(this, 0x10C);
-
-            if (hornSound != nullptr)
-            {
-                if (hornSound->IsPlaying())
-                    hornSound->Stop();
-            }
-        }
     };
+    ASSERT_SIZEOF(vehPoliceCarAudio, 0x248);
 
     // Lua initialization
 
