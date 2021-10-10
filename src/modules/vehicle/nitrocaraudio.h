@@ -1,6 +1,8 @@
 #pragma once
 #include <modules\vehicle.h>
 
+#include "caraudio.h"
+
 namespace MM2
 {
     // Forward declarations
@@ -11,35 +13,25 @@ namespace MM2
 
     // Class definitions
 
-    class vehNitroCarAudio {
+    class vehNitroCarAudio : public vehCarAudio {
     private:
-        byte _buffer[0x13C];
+        float NitroVolume;
+        int field_134;
+        AudSoundBase* NitroSound;
     public:
-        AGE_API void PlayHorn()
-        {
-            auto hornSound = *getPtr<AudSoundBase*>(this, 0x10C);
-
-            if (hornSound != nullptr)
-            {
-                if (!hornSound->IsPlaying())
-                {
-                    hornSound->SetPlayPosition(0);
-                    hornSound->PlayLoop(-1.f, -1.f);
-                }
-            }
+        inline float getNitroVolume() {
+            return this->NitroVolume;
         }
 
-        AGE_API void StopHorn()
-        {
-            auto hornSound = *getPtr<AudSoundBase*>(this, 0x10C);
+        inline void setNitroVolume(float volume) {
+            this->NitroVolume = volume;
+        }
 
-            if (hornSound != nullptr)
-            {
-                if (hornSound->IsPlaying())
-                    hornSound->Stop();
-            }
+        inline AudSoundBase * getNitroSound() {
+            return this->NitroSound;
         }
     };
+    ASSERT_SIZEOF(vehNitroCarAudio, 0x13C);
 
     // Lua initialization
 
