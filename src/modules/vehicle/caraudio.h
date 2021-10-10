@@ -23,7 +23,7 @@ namespace MM2
         float MinAmpSpeed;
         float field_74;
         float HornVolume;
-        int field_7c;
+        float Pan;
         vehSurfaceAudio SurfaceAudio;
         vehEngineAudio EngineAudio;
         AudSoundBase* HornSound;
@@ -39,6 +39,14 @@ namespace MM2
         byte field_12e;
         byte field_12f;
     public:
+        inline float getPan() {
+            return this->Pan;
+        }
+
+        inline void setPan(float pan) {
+            this->Pan = pan;
+        }
+
         inline vehCarSim * getCarSim(void) {
             return this->CarSim;
         };

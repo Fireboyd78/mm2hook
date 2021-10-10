@@ -1,6 +1,8 @@
 #pragma once
 #include <modules\vehicle.h>
 
+#include "caraudio.h"
+
 namespace MM2
 {
     // Forward declarations
@@ -11,35 +13,64 @@ namespace MM2
 
     // Class definitions
 
-    class vehSemiCarAudio {
+    class vehSemiCarAudio : public vehCarAudio {
     private:
-        byte _buffer[0x148];
+        float ReverseVolume;
+        float AirBrakeVolume;
+        AudSoundBase* ReverseSound;
+        AudSoundBase* AirBrakeSound;
+        int field_140;
+        int field_144;
     public:
-        AGE_API void PlayHorn()
-        {
-            auto hornSound = *getPtr<AudSoundBase*>(this, 0x10C);
-
-            if (hornSound != nullptr)
-            {
-                if (!hornSound->IsPlaying())
-                {
-                    hornSound->SetPlayPosition(0);
-                    hornSound->PlayLoop(-1.f, -1.f);
-                }
-            }
+        inline float getReverseVolume() {
+            return this->ReverseVolume;
         }
 
-        AGE_API void StopHorn()
-        {
-            auto hornSound = *getPtr<AudSoundBase*>(this, 0x10C);
+        inline void setReverseVolume(float volume) {
+            this->ReverseVolume = volume;
+        }
 
-            if (hornSound != nullptr)
-            {
-                if (hornSound->IsPlaying())
-                    hornSound->Stop();
-            }
+        inline float getAirBrakeVolume() {
+            return this->AirBrakeVolume;
+        }
+
+        inline void setAirBrakeVolume(float volume) {
+            this->AirBrakeVolume = volume;
+        }
+
+        inline AudSoundBase * getReverseSound() {
+            return this->ReverseSound;
+        }
+
+        inline void setReverseSound(AudSoundBase* sound) {
+            this->ReverseSound = sound;
+        }
+
+        inline AudSoundBase * getAirBrakeSound() {
+            return this->AirBrakeSound;
+        }
+
+        inline void setAirBrakeSound(AudSoundBase* sound) {
+            this->AirBrakeSound = sound;
+        }
+
+        inline int getField_140() {
+            return this->field_140;
+        }
+
+        inline void setField_140(int value) {
+            this->field_140 = value;
+        }
+
+        inline int getField_144() {
+            return this->field_144;
+        }
+
+        inline void setField_144(int value) {
+            this->field_144 = value;
         }
     };
+    ASSERT_SIZEOF(vehSemiCarAudio, 0x148);
 
     // Lua initialization
 

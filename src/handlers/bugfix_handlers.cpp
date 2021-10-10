@@ -1262,8 +1262,8 @@ void fxShardManagerBugfixHandler::Install()
 bool canPlayAirBlowSound = false;
 void vehSemiCarAudioBugfixHandler::UpdateAirBlow() 
 {
-    auto carAudio = reinterpret_cast<vehCarAudio*>(this);
-    auto carsim = carAudio->getCarSim();
+    auto semiAudio = reinterpret_cast<vehSemiCarAudio*>(this);
+    auto carsim = semiAudio->getCarSim();
     
     //only do this sound for player vehicles
     //if done on all vehicles, cheaters in multiplayer
@@ -1285,7 +1285,7 @@ void vehSemiCarAudioBugfixHandler::UpdateAirBlow()
     //if we're going <1mph, play the sound
     if (speed < 1.f) {
         if (isBraking && canPlayAirBlowSound) {
-            auto airBrakeSound = *getPtr<AudSoundBase*>(this, 0x13C);
+            auto airBrakeSound = semiAudio->getAirBrakeSound();
             if (airBrakeSound != nullptr)
                 airBrakeSound->PlayOnce(-1.f, -1.f);
         }
@@ -1295,13 +1295,15 @@ void vehSemiCarAudioBugfixHandler::UpdateAirBlow()
 
 void vehSemiCarAudioBugfixHandler::Init(MM2::vehCarSim * carsim, MM2::vehCarDamage * cardamage, char * basename, bool a5, bool a6, bool a7)
 {
-    //set some things in the semi audio class
-    *getPtr<int>(this, 0x138) = 0;
-    *getPtr<int>(this, 0x13C) = 0;
-    *getPtr<float>(this, 0x130) = 0.87f;
-    *getPtr<float>(this, 0x134) = 0.9f;
-    *getPtr<int>(this, 0x140) = 0xFFFFFFFF;
-    *getPtr<int>(this, 0x144) = 0xFFFFFFFF;
+    auto semiAudio = reinterpret_cast<vehSemiCarAudio*>(this);
+
+    //set some values for semi audio class fields
+    semiAudio->setReverseSound(nullptr);
+    semiAudio->setAirBrakeSound(nullptr);
+    semiAudio->setReverseVolume(0.87f);
+    semiAudio->setAirBrakeVolume(0.9f);
+    semiAudio->setField_140(0xFFFFFFFF);
+    semiAudio->setField_144(0xFFFFFFFF);
 
     //call vehSemiCarAudio::Load, to load airbrake
     string_buf<128> semiDataName("%s_semidata", basename);
@@ -1323,12 +1325,13 @@ void vehSemiCarAudioBugfixHandler::Init(MM2::vehCarSim * carsim, MM2::vehCarDama
 
 void vehSemiCarAudioBugfixHandler::SetNon3DParams() 
 {
+    auto semiAudio = reinterpret_cast<vehSemiCarAudio*>(this);
     bool isStereo = AudManagerBase::Instance.get()->getIsStereo();
-    auto airBrakeSound = *getPtr<AudSoundBase*>(this, 0x13C);
-    auto reverseSound = *getPtr<AudSoundBase*>(this, 0x138);
-    float airBrakeVolume = *getPtr<float>(this, 0x134);
-    float reverseVolume = *getPtr<float>(this, 0x130);  
-    float pan = *getPtr<float>(this, 0x7C);
+    auto airBrakeSound = semiAudio->getAirBrakeSound();
+    auto reverseSound = semiAudio->getReverseSound();
+    float airBrakeVolume = semiAudio->getAirBrakeVolume();
+    float reverseVolume = semiAudio->getReverseVolume();  
+    float pan = semiAudio->getPan();
 
     //setup reverse sound
     if (reverseSound != nullptr) {
