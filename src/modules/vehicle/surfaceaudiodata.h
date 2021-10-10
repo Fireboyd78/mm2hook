@@ -13,7 +13,7 @@ namespace MM2
 
     class vehSurfaceAudioData {
     private:
-        AudSoundBase* SurfaceSoundBasePtr;
+        AudSoundBase* SurfaceSound;
         void* SkidWaveData;
         int SampleIndex;
         int NumSkidSamples;

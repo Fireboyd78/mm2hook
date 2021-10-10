@@ -26,8 +26,8 @@ namespace MM2
         int field_7c;
         vehSurfaceAudio SurfaceAudio;
         vehEngineAudio EngineAudio;
-        AudSoundBase* HornSoundBase;
-        AudSoundBase* ClutchSoundBase;
+        AudSoundBase* HornSound;
+        AudSoundBase* ClutchSound;
         float ClutchSampleVolume;
         vehCarSim* CarSim;
         int HornSampleIndex;

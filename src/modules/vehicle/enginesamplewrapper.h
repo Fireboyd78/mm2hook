@@ -13,7 +13,7 @@ namespace MM2
 
     class vehEngineSampleWrapper {
     private:
-        AudSoundBase* SoundBasePtr;
+        AudSoundBase* EngineSound;
         float MinVolume;
         float MaxVolume;
         float MinVolumeBackup;
