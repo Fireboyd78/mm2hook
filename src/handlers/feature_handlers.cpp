@@ -2622,10 +2622,10 @@ void mmDashViewHandler::Init(char* vehName, mmPlayer* player) {
 
             strcpy_s(gearTextureName, dShader->Texture->Name);
 
-            char* _R = strstr(gearTextureName, "_r");
+            char* R = strrchr(gearTextureName, 'r');
 
-            if (_R != NULL) {
-                strncpy(_R, "_d", 2);
+            if (R != NULL) {
+                strncpy(R, "d", 1);
 
                 gfxTexture* gearTexture = gfxGetTexture(gearTextureName, 1);
 
@@ -2648,10 +2648,10 @@ void mmDashViewHandler::Init(char* vehName, mmPlayer* player) {
 
             strcpy_s(gearTextureName, pShader->Texture->Name);
 
-            char* _R = strstr(gearTextureName, "_r");
+            char* R = strrchr(gearTextureName, 'r');
 
-            if (_R != NULL) {
-                strncpy(_R, "_p", 2);
+            if (R != NULL) {
+                strncpy(R, "p", 1);
 
                 gfxTexture* gearTexture = gfxGetTexture(gearTextureName, 1);
 
