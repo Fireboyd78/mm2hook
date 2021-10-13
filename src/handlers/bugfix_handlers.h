@@ -231,3 +231,9 @@ class fxShardManagerBugfixHandler {
 public:
     static void Install();
 };
+
+class mmSingleRoamMusicDataHandler {
+public:
+    bool LoadMusic(char* name);
+    static void Install();
+};

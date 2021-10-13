@@ -24,12 +24,22 @@ namespace MM2
 
     class datAssetManager {
     public:
-        /* TODO?
-        static Stream * Open(char const *,char const *,bool,bool);
-        static Stream * Open(char const *,char const *,char const *,bool,bool);
-        static Stream * Create(char const *,char const *,bool);
-        static Stream * Create(char const *,char const *,char const *,bool);
-        */
+        AGE_API static Stream * Open(LPCSTR filename, LPCSTR extension, bool a3, bool a4) {
+            return hook::StaticThunk<0x4C5870>::Call<Stream*>(filename, extension, a3, a4);
+        };
+
+        AGE_API static Stream * Open(LPCSTR directory, LPCSTR filename, LPCSTR extension, bool a4, bool a5) {
+            return hook::StaticThunk<0x4C58C0>::Call<Stream*>(directory, filename, extension, a4, a5);
+        };
+
+        AGE_API static Stream * Create(LPCSTR filename, LPCSTR extension, bool a3) {
+            return hook::StaticThunk<0x4C5910>::Call<Stream*>(filename, extension, a3);
+        };
+
+        AGE_API static Stream * Create(LPCSTR directory, LPCSTR filename, LPCSTR extension, bool a4) {
+            return hook::StaticThunk<0x4C5960>::Call<Stream*>(directory, filename, extension, a4);
+        };
+
         static hook::Type<char *> sm_Path;
 
         AGE_API static void FullPath(char *buffer, int length, LPCSTR directory, LPCSTR filename) {

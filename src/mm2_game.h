@@ -807,7 +807,16 @@ namespace MM2
 
     class mmGameMusicData {
     public:
+        AGE_API short GetNumDMusicChoiceGroups(Stream* stream)
+                                                            { return hook::Thunk<0x433FB0>::Call<short>(this, stream); }
+        AGE_API short RandomizeNumber(short num)            { return hook::Thunk<0x434000>::Call<short>(this, num); }
         AGE_API bool LoadAmbientSFX(LPCSTR name)            { return hook::Thunk<0x434060>::Call<bool>(this, name); }
+    };
+
+    class mmSingleRoamMusicData : public mmGameMusicData {
+    public:
+        AGE_API bool LoadMusicSegments(Stream* stream, short num)
+                                                            { return hook::Thunk<0x438B00>::Call<bool>(this, stream, num); }
     };
 
     class mmCDPlayer : public asNode {

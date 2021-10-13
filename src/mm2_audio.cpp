@@ -10,3 +10,8 @@ declfield(AudManager::Instance)(0x6B15D0);
     AudManagerBase
 */
 declfield(AudManagerBase::Instance)(0x6B1474);
+
+/*
+    MMDMusicManager
+*/
+declfield(MMDMusicManager::Instance)(0x6B15EC);

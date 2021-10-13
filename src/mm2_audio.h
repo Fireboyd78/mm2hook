@@ -468,6 +468,106 @@ namespace MM2
         }
     };
 
+    class DMusicObject {
+    private:
+        byte _buffer[0x38];
+    public:
+        ANGEL_ALLOCATOR
+
+        AGE_API DMusicObject() {
+            scoped_vtable x(this);
+            hook::Thunk<0x515D40>::Call<void>(this);
+        };
+
+        AGE_API ~DMusicObject() {
+            scoped_vtable x(this);
+            hook::Thunk<0x515DF0>::Call<void>(this);
+        };
+
+        AGE_API int PlayBand(int a1, int a2)                 { return hook::Thunk<0x5174B0>::Call<int>(this, a1, a2); }
+        AGE_API int PlayMotif(int a1, ulong a2)              { return hook::Thunk<0x5168A0>::Call<int>(this, a1, a2); }
+        AGE_API int PlaySegment(ulong a1)                    { return hook::Thunk<0x516860>::Call<int>(this, a1); }
+        AGE_API int StopSegment(int a1)                      { return hook::Thunk<0x516900>::Call<int>(this, a1); }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<DMusicObject>("DMusicObject")
+                .addFunction("PlayBand", &PlayBand)
+                .addFunction("PlayMotif", &PlayMotif)
+                .addFunction("PlaySegment", &PlaySegment)
+                .addFunction("StopSegment", &StopSegment)
+            .endClass();
+        }
+    };
+    ASSERT_SIZEOF(DMusicObject, 0x38);
+
+    class DMusicManager {
+    public:
+        ANGEL_ALLOCATOR
+
+        AGE_API DMusicManager() {
+            scoped_vtable x(this);
+            hook::Thunk<0x5173F0>::Call<void>(this);
+        };
+
+        AGE_API ~DMusicManager() {
+            scoped_vtable x(this);
+            hook::Thunk<0x517400>::Call<void>(this);
+        };
+
+        AGE_API DMusicObject * GetDMusicObjectPtr()          { return hook::Thunk<0x5174D0>::Call<DMusicObject*>(this); }
+        AGE_API void Activate(int a1)                        { hook::Thunk<0x5174B0>::Call<void>(this, a1); }
+        AGE_API void SetPan(float pan)                       { hook::Thunk<0x517540>::Call<void>(this, pan); }
+        AGE_API void SetVolume(float volume)                 { hook::Thunk<0x5174F0>::Call<void>(this, volume); }
+        AGE_API float GetVolume()                            { return hook::Thunk<0x517520>::Call<float>(this); }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginClass<DMusicManager>("DMusicManager")
+                .addFunction("Activate", &Activate)
+                .addFunction("SetPan", &SetPan)
+                .addFunction("SetVolume", &SetVolume)
+                .addFunction("GetVolume", &GetVolume)
+            .endClass();
+        }
+    };
+
+    class MMDMusicManager : public DMusicManager {
+    private:
+        byte _buffer[0x58];
+    public:
+        ANGEL_ALLOCATOR
+
+        AGE_API MMDMusicManager() {
+            scoped_vtable x(this);
+            hook::Thunk<0x519EB0>::Call<void>(this);
+        };
+
+        AGE_API ~MMDMusicManager() {
+            scoped_vtable x(this);
+            hook::Thunk<0x519EE0>::Call<void>(this);
+        };
+
+        static hook::Type<MMDMusicManager*> Instance;
+
+        AGE_API void Init(int a1, ulong a2)                  { hook::Thunk<0x519F60>::Call<void>(this, a1, a2); }
+        AGE_API void Reset()                                 { hook::Thunk<0x51A2C0>::Call<void>(this); }
+        AGE_API void Update()                                { hook::Thunk<0x519FE0>::Call<void>(this); }
+        AGE_API void UpdateMusic()                           { hook::Thunk<0x51A070>::Call<void>(this); }
+        AGE_API void UpdateSeconds()                         { hook::Thunk<0x519FF0>::Call<void>(this); }
+        AGE_API void UpdateAmbientSFX()                      { hook::Thunk<0x51A020>::Call<void>(this); }
+        AGE_API void MatchMusicToPlayerSpeed(float speed)    { hook::Thunk<0x51A1D0>::Call<void>(this, speed); }
+
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginExtendClass<MMDMusicManager, DMusicManager>("MMDMusicManager")
+                .addFunction("Reset", &Reset)
+                .addFunction("Update", &Update)
+                .addFunction("UpdateMusic", &UpdateMusic)
+                .addFunction("UpdateSeconds", &UpdateSeconds)
+                .addFunction("UpdateAmbientSFX", &UpdateAmbientSFX)
+                .addFunction("MatchMusicToPlayerSpeed", &MatchMusicToPlayerSpeed)
+            .endClass();
+        }
+    };
+    ASSERT_SIZEOF(MMDMusicManager, 0x58);
 
     template<>
     void luaAddModule<module_audio>(LuaState L) {

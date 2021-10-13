@@ -44,6 +44,8 @@ static init_handler g_bugfix_handlers[] = {
 
     CreateHandler<BugfixPatchHandler>("Bugfix patches"),
 
+    CreateHandler<mmSingleRoamMusicDataHandler>("mmSingleRoamMusicData"),
+
     CreateHandler<pedAnimationInstanceHandler>("pedAnimationInstance"),
     CreateHandler<fxShardManagerBugfixHandler>("fxShardManager")
     //CreateHandler<phBoundBugfixHandler>("phBound"),
@@ -1374,6 +1376,56 @@ void vehSemiCarAudioBugfixHandler::Install()
     InstallVTableHook("vehSemiCarAudio::SetNon3DParams",
         &SetNon3DParams, {
             0x5B31C4
+        }
+    );
+}
+
+bool mmSingleRoamMusicDataHandler::LoadMusic(char* name)
+{
+    auto stream = datAssetManager::Open("aud\\dmusic\\csv_files", name, "csv", false, true);
+
+    if (stream == nullptr)
+        return false;
+
+    short numGroups, randNum;
+
+    auto MUSICMANAGER = new MMDMusicManager();
+
+    auto gameMusicData = reinterpret_cast<mmSingleRoamMusicData*>(this);
+
+    if (MUSICMANAGER != nullptr
+        && (MUSICMANAGER->Init(6, 2),
+            MUSICMANAGER->SetVolume(MMSTATE->MusicVolume),
+            numGroups = gameMusicData->GetNumDMusicChoiceGroups(stream),
+            fseek(stream, 0, seekWhence::seek_begin),
+            randNum = gameMusicData->RandomizeNumber(numGroups),
+            gameMusicData->LoadMusicSegments(stream, randNum)))
+    {
+        *getPtr<int>(MUSICMANAGER->GetDMusicObjectPtr(), 0x24) = 0;
+        *getPtr<int>(MUSICMANAGER, 0x44) = 0;
+        *getPtr<int>(MUSICMANAGER, 0x38) = 1;
+        *getPtr<int>(MUSICMANAGER, 0x3C) = 2;
+        *getPtr<int>(MUSICMANAGER, 0x24) = 2;
+        *getPtr<int>(MUSICMANAGER, 0x2C) = 3;
+        *getPtr<int>(MUSICMANAGER, 0x30) = 4;
+        *getPtr<int>(MUSICMANAGER, 0x34) = 5;
+        *getPtr<byte>(MUSICMANAGER, 0x52) = 1;
+        stream->Close();
+        return true;
+    }
+    else {
+        stream->Close();
+        return false;
+    }
+
+    return false;
+}
+
+void mmSingleRoamMusicDataHandler::Install()
+{
+    InstallVTableHook("mmSingleRoamMusicData::LoadMusic",
+        &LoadMusic, {
+            0x5B0840,
         }
     );
 }
