@@ -2622,10 +2622,23 @@ void mmDashViewHandler::Init(char* vehName, mmPlayer* player) {
 
             strcpy_s(gearTextureName, dShader->Texture->Name);
 
-            char* R = strrchr(gearTextureName, 'r');
+            char* r = strrchr(gearTextureName, 'r');
+            char* R = strrchr(gearTextureName, 'R');
 
-            if (R != NULL) {
-                strncpy(R, "d", 1);
+            if (r != NULL && !_strcmpi(r, "r"))
+            {
+                strncpy(r, "d", 1);
+
+                gfxTexture* gearTexture = gfxGetTexture(gearTextureName, 1);
+
+                if (gearTexture != nullptr)
+                    dShader->Texture = gearTexture;
+                else
+                    dShader->Texture = gfxGetTexture("gear_d", 1);
+            }
+            else if (R != NULL && !_strcmpi(R, "R"))
+            {
+                strncpy(R, "D", 1);
 
                 gfxTexture* gearTexture = gfxGetTexture(gearTextureName, 1);
 
@@ -2648,10 +2661,21 @@ void mmDashViewHandler::Init(char* vehName, mmPlayer* player) {
 
             strcpy_s(gearTextureName, pShader->Texture->Name);
 
-            char* R = strrchr(gearTextureName, 'r');
+            char* r = strrchr(gearTextureName, 'r');
+            char* R = strrchr(gearTextureName, 'R');
 
-            if (R != NULL) {
-                strncpy(R, "p", 1);
+            if (r != NULL && !_strcmpi(r, "r")) {
+                strncpy(r, "p", 1);
+
+                gfxTexture* gearTexture = gfxGetTexture(gearTextureName, 1);
+
+                if (gearTexture != nullptr)
+                    pShader->Texture = gearTexture;
+                else
+                    pShader->Texture = gfxGetTexture("gear_p", 1);
+            }
+            else if (R != NULL && !_strcmpi(R, "R")) {
+                strncpy(R, "P", 1);
 
                 gfxTexture* gearTexture = gfxGetTexture(gearTextureName, 1);
 
