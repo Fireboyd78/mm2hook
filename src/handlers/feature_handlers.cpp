@@ -82,6 +82,8 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<aiVehicleInstanceFeatureHandler>("aiVehicleInstance"),
     CreateHandler<aiPoliceOfficerFeatureHandler>("aiPoliceOfficer"),
 
+    CreateHandler<MMDMusicManagerHandler>("MMDMusicManager"),
+
     CreateHandler<luaDrawableHandler>("luaDrawableHandler")
 };
 
@@ -3376,6 +3378,8 @@ void mmPlayerHandler::Zoink() {
 static ConfigValue<int> cfgBustedTarget("BustedTarget", 3);
 static ConfigValue<float> cfgBustedMaxSpeed("BustedMaxSpeed", 20.f);
 static ConfigValue<float> cfgBustedTimeout("BustedTimeout", 4.f);
+static ConfigValue<float> cfgEscapeTimeout("EscapeTimeout", 20.f);
+static ConfigValue<bool> cfgNfsMwStyleEscape("NFSMWStyleEscape", false);
 int bustedTarget = 3;
 float bustedMaxSpeed = 20.f;
 float bustedTimeout = 4.f;
@@ -3387,6 +3391,14 @@ bool invertBustedTimer = false;
 bool enableOppBustedTimer = false;
 bool invertOppBustedTimer = false;
 bool enableResetTimer = false;
+bool nfsmwStyleEscape = false;
+bool playerInPursuit = false;
+bool playerInCooldown = false;
+bool enableEscapeTimer = false;
+bool invertEscapeTimer = false;
+float cooldownTimer = 0.f;
+float cooldownTimeout = 20.f;
+float escapeTimer = 0.f;
 
 int mmPlayerHandler::GetClosestCop() {
     auto player = reinterpret_cast<mmPlayer*>(this);
@@ -3410,11 +3422,19 @@ int mmPlayerHandler::GetClosestCop() {
     return closestCopId;
 }
 
-void mmPlayerHandler::BustPerp() {
+void mmPlayerHandler::BustPlayer() {
     auto player = reinterpret_cast<mmPlayer*>(this);
     auto carsim = player->getCar()->getCarSim();
     auto playerPos = player->getCar()->getModel()->GetPosition();
     auto AIMAP = &aiMap::Instance;
+    auto mgr = *mmGameManager::Instance;
+    int numCops = vehPoliceCarAudio::iNumCopsPursuingPlayer;
+
+    if (numCops)
+        playerInPursuit = true;
+
+    else
+        playerInPursuit = false;
 
     if (enableBustedTimer)
         bustedTimer += datTimeManager::Seconds;
@@ -3482,33 +3502,31 @@ void mmPlayerHandler::BustPerp() {
             }
         }
         
-        if (*getPtr<WORD>(police, 0x977A) != 0 && *getPtr<WORD>(police, 0x977A) != 12) {
-            if (*getPtr<vehCar*>(police, 0x9774) == player->getCar()) {
-                if (bustedTimer > bustedTimeout) {
-                    mmGameManager *mgr = mmGameManager::Instance;
-                    auto soundBase = *getPtr<AudSoundBase*>(mgr->getGame(), 0x8C);
-                    if (!soundBase->IsPlaying()) {
-                        int i = irand() % 20 + 1;
-                        if (MMSTATE->GameMode == Cruise)
-                            soundBase->SetSoundHandleIndex(i + 1);
-                        if (MMSTATE->GameMode == Checkpoint)
-                            soundBase->SetSoundHandleIndex(i + 6);
-                        if (MMSTATE->GameMode == Circuit)
-                            soundBase->SetSoundHandleIndex(i + 5);
-                        if (MMSTATE->GameMode == Blitz || MMSTATE->GameMode == CrashCourse)
-                            soundBase->SetSoundHandleIndex(i + 7);
-                        soundBase->PlayOnce(-1.f, -1.f);
-                    }
-                    if (policeAud != nullptr) {
-                        policeAud->StopSiren();
-                    }
-                    player->getHUD()->SetMessage("Busted!", 4.f, 0);
-                    AIMAP->policeForce->UnRegisterCop(*getPtr<vehCar*>(police, 0x14), *getPtr<vehCar*>(police, 0x9774));
-                    *getPtr<WORD>(police, 0x977A) = 12;
-                    *getPtr<WORD>(police, 0x280) = 3;
-                    enableBustedTimer = false;
-                    enableResetTimer = true;
+        if (*getPtr<WORD>(police, 0x977A) != 0 && *getPtr<WORD>(police, 0x977A) != 12 && *getPtr<vehCar*>(police, 0x9774) == player->getCar()) {
+            if (bustedTimer > bustedTimeout) {
+                auto soundBase = *getPtr<AudSoundBase*>(mgr->getGame(), 0x8C);
+                if (!soundBase->IsPlaying()) {
+                    int i = irand() % 20 + 1;
+                    if (MMSTATE->GameMode == Cruise)
+                        soundBase->SetSoundHandleIndex(i + 1);
+                    if (MMSTATE->GameMode == Checkpoint)
+                        soundBase->SetSoundHandleIndex(i + 6);
+                    if (MMSTATE->GameMode == Circuit)
+                        soundBase->SetSoundHandleIndex(i + 5);
+                    if (MMSTATE->GameMode == Blitz || MMSTATE->GameMode == CrashCourse)
+                        soundBase->SetSoundHandleIndex(i + 7);
+                    soundBase->PlayOnce(-1.f, -1.f);
                 }
+                if (policeAud != nullptr) {
+                    policeAud->StopSiren();
+                }
+                player->getHUD()->SetMessage("Busted!", 4.f, 0);
+                AIMAP->policeForce->UnRegisterCop(*getPtr<vehCar*>(police, 0x14), *getPtr<vehCar*>(police, 0x9774));
+                *getPtr<WORD>(police, 0x977A) = 12;
+                *getPtr<WORD>(police, 0x280) = 3;
+                enableBustedTimer = false;
+                enableResetTimer = true;
+                playerInPursuit = false;
             }
         }
     }
@@ -3585,6 +3603,84 @@ void mmPlayerHandler::BustOpp() {
 static ConfigValue<bool> cfgMm1StyleFlipOver("MM1StyleFlipOver", false);
 bool mm1StyleFlipOver = false;
 
+void mmPlayerHandler::Cooldown() {
+    auto player = reinterpret_cast<mmPlayer*>(this);
+    auto AIMAP = &aiMap::Instance;
+
+    if (enableEscapeTimer)
+        escapeTimer += datTimeManager::Seconds;
+
+    if (invertEscapeTimer && escapeTimer > 0.f)
+        escapeTimer -= datTimeManager::Seconds;
+
+    if (escapeTimer > 4.f) {
+        escapeTimer = 4.f;
+        playerInCooldown = true;
+    }
+
+    else {
+        playerInCooldown = false;
+    }
+
+    if (playerInCooldown)
+        cooldownTimer += datTimeManager::Seconds;
+
+    for (int i = 0; i < AIMAP->numCops; i++)
+    {
+        auto police = AIMAP->Police(i);
+        auto police2 = AIMAP->Police(GetClosestCop());
+
+        if (*getPtr<WORD>(police2, 0x977A) != 0 && *getPtr<WORD>(police2, 0x977A) != 12 && *getPtr<vehCar*>(police2, 0x9774) == player->getCar())
+        {
+            if (*getPtr<float>(police2, 0x9794) > *getPtr<float>(AIMAP->raceData, 0x98))
+            {
+                enableEscapeTimer = true;
+                invertEscapeTimer = false;
+            }
+            else if (*getPtr<float>(police2, 0x9794) <= (*getPtr<float>(AIMAP->raceData, 0x98) * 0.5f)) {
+                enableEscapeTimer = false;
+                invertEscapeTimer = true;
+                if (escapeTimer < 0.f)
+                    escapeTimer = 0.f;
+                if (cooldownTimer > 0.f)
+                    cooldownTimer = 0.f;
+            }
+        }
+        else if (*getPtr<WORD>(police, 0x977A) != 0 && *getPtr<WORD>(police, 0x977A) != 12 && *getPtr<vehCar*>(police, 0x9774) == player->getCar())
+        {
+            if (*getPtr<float>(police, 0x9794) > *getPtr<float>(AIMAP->raceData, 0x98))
+            {
+                enableEscapeTimer = true;
+                invertEscapeTimer = false;
+            }
+            else if (*getPtr<float>(police, 0x9794) <= (*getPtr<float>(AIMAP->raceData, 0x98) * 0.5f)) {
+                enableEscapeTimer = false;
+                invertEscapeTimer = true;
+                if (escapeTimer < 0.f)
+                    escapeTimer = 0.f;
+                if (cooldownTimer > 0.f)
+                    cooldownTimer = 0.f;
+            }
+        }
+
+        if (cooldownTimer > cooldownTimeout)
+        {
+            if (*getPtr<WORD>(police, 0x977A) != 0 && *getPtr<WORD>(police, 0x977A) != 12 && *getPtr<vehCar*>(police, 0x9774) == player->getCar())
+            {
+                police->StopSiren();
+                AIMAP->policeForce->UnRegisterCop(police->getVehiclePhysics()->getCar(), *getPtr<vehCar*>(police, 0x9774));
+                *getPtr<WORD>(police, 0x977A) = 0;
+                *getPtr<WORD>(police, 0x280) = 3;
+            }
+            playerInCooldown = false;
+            playerInPursuit = false;
+        }
+    }
+
+    if (!playerInCooldown)
+        cooldownTimer = 0.f;
+}
+
 void mmPlayerHandler::Update() {
     auto player = reinterpret_cast<mmPlayer*>(this);
     auto car = player->getCar();
@@ -3621,11 +3717,13 @@ void mmPlayerHandler::Update() {
 
         if (bustedTarget == 1 || bustedTarget >= 3) {
             if (!audio->IsPolice(basename)) {
-                BustPerp();
+                BustPlayer();
                 if (bustedTimer > bustedTimeout) {
                     carsim->setBrake(1.f);
                     engine->setThrottleInput(0.f);
                 }
+                if (nfsmwStyleEscape)
+                    Cooldown();
             }
 
             if (enableResetTimer) {
@@ -3688,9 +3786,14 @@ void mmPlayerHandler::Reset() {
     enableBustedTimer = false;
     enableOppBustedTimer = false;
     enableResetTimer = false;
+    enableEscapeTimer = false;
+    playerInCooldown = false;
+    playerInPursuit = false;
     bustedTimer = 0.f;
     oppBustedTimer = 0.f;
     resetTimer = 0.f;
+    cooldownTimer = 0.f;
+    escapeTimer = 0.f;
 
     // call original
     hook::Thunk<0x404A60>::Call<void>(this);
@@ -3705,7 +3808,9 @@ void mmPlayerHandler::Install() {
     bustedTarget = cfgBustedTarget.Get();
     bustedMaxSpeed = cfgBustedMaxSpeed.Get();
     bustedTimeout = cfgBustedTimeout.Get();
+    cooldownTimeout = cfgEscapeTimeout.Get();
     mm1StyleFlipOver = cfgMm1StyleFlipOver.Get();
+    nfsmwStyleEscape = cfgNfsMwStyleEscape.Get();
 
     InstallVTableHook("mmPlayer::Update",
         &Update, {
@@ -5783,7 +5888,7 @@ void aiPoliceOfficerFeatureHandler::DetectPerpetrator() {
                 *getPtr<WORD>(this, 0x280) = 0;
                 *getPtr<WORD>(this, 0x977A) = 2;
 
-                *getPtr<float>(this, 0x9794) = sqrt(posDiffX * posDiffX + posDiffZ * posDiffZ);
+                *getPtr<float>(this, 0x9794) = sqrt(posDiffX * posDiffX + posDiffY * posDiffY + posDiffZ * posDiffZ);
 
                 AIMAP->MapComponent(vehPlayer->getCar()->getModel()->GetPosition(), getPtr<short>(this, 0x97A4), getPtr<short>(this, 0x97A2), vehPlayer->getCar()->getModel()->getRoomId());
                 police->FollowPerpetrator();
@@ -5810,7 +5915,7 @@ void aiPoliceOfficerFeatureHandler::DetectPerpetrator() {
                 *getPtr<WORD>(this, 0x280) = 0;
                 *getPtr<WORD>(this, 0x977A) = 2;
 
-                *getPtr<float>(this, 0x9794) = sqrt(posDiffX * posDiffX + posDiffZ * posDiffZ);
+                *getPtr<float>(this, 0x9794) = sqrt(posDiffX * posDiffX + posDiffY * posDiffY + posDiffZ * posDiffZ);
 
                 AIMAP->MapComponent(opponent->getCar()->getModel()->GetPosition(), getPtr<short>(this, 0x97A4), getPtr<short>(this, 0x97A2), opponent->getCar()->getModel()->getRoomId());
                 police->FollowPerpetrator();
@@ -5865,18 +5970,13 @@ void aiPoliceOfficerFeatureHandler::Update() {
             else
                 police->ApprehendPerpetrator();
 
-            // if cop is far away from perp
-            if (*getPtr<float>(AIMAP->raceData, 0x98) < *getPtr<float>(this, 0x9794))
-            {
-                PerpEscapes(0);
-                return;
-            }
-
-            // if cop is destroyed
-            if (*getPtr<WORD>(this, 0x968A))
-            {
-                PerpEscapes(1);
-                return;
+            if (!nfsmwStyleEscape || !perpCar->IsPlayer()) {
+                // if cop is far away from perp
+                if (*getPtr<float>(AIMAP->raceData, 0x98) < *getPtr<float>(this, 0x9794))
+                {
+                    PerpEscapes(0);
+                    return;
+                }
             }
         }
         else {
@@ -6042,6 +6142,9 @@ gfxBitmap* BustedIcon;
 gfxBitmap* EscapeMeter;
 gfxBitmap* EscapeIcon;
 gfxBitmap* BarMask;
+gfxBitmap* CooldownBar;
+gfxBitmap* CooldownIcon;
+gfxBitmap* CooldownMeter;
 
 void mmExternalViewHandler::Init(mmPlayer *player) {
     auto externalView = reinterpret_cast<mmExternalView*>(this);
@@ -6053,11 +6156,16 @@ void mmExternalViewHandler::Init(mmPlayer *player) {
     EscapeMeter = gfxGetBitmap("escape_meter", 0, 0);
     EscapeIcon = gfxGetBitmap("escape_icon", 0, 0);
     BarMask = gfxGetBitmap("bar_mask", 0, 0);
+    CooldownBar = gfxGetBitmap("cooldown_bar", 0, 0);
+    CooldownIcon = gfxGetBitmap("cooldown_icon", 0, 0);
+    CooldownMeter = gfxGetBitmap("cooldown_meter", 0, 0);
 
     if (mmExternalView::EnableMM1StylePursuitBar) {
         PursuitBar = gfxGetBitmap("pursuit_bar_mm1", 0, 0);
         BustedMeter = gfxGetBitmap("busted_ticks", 0, 0);
         EscapeMeter = gfxGetBitmap("escape_ticks", 0, 0);
+        CooldownBar = gfxGetBitmap("cooldown_bar_mm1", 0, 0);
+        CooldownMeter = gfxGetBitmap("cooldown_ticks", 0, 0);
     }
 }
 
@@ -6199,7 +6307,10 @@ void mmExternalViewHandler::Cull() {
     DrawSpeedIndicator();
 
     if (bustedTarget == 1 || bustedTarget >= 3) {
-        DrawPursuitBar();
+        if (playerInPursuit && cooldownTimer == 0.f)
+            DrawPursuitBar();
+        if (playerInPursuit && playerInCooldown && cooldownTimer > 0.f)
+            DrawCooldownBar();
     }
 }
 
@@ -6464,6 +6575,8 @@ void mmExternalViewHandler::DrawPursuitBar() {
 
     int closestCopId = 0;
 
+    float escapePercent = 0.f;
+
     for (int i = 0; i < AIMAP->numCops; i++)
     {
         auto police = AIMAP->Police(i);
@@ -6475,54 +6588,91 @@ void mmExternalViewHandler::DrawPursuitBar() {
         if (police2Dist > policeDist)
             closestCopId = i;
 
-        if (*getPtr<WORD>(police, 0x977A) != 0 && *getPtr<WORD>(police, 0x977A) != 12)
-        {
-            if (*getPtr<vehCar*>(police, 0x9774) == player->getCar())
-            {
-                int pursuitBarDistX = (window_width - PursuitBar->Width) >> 1;
+        int pursuitBarDistX = (window_width - PursuitBar->Width) >> 1;
 
-                float escapePercent = EscapeMeter->Width * (*getPtr<float>(police, 0x9794) / *getPtr<float>(AIMAP->raceData, 0x98));
+        if (nfsmwStyleEscape)
+            escapePercent = EscapeMeter->Width * (escapeTimer / 4.f);
+
+        else {
+            if (*getPtr<WORD>(police, 0x977A) != 0 && *getPtr<WORD>(police, 0x977A) != 12 && *getPtr<vehCar*>(police, 0x9774) == player->getCar())
+            {
+                escapePercent = EscapeMeter->Width * (*getPtr<float>(police, 0x9794) / *getPtr<float>(AIMAP->raceData, 0x98));
 
                 if (police2Dist <= policeDist && *getPtr<WORD>(police2, 0x977A) != 0 && *getPtr<WORD>(police2, 0x977A) != 12 && *getPtr<vehCar*>(police2, 0x9774) == player->getCar())
                 {
                     escapePercent = EscapeMeter->Width * (*getPtr<float>(police2, 0x9794) / *getPtr<float>(AIMAP->raceData, 0x98));
                 }
-
-                if (mmExternalView::EnableMM1StylePursuitBar)
-                {
-                    int pursuitBarDistY = (window_height - 2 * PursuitBar->Height);
-
-                    float bustedPercent = BustedMeter->Width - (BustedMeter->Width * (bustedTimer / bustedTimeout));
-
-                    gfxPipeline::CopyBitmap(pursuitBarDistX, pursuitBarDistY, PursuitBar, 0, 0, PursuitBar->Width, PursuitBar->Height, true);
-
-                    gfxPipeline::CopyBitmap(pursuitBarDistX + 8, pursuitBarDistY + 16, BustedMeter, 0, 0, BustedMeter->Width, BustedMeter->Height, true);
-
-                    gfxPipeline::CopyBitmap(pursuitBarDistX + 8, pursuitBarDistY + 16, BarMask, 0, 0, (int)bustedPercent, BustedMeter->Height, true);
-
-                    gfxPipeline::CopyBitmap(pursuitBarDistX + 152, pursuitBarDistY + 16, EscapeMeter, 0, 0, (int)escapePercent, EscapeMeter->Height, true);
-                }
-                else {
-                    int pursuitBarDistY = (window_height - 3 * PursuitBar->Height);
-
-                    float bustedPercent = BarMask->Width - (BarMask->Width * (bustedTimer / bustedTimeout));
-
-                    gfxPipeline::CopyBitmap(pursuitBarDistX, pursuitBarDistY, BarMask, 0, 0, BarMask->Width, BarMask->Height, true);
-
-                    gfxPipeline::CopyBitmap(pursuitBarDistX, pursuitBarDistY, BustedMeter, 0, 0, BustedMeter->Width, BustedMeter->Height, true);
-
-                    gfxPipeline::CopyBitmap(pursuitBarDistX, pursuitBarDistY, BarMask, 0, 0, (int)(bustedPercent * 0.5f), BarMask->Height, true);
-
-                    gfxPipeline::CopyBitmap(pursuitBarDistX + 128, pursuitBarDistY, EscapeMeter, 0, 0, (int)escapePercent, EscapeMeter->Height, true);
-
-                    gfxPipeline::CopyBitmap(pursuitBarDistX, pursuitBarDistY, PursuitBar, 0, 0, PursuitBar->Width, PursuitBar->Height, true);
-
-                    gfxPipeline::CopyBitmap(pursuitBarDistX - 13, pursuitBarDistY - 32, BustedIcon, 0, 0, BustedIcon->Width, BustedIcon->Height, true);
-
-                    gfxPipeline::CopyBitmap(pursuitBarDistX + 235, pursuitBarDistY - 32, EscapeIcon, 0, 0, EscapeIcon->Width, EscapeIcon->Height, true);
-                }
             }
         }
+
+        if (mmExternalView::EnableMM1StylePursuitBar)
+        {
+            int pursuitBarDistY = (window_height - 2 * PursuitBar->Height);
+
+            float bustedPercent = BustedMeter->Width - (BustedMeter->Width * (bustedTimer / bustedTimeout));
+
+            gfxPipeline::CopyBitmap(pursuitBarDistX, pursuitBarDistY, PursuitBar, 0, 0, PursuitBar->Width, PursuitBar->Height, true);
+
+            gfxPipeline::CopyBitmap(pursuitBarDistX + 8, pursuitBarDistY + 16, BustedMeter, 0, 0, BustedMeter->Width, BustedMeter->Height, true);
+
+            gfxPipeline::CopyBitmap(pursuitBarDistX + 8, pursuitBarDistY + 16, BarMask, 0, 0, (int)bustedPercent, BustedMeter->Height, true);
+
+            gfxPipeline::CopyBitmap(pursuitBarDistX + 152, pursuitBarDistY + 16, EscapeMeter, 0, 0, (int)escapePercent, EscapeMeter->Height, true);
+        }
+        else {
+            int pursuitBarDistY = (window_height - 3 * PursuitBar->Height);
+
+            float bustedPercent = BarMask->Width - (BarMask->Width * (bustedTimer / bustedTimeout));
+
+            gfxPipeline::CopyBitmap(pursuitBarDistX, pursuitBarDistY, BarMask, 0, 0, BarMask->Width, BarMask->Height, true);
+
+            gfxPipeline::CopyBitmap(pursuitBarDistX, pursuitBarDistY, BustedMeter, 0, 0, BustedMeter->Width, BustedMeter->Height, true);
+
+            gfxPipeline::CopyBitmap(pursuitBarDistX, pursuitBarDistY, BarMask, 0, 0, (int)(bustedPercent * 0.5f), BarMask->Height, true);
+
+            gfxPipeline::CopyBitmap(pursuitBarDistX + 128, pursuitBarDistY, EscapeMeter, 0, 0, (int)escapePercent, EscapeMeter->Height, true);
+
+            gfxPipeline::CopyBitmap(pursuitBarDistX, pursuitBarDistY, PursuitBar, 0, 0, PursuitBar->Width, PursuitBar->Height, true);
+
+            gfxPipeline::CopyBitmap(pursuitBarDistX - 13, pursuitBarDistY - 32, BustedIcon, 0, 0, BustedIcon->Width, BustedIcon->Height, true);
+
+            gfxPipeline::CopyBitmap(pursuitBarDistX + 236, pursuitBarDistY - 32, EscapeIcon, 0, 0, EscapeIcon->Width, EscapeIcon->Height, true);
+        }
+    }
+}
+
+void mmExternalViewHandler::DrawCooldownBar() {
+    if (CooldownBar == nullptr
+        || CooldownMeter == nullptr
+        || CooldownIcon == nullptr
+        || BarMask == nullptr)
+        return;
+
+    int window_width = window_iWidth;
+    int window_height = window_iHeight;
+
+    int cooldownBarDistX = (window_width - CooldownBar->Width) >> 1;
+
+    float cooldownPercent = CooldownMeter->Width * (cooldownTimer / cooldownTimeout);
+
+    if (mmExternalView::EnableMM1StylePursuitBar)
+    {
+        int cooldownBarDistY = (window_height - 2 * CooldownBar->Height);
+
+        gfxPipeline::CopyBitmap(cooldownBarDistX, cooldownBarDistY, CooldownBar, 0, 0, CooldownBar->Width, CooldownBar->Height, true);
+
+        gfxPipeline::CopyBitmap(cooldownBarDistX + 8, cooldownBarDistY + 16, CooldownMeter, 0, 0, (int)cooldownPercent, CooldownMeter->Height, true);
+    }
+    else {
+        int cooldownBarDistY = (window_height - 3 * CooldownBar->Height);
+
+        gfxPipeline::CopyBitmap(cooldownBarDistX, cooldownBarDistY, BarMask, 0, 0, BarMask->Width, BarMask->Height, true);
+
+        gfxPipeline::CopyBitmap(cooldownBarDistX, cooldownBarDistY, CooldownMeter, 0, 0, (int)cooldownPercent, CooldownMeter->Height, true);
+
+        gfxPipeline::CopyBitmap(cooldownBarDistX, cooldownBarDistY, CooldownBar, 0, 0, CooldownBar->Width, CooldownBar->Height, true);
+
+        gfxPipeline::CopyBitmap(cooldownBarDistX + 112, cooldownBarDistY - 32, CooldownIcon, 0, 0, CooldownIcon->Width, CooldownIcon->Height, true);
     }
 }
 
@@ -6554,6 +6704,112 @@ void mmExternalViewHandler::Install() {
     mmExternalView::EnableMM1StylePursuitBar = cfgMm1StylePursuitBar.Get();
     mmExternalView::EnableMouseBar = cfgEnableMouseBar.Get();
     mmExternalView::SwitchFromMPH2KPH = cfgSwitchFromMPH2KPH.Get();
+}
+
+/*
+    MMDMusicManagerHandler
+*/
+
+void MMDMusicManagerHandler::MatchMusicToPlayerSpeed(float speed) {
+    auto musicManager = reinterpret_cast<MMDMusicManager*>(this);
+    auto musicObject = musicManager->GetDMusicObjectPtr();
+    auto v2 = *getPtr<int>(this, 0x2C);
+    auto v3 = *getPtr<int>(this, 0x30);
+    auto v4 = *getPtr<int>(musicObject, 0x24);
+
+    if (v4 != *getPtr<int>(this, 0x40) && v2 != 0xFFFFFFFF && *getPtr<int>(this, 0x38) != 0xFFFFFFFF)
+    {
+        if (speed <= 5.f && !playerInPursuit && !*getPtr<byte>(this, 0x50))
+        {
+            if (*getPtr<float>(this, 0xC) >= 5.f && v4 != v2 && v4 != v3 && v4 != *getPtr<int>(this, 0x34))
+            {
+                if (v4 == *getPtr<int>(this, 0x24))
+                {
+                    if (v3 != 0xFFFFFFFF)
+                        musicObject->SegmentSwitch(v3, 0, 0x20);
+                }
+                else {
+                    musicObject->SegmentSwitch(v2, 0, 0x20);
+                }
+            }
+            *getPtr<float>(this, 0xC) += datTimeManager::Seconds;
+            return;
+        }
+        if (*getPtr<float>(this, 0xC) == 0.f)
+            return;
+
+        if (v4 == v2)
+        {
+            if (v4 != v3)
+            {
+                musicObject->SegmentSwitch(*getPtr<int>(this, 0x38), 0, 0x20);
+                *getPtr<float>(this, 0xC) = 0.f;
+                return;
+            }
+        }
+        else if (v4 != v3)
+        {
+            *getPtr<float>(this, 0xC) = 0.f;
+            return;
+        }
+        musicObject->SegmentSwitch(*getPtr<int>(this, 0x3C), 0, 0x20);
+        *getPtr<float>(this, 0xC) = 0.f;
+        return;
+    }
+}
+
+void MMDMusicManagerHandler::UpdateMusic(float speed, int numCops, bool isAirborne) {
+    auto musicManager = reinterpret_cast<MMDMusicManager*>(this);
+    auto musicObject = musicManager->GetDMusicObjectPtr();
+    int regularMusic = *getPtr<int>(musicManager, 0x38);
+    int copMusicIdle = *getPtr<int>(musicManager, 0x30);
+    int copMusic = *getPtr<int>(musicManager, 0x24);
+
+    if (nfsmwStyleEscape) {
+        MatchMusicToPlayerSpeed(speed);
+
+        if (numCops) {
+            if (!*getPtr<int>(this, 0x4C) || !playerInCooldown)
+                musicObject->SegmentSwitch(copMusic);
+            else if (playerInCooldown)
+                musicObject->SegmentSwitch(copMusicIdle, 0, 0x20);
+        }
+        else if (!numCops && *getPtr<int>(this, 0x4C))
+            musicObject->SegmentSwitch(regularMusic);
+    }
+    else {
+        musicManager->MatchMusicToPlayerSpeed(speed);
+
+        if (numCops) {
+            if (!*getPtr<int>(this, 0x4C))
+                musicObject->SegmentSwitch(copMusic);
+        }
+        else if (!numCops && *getPtr<int>(this, 0x4C))
+            musicObject->SegmentSwitch(regularMusic);
+    }
+
+    *getPtr<int>(this, 0x4C) = numCops;
+
+    if (isAirborne)
+    {
+        if (!*getPtr<byte>(this, 0x51))
+        {
+            musicObject->PlayMotif(0, 0x880);
+            *getPtr<byte>(this, 0x51) = isAirborne;
+        }
+    }
+    else if (*getPtr<byte>(this, 0x51))
+    {
+        *getPtr<byte>(this, 0x51) = 0;
+    }
+}
+
+void MMDMusicManagerHandler::Install() {
+    InstallCallback("MMDMusicManager::UpdateMusic", "Plays idle cop music in cooldown.",
+        &UpdateMusic, {
+            cb::call(0x41426E),
+        }
+    );
 }
 
 #ifndef FEATURES_DECLARED

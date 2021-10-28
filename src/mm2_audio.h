@@ -474,9 +474,9 @@ namespace MM2
     public:
         ANGEL_ALLOCATOR
 
-        AGE_API DMusicObject() {
+        AGE_API DMusicObject(int a1) {
             scoped_vtable x(this);
-            hook::Thunk<0x515D40>::Call<void>(this);
+            hook::Thunk<0x515D40>::Call<void>(this, a1);
         };
 
         AGE_API ~DMusicObject() {
@@ -488,6 +488,9 @@ namespace MM2
         AGE_API int PlayMotif(int a1, ulong a2)              { return hook::Thunk<0x5168A0>::Call<int>(this, a1, a2); }
         AGE_API int PlaySegment(ulong a1)                    { return hook::Thunk<0x516860>::Call<int>(this, a1); }
         AGE_API int StopSegment(int a1)                      { return hook::Thunk<0x516900>::Call<int>(this, a1); }
+        AGE_API int SegmentSwitch(int a1)                    { return hook::Thunk<0x516E20>::Call<int>(this, a1); }
+        AGE_API int SegmentSwitch(int a1, ushort a2, ulong a3)
+                                                             { return hook::Thunk<0x516E90>::Call<int>(this, a1, a2, a3); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<DMusicObject>("DMusicObject")
@@ -551,7 +554,8 @@ namespace MM2
         AGE_API void Init(int a1, ulong a2)                  { hook::Thunk<0x519F60>::Call<void>(this, a1, a2); }
         AGE_API void Reset()                                 { hook::Thunk<0x51A2C0>::Call<void>(this); }
         AGE_API void Update()                                { hook::Thunk<0x519FE0>::Call<void>(this); }
-        AGE_API void UpdateMusic()                           { hook::Thunk<0x51A070>::Call<void>(this); }
+        AGE_API void UpdateMusic(float speed, int numCops, bool isAirborne)
+                                                             { hook::Thunk<0x51A070>::Call<void>(this, speed, numCops, isAirborne); }
         AGE_API void UpdateSeconds()                         { hook::Thunk<0x519FF0>::Call<void>(this); }
         AGE_API void UpdateAmbientSFX()                      { hook::Thunk<0x51A020>::Call<void>(this); }
         AGE_API void MatchMusicToPlayerSpeed(float speed)    { hook::Thunk<0x51A1D0>::Call<void>(this, speed); }

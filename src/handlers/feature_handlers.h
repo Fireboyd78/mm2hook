@@ -232,8 +232,9 @@ public:
     void Zoink();
     void Update();
     void Reset();
-    void BustPerp();
+    void BustPlayer();
     void BustOpp();
+    void Cooldown();
     int GetClosestCop();
     int GetClosestOpp();
     static void Install();
@@ -442,5 +443,13 @@ public:
     void DrawLinearGauge();
     void DrawSpeedIndicator();
     void DrawPursuitBar();
+    void DrawCooldownBar();
+    static void Install();
+};
+
+class MMDMusicManagerHandler {
+public:
+    void MatchMusicToPlayerSpeed(float speed);
+    void UpdateMusic(float speed, int numCops, bool isAirborne);
     static void Install();
 };
