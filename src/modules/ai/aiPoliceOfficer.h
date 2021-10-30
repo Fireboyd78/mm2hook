@@ -18,7 +18,7 @@ namespace MM2
     public:
         static float DefaultSpeedLimit;
         static float SpeedLimitTolerance;
-        static float BurnoutTimer;
+        static float SkidPlayTime;
         static float HornPlayTime;
         static int MaximumNumCops;
         static bool FlyingCopFix;

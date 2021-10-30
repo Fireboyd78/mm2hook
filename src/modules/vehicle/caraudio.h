@@ -47,6 +47,14 @@ namespace MM2
             this->Pan = pan;
         }
 
+        inline vehSurfaceAudio * getSurfaceAudio(void) {
+            return &this->SurfaceAudio;
+        };
+
+        inline AudSoundBase * getHornSound(void) {
+            return this->HornSound;
+        };
+
         inline vehCarSim * getCarSim(void) {
             return this->CarSim;
         };

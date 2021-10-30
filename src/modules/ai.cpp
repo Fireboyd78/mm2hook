@@ -27,7 +27,7 @@ declfield(aiVehicleManager::SignalClock)(0x6B31F4);
 */
 float aiPoliceOfficer::DefaultSpeedLimit = 12.25f;
 float aiPoliceOfficer::SpeedLimitTolerance = 1.125f;
-float aiPoliceOfficer::BurnoutTimer = 0.f;
+float aiPoliceOfficer::SkidPlayTime = 0.f;
 float aiPoliceOfficer::HornPlayTime = 0.f;
 bool aiPoliceOfficer::FlyingCopFix = true;
 int aiPoliceOfficer::MaximumNumCops = 3;

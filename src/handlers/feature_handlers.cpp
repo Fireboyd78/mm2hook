@@ -3600,9 +3600,6 @@ void mmPlayerHandler::BustOpp() {
     }
 }
 
-static ConfigValue<bool> cfgMm1StyleFlipOver("MM1StyleFlipOver", false);
-bool mm1StyleFlipOver = false;
-
 void mmPlayerHandler::Cooldown() {
     auto player = reinterpret_cast<mmPlayer*>(this);
     auto AIMAP = &aiMap::Instance;
@@ -3680,6 +3677,9 @@ void mmPlayerHandler::Cooldown() {
     if (!playerInCooldown)
         cooldownTimer = 0.f;
 }
+
+static ConfigValue<bool> cfgMm1StyleFlipOver("MM1StyleFlipOver", false);
+bool mm1StyleFlipOver = false;
 
 void mmPlayerHandler::Update() {
     auto player = reinterpret_cast<mmPlayer*>(this);
@@ -5690,19 +5690,32 @@ float getSpeedLimit(vehCar *car) {
     return aiPoliceOfficer::DefaultSpeedLimit;
 }
 
-BOOL aiPoliceOfficerFeatureHandler::Burnout(vehCar *car) {
-    float speed = car->getCarSim()->getSpeedMPH();
+BOOL aiPoliceOfficerFeatureHandler::TireScreeching(vehCar *car) {
+    auto audio = car->getAudio();
+    char* vehName = car->getCarDamage()->GetName();
 
-    for (int i = 0; i < 4; i++)
-    {
-        auto wheel = car->getCarSim()->getWheel(i);
+    if (audio->IsSemiOrBus(vehName)) {
+        auto semiAudio = audio->GetSemiCarAudioPtr();
+        auto skidSound = semiAudio->getSurfaceAudio()->getSurfaceDatas()->getSkidWaveData()->getSkidSound();
 
-        if (fabs(wheel->getRotationRate()) > 26.f && speed < 10.f)
-            aiPoliceOfficer::BurnoutTimer += datTimeManager::Seconds;
+        if (skidSound->IsPlaying())
+            aiPoliceOfficer::SkidPlayTime += datTimeManager::Seconds;
         else
-            aiPoliceOfficer::BurnoutTimer = 0.f;
+            aiPoliceOfficer::SkidPlayTime = 0.f;
 
-        if (aiPoliceOfficer::BurnoutTimer > 3.f)
+        if (aiPoliceOfficer::SkidPlayTime > 4.f)
+            return TRUE;
+    }
+    else {
+        auto carAudio = audio->GetCarAudioPtr();
+        auto skidSound = carAudio->getSurfaceAudio()->getSurfaceDatas()->getSkidWaveData()->getSkidSound();
+
+        if (skidSound->IsPlaying())
+            aiPoliceOfficer::SkidPlayTime += datTimeManager::Seconds;
+        else
+            aiPoliceOfficer::SkidPlayTime = 0.f;
+
+        if (aiPoliceOfficer::SkidPlayTime > 4.f)
             return TRUE;
     }
 
@@ -5715,7 +5728,7 @@ BOOL aiPoliceOfficerFeatureHandler::HornSpamming(vehCar *car) {
 
     if (audio->IsSemiOrBus(vehName)) {
         auto semiAudio = audio->GetSemiCarAudioPtr();
-        auto hornSound = *getPtr<AudSoundBase*>(semiAudio, 0x10C);
+        auto hornSound = semiAudio->getHornSound();
 
         if (hornSound->IsPlaying())
             aiPoliceOfficer::HornPlayTime += datTimeManager::Seconds;
@@ -5727,7 +5740,7 @@ BOOL aiPoliceOfficerFeatureHandler::HornSpamming(vehCar *car) {
     }
     else {
         auto carAudio = audio->GetCarAudioPtr();
-        auto hornSound = *getPtr<AudSoundBase*>(carAudio, 0x10C);
+        auto hornSound = carAudio->getHornSound();
 
         if (hornSound->IsPlaying())
             aiPoliceOfficer::HornPlayTime += datTimeManager::Seconds;
@@ -5806,8 +5819,8 @@ BOOL aiPoliceOfficerFeatureHandler::IsPlayerDrivingMadly(vehCar *perpCar) {
                 LogFile::Printf(1, "OFFICER INVOLVED COLLISION WITH PERP!");
                 return TRUE;
             }
-            if (aiPoliceOfficerFeatureHandler::Burnout(perpCar)) {
-                LogFile::Printf(1, "PERP IS DOING BURNOUTS!");
+            if (aiPoliceOfficerFeatureHandler::TireScreeching(perpCar)) {
+                LogFile::Printf(1, "PERP IS SCREECHING THEIR TIRES!");
                 return TRUE;
             }
             if (aiPoliceOfficerFeatureHandler::HornSpamming(perpCar)) {

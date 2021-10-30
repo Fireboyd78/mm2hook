@@ -47,6 +47,10 @@ namespace MM2
         Vector3* PositionPtr;
         vehCarDamage* CarDamage;
         int field_80;
+    public:
+        inline vehSurfaceAudioData * getSurfaceDatas() {
+            return this->SurfaceDatas[this->LastSurfaceSound];
+        };
     };
     ASSERT_SIZEOF(vehSurfaceAudio, 0x84);
 

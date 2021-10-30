@@ -1,6 +1,8 @@
 #pragma once
 #include <modules\vehicle.h>
 
+#include "surfaceaudiosubdata.h"
+
 namespace MM2
 {
     // Forward declarations
@@ -8,13 +10,12 @@ namespace MM2
 
     // External declarations
 
-
     // Class definitions
 
     class vehSurfaceAudioData {
     private:
         AudSoundBase* SurfaceSound;
-        void* SkidWaveData;
+        vehSurfaceAudioSubData* SkidWaveData;
         int SampleIndex;
         int NumSkidSamples;
         float MaxSpeed;
@@ -27,6 +28,10 @@ namespace MM2
         float MinSurfacePitch;
         float MaxSurfacePitch;
         float field_34;
+    public:
+        inline vehSurfaceAudioSubData * getSkidWaveData(void) {
+            return this->SkidWaveData;
+        };
     };
     ASSERT_SIZEOF(vehSurfaceAudioData, 0x38);
 
