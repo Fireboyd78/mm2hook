@@ -317,6 +317,7 @@
     <ClInclude Include="src\modules\vehicle\stuck.h" />
     <ClInclude Include="src\modules\vehicle\surfaceaudio.h" />
     <ClInclude Include="src\modules\vehicle\surfaceaudiodata.h" />
+    <ClInclude Include="src\modules\vehicle\surfaceaudiosubdata.h" />
     <ClInclude Include="src\modules\vehicle\suspension.h" />
     <ClInclude Include="src\modules\vehicle\trailer.h" />
     <ClInclude Include="src\modules\vehicle\transmission.h" />

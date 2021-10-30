@@ -948,6 +948,9 @@
     <ClInclude Include="src\modules\vehicle\enginesamplewrapper.h">
       <Filter>Source Files\modules\vehicle</Filter>
     </ClInclude>
+    <ClInclude Include="src\modules\vehicle\surfaceaudiosubdata.h">
+      <Filter>Source Files\modules\vehicle</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
