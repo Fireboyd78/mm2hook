@@ -453,3 +453,9 @@ public:
     void UpdateMusic(float speed, int numCops, bool isAirborne);
     static void Install();
 };
+
+class MenuManagerHandler {
+public:
+    void Update();
+    static void Install();
+};

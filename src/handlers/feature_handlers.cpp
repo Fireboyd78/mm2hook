@@ -84,6 +84,8 @@ static init_handler g_feature_handlers[] = {
 
     CreateHandler<MMDMusicManagerHandler>("MMDMusicManager"),
 
+    CreateHandler<MenuManagerHandler>("MenuManager"),
+
     CreateHandler<luaDrawableHandler>("luaDrawableHandler")
 };
 
@@ -6821,6 +6823,40 @@ void MMDMusicManagerHandler::Install() {
     InstallCallback("MMDMusicManager::UpdateMusic", "Plays idle cop music in cooldown.",
         &UpdateMusic, {
             cb::call(0x41426E),
+        }
+    );
+}
+
+/*
+    MenuManagerHandler
+*/
+
+bool canPlayUIDriverSound = true;
+
+void MenuManagerHandler::Update() {
+    auto UISound = *getPtr<AudSoundBase*>(this, 0x148);
+
+    if (UISound != nullptr) {
+        int currentMenuID = *getPtr<int>(this, 0x138);
+        if (currentMenuID == 1 && canPlayUIDriverSound) {
+            UISound->SetSoundHandleIndex(0);
+            if (!UISound->IsPlaying())
+                UISound->PlayOnce(-1.f, -1.f);
+            canPlayUIDriverSound = false;
+        }
+        else if (currentMenuID != 1) {
+            canPlayUIDriverSound = true;
+        }
+    }
+
+    //call original
+    hook::Thunk<0x4E5410>::Call<void>(this);
+}
+
+void MenuManagerHandler::Install() {
+    InstallVTableHook("MenuManager::Update",
+        &Update, {
+            0x5B3290,
         }
     );
 }
