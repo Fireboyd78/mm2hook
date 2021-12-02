@@ -3457,7 +3457,7 @@ void mmPlayerHandler::BustPlayer() {
         auto maxDamage = copCar->getCarDamage()->getMaxDamage();
         auto police2Pos = copCar->getModel()->GetPosition();
 
-        if (vehPoliceCarAudio::iNumCopsPursuingPlayer == 0 && bustedTimer > bustedTimeout) {
+        if (vehPoliceCarAudio::iNumCopsPursuingPlayer == 0 && bustedTimer > 0.f) {
             if (lvlLevel::Singleton->GetRoomInfo(copCar->getModel()->getRoomId())->Flags & static_cast<int>(RoomFlags::Water)) {
                 if (lvlLevel::Singleton->GetWaterLevel(copCar->getModel()->getRoomId()) > copCarSim->getWorldMatrix()->m31) {
                     enableBustedTimer = false;
