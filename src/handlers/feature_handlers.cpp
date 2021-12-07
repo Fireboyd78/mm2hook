@@ -379,6 +379,7 @@ struct TimeWeatherInfo {
         aiMap::Instance->drawHeadlights = ShowHeadlights;
         vehCar::sm_DrawHeadlights = ShowHeadlights;
         vehCarModel::HeadlightsState = ShowHeadlights;
+        vehCarModel::FoglightsState = MMSTATE->WeatherType == 2;
 
         g_FlatColorIntensity = FlatColorIntensity;
         g_WeatherFriction = WeatherFriction;
@@ -530,6 +531,7 @@ int LeftTurnSignalToggleKey = 188;
 int RightTurnSignalToggleKey = 190;
 int SirenLightsToggleKey = 75;
 int SirenSoundsToggleKey = 74;
+int FoglightsToggleKey = 77;
 
 bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
 {
@@ -704,6 +706,24 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
                         else
                             policeAudio->StopSiren();
                     }
+                }
+            }
+        }
+        return true;
+    }
+
+    if (vKey == FoglightsToggleKey) {
+        mmGameManager *mgr = mmGameManager::Instance;
+        auto gamePtr = (mgr != NULL) ? mgr->getGame() : NULL;
+
+        if (gamePtr != NULL)
+        {
+            auto popup = gamePtr->getPopup();
+
+            if (popup != NULL) {
+                if (!popup->IsEnabled()) {
+                    // toggle foglights
+                    vehCarModel::FoglightsState = !vehCarModel::FoglightsState;
                 }
             }
         }
@@ -1018,6 +1038,7 @@ void gfxPipelineHandler::Install() {
     ConfigValue<int> cfgRightTurnSignalToggleKey("RightTurnSignalToggleKey", 190);
     ConfigValue<int> cfgSirenLightsToggleKey("SirenLightsToggleKey", 75);
     ConfigValue<int> cfgSirenSoundsToggleKey("SirenSoundsToggleKey", 74);
+    ConfigValue<int> cfgFoglightsToggleKey("FoglightsToggleKey", 77);
 
     HeadlightsToggleKey = cfgHeadlightsToggleKey.Get();
     HazardLightsToggleKey = cfgHazardLightsToggleKey.Get();
@@ -1025,6 +1046,7 @@ void gfxPipelineHandler::Install() {
     RightTurnSignalToggleKey = cfgRightTurnSignalToggleKey.Get();
     SirenLightsToggleKey = cfgSirenLightsToggleKey.Get();
     SirenSoundsToggleKey = cfgSirenSoundsToggleKey.Get();
+    FoglightsToggleKey = cfgFoglightsToggleKey.Get();
 }
 
 /*
@@ -4557,11 +4579,11 @@ void vehCarModelFeatureHandler::EjectOneShot() {
 }
 
 void vehCarModelFeatureHandler::Install() {
-    InstallPatch({ 0x5C, 0x1 }, {
+    InstallPatch({ 0x58, 0x1 }, {
         0x42BB6E + 1, // Change size of vehCarModel on allocation
     });
 
-    InstallPatch({ 0x5C, 0x1 }, {
+    InstallPatch({ 0x58, 0x1 }, {
         0x4CDFE0 + 1, // Change size of vehCarModel on SizeOf
     });
 

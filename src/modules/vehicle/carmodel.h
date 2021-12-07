@@ -41,6 +41,7 @@ namespace MM2
         static bool HazardLightsState;
         static bool LeftSignalLightState;
         static bool RightSignalLightState;
+        static bool FoglightsState;
     private:
         bool enabledElectrics[4]; //0/1 are back, 2/3 are front
         vehCar* car;
@@ -84,8 +85,10 @@ namespace MM2
         Vector3 fndr3offset;
         Vector3 fndr4offset;
         Vector3 fndr5offset;
-        ltLight* extraHeadlights[6]; //HEADLIGHT2-7
-        Vector3 extraHeadlightPositions[6];
+        ltLight* extraHeadlights; //HEADLIGHT2-3
+        Vector3 extraHeadlightPositions[2];
+        ltLight* foglights[4]; //FOGLIGHT0-3
+        Vector3 foglightPositions[4];
     public:
         AGE_API vehCarModel() {
             scoped_vtable x(this);
@@ -294,27 +297,37 @@ namespace MM2
         {
             int geomSetId = this->getGeomSetId();
             int geomSetIdOffset = geomSetId - 1;
-            float rotationAmount = vehCarModel::HeadlightFlashingSpeed;
+
+            auto headlight2 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 73);
+            auto headlight3 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 74);
+
+            if (headlight2->getHighLOD() == nullptr || headlight3->getHighLOD() == nullptr)
+                return;
+
+            if (rotate)
+            {
+                this->extraHeadlights[0].Direction.RotateY(datTimeManager::Seconds * vehCarModel::HeadlightFlashingSpeed);
+                this->extraHeadlights[1].Direction.RotateY(datTimeManager::Seconds * -vehCarModel::HeadlightFlashingSpeed);
+            }
+            else
+            {
+                auto carMatrix = this->carSim->getWorldMatrix();
+                this->extraHeadlights[0].Direction = Vector3(-carMatrix->m20, -carMatrix->m21, -carMatrix->m22);
+                this->extraHeadlights[1].Direction = Vector3(-carMatrix->m20, -carMatrix->m21, -carMatrix->m22);
+            }
+
+            bool bothLightsBroken = !(enabledElectrics[2] || enabledElectrics[3]);
+            if (bothLightsBroken)
+                return;
 
             ltLight::DrawGlowBegin();
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < 2; i++)
             {
-                auto headlightEntry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 73 + i);
-                if (headlightEntry->getHighLOD() == nullptr)
+                bool isHeadlightBroken = !(enabledElectrics[i + 2]);
+                if (isHeadlightBroken)
                     continue;
 
-                if (rotate)
-                {
-                    this->extraHeadlights[i]->Direction.RotateY(datTimeManager::Seconds * rotationAmount);
-                    rotationAmount *= -1.f;
-                }
-                else
-                {
-                    auto carMatrix = this->carSim->getWorldMatrix();
-                    this->extraHeadlights[i]->Direction = Vector3(-carMatrix->m20, -carMatrix->m21, -carMatrix->m22);
-                }
-
-                auto light = this->extraHeadlights[i];
+                auto light = &this->extraHeadlights[i];
                 auto lightPos = this->extraHeadlightPositions[i];
                 auto carMatrix = this->carSim->getWorldMatrix();
 
@@ -325,6 +338,39 @@ namespace MM2
 
                 Vector3* someCameraThing = (Vector3*)0x685490;
                 light->DrawGlow(someCameraThing);
+            }
+            ltLight::DrawGlowEnd();
+        }
+
+        AGE_API void DrawFoglights()
+        {
+            int geomSetId = this->getGeomSetId();
+            int geomSetIdOffset = geomSetId - 1;
+
+            ltLight::DrawGlowBegin();
+            for (int i = 0; i < 4; i++)
+            {
+                auto foglight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 75 + i);
+                if (foglight->getHighLOD() == nullptr)
+                    continue;
+
+                auto breaklt = this->getGenBreakableMgr()->Get(i + 3);
+
+                if (breaklt == nullptr || (breaklt != nullptr && breaklt->isAttached)) {
+                    auto carMatrix = this->carSim->getWorldMatrix();
+                    this->foglights[i]->Direction = Vector3(-carMatrix->m20, -carMatrix->m21, -carMatrix->m22);
+
+                    auto light = this->foglights[i];
+                    auto lightPos = this->foglightPositions[i];
+
+                    float lX = lightPos.Y * carMatrix->m10 + lightPos.Z * carMatrix->m20 + lightPos.X * carMatrix->m00 + carMatrix->m30;
+                    float lY = lightPos.Y * carMatrix->m11 + lightPos.Z * carMatrix->m21 + lightPos.X * carMatrix->m01 + carMatrix->m31;
+                    float lZ = lightPos.Y * carMatrix->m12 + lightPos.Z * carMatrix->m22 + lightPos.X * carMatrix->m02 + carMatrix->m32;
+                    light->Position = Vector3(lX, lY, lZ);
+
+                    Vector3* someCameraThing = (Vector3*)0x685490;
+                    light->DrawGlow(someCameraThing);
+                }
             }
             ltLight::DrawGlowEnd();
         }
@@ -475,10 +521,11 @@ namespace MM2
                 //gfxForceLVERTEX = 1;
                 lvlInstance::AddGeom(basename, "headlight2", 0);
                 lvlInstance::AddGeom(basename, "headlight3", 0);
-                lvlInstance::AddGeom(basename, "headlight4", 0);
-                lvlInstance::AddGeom(basename, "headlight5", 0);
-                lvlInstance::AddGeom(basename, "headlight6", 0);
-                lvlInstance::AddGeom(basename, "headlight7", 0);
+
+                lvlInstance::AddGeom(basename, "foglight0", 0);
+                lvlInstance::AddGeom(basename, "foglight1", 0);
+                lvlInstance::AddGeom(basename, "foglight2", 0);
+                lvlInstance::AddGeom(basename, "foglight3", 0);
                 //gfxForceLVERTEX = 0;
 
                 lvlInstance::AddGeom(basename, "srn4", 0);
@@ -508,7 +555,17 @@ namespace MM2
                 //gfxForceLVERTEX = 1;
                 lvlInstance::AddGeom(basename, "tslight0", 0);
                 lvlInstance::AddGeom(basename, "tslight1", 0);
+
+                lvlInstance::AddGeom(basename, "flight0", 0);
+                lvlInstance::AddGeom(basename, "flight1", 0);
+                lvlInstance::AddGeom(basename, "flight2", 0);
+                lvlInstance::AddGeom(basename, "flight3", 0);
                 //gfxForceLVERTEX = 0;
+
+                lvlInstance::AddGeom(basename, "breaklt0", 0);
+                lvlInstance::AddGeom(basename, "breaklt1", 0);
+                lvlInstance::AddGeom(basename, "breaklt2", 0);
+                lvlInstance::AddGeom(basename, "breaklt3", 0);
 
                 //add variants
                 //supports up to 32 paintjobs
@@ -617,22 +674,49 @@ namespace MM2
             //load extra headlights
             if (this->getGeomSetId() != 0)
             {
-                for (int i = 0; i < 6; i++)
+                auto headlight2entry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 73);
+                auto headlight3entry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 74);
+
+                if (headlight2entry->getHighLOD() != nullptr && headlight3entry->getHighLOD() != nullptr)
                 {
-                    auto headlightEntry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 73 + i);
-                    if (headlightEntry->getHighLOD() == nullptr)
+                    this->extraHeadlights = new ltLight[2];
+                    Matrix34 outMatrix;
+
+                    GetPivot(outMatrix, basename, "headlight2");
+                    extraHeadlights[0].Color = Vector3(1.f, 1.f, 1.f);
+                    extraHeadlights[0].Type = 1;
+                    extraHeadlights[0].SpotExponent = 3.f;
+                    this->GetSurfaceColor(headlight2entry->getHighLOD(), &extraHeadlights[0].Color);
+                    this->extraHeadlightPositions[0] = Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32);
+
+                    GetPivot(outMatrix, basename, "headlight3");
+                    extraHeadlights[1].Color = Vector3(1.f, 1.f, 1.f);
+                    extraHeadlights[1].Type = 1;
+                    extraHeadlights[1].SpotExponent = 3.f;
+                    this->GetSurfaceColor(headlight3entry->getHighLOD(), &extraHeadlights[1].Color);
+                    this->extraHeadlightPositions[1] = Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32);
+                }
+            }
+
+            //load foglights
+            if (this->getGeomSetId() != 0)
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    auto foglightEntry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 75 + i);
+                    if (foglightEntry->getHighLOD() == nullptr)
                         continue;
 
                     Matrix34 outMatrix;
 
-                    string_buf<16> buffer("headlight%d", i + 2);
+                    string_buf<16> buffer("foglight%d", i);
                     GetPivot(outMatrix, basename, buffer);
-                    extraHeadlights[i] = new ltLight();
-                    extraHeadlights[i]->Color = Vector3(1.f, 1.f, 1.f);
-                    extraHeadlights[i]->Type = 1;
-                    extraHeadlights[i]->SpotExponent = 3.f;
-                    this->GetSurfaceColor(headlightEntry->getHighLOD(), &extraHeadlights[i]->Color);
-                    this->extraHeadlightPositions[i] = Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32);
+                    foglights[i] = new ltLight();
+                    foglights[i]->Color = Vector3(1.f, 1.f, 1.f);
+                    foglights[i]->Type = 1;
+                    foglights[i]->SpotExponent = 3.f;
+                    this->GetSurfaceColor(foglightEntry->getHighLOD(), &foglights[i]->Color);
+                    this->foglightPositions[i] = Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32);
                 }
             }
 
@@ -712,8 +796,12 @@ namespace MM2
             InitBreakable(this->genBreakableMgr, basename, "break03", 37, 0);
             InitBreakable(this->genBreakableMgr, basename, "lightbar0", 99, 1);
             InitBreakable(this->genBreakableMgr, basename, "lightbar1", 100, 2);
+            InitBreakable(this->genBreakableMgr, basename, "breaklt0", 107, 3);
+            InitBreakable(this->genBreakableMgr, basename, "breaklt1", 108, 4);
+            InitBreakable(this->genBreakableMgr, basename, "breaklt2", 109, 5);
+            InitBreakable(this->genBreakableMgr, basename, "breaklt3", 110, 6);
             
-            int variantGeomId = this->variant + 103;
+            int variantGeomId = this->variant + 111;
             string_buf<16> buffer("variant%d", this->variant);
             InitBreakable(this->genBreakableMgr, basename, buffer, variantGeomId, 0);
 
@@ -1318,10 +1406,23 @@ namespace MM2
             modStatic* siren0 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 9)->getHighestLOD();
             modStatic* siren1 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 10)->getHighestLOD();
 
+            //Draw foglights
+            modStatic* flight0 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 103)->getHighestLOD();
+            modStatic* flight1 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 104)->getHighestLOD();
+            modStatic* flight2 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 105)->getHighestLOD();
+            modStatic* flight3 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 106)->getHighestLOD();
+
+            //Get breakable foglights
+            auto breaklt0 = this->getGenBreakableMgr()->Get(3);
+            auto breaklt1 = this->getGenBreakableMgr()->Get(4);
+            auto breaklt2 = this->getGenBreakableMgr()->Get(5);
+            auto breaklt3 = this->getGenBreakableMgr()->Get(6);
+
             if (vehCarModel::HeadlightType < 3) {
                 if (vehCarModel::HeadlightType == 0 || vehCarModel::HeadlightType == 2) {
                     //MM2 headlights
-                    if (vehCarModel::EnableHeadlightFlashing) {
+                    if (vehCarModel::EnableHeadlightFlashing)
+                    {
                         if (siren != nullptr && siren->Active)
                         {
                             this->DrawHeadlights(true);
@@ -1340,6 +1441,10 @@ namespace MM2
                             this->DrawExtraHeadlights(false);
                         }
                     }
+                    if (car->IsPlayer() && vehCarModel::FoglightsState || !car->IsPlayer() && MMSTATE->WeatherType == 2)
+                    {
+                        this->DrawFoglights();
+                    }
                 }
                 if (vehCarModel::HeadlightType == 1 || vehCarModel::HeadlightType == 2) {
                     //MM1 headlights
@@ -1348,9 +1453,43 @@ namespace MM2
 
                     if (enabledElectrics[2] || enabledElectrics[3])
                     {
-                        if (hlight != nullptr) {
+                        if (hlight != nullptr)
+                        {
                             if (car->IsPlayer() && vehCarModel::HeadlightsState || !car->IsPlayer() && vehCar::sm_DrawHeadlights)
+                            {
                                 hlight->Draw(shaders);
+                            }
+                        }
+                    }
+                    if (car->IsPlayer() && vehCarModel::FoglightsState || !car->IsPlayer() && MMSTATE->WeatherType == 2)
+                    {
+                        if (flight0 != nullptr)
+                        {
+                            if (breaklt0 == nullptr || (breaklt0 != nullptr && breaklt0->isAttached))
+                            {
+                                flight0->Draw(shaders);
+                            }
+                        }
+                        if (flight1 != nullptr)
+                        {
+                            if (breaklt1 == nullptr || (breaklt1 != nullptr && breaklt1->isAttached))
+                            {
+                                flight1->Draw(shaders);
+                            }
+                        }
+                        if (flight2 != nullptr)
+                        {
+                            if (breaklt2 == nullptr || (breaklt2 != nullptr && breaklt2->isAttached))
+                            {
+                                flight2->Draw(shaders);
+                            }
+                        }
+                        if (flight3 != nullptr)
+                        {
+                            if (breaklt3 == nullptr || (breaklt3 != nullptr && breaklt3->isAttached))
+                            {
+                                flight3->Draw(shaders);
+                            }
                         }
                     }
                 }
@@ -1410,7 +1549,7 @@ namespace MM2
         }
     };
 
-    ASSERT_SIZEOF(vehCarModel, 0xCC + 0xC + 0xC + 0xC + 0xC + 0x18 + 0x48); //+6 extra fields
+    ASSERT_SIZEOF(vehCarModel, 0xCC + 0xC + 0xC + 0xC + 0xC + 0x4 + 0x18 + 0x10 + 0x30); //+8 extra fields
 
     // Lua initialization
 

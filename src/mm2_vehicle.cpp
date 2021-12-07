@@ -38,6 +38,7 @@ bool vehCarModel::HeadlightsState = false;
 bool vehCarModel::HazardLightsState = false;
 bool vehCarModel::LeftSignalLightState = false;
 bool vehCarModel::RightSignalLightState = false;
+bool vehCarModel::FoglightsState = false;
 
 bool vehCarModel::mm1StyleTransmission = false;
 bool vehCarModel::breakableRenderTweak = false;
