@@ -403,6 +403,7 @@ public:
 class mmArrowHandler {
 public:
     void SetShape(LPCSTR modelName, LPCSTR dirName, bool useLVertex, MM2::Vector3* a4);
+    void Update();
     static void Install();
 };
 

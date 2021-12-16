@@ -5607,6 +5607,14 @@ void mmArrowHandler::SetShape(LPCSTR modelName, LPCSTR dirName, bool useLVertex,
         form->SetShape("hudarrow01", "geometry", 0);
 }
 
+void mmArrowHandler::Update() {
+    if (MMSTATE->GameMode == Cruise)
+        return;
+
+    //call original
+    hook::Thunk<0x42E7F0>::Call<void>(this);
+}
+
 void mmArrowHandler::Install()
 {
     if (cfgHudArrowStyles.Get()) {
@@ -5616,6 +5624,12 @@ void mmArrowHandler::Install()
             }
         );
     }
+
+    InstallVTableHook("mmArrow::Update",
+        &Update, {
+            0x5B0CB4,
+        }
+    );
 }
 
 /*
