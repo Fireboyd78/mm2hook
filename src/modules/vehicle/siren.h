@@ -15,6 +15,7 @@ namespace MM2
     {
     public:
         static float SirenRotationSpeed;
+        static float SirenRotationStyle;
     public:
         bool HasLights;
         bool Active;
@@ -80,13 +81,15 @@ namespace MM2
         { 
             if (this->ltLightPool != nullptr && this->LightCount < 24)
             {
+                float rotationStyle = vehSiren::SirenRotationStyle;
+
                 this->HasLights = true;
                 ltLightPool[LightCount].Type = 1;
                 ltLightPool[LightCount].Color = *color;
                 extraLightPositions[LightCount] = *position;
                 ltLightPool[LightCount].SpotExponent = 3.f;
                 ltLightPool[LightCount].Direction = Vector3(1.f, 0.f, 0.f);
-                ltLightPool[LightCount].Direction.RotateY(LightCount * 1.5707964f);
+                ltLightPool[LightCount].Direction.RotateY(LightCount * rotationStyle);
                 ++this->LightCount;
                 return true;
             }

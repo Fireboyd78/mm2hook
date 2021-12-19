@@ -5683,8 +5683,10 @@ void vehSirenHandler::Install() {
     });
 
     ConfigValue<float> cfgSirenRotationSpeed("SirenRotationSpeed", 3.1415927f);
+    ConfigValue<float> cfgSirenRotationStyle("SirenRotationStyle", 1.5707964f);
 
     vehSiren::SirenRotationSpeed = cfgSirenRotationSpeed.Get();
+    vehSiren::SirenRotationStyle = cfgSirenRotationStyle.Get();
 }
 
 /*
