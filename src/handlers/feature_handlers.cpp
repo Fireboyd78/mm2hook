@@ -4614,6 +4614,7 @@ void vehCarModelFeatureHandler::Install() {
     ConfigValue<bool> cfgEnableSpinningWheels("EnableSpinningWheels", true);
     ConfigValue<bool> cfgPartReflections("ReflectionsOnCarParts", false);
     ConfigValue<bool> cfgHeadlightFlashing("EnableHeadlightFlashing", true);
+    ConfigValue<bool> cfgEnableLEDSiren("EnableLEDSiren", false);
     ConfigValue<bool> cfgNfsMwStyleTotaledCar("NFSMWStyleTotaledCar", false);
     ConfigValue<bool> cfgBreakableRenderTweak("BreakableRenderTweak", false);
     ConfigValue<int> cfgSirenStyle("SirenStyle", 0);
@@ -4623,6 +4624,7 @@ void vehCarModelFeatureHandler::Install() {
 
     vehCarModel::EnableSpinningWheels = cfgEnableSpinningWheels.Get();
     vehCarModel::EnableHeadlightFlashing = cfgHeadlightFlashing.Get();
+    vehCarModel::EnableLEDSiren = cfgEnableLEDSiren.Get();
     vehCarModel::SirenType = cfgSirenStyle.Get();
     vehCarModel::HeadlightType = cfgHeadlightStyle.Get();
     vehCarModel::SirenCycle = cfgSirenCycleRate.Get();

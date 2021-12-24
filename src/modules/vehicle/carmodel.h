@@ -26,6 +26,7 @@ namespace MM2
     public:
         static bool EnableSpinningWheels;
         static bool EnableHeadlightFlashing;
+        static bool EnableLEDSiren;
         static bool MWStyleTotaledCar;
         static int SirenType;
         static int HeadlightType;
@@ -1509,12 +1510,16 @@ namespace MM2
                     gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
                     if (siren != nullptr && siren->Active) {
-                        int sirenStage = fmod(datTimeManager::ElapsedTime, 2 * vehCarModel::SirenCycle) >= vehCarModel::SirenCycle ? 1 : 0;
-                        if (sirenStage == 0 && siren0 != nullptr) {
-                            siren0->Draw(shaders);
-                        }
-                        else if (sirenStage == 1 && siren1 != nullptr) {
-                            siren1->Draw(shaders);
+                        bool drawLEDSiren = fmod(datTimeManager::ElapsedTime, 0.1f) > 0.05f;
+
+                        if (!vehCarModel::EnableLEDSiren || drawLEDSiren) {
+                            int sirenStage = fmod(datTimeManager::ElapsedTime, 2 * vehCarModel::SirenCycle) >= vehCarModel::SirenCycle ? 1 : 0;
+                            if (sirenStage == 0 && siren0 != nullptr) {
+                                siren0->Draw(shaders);
+                            }
+                            else if (sirenStage == 1 && siren1 != nullptr) {
+                                siren1->Draw(shaders);
+                            }
                         }
                     }
                 }
