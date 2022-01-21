@@ -34,6 +34,9 @@ namespace MM2
 
         virtual AGE_API dgPhysEntity * AttachEntity(void)   { return hook::Thunk<0x57B730>::Call<dgPhysEntity *>(this); }
         virtual AGE_API bool IsCollidable(void)             { return hook::Thunk<0x57B780>::Call<bool>(this); }
+        virtual AGE_API const Matrix34 & GetMatrix(Matrix34* a1)
+                                                            { return hook::Thunk<0x57B5A0>::Call<Matrix34 const&>(this, a1); }
+        virtual AGE_API const Vector3 & GetPosition()       { return hook::Thunk<0x57B5C0>::Call<Vector3 const&>(this); }
     };
 
     // Lua initialization

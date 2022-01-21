@@ -49,6 +49,15 @@ namespace MM2
         int GeomSet;
         char pad138[24];
     public:
+        inline int getBillFlags()
+        {
+            return this->BillFlags;
+        }
+
+        inline Vector3 getCG()
+        {
+            return this->CG;
+        }
     };
     
     ASSERT_SIZEOF(dgBangerData, 0x154);
@@ -61,6 +70,8 @@ namespace MM2
         gfxTexture* ParticleSheetTextures[20];
         byte buffer[0x58];
     public:
+        static hook::Type<dgBangerDataManager*> Instance;
+
         inline int getDataCount()
         {
             return dataCount;

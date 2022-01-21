@@ -105,8 +105,6 @@ hook::Type<float> sdl_VLowThresh         ( 0x5C5708 );  // default: 300.0
 hook::Type<float> sdl_LowThresh          ( 0x5C570C );  // default: 100.0
 hook::Type<float> sdl_MedThresh          ( 0x5C5710 );  // default: 50.0
 
-hook::Type<int> timeOfDay                ( 0x62B068 );
-
 /*
     asCullManagerHandler
 */
@@ -196,7 +194,7 @@ void cityLevelHandler::PostUpdate() {
 
     // update our shaded lighting
     // TODO: fix lighting quality not being taken into account (harder than it sounds)
-    auto timeWeather = $::timeWeathers.ptr(timeOfDay);
+    auto timeWeather = $::timeWeathers.ptr(cityLevel::timeOfDay);
 
     vglKeyColor = addPitch(&timeWeather->KeyColor, timeWeather->KeyPitch);
     vglFill1Color = addPitch(&timeWeather->Fill1Color, timeWeather->Fill1Pitch);
@@ -2010,7 +2008,106 @@ void BridgeFerryHandler::Cull(int lod) {
 }
 
 void BridgeFerryHandler::Draw(int lod) {
-    reinterpret_cast<dgBangerInstance*>(this)->Draw(lod);
+    auto bangerInst = reinterpret_cast<dgUnhitYBangerInstance*>(this);
+    auto treeInst = *dgTreeRenderer::Instance;
+    auto data = bangerInst->GetData();
+
+    int billFlags = data->getBillFlags();
+    int geomSetId = bangerInst->getGeomSetId();
+    int geomSetIdOffset = geomSetId - 1;
+    int shaderSet = *getPtr<unsigned __int16>(this, 0x14) >> 12;
+
+    auto geomEntry = lvlInstance::GetGeomTableEntry(geomSetIdOffset);
+    auto shaders = geomEntry->pShaders[shaderSet];
+    auto model = geomEntry->getLOD(lod);
+
+    if (bangerInst->getFlags() & 4) {
+        if (lod < 3)
+            lod += 1;
+    }
+
+    if (billFlags & 512 && treeInst != nullptr) {
+        treeInst->AddTree(bangerInst, lod);
+    }
+    else {
+        Matrix34 dummyMatrix;
+        Matrix44::Convert(gfxRenderState::sm_World, &bangerInst->GetMatrix(&dummyMatrix));
+        gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
+        RSTATE->SetBlendSet(0, 0x80);
+
+        if (model != nullptr) {
+            if (data->getBillFlags() >= 0) {
+                auto texture = shaders->Texture;
+                if (texture != nullptr && strstr(texture->Name, "_glass")) {
+                    bool zWriteEnable = (&RSTATE->Data)->ZWriteEnable;
+                    if ((&RSTATE->Data)->ZWriteEnable != 0)
+                    {
+                        (&RSTATE->Data)->ZWriteEnable = 0;
+                        gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+                    }
+
+                    model->Draw(shaders);
+
+                    if ((&RSTATE->Data)->ZWriteEnable != zWriteEnable)
+                    {
+                        (&RSTATE->Data)->ZWriteEnable = zWriteEnable;
+                        gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+                    }
+                }
+                else if (strstr(data->GetName(), "_tree")) {
+                    bool lighting = (&RSTATE->Data)->Lighting;
+                    if ((&RSTATE->Data)->Lighting != 0)
+                    {
+                        (&RSTATE->Data)->Lighting = 0;
+                        gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+                    }
+
+                    model->Draw(shaders);
+
+                    if ((&RSTATE->Data)->Lighting != lighting)
+                    {
+                        (&RSTATE->Data)->Lighting = lighting;
+                        gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+                    }
+                }
+                else {
+                    model->Draw(shaders);
+                }
+            }
+            else {
+                int alphaRef = (&RSTATE->Data)->AlphaRef;
+                if ((&RSTATE->Data)->AlphaRef != dgBangerInstance::sm_RefAlpha)
+                {
+                    (&RSTATE->Data)->AlphaRef = dgBangerInstance::sm_RefAlpha;
+                    gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+                }
+
+                gfxRenderState::m_TouchedMask = gfxRenderState::m_TouchedMasks[0];
+
+                if ((&RSTATE->Data)->Lighting == true)
+                {
+                    (&RSTATE->Data)->Lighting = false;
+                    gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+                }
+
+                model->Draw(shaders);
+
+                gfxRenderState::m_TouchedMask = gfxRenderState::m_TouchedMasks[1];
+
+                if ((&RSTATE->Data)->Lighting == false)
+                {
+                    (&RSTATE->Data)->Lighting = true;
+                    gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+                }
+
+                if ((&RSTATE->Data)->AlphaRef != alphaRef)
+                {
+                    (&RSTATE->Data)->AlphaRef = alphaRef;
+                    gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+                }
+            }
+        }
+    }
 }
 
 void BridgeFerryHandler::Install() {
@@ -2025,6 +2122,11 @@ void BridgeFerryHandler::Install() {
     InstallVTableHook("Bridge/Ferry: Draw", &Draw, {
         0x5B5FB8, // gizBridge::Draw
         0x5B61AC, // gizFerry::Draw
+        0x5B14C0,
+        0x5B1538,
+        0x5B15E4,
+        0x5B5700,
+        0x5B6100,
     });
 }
 
@@ -4239,6 +4341,102 @@ void dgBangerInstanceHandler::Reset() {
     glowLoaded = false;
 }
 
+static ConfigValue<int> cfgMm1StyleShadows("MM1StyleShadows", 0);
+
+void dgBangerInstanceHandler::DrawShadow() {
+    auto inst = reinterpret_cast<dgUnhitYBangerInstance*>(this);
+    auto data = inst->GetData();
+    auto timeWeather = $::timeWeathers.ptr(cityLevel::timeOfDay);
+
+    if (MMSTATE->TimeOfDay == 3 || MMSTATE->WeatherType != 0)
+        return;
+
+    //get our geometry id
+    int geomSetId = inst->getGeomSetId();
+    int geomSetIdOffset = geomSetId - 1;
+
+    //get shaders
+    int shaderSet = *getPtr<unsigned __int16>(this, 0x14) >> 12;
+    auto shaders = lvlInstance::GetGeomTableEntry(geomSetIdOffset)->pShaders[shaderSet];
+
+    //get model
+    modStatic* model = lvlInstance::GetGeomTableEntry(geomSetIdOffset)->getHighestLOD();
+
+    if (model != nullptr)
+    {
+        int srcBlend = (&RSTATE->Data)->SrcBlend;
+        if ((&RSTATE->Data)->SrcBlend != 0)
+        {
+            (&RSTATE->Data)->SrcBlend = 0;
+            gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+        }
+
+        int destBlend = (&RSTATE->Data)->DestBlend;
+        if ((&RSTATE->Data)->DestBlend != 9)
+        {
+            (&RSTATE->Data)->DestBlend = 9;
+            gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+        }
+
+        if (!strcmp(data->GetName(), "sp_jumptrailer_f"))
+        {
+            Matrix34 shadowMatrix;
+            Matrix34 dummyMatrix;
+
+            if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, inst->getRoomId(), &inst->GetMatrix(&dummyMatrix)))
+            {
+                shadowMatrix.m01 = 0.f;
+
+                shadowMatrix.m10 = cos(timeWeather->KeyHeading) * cos(timeWeather->KeyPitch);
+                shadowMatrix.m11 = 0.f;
+                shadowMatrix.m12 = sin(timeWeather->KeyHeading) * cos(timeWeather->KeyPitch);
+
+                shadowMatrix.m30 += shadowMatrix.m10 * 2.4f;
+                shadowMatrix.m31 -= data->getCG().Y;
+                shadowMatrix.m32 += shadowMatrix.m12 * 2.4f;
+
+                Matrix44::Convert(gfxRenderState::sm_World, &shadowMatrix);
+                gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
+
+                model->Draw(shaders);
+            }
+        }
+        else {
+            Matrix34 shadowMatrix;
+            Matrix34 dummyMatrix;
+
+            if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, inst->getRoomId(), &inst->GetMatrix(&dummyMatrix)))
+            {
+                float posDiffY = inst->GetMatrix(&dummyMatrix).m31 - shadowMatrix.m31;
+
+                shadowMatrix.m10 = cos(timeWeather->KeyHeading) * cos(timeWeather->KeyPitch);
+                shadowMatrix.m11 = 0.f;
+                shadowMatrix.m12 = sin(timeWeather->KeyHeading) * cos(timeWeather->KeyPitch);
+
+                shadowMatrix.m30 += shadowMatrix.m10 * posDiffY;
+                shadowMatrix.m32 += shadowMatrix.m12 * posDiffY;
+
+                Matrix44::Convert(gfxRenderState::sm_World, &shadowMatrix);
+                gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
+
+                model->Draw(shaders);
+            }
+        }
+
+        if ((&RSTATE->Data)->DestBlend != destBlend)
+        {
+            (&RSTATE->Data)->DestBlend = destBlend;
+            gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+        }
+
+        if ((&RSTATE->Data)->SrcBlend != srcBlend)
+        {
+            (&RSTATE->Data)->SrcBlend = srcBlend;
+            gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+        }
+    }
+}
+
 void dgBangerInstanceHandler::DrawGlow()
 {
     //first time texture load
@@ -4268,8 +4466,48 @@ void dgBangerInstanceHandler::DrawGlow()
     }
 }
 
+bool dgBangerInstanceHandler::BeginGeom(const char* a1, const char* a2, int a3)
+{
+    //We hook this to set flag 64 (shadow)
+    auto inst = reinterpret_cast<lvlInstance*>(this);
+    inst->setFlag(64);
+
+    //Call original
+    return inst->BeginGeom(a1, a2, a3);
+}
+
 void dgBangerInstanceHandler::Install()
 {
+    if (cfgMm1StyleShadows.Get() >= 1) {
+        InstallVTableHook("dgBangerInstance::DrawShadow",
+            &DrawShadow, {
+                0x5B14C4,
+                0x5B153C,
+                0x5B15E8,
+                0x5B1658,
+                0x5B54DC,
+                0x5B5688,
+                0x5B5704,
+                0x5B57C8,
+                0x5B5FBC,
+                0x5B6104,
+                0x5B61B0
+            }
+        );
+
+        InstallCallback("dgBangerInstance::Init", "Hook BeginGeom to set instance shadowing flag.",
+            &BeginGeom, {
+                cb::call(0x53C7DE), // aiTrafficLightInstance::Init
+                cb::call(0x441C86), // dgUnhitBangerInstance::Init
+            }
+        );
+
+        // increases the maximum distance from 5 to 10 meters to enable shadow rendering for very tall props 
+        InstallPatch({ 0xD8, 0x25, 0x28, 0x4, 0x5B, 0x0 }, {
+            0x464501
+        });
+    }
+
     // makes banger glows double sided
     InstallVTableHook("dgBangerInstance::DrawGlow",
         &DrawGlow, {
@@ -4544,6 +4782,11 @@ void vehCarModelFeatureHandler::Draw(int a1) {
     model->vehCarModel::Draw(a1);
 }
 
+void vehCarModelFeatureHandler::DrawShadow() {
+    auto model = reinterpret_cast<vehCarModel*>(this);
+    model->vehCarModel::DrawShadow();
+}
+
 void vehCarModelFeatureHandler::ModStaticDraw(modShader* a1) {
     auto mod = reinterpret_cast<modStatic*>(this);
     hook::Type<gfxTexture *> g_ReflectionMap = 0x628914;
@@ -4604,6 +4847,14 @@ void vehCarModelFeatureHandler::Install() {
             0x5B2CDC,
         }
     );
+
+    if (cfgMm1StyleShadows.Get() >= 3) {
+        InstallVTableHook("vehCarModel::DrawShadow",
+            &DrawShadow, {
+                0x5B2CE0,
+            }
+        );
+    }
 
     InstallVTableHook("vehCarModel::DrawGlow",
         &DrawGlow, {
@@ -4809,6 +5060,14 @@ bool pedestrianInstanceHandler::IsCollidable() {
     return pedRagdollMgr::Instance->UnusedActive();
 }
 
+void pedestrianInstanceHandler::Init(char* a1, int a2, int a3) {
+    //call original
+    hook::Thunk<0x54B0D0>::Call<void>(this, a1, a2, a3);
+
+    auto inst = reinterpret_cast<aiPedestrian*>(this)->getInstance();
+    inst->setFlag(64);
+}
+
 void pedestrianInstanceHandler::DrawRagdoll() {
     auto inst = reinterpret_cast<aiPedestrianInstance*>(this);
 
@@ -4839,13 +5098,108 @@ void pedestrianInstanceHandler::Draw(int a1) {
     if (inst->GetEntity() == nullptr) {
         hook::Thunk<0x57B5F0>::Call<void>(this, a1);
         return;
-    }else{
+    }
+    else {
         this->DrawRagdoll();
+    }
+}
+
+void pedestrianInstanceHandler::DrawShadow() {
+    auto inst = reinterpret_cast<aiPedestrianInstance*>(this);
+    auto animationInstance = inst->getAnimationInstance();
+    auto anim = animationInstance->getAnimation();
+    auto timeWeather = $::timeWeathers.ptr(cityLevel::timeOfDay);
+
+    if (MMSTATE->TimeOfDay == 3 || MMSTATE->WeatherType != 0)
+        return;
+
+    int srcBlend = (&RSTATE->Data)->SrcBlend;
+    if ((&RSTATE->Data)->SrcBlend != 0)
+    {
+        (&RSTATE->Data)->SrcBlend = 0;
+        gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+    }
+
+    int destBlend = (&RSTATE->Data)->DestBlend;
+    if ((&RSTATE->Data)->DestBlend != 9)
+    {
+        (&RSTATE->Data)->DestBlend = 9;
+        gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+    }
+
+    Matrix34 shadowMatrix;
+    Matrix34 dummyMatrix;
+
+    if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, inst->getRoomId(), &inst->GetMatrix(&dummyMatrix)))
+    {
+        if (inst->GetEntity() == nullptr)
+        {
+            float posDiffY = inst->GetMatrix(&dummyMatrix).m31 - shadowMatrix.m31;
+
+            shadowMatrix.m10 = cos(timeWeather->KeyHeading) * cos(timeWeather->KeyPitch);
+            shadowMatrix.m11 = 0.f;
+            shadowMatrix.m12 = sin(timeWeather->KeyHeading) * cos(timeWeather->KeyPitch);
+
+            shadowMatrix.m30 += shadowMatrix.m10 * posDiffY;
+            shadowMatrix.m32 += shadowMatrix.m12 * posDiffY;
+
+            Matrix44::Convert(gfxRenderState::sm_World, &shadowMatrix);
+            gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
+            animationInstance->Draw(true);
+        }
+        else {
+            auto active = reinterpret_cast<pedActive*>(inst->GetEntity());
+
+            Matrix44 pedestrianMatrixList[32];
+
+            gfxRenderState::sm_World->Identity();
+
+            gfxRenderState::sm_World->m21 = cos(timeWeather->KeyHeading) * cos(timeWeather->KeyPitch);
+            gfxRenderState::sm_World->m22 = 0.f;
+            gfxRenderState::sm_World->m23 = sin(timeWeather->KeyHeading) * cos(timeWeather->KeyPitch);
+
+            gfxRenderState::sm_World->m41 -= gfxRenderState::sm_World->m21 * shadowMatrix.m31;
+            gfxRenderState::sm_World->m42 = shadowMatrix.m31;
+            gfxRenderState::sm_World->m43 -= gfxRenderState::sm_World->m23 * shadowMatrix.m31;
+
+            gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
+
+            active->getSkeleton()->Attach(&pedestrianMatrixList[0]);
+
+            anim->pModel->Draw(&pedestrianMatrixList[0], anim->ppShaders[animationInstance->getVariant()], 0xFFFFFFFF);
+        }
+    }
+
+    if ((&RSTATE->Data)->DestBlend != destBlend)
+    {
+        (&RSTATE->Data)->DestBlend = destBlend;
+        gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+    }
+
+    if ((&RSTATE->Data)->SrcBlend != srcBlend)
+    {
+        (&RSTATE->Data)->SrcBlend = srcBlend;
+        gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
     }
 }
 
 void pedestrianInstanceHandler::Install()
 {
+    if (cfgMm1StyleShadows.Get() >= 2) {
+        InstallVTableHook("aiPedestrianInstance::DrawShadow",
+            &DrawShadow, {
+                0x5B6320
+            }
+        );
+
+        InstallCallback("aiPedestrian::Init", "Set flag id to 64 to render pedestrian shadows",
+            &Init, {
+                cb::call(0x53584F), // aiMap::Init
+                cb::call(0x5358CC), // aiMap::Init
+            }
+        );
+    }
+
     //are ragdolls enabled
     if (!cfgRagdolls.Get())
         return;
@@ -4915,6 +5269,89 @@ void aiVehicleInstanceFeatureHandler::Draw(int a1) {
 
     //call original
     hook::Thunk<0x552160>::Call<void>(this, a1);
+}
+
+void aiVehicleInstanceFeatureHandler::DrawShadow() {
+    auto inst = reinterpret_cast<aiVehicleInstance*>(this);
+    auto geomID = inst->getGeomSetId() - 1;
+    auto geomSet = lvlInstance::GetGeomTableEntry(geomID);
+    auto vehicleMatrix = inst->GetMatrix(&aiVehicleMatrix);
+    auto timeWeather = $::timeWeathers.ptr(cityLevel::timeOfDay);
+
+    //get our shader set
+    auto shaderSet = *getPtr<signed short>(this, 0x1E);
+    auto shaders = geomSet->pShaders[shaderSet];
+
+    //get model
+    modStatic* shadow = lvlInstance::GetGeomTableEntry(geomID + 1)->getHighLOD();
+
+    if (shadow != nullptr)
+    {
+        Matrix34 shadowMatrix;
+
+        if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, inst->getRoomId(), &vehicleMatrix))
+        {
+            RSTATE->SetBlendSet(0, 0x80);
+
+            Matrix44::Convert(gfxRenderState::sm_World, &shadowMatrix);
+            gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
+
+            shadow->Draw(shaders);
+        }
+    }
+
+    if (MMSTATE->TimeOfDay == 3 || MMSTATE->WeatherType != 0)
+        return;
+
+    modStatic* body = lvlInstance::GetGeomTableEntry(geomID)->getHighLOD();
+
+    if (body != nullptr)
+    {
+        int srcBlend = (&RSTATE->Data)->SrcBlend;
+        if ((&RSTATE->Data)->SrcBlend != 0)
+        {
+            (&RSTATE->Data)->SrcBlend = 0;
+            gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+        }
+
+        int destBlend = (&RSTATE->Data)->DestBlend;
+        if ((&RSTATE->Data)->DestBlend != 9)
+        {
+            (&RSTATE->Data)->DestBlend = 9;
+            gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+        }
+
+        Matrix34 shadowMatrix;
+
+        if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, inst->getRoomId(), &vehicleMatrix))
+        {
+            float posDiffY = vehicleMatrix.m31 - shadowMatrix.m31;
+
+            shadowMatrix.m10 = cos(timeWeather->KeyHeading) * cos(timeWeather->KeyPitch);
+            shadowMatrix.m11 = 0.f;
+            shadowMatrix.m12 = sin(timeWeather->KeyHeading) * cos(timeWeather->KeyPitch);
+
+            shadowMatrix.m30 += shadowMatrix.m10 * posDiffY;
+            shadowMatrix.m32 += shadowMatrix.m12 * posDiffY;
+
+            Matrix44::Convert(gfxRenderState::sm_World, &shadowMatrix);
+            gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
+
+            body->Draw(shaders);
+        }
+
+        if ((&RSTATE->Data)->DestBlend != destBlend)
+        {
+            (&RSTATE->Data)->DestBlend = destBlend;
+            gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+        }
+
+        if ((&RSTATE->Data)->SrcBlend != srcBlend)
+        {
+            (&RSTATE->Data)->SrcBlend = srcBlend;
+            gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+        }
+    }
 }
 
 void aiVehicleInstanceFeatureHandler::DrawGlow() {
@@ -5076,6 +5513,14 @@ void aiVehicleInstanceFeatureHandler::Install() {
             0x5B5938
         }
     );
+    
+    if (cfgMm1StyleShadows.Get() >= 4) {
+        InstallVTableHook("aiVehicleInstance::DrawShadow",
+            &DrawShadow, {
+                0x5B593C
+            }
+        );
+    }
 
     ambientHeadlightStyle = cfgAmbientHeadlightStyle.Get();
     InstallVTableHook("aiVehicleInstance::DrawGlow",
@@ -5310,6 +5755,90 @@ void vehTrailerInstanceFeatureHandler::DrawTwhl5(int a1, int a2, Matrix34* a3, m
     DrawPart(a1, a2, a3, a4);
 }
 
+void vehTrailerInstanceFeatureHandler::DrawShadow() {
+    auto inst = reinterpret_cast<vehTrailerInstance*>(this);
+    auto trailerMtx = inst->GetMatrix(&trailerMatrix);
+    int geomSet = inst->getGeomSetId() - 1;
+
+    //get our shader set
+    int shaderSet = *getPtr<int>(this, 24);
+    auto shaders = lvlInstance::GetGeomTableEntry(geomSet)->pShaders[shaderSet];
+
+    //get time weather
+    auto timeWeather = $::timeWeathers.ptr(cityLevel::timeOfDay);
+
+    //get model
+    modStatic* shadow = lvlInstance::GetGeomTableEntry(geomSet + 1)->getHighLOD();
+
+    if (shadow != nullptr)
+    {
+        Matrix34 shadowMatrix;
+
+        if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, inst->getRoomId(), &trailerMtx))
+        {
+            RSTATE->SetBlendSet(0, 0x80);
+
+            Matrix44::Convert(gfxRenderState::sm_World, &shadowMatrix);
+            gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
+
+            shadow->Draw(shaders);
+        }
+    }
+
+    if (MMSTATE->TimeOfDay == 3 || MMSTATE->WeatherType != 0)
+        return;
+
+    modStatic* trailer = lvlInstance::GetGeomTableEntry(geomSet)->getHighLOD();
+
+    if (trailer != nullptr)
+    {
+        int srcBlend = (&RSTATE->Data)->SrcBlend;
+        if ((&RSTATE->Data)->SrcBlend != 0)
+        {
+            (&RSTATE->Data)->SrcBlend = 0;
+            gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+        }
+
+        int destBlend = (&RSTATE->Data)->DestBlend;
+        if ((&RSTATE->Data)->DestBlend != 9)
+        {
+            (&RSTATE->Data)->DestBlend = 9;
+            gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+        }
+
+        Matrix34 shadowMatrix;
+
+        if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, inst->getRoomId(), &trailerMtx))
+        {
+            float posDiffY = trailerMtx.m31 - shadowMatrix.m31;
+
+            shadowMatrix.m10 = cos(timeWeather->KeyHeading) * cos(timeWeather->KeyPitch);
+            shadowMatrix.m11 = 0.f;
+            shadowMatrix.m12 = sin(timeWeather->KeyHeading) * cos(timeWeather->KeyPitch);
+
+            shadowMatrix.m30 += shadowMatrix.m10 * posDiffY;
+            shadowMatrix.m32 += shadowMatrix.m12 * posDiffY;
+
+            Matrix44::Convert(gfxRenderState::sm_World, &shadowMatrix);
+            gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
+
+            trailer->Draw(shaders);
+        }
+
+        if ((&RSTATE->Data)->DestBlend != destBlend)
+        {
+            (&RSTATE->Data)->DestBlend = destBlend;
+            gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+        }
+
+        if ((&RSTATE->Data)->SrcBlend != srcBlend)
+        {
+            (&RSTATE->Data)->SrcBlend = srcBlend;
+            gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+        }
+    }
+}
+
 void vehTrailerInstanceFeatureHandler::DrawGlow() {
     auto inst = reinterpret_cast<vehTrailerInstance*>(this);
     //don't draw trailer lights if it's broken
@@ -5467,6 +5996,14 @@ void vehTrailerInstanceFeatureHandler::Install() {
             0x5B2FB0,
         }
     );
+
+    if (cfgMm1StyleShadows.Get() >= 3) {
+        InstallVTableHook("vehTrailerInstance::DrawShadow",
+            &DrawShadow, {
+                0x5B2FB4,
+            }
+        );
+    }
 
     // adds custom light rendering, which adds proper brake lights,
     // reverse lights, signal lights, siren lights and night lights

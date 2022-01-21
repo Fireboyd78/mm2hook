@@ -26,4 +26,6 @@ declfield(gfxRenderState::sm_FullComposite)     = 0x6855E0;
 declfield(gfxRenderState::sm_Transform)         = 0x685620;
 declfield(gfxRenderState::sm_View)              = 0x685660;
 declfield(gfxRenderState::sm_Modelview)         = 0x685738;
-declfield(gfxRenderState::m_Touched) = 0x685778;
+declfield(gfxRenderState::m_Touched)            = 0x685778;
+declfield(gfxRenderState::m_TouchedMask)        = 0x685780;
+declfield(gfxRenderState::m_TouchedMasks)       = 0x5CD604;

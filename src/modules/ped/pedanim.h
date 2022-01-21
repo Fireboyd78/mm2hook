@@ -60,6 +60,8 @@ namespace MM2
         inline int getVariant() const {
             return _variant.get(this);
         }
+
+        AGE_API void Draw(bool a1)                          { hook::Thunk<0x57B370>::Call<void>(this, a1); }
     };
 
     // Lua initialization

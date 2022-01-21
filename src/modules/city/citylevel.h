@@ -19,6 +19,7 @@ namespace MM2
         //helpers
     public:
         static hook::Type<lvlSky> Sky;
+        static hook::Type<int> timeOfDay;
 
         AGE_API cityLevel() {
             scoped_vtable x(this);

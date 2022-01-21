@@ -292,7 +292,10 @@ public:
 
 class dgBangerInstanceHandler {
 public:
+    void Draw();
+    void DrawShadow();
     void DrawGlow();
+    bool BeginGeom(const char* a1, const char* a2, int a3);
     static void Reset();
     static void Install();
 };
@@ -319,6 +322,7 @@ public:
 class vehCarModelFeatureHandler {
 public:
     void Draw(int a1);
+    void DrawShadow();
     void DrawGlow();
     void ModStaticDraw(MM2::modShader * a1);
     void EjectOneShot();
@@ -338,8 +342,10 @@ public:
 
 class pedestrianInstanceHandler {
 public:
+    void Init(char* a1, int a2, int a3);
     void DrawRagdoll();
     void Draw(int a1);
+    void DrawShadow();
     bool IsCollidable();
     MM2::phBound * GetBound(int a1);
 
@@ -352,6 +358,7 @@ public:
 class aiVehicleInstanceFeatureHandler {
 public:
     void Draw(int a1);
+    void DrawShadow();
     void DrawGlow();
     void ModStaticDraw(MM2::modShader* a1);
     void AddGeomHook(const char* pkgName, const char* name, int flags);
@@ -370,6 +377,7 @@ public:
     void Draw(int a1);
     void DrawTwhl4(int a1, int a2, MM2::Matrix34* a3, MM2::modShader* a4);
     void DrawTwhl5(int a1, int a2, MM2::Matrix34* a3, MM2::modShader* a4);
+    void DrawShadow();
     void DrawGlow();
     void DrawPart(int a1, int a2, MM2::Matrix34* a3, MM2::modShader* a4);
     void DrawPartReflections(MM2::modStatic* a1, MM2::Matrix34* a2, MM2::modShader* a3);

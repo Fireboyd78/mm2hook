@@ -552,6 +552,8 @@ namespace MM2
         gfxMaterial Material;
 
         static hook::Type<int> m_Touched;
+        static hook::Type<int> m_TouchedMask;
+        static hook::Type<int[2]> m_TouchedMasks;
 
         static hook::TypeProxy<Matrix44> sm_Camera;
         static hook::TypeProxy<Matrix44> sm_World;
@@ -566,6 +568,7 @@ namespace MM2
         static hook::TypeProxy<Matrix44> sm_Transform;
     public:
         static void SetCamera(Matrix44 * mtx)   { hook::StaticThunk<0x4B2A20>::Call<void>(mtx); }
+        void SetBlendSet(int a1, UCHAR a2)      { hook::Thunk<0x4B2350>::Call<void>(this, a1, a2); }
     };
 
     class ltLight {
