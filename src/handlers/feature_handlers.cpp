@@ -1587,6 +1587,7 @@ hook::Type<float> bridgeSpeed(0x5DBFA4);
 hook::Type<float> bridgeAngle(0x5DBFA8);
 
 bool playerCanFly = false;
+float boneScale = 1.f;
 
 void mmGameHandler::SendChatMessage(char *message) {
     if (g_bConsoleOpen) {
@@ -1672,6 +1673,12 @@ void mmGameHandler::SendChatMessage(char *message) {
                 if (carDamage->getImpactThreshold() >= 1001500.f)
                     carDamage->setImpactThreshold(carDamage->getImpactThreshold() - 1001500.f);
             }
+        }
+        if (!strcmp(message, "/big")) {
+            boneScale = boneScale == 1.f ? 5.f : 1.f;
+        }
+        if (!strcmp(message, "/tiny")) {
+            boneScale = boneScale == 1.f ? 0.2f : 1.f;
         }
 
         //send to dispatcher
@@ -5096,8 +5103,16 @@ void pedestrianInstanceHandler::Draw(int a1) {
 
     //if we have no ragdoll, call the original function
     if (inst->GetEntity() == nullptr) {
-        hook::Thunk<0x57B5F0>::Call<void>(this, a1);
-        return;
+        Matrix34 dummyMatrix;
+
+        auto pedMatrix = inst->GetMatrix(&dummyMatrix);
+        pedMatrix.Scale(boneScale);
+
+        Matrix44::Convert(gfxRenderState::sm_World, &pedMatrix);
+        gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
+
+        inst->getAnimationInstance()->Draw(a1 == 3);
+        *getPtr<int>(this, 0x28) = a1 + 1;
     }
     else {
         this->DrawRagdoll();
@@ -5142,6 +5157,8 @@ void pedestrianInstanceHandler::DrawShadow() {
 
             shadowMatrix.m30 += shadowMatrix.m10 * posDiffY;
             shadowMatrix.m32 += shadowMatrix.m12 * posDiffY;
+
+            shadowMatrix.Scale(boneScale);
 
             Matrix44::Convert(gfxRenderState::sm_World, &shadowMatrix);
             gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
