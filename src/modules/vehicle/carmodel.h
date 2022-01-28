@@ -114,6 +114,10 @@ namespace MM2
             return this->car;
         }
 
+        inline vehCarSim * getCarSim(void) const {
+            return this->carSim;
+        }
+
         inline int getVariant(void) const {
             return this->variant;
         }
@@ -1272,94 +1276,7 @@ namespace MM2
             }
         }
 
-        AGE_API void DrawShadow() override
-        {
-            if (this->getFlags() & 200)
-            {
-                //get our geometry id
-                int geomSetId = this->getGeomSetId();
-                int geomSetIdOffset = geomSetId - 1;
-
-                //get shaders
-                auto mainGeomEntry = lvlInstance::GetGeomTableEntry(geomSetIdOffset);
-                auto shaders = mainGeomEntry->pShaders[this->getVariant()];
-
-                //get time weather
-                auto timeWeather = $::timeWeathers.ptr(cityLevel::timeOfDay);
-
-                //get model
-                modStatic* shadow = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 1)->getHighLOD();
-
-                if (shadow != nullptr)
-                {
-                    Matrix34 shadowMatrix;
-
-                    if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, this->getRoomId(), this->carSim->getWorldMatrix()))
-                    {
-                        RSTATE->SetBlendSet(0, 0x80);
-
-                        Matrix44::Convert(gfxRenderState::sm_World, &shadowMatrix);
-                        gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
-
-                        shadow->Draw(shaders);
-                    }
-                }
-
-                if (MMSTATE->TimeOfDay == 3 || MMSTATE->WeatherType != 0)
-                    return;
-
-                modStatic* body = lvlInstance::GetGeomTableEntry(geomSetIdOffset)->getHighLOD();
-
-                if (body != nullptr)
-                {
-                    int srcBlend = (&RSTATE->Data)->SrcBlend;
-                    if ((&RSTATE->Data)->SrcBlend != 0)
-                    {
-                        (&RSTATE->Data)->SrcBlend = 0;
-                        gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
-                    }
-
-                    int destBlend = (&RSTATE->Data)->DestBlend;
-                    if ((&RSTATE->Data)->DestBlend != 9)
-                    {
-                        (&RSTATE->Data)->DestBlend = 9;
-                        gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
-                    }
-
-                    Matrix34 shadowMatrix;
-
-                    if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, this->getRoomId(), this->carSim->getWorldMatrix()))
-                    {
-                        float posDiffY = this->carSim->getWorldMatrix()->m31 - shadowMatrix.m31;
-
-                        shadowMatrix.m10 = cos(timeWeather->KeyHeading) * cos(timeWeather->KeyPitch);
-                        shadowMatrix.m11 = 0.f;
-                        shadowMatrix.m12 = sin(timeWeather->KeyHeading) * cos(timeWeather->KeyPitch);
-
-                        shadowMatrix.m30 += shadowMatrix.m10 * posDiffY;
-                        shadowMatrix.m32 += shadowMatrix.m12 * posDiffY;
-
-                        Matrix44::Convert(gfxRenderState::sm_World, &shadowMatrix);
-                        gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
-
-                        body->Draw(shaders);
-                    }
-
-                    if ((&RSTATE->Data)->DestBlend != destBlend)
-                    {
-                        (&RSTATE->Data)->DestBlend = destBlend;
-                        gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
-                    }
-
-                    if ((&RSTATE->Data)->SrcBlend != srcBlend)
-                    {
-                        (&RSTATE->Data)->SrcBlend = srcBlend;
-                        gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
-                    }
-                }
-            }
-        }
-
+        AGE_API void DrawShadow() override                  { hook::Thunk<0x4CE940>::Call<void>(this); }
         AGE_API void DrawShadowMap() override               { hook::Thunk<0x4CEA90>::Call<void>(this); }
         
         AGE_API void DrawGlow() override
