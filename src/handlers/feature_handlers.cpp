@@ -1587,6 +1587,7 @@ hook::Type<float> bridgeSpeed(0x5DBFA4);
 hook::Type<float> bridgeAngle(0x5DBFA8);
 
 bool playerCanFly = false;
+bool playerBoost = false;
 float boneScale = 1.f;
 
 void mmGameHandler::SendChatMessage(char *message) {
@@ -1649,6 +1650,9 @@ void mmGameHandler::SendChatMessage(char *message) {
         }
         if (!strcmp(message, "/fly")) {
             playerCanFly = !playerCanFly;
+        }
+        if (!strcmp(message, "/boost")) {
+            playerBoost = !playerBoost;
         }
         if (!strcmp(message, "/nodamage")) {
             mmGameManager *mgr = mmGameManager::Instance;
@@ -3893,11 +3897,22 @@ void mmPlayerHandler::Update() {
     }
 
     if (playerCanFly) {
-        auto ics = getPtr<Vector3>(carsim->getICS(), 0x3C);
-        if (engine->getThrottleInput() > 0.f && carsim->getSpeed() < 50.f && !player->IsMaxDamaged()) {
-            ics->X *= 1.03f;
-            ics->Y *= 1.03f;
-            ics->Z *= 1.03f;
+        auto velocity = getPtr<Vector3>(carsim->getICS(), 0x3C); // off ground velocity
+        if (engine->getThrottleInput() > 0.f && carsim->getSpeed() < 50.f && !player->IsMaxDamaged())
+        {
+            velocity->X *= 1.03f;
+            velocity->Y *= 1.03f;
+            velocity->Z *= 1.03f;
+        }
+    }
+
+    if (playerBoost) {
+        auto velocity = getPtr<Vector3>(carsim->getICS(), 0x84); // on ground velocity
+        if (engine->getThrottleInput() > 0.f && carsim->getSpeed() < 50.f)
+        {
+            velocity->X *= 1.01f;
+            velocity->Y *= 1.01f;
+            velocity->Z *= 1.01f;
         }
     }
 
@@ -6716,7 +6731,7 @@ void aiPoliceOfficerFeatureHandler::Update() {
             else
                 police->ApprehendPerpetrator();
 
-            if (!nfsmwStyleEscape || !perpCar->IsPlayer()) {
+            if (!nfsmwStyleEscape || !bustedTarget || !perpCar->IsPlayer()) {
                 // if cop is far away from perp
                 if (*getPtr<float>(AIMAP->raceData, 0x98) < *getPtr<float>(this, 0x9794))
                 {
@@ -6729,15 +6744,25 @@ void aiPoliceOfficerFeatureHandler::Update() {
             DetectPerpetrator();
         }
 
-        if (!aiPoliceOfficer::FlyingCopFix)
+        if (aiPoliceOfficer::FlyingCopFix)
         {
-            auto ics = getPtr<Vector3>(carsim->getICS(), 0x3C);
+            auto velocity = getPtr<Vector3>(carsim->getICS(), 0x84); // on ground velocity
 
-            if (carsim->getEngine()->getThrottleInput() > 0.f && carsim->getSpeed() < 50.f)
+            if (*getPtr<float>(this, 0x9698) == 1.f && carsim->getSpeed() < 50.f) // this is how it's implemented in MM1
             {
-                ics->X *= 1.03f;
-                ics->Y *= 1.03f;
-                ics->Z *= 1.03f;
+                velocity->X *= 1.01f;
+                velocity->Y *= 1.01f;
+                velocity->Z *= 1.01f;
+            }
+        }
+        else {
+            auto velocity = getPtr<Vector3>(carsim->getICS(), 0x3C); // off ground velocity
+
+            if (*getPtr<float>(this, 0x9698) == 1.f && carsim->getSpeed() < 50.f)
+            {
+                velocity->X *= 1.03f;
+                velocity->Y *= 1.03f;
+                velocity->Z *= 1.03f;
             }
         }
 
