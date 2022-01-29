@@ -1587,7 +1587,6 @@ hook::Type<float> bridgeSpeed(0x5DBFA4);
 hook::Type<float> bridgeAngle(0x5DBFA8);
 
 bool playerCanFly = false;
-bool playerBoost = false;
 float boneScale = 1.f;
 
 void mmGameHandler::SendChatMessage(char *message) {
@@ -1650,9 +1649,6 @@ void mmGameHandler::SendChatMessage(char *message) {
         }
         if (!strcmp(message, "/fly")) {
             playerCanFly = !playerCanFly;
-        }
-        if (!strcmp(message, "/boost")) {
-            playerBoost = !playerBoost;
         }
         if (!strcmp(message, "/nodamage")) {
             mmGameManager *mgr = mmGameManager::Instance;
@@ -3903,16 +3899,6 @@ void mmPlayerHandler::Update() {
             velocity->X *= 1.03f;
             velocity->Y *= 1.03f;
             velocity->Z *= 1.03f;
-        }
-    }
-
-    if (playerBoost) {
-        auto velocity = getPtr<Vector3>(carsim->getICS(), 0x84); // on ground velocity
-        if (engine->getThrottleInput() > 0.f && carsim->getSpeed() < 50.f)
-        {
-            velocity->X *= 1.01f;
-            velocity->Y *= 1.01f;
-            velocity->Z *= 1.01f;
         }
     }
 
