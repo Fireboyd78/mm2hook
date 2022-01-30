@@ -97,8 +97,12 @@ namespace MM2
                             hook::Type<gfxTexture*> g_ReflectionMap = 0x628914;
                             bool isSoftware = *(bool*)0x6830D4;
 
+                            auto level = *lvlLevel::Singleton;
+                            Vector3 carPosition = Vector3(a1->m30, a1->m31, a1->m32);
+
                             auto state = &MMSTATE;
-                            if (a3 == 3 && (g_ReflectionMap != nullptr && !isSoftware && state->EnableReflections))
+                            if (a3 == 3 && (g_ReflectionMap != nullptr && !isSoftware && state->EnableReflections) &&
+                                !(level->GetRoomInfo(level->FindRoomId(carPosition, 0))->Flags & static_cast<int>(RoomFlags::Subterranean)))
                             {
                                 modShader::BeginEnvMap(g_ReflectionMap, drawMatrix);
                                 lodModel->DrawEnvMapped(a2, g_ReflectionMap, 1.f);
@@ -109,7 +113,6 @@ namespace MM2
                 }
             }
         }
-
 
         AGE_API vehBreakable * Get(int index)               { return hook::Thunk<0x4D86F0>::Call<vehBreakable *>(this, index); }
 

@@ -416,7 +416,7 @@ namespace MM2
                                                             
         void DrawPart(int lod, int geomId, const Matrix34* matrix, modShader* shaders, bool reflected)
         {
-            if (reflected)
+            if (reflected && !(lvlLevel::Singleton->GetRoomInfo(this->getRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean)))
                 DrawPartReflected(lod, geomId, matrix, shaders);
             else
                 DrawPart(lod, geomId, matrix, shaders);
@@ -939,7 +939,8 @@ namespace MM2
             //draw reflection (only in H LOD)
             float reflectionIntensity = 1.f;
             auto reflectionMap = lvlLevel::Singleton->GetEnvMap(this->getRoomId(), this->GetPosition(), &reflectionIntensity);
-            if (lod == 3 && reflectionMap != nullptr && bodyModel != nullptr)
+            if (lod == 3 && reflectionMap != nullptr && bodyModel != nullptr &&
+                !(lvlLevel::Singleton->GetRoomInfo(this->getRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean)))
             {
                 modShader::BeginEnvMap(reflectionMap, *this->carSim->getWorldMatrix());
                 bodyModel->DrawEnvMapped(shaders, reflectionMap, reflectionIntensity);

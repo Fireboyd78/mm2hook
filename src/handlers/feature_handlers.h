@@ -292,7 +292,6 @@ public:
 
 class dgBangerInstanceHandler {
 public:
-    void Draw();
     void DrawShadow();
     void DrawGlow();
     bool BeginGeom(const char* a1, const char* a2, int a3);
@@ -324,7 +323,6 @@ public:
     void Draw(int a1);
     void DrawShadow();
     void DrawGlow();
-    void ModStaticDraw(MM2::modShader * a1);
     void EjectOneShot();
     static void Install();
 };
@@ -360,7 +358,7 @@ public:
     void Draw(int a1);
     void DrawShadow();
     void DrawGlow();
-    void ModStaticDraw(MM2::modShader* a1);
+    void DrawPart(MM2::modStatic* model, const MM2::Matrix34* matrix, MM2::modShader* shaders, int lod);
     void AddGeomHook(const char* pkgName, const char* name, int flags);
     static void Install();
 };

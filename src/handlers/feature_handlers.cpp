@@ -4357,7 +4357,8 @@ void dgBangerInstanceHandler::DrawShadow() {
     auto data = inst->GetData();
     auto timeWeather = $::timeWeathers.ptr(cityLevel::timeOfDay);
 
-    if (MMSTATE->TimeOfDay == 3 || MMSTATE->WeatherType != 0)
+    if (MMSTATE->TimeOfDay == 3 || MMSTATE->WeatherType != 0 ||
+        lvlLevel::Singleton->GetRoomInfo(inst->getRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean))
         return;
 
     //get our geometry id
@@ -4837,7 +4838,8 @@ void vehCarModelFeatureHandler::DrawShadow() {
             }
         }
 
-        if (MMSTATE->TimeOfDay == 3 || MMSTATE->WeatherType != 0)
+        if (MMSTATE->TimeOfDay == 3 || MMSTATE->WeatherType != 0 ||
+            lvlLevel::Singleton->GetRoomInfo(model->getRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean))
             return;
 
         modStatic* body = lvlInstance::GetGeomTableEntry(geomSetIdOffset)->getHighLOD();
@@ -4899,28 +4901,6 @@ void vehCarModelFeatureHandler::DrawShadow() {
                 gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
             }
         }
-    }
-}
-
-void vehCarModelFeatureHandler::ModStaticDraw(modShader* a1) {
-    auto mod = reinterpret_cast<modStatic*>(this);
-    hook::Type<gfxTexture *> g_ReflectionMap = 0x628914;
-    bool isSoftware = *(bool*)0x6830D4;
-
-    //convert world matrix for reflection drawing
-    Matrix44* worldMatrix = gfxRenderState::sm_World;
-    Matrix34 envInput = Matrix34();
-    worldMatrix->ToMatrix34(&envInput);
-
-    //draw breakable
-    mod->Draw(a1);
-
-    //draw reflections
-    auto state = &MMSTATE;
-    if (g_ReflectionMap != nullptr && !isSoftware && state->EnableReflections) {
-        modShader::BeginEnvMap(g_ReflectionMap, envInput);
-        mod->DrawEnvMapped(a1, g_ReflectionMap, 1.0f);
-        modShader::EndEnvMap();
     }
 }
 
@@ -5233,7 +5213,8 @@ void pedestrianInstanceHandler::DrawShadow() {
     auto anim = animationInstance->getAnimation();
     auto timeWeather = $::timeWeathers.ptr(cityLevel::timeOfDay);
 
-    if (MMSTATE->TimeOfDay == 3 || MMSTATE->WeatherType != 0)
+    if (MMSTATE->TimeOfDay == 3 || MMSTATE->WeatherType != 0 ||
+        lvlLevel::Singleton->GetRoomInfo(inst->getRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean))
         return;
 
     int srcBlend = (&RSTATE->Data)->SrcBlend;
@@ -5395,11 +5376,11 @@ void aiVehicleInstanceFeatureHandler::Draw(int a1) {
 
     if (plighton != nullptr) {
         if (aiMap::Instance->drawHeadlights)
-            inst->DrawPart(plighton, &carMatrix, shaders, *getPtr<int>(this, 6));
+            DrawPart(plighton, &carMatrix, shaders, *getPtr<int>(this, 6));
     }
     if (plightoff != nullptr) {
         if (!aiMap::Instance->drawHeadlights)
-            inst->DrawPart(plightoff, &carMatrix, shaders, *getPtr<int>(this, 6));
+            DrawPart(plightoff, &carMatrix, shaders, *getPtr<int>(this, 6));
     }
 
     //call original
@@ -5435,7 +5416,8 @@ void aiVehicleInstanceFeatureHandler::DrawShadow() {
         }
     }
 
-    if (MMSTATE->TimeOfDay == 3 || MMSTATE->WeatherType != 0)
+    if (MMSTATE->TimeOfDay == 3 || MMSTATE->WeatherType != 0 ||
+        lvlLevel::Singleton->GetRoomInfo(inst->getRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean))
         return;
 
     modStatic* body = lvlInstance::GetGeomTableEntry(geomID)->getHighLOD();
@@ -5605,24 +5587,25 @@ void aiVehicleInstanceFeatureHandler::DrawGlow() {
     }
 }
 
-void aiVehicleInstanceFeatureHandler::ModStaticDraw(modShader* a1) {
-    auto mod = reinterpret_cast<modStatic*>(this);
+void aiVehicleInstanceFeatureHandler::DrawPart(modStatic* model, const Matrix34* matrix, modShader* shaders, int lod) {
+    auto inst = reinterpret_cast<aiVehicleInstance*>(this);
     hook::Type<gfxTexture*> g_ReflectionMap = 0x628914;
     bool isSoftware = *(bool*)0x6830D4;
 
-    //convert world matrix for reflection drawing
-    Matrix44* worldMatrix = gfxRenderState::sm_World;
-    Matrix34 envInput = Matrix34();
-    worldMatrix->ToMatrix34(&envInput);
+    //setup renderer
+    Matrix44::Convert(gfxRenderState::sm_World, matrix);
+    gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
     //draw car part
-    mod->Draw(a1);
+    model->Draw(shaders);
 
     //draw reflections
     auto state = &MMSTATE;
-    if (g_ReflectionMap != nullptr && !isSoftware && state->EnableReflections) {
-        modShader::BeginEnvMap(g_ReflectionMap, envInput);
-        mod->DrawEnvMapped(a1, g_ReflectionMap, 1.0f);
+    if (g_ReflectionMap != nullptr && !isSoftware && state->EnableReflections &&
+        !(lvlLevel::Singleton->GetRoomInfo(inst->getRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean)))
+    {
+        modShader::BeginEnvMap(g_ReflectionMap, *matrix);
+        model->DrawEnvMapped(shaders, g_ReflectionMap, 1.0f);
         modShader::EndEnvMap();
     }
 }
@@ -5645,10 +5628,30 @@ void aiVehicleInstanceFeatureHandler::Install() {
         }
     );
 
+    
+    InstallCallback("aiVehicleInstance::DrawPart", "Draws reflections on car body.",
+        &DrawPart, {
+            cb::call(0x552211),
+        }
+    );
+
     if (vehCarModel::PartReflections) {
         InstallCallback("aiVehicleInstance::DrawPart", "Draws reflections on car parts.",
-            &ModStaticDraw, {
-                cb::call(0x55291F), // aiVehicleInstance::DrawPart
+            &DrawPart, {
+                cb::call(0x5522A2),
+                cb::call(0x5522D1),
+                cb::call(0x552300),
+                cb::call(0x55232F),
+                cb::call(0x5523AB),
+                cb::call(0x5524DC),
+                cb::call(0x55254C),
+                cb::call(0x5525BC),
+                cb::call(0x55262C),
+                cb::call(0x55268A),
+                cb::call(0x552766),
+                cb::call(0x5527B6),
+                cb::call(0x552806),
+                cb::call(0x552856),
             }
         );
     }
@@ -5673,6 +5676,11 @@ void aiVehicleInstanceFeatureHandler::Install() {
             0x5B5944
         }
     );
+
+    // disable Angels reflections
+    InstallPatch({ 0xEB }, {
+        0x55224B,
+    });
 
     // removes Angels tlight
     InstallPatch({ 0xEB }, {
@@ -5797,7 +5805,8 @@ void vehTrailerInstanceFeatureHandler::DrawPart(int a1, int a2, Matrix34* a3, mo
     modStatic* part = *getPtr<modStatic*>((geomSet + a2), a1 * 4);
 
     if (part != nullptr) {
-        if (vehCarModel::PartReflections && a1 == 3)
+        if (vehCarModel::PartReflections && a1 == 3 &&
+            !(lvlLevel::Singleton->GetRoomInfo(inst->getRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean)))
             DrawPartReflections(part, a3, a4);
         else
             part->Draw(a4);
@@ -5930,7 +5939,8 @@ void vehTrailerInstanceFeatureHandler::DrawShadow() {
         }
     }
 
-    if (MMSTATE->TimeOfDay == 3 || MMSTATE->WeatherType != 0)
+    if (MMSTATE->TimeOfDay == 3 || MMSTATE->WeatherType != 0 ||
+        lvlLevel::Singleton->GetRoomInfo(inst->getRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean))
         return;
 
     modStatic* trailer = lvlInstance::GetGeomTableEntry(geomSet)->getHighLOD();
