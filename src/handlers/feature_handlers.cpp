@@ -2980,7 +2980,7 @@ void mmDashViewHandler::Cull() {
                 dashView->field_6cc += wheelPosDifY;
                 dashView->field_6d0 += wheelPosDifZ;
 
-                dWord_6a4->Dot(&dashView->field_408.field_48);
+                dWord_6a4->Dot(dashView->field_408.field_48);
 
                 wheelPosDifX = dashView->field_408.field_48.m20 * dashView->WheelPos.Z + dashView->field_408.field_48.m10 * dashView->WheelPos.Y + dashView->field_408.field_48.m00 * dashView->WheelPos.X;
                 wheelPosDifY = dashView->field_408.field_48.m21 * dashView->WheelPos.Z + dashView->field_408.field_48.m11 * dashView->WheelPos.Y + dashView->field_408.field_48.m01 * dashView->WheelPos.X;
@@ -5002,7 +5002,7 @@ void vehWheelHandler::Update()
         return;
 
     auto carMatrix = carSim->getWorldMatrix();
-    auto icsMatrix = carSim->getICS()->getMatrix();
+    auto icsMatrix = carSim->getICS()->GetMatrix();
     auto gravCenter = carSim->getCenterOfGravity();
 
     carMatrix->Identity();
@@ -5012,7 +5012,7 @@ void vehWheelHandler::Update()
     carMatrix->RotateX(angle * 0.25f);
     carMatrix->RotateZ(angle * 0.25f);
 
-    carMatrix->Dot(icsMatrix);
+    carMatrix->Dot(*icsMatrix);
 
     float posX = icsMatrix->m00 * gravCenter.X + icsMatrix->m10 * gravCenter.Y + icsMatrix->m20 * gravCenter.Z;
     float posY = icsMatrix->m01 * gravCenter.X + icsMatrix->m11 * gravCenter.Y + icsMatrix->m21 * gravCenter.Z;
@@ -5270,13 +5270,13 @@ void pedestrianInstanceHandler::DrawShadow() {
 
             gfxRenderState::sm_World->Identity();
 
-            gfxRenderState::sm_World->m21 = cos(timeWeather->KeyHeading) * cos(timeWeather->KeyPitch);
-            gfxRenderState::sm_World->m22 = 0.f;
-            gfxRenderState::sm_World->m23 = sin(timeWeather->KeyHeading) * cos(timeWeather->KeyPitch);
+            gfxRenderState::sm_World->m10 = cos(timeWeather->KeyHeading) * cos(timeWeather->KeyPitch);
+            gfxRenderState::sm_World->m11 = 0.f;
+            gfxRenderState::sm_World->m12 = sin(timeWeather->KeyHeading) * cos(timeWeather->KeyPitch);
 
-            gfxRenderState::sm_World->m41 -= gfxRenderState::sm_World->m21 * shadowMatrix.m31;
-            gfxRenderState::sm_World->m42 = shadowMatrix.m31;
-            gfxRenderState::sm_World->m43 -= gfxRenderState::sm_World->m23 * shadowMatrix.m31;
+            gfxRenderState::sm_World->m30 -= gfxRenderState::sm_World->m10 * shadowMatrix.m31;
+            gfxRenderState::sm_World->m31 = shadowMatrix.m31;
+            gfxRenderState::sm_World->m32 -= gfxRenderState::sm_World->m12 * shadowMatrix.m31;
 
             gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
@@ -5707,8 +5707,8 @@ void vehTrailerFeatureHandler::Update() {
     auto trailerJoint = trailer->getTrailerJoint();
     auto carHitchOffset = trailer->getCarHitchOffset();
     auto trailerHitchOffset = trailer->getTrailerHitchOffset();
-    auto carMatrix = trailerJoint->getCarSim()->getICS()->getMatrix();
-    auto trailerMatrix = trailer->getICS()->getMatrix();
+    auto carMatrix = trailerJoint->getCarSim()->getICS()->GetMatrix();
+    auto trailerMatrix = trailer->getICS()->GetMatrix();
 
     float carHitchOffsetX = carMatrix->m00 * carHitchOffset.X + carMatrix->m10 * carHitchOffset.Y + carMatrix->m20 * carHitchOffset.Z + carMatrix->m30;
     float carHitchOffsetY = carMatrix->m01 * carHitchOffset.X + carMatrix->m11 * carHitchOffset.Y + carMatrix->m21 * carHitchOffset.Z + carMatrix->m31;
@@ -5778,7 +5778,7 @@ void vehTrailerInstanceFeatureHandler::DrawPartReflections(modStatic* a1, Matrix
     //convert world matrix for reflection drawing
     Matrix44* worldMatrix = gfxRenderState::sm_World;
     Matrix34 envInput = Matrix34();
-    worldMatrix->ToMatrix34(&envInput);
+    worldMatrix->ToMatrix34(envInput);
 
     //draw trailer
     a1->Draw(a3);

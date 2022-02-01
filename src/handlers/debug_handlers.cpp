@@ -45,7 +45,7 @@ void vehWheelDebugHandler::Cull()
         auto carMatrixPtr = getPtr<Matrix34>(carSimPtr, 0x1D4);
         carMatrixCopy = Matrix34(*carMatrixPtr);
         wheelMatrixCopy = Matrix34(*wheelMatrixPtr);
-        wheelMatrixCopy.Dot(carMatrixPtr);
+        wheelMatrixCopy.Dot(*carMatrixPtr);
         rglDrawAxis(1.f, wheelMatrixCopy);
     }
 
