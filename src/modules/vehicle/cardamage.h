@@ -73,6 +73,10 @@ namespace MM2
         inline vehCar* getCar(void) const {
             return this->vehCarPtr;
         }
+
+        inline Vector3 getLastImpactPos(void) {
+            return this->LastImpactPos;
+        }
     public:
         AGE_API vehCarDamage()                              { hook::Thunk<0x4CA380>::Call<void>(this); }
         AGE_API ~vehCarDamage()                             { hook::Thunk<0x4CA530>::Call<void>(this); }

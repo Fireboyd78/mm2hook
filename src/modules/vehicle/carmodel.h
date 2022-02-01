@@ -170,6 +170,8 @@ namespace MM2
         AGE_API void ClearDamage()                          { hook::Thunk<0x4CDFF0>::Call<void>(this); }
         AGE_API void EjectOneshot()
         {
+            auto impactPos = car->getCarDamage()->getLastImpactPos();
+
             if (!(byte)this->dword_a4) {
                 if (this->carSim->getSpeedMPH() > 100.f) {
                     this->wheelBreakableMgr->EjectAll(this->getRoomId());
@@ -181,76 +183,98 @@ namespace MM2
                     if (this->carSim->getSpeedMPH() <= 50.f)
                         return;
 
-                    int i = 3 * (irand() % 4);
+                    int id = -1;
 
-                    int wheelStatusFlag = 1 << i;
-                    int hubStatusFlag = 1 << (i + 1);
-                    int fenderStatusFlag = 1 << (i + 2);
+                    float maxDist = 1.8f;
 
-                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(wheelStatusFlag), this->getRoomId());
-                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(hubStatusFlag), this->getRoomId());
-                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(fenderStatusFlag), this->getRoomId());
+                    for (int i = 0; i < 4; i++)
+                    {
+                        auto wheelPos = this->carSim->getWheel(i)->getCenter();
 
-                    int ejectPackage = (wheelStatusFlag | hubStatusFlag | fenderStatusFlag);
+                        float dist = wheelPos.Dist(impactPos);
 
-                    int ii = 3 * (irand() % 2);
+                        if (dist < maxDist)
+                        {
+                            maxDist = dist;
+                            id = i;
+                        }
+                    }
 
-                    int extraWheelStatusFlag = 1 << (ii + 12);
-                    int extraHubStatusFlag = 1 << (ii + 13);
-                    int extraFenderStatusFlag = 1 << (ii + 14);
+                    vehCarModel::EjectWheelsAndParts(id);
 
-                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(extraWheelStatusFlag), this->getRoomId());
-                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(extraHubStatusFlag), this->getRoomId());
-                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(extraFenderStatusFlag), this->getRoomId());
+                    if (id == 2)
+                        vehCarModel::EjectWheelsAndParts(4);
 
-                    int ejectPackage2 = (extraWheelStatusFlag | extraHubStatusFlag | extraFenderStatusFlag);
+                    if (id == 3)
+                        vehCarModel::EjectWheelsAndParts(5);
 
-                    this->wheelBrokenStatus &= ~(ejectPackage | ejectPackage2);
                     this->dword_a4 = 1;
                     return;
                 }
                 else {
-                    int i = 3 * (irand() % 4);
+                    float whl0MaxDist = 1.8f;
+                    auto whl0Pos = this->carSim->getWheel(0)->getCenter();
+                    float whl0Dist = whl0Pos.Dist(impactPos);
 
-                    int wheelStatusFlag = 1 << i;
-                    int hubStatusFlag = 1 << (i + 1);
-                    int fenderStatusFlag = 1 << (i + 2);
+                    if (whl0Dist < whl0MaxDist)
+                    {
+                        whl0MaxDist = whl0Dist;
+                        vehCarModel::EjectWheelsAndParts(0);
+                    }
 
-                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(wheelStatusFlag), this->getRoomId());
-                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(hubStatusFlag), this->getRoomId());
-                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(fenderStatusFlag), this->getRoomId());
+                    float whl1MaxDist = 1.8f;
+                    auto whl1Pos = this->carSim->getWheel(1)->getCenter();
+                    float whl1Dist = whl1Pos.Dist(impactPos);
 
-                    int ejectPackage = (wheelStatusFlag | hubStatusFlag | fenderStatusFlag);
+                    if (whl1Dist < whl1MaxDist)
+                    {
+                        whl1MaxDist = whl1Dist;
+                        vehCarModel::EjectWheelsAndParts(1);
+                    }
 
-                    int ii = 3 * (irand() % 4);
+                    float whl2MaxDist = 1.8f;
+                    auto whl2Pos = this->carSim->getWheel(2)->getCenter();
+                    float whl2Dist = whl2Pos.Dist(impactPos);
 
-                    int wheelStatusFlag2 = 1 << ii;
-                    int hubStatusFlag2 = 1 << (ii + 1);
-                    int fenderStatusFlag2 = 1 << (ii + 2);
+                    if (whl2Dist < whl2MaxDist)
+                    {
+                        whl2MaxDist = whl2Dist;
+                        vehCarModel::EjectWheelsAndParts(2);
+                        vehCarModel::EjectWheelsAndParts(4);
+                    }
 
-                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(wheelStatusFlag2), this->getRoomId());
-                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(hubStatusFlag2), this->getRoomId());
-                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(fenderStatusFlag2), this->getRoomId());
+                    float whl3MaxDist = 1.8f;
+                    auto whl3Pos = this->carSim->getWheel(3)->getCenter();
+                    float whl3Dist = whl3Pos.Dist(impactPos);
 
-                    int ejectPackage2 = (wheelStatusFlag2 | hubStatusFlag2 | fenderStatusFlag2);
+                    if (whl3Dist < whl3MaxDist)
+                    {
+                        whl3MaxDist = whl3Dist;
+                        vehCarModel::EjectWheelsAndParts(3);
+                        vehCarModel::EjectWheelsAndParts(5);
+                    }
 
-                    int iii = 3 * (irand() % 2);
-
-                    int extraWheelStatusFlag = 1 << (iii + 12);
-                    int extraHubStatusFlag = 1 << (iii + 13);
-                    int extraFenderStatusFlag = 1 << (iii + 14);
-
-                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(extraWheelStatusFlag), this->getRoomId());
-                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(extraHubStatusFlag), this->getRoomId());
-                    this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(extraFenderStatusFlag), this->getRoomId());
-
-                    int ejectPackage3 = (extraWheelStatusFlag | extraHubStatusFlag | extraFenderStatusFlag);
-
-                    this->wheelBrokenStatus &= ~(ejectPackage | ejectPackage2 | ejectPackage3);
                     this->dword_a4 = 1;
                     return;
                 }
             }
+        }
+
+        // Custom addition
+        void EjectWheelsAndParts(int id)
+        {
+            if (id < 0 || id > 5)
+                return;
+
+            int wheelStatusFlag = 1 << (id * 3);
+            int hubStatusFlag = 1 << ((id * 3) + 1);
+            int fenderStatusFlag = 1 << ((id * 3) + 2);
+
+            this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(wheelStatusFlag), this->getRoomId());
+            this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(hubStatusFlag), this->getRoomId());
+            this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(fenderStatusFlag), this->getRoomId());
+
+            this->wheelBrokenStatus &= ~(wheelStatusFlag | hubStatusFlag | fenderStatusFlag);
         }
 
         AGE_API bool GetVisible()                           { return hook::Thunk<0x4CF070>::Call<bool>(this); }
