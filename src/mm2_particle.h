@@ -254,6 +254,7 @@ namespace MM2
             .endClass();
         }
     };
+    ASSERT_SIZEOF(asParticles, 0x54);
 
     template<>
     void luaAddModule<module_particle>(LuaState L) {
