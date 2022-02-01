@@ -2,17 +2,10 @@
 #include "mm2_common.h"
 
 #include <modules\phys.h>
+#include <modules\banger.h>
 
 namespace MM2
 {
-    // External declarations
-    extern class phMaterial;
-    extern class lvlMaterial;
-    extern class dgPhysEntity;
-    extern class dgPhysManager;
-    extern class dgTrailerJoint;
-    extern class phJoint;
-
     template<>
     void luaAddModule<module_phys>(LuaState L) {
         luaBind<phMaterial>(L);
@@ -22,5 +15,12 @@ namespace MM2
         luaBind<phJoint>(L);
         luaBind<dgTrailerJoint>(L);
         luaBind<dgPhysEntity>(L);
+        luaBind<dgBangerData>(L);
+        luaBind<dgBangerDataManager>(L);
+        luaBind<dgBangerInstance>(L);
+        luaBind<dgUnhitBangerInstance>(L);
+        luaBind<dgHitBangerInstance>(L);
+        luaBind<dgBangerActive>(L);
+        luaBind<dgBangerManager>(L);
     }
 }
