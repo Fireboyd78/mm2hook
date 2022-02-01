@@ -887,8 +887,8 @@ namespace MM2
         AGE_API dgPhysEntity * GetEntity() override         { return hook::Thunk<0x4CEFC0>::Call<dgPhysEntity*>(this); }
         AGE_API dgPhysEntity * AttachEntity() override 
                                                             { return hook::Thunk<0x4CEFD0>::Call<dgPhysEntity*>(this); }
-        AGE_API const Vector3 * GetVelocity() override
-                                                            { return hook::Thunk<0x4CEF80>::Call<Vector3 const*>(this); }
+        AGE_API const Vector3 & GetVelocity() override
+                                                            { return hook::Thunk<0x4CEF80>::Call<const Vector3 &>(this); }
 
         AGE_API void Draw(int lod) override
         {

@@ -261,7 +261,7 @@ namespace MM2
         virtual AGE_API const float GetRadius()             { return hook::Thunk<0x4643E0>::Call<float>(this); }
         virtual AGE_API dgPhysEntity * GetEntity()          { return hook::Thunk<0x4643B0>::Call<dgPhysEntity *>(this); }
         virtual AGE_API dgPhysEntity * AttachEntity()       { return hook::Thunk<0x4643C0>::Call<dgPhysEntity *>(this); }
-        virtual AGE_API const Vector3 * GetVelocity()       { return hook::Thunk<0x4643A0>::Call<const Vector3 *>(this); }
+        virtual AGE_API const Vector3 & GetVelocity()       { return hook::Thunk<0x4643A0>::Call<const Vector3 &>(this); }
         virtual AGE_API void Detach()                       { hook::Thunk<0x43FC30>::Call<void>(this); }
         
         virtual AGE_API void Draw(int)                      PURE;

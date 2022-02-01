@@ -2687,10 +2687,10 @@ void mmDashViewHandler::UpdateCS() {
     auto steering = *getPtr<float>(player, 0x2264);
     auto wheelFact = *getPtr<float>(this, 0x400);
 
-    auto velocity = carModel->GetVelocity();
+    Vector3 velocity = carModel->GetVelocity();
 
-    auto velY = (velocity->Y * cfgHeadBobVelocityScaleY);
-    auto velZ = (velocity->Z - (velocity->Y + velocity->X)) * -cfgHeadBobVelocityScaleZ;
+    auto velY = (velocity.Y * cfgHeadBobVelocityScaleY);
+    auto velZ = (velocity.Z - (velocity.Y + velocity.X)) * -cfgHeadBobVelocityScaleZ;
 
     auto bodyRoll = -(steering * wheelFact) * (cfgHeadBobSteeringFactor * (cfgHeadBobSteeringSpeedFactor * velZ));
 
@@ -4659,7 +4659,7 @@ void vehCarHandler::Mm1StyleTransmission() {
 
 void vehCarHandler::Splash() {
     auto car = reinterpret_cast<vehCar*>(this);
-    float vehicleMph = car->getModel()->GetVelocity()->Mag() * 2.23694f;
+    float vehicleMph = car->getModel()->GetVelocity().Mag() * 2.23694f;
 
     //trigger ColliderId 22 with velocity of vehicleMph
     auto impactAud = car->getAudio()->GetAudImpactPtr();
