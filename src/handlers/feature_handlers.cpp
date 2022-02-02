@@ -2038,7 +2038,7 @@ void BridgeFerryHandler::Draw(int lod) {
     }
     else {
         Matrix34 dummyMatrix;
-        Matrix44::Convert(gfxRenderState::sm_World, &bangerInst->GetMatrix(&dummyMatrix));
+        Matrix44::Convert(gfxRenderState::sm_World, bangerInst->GetMatrix(&dummyMatrix));
         gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
         RSTATE->SetBlendSet(0, 0x80);
 
@@ -2156,7 +2156,7 @@ static ConfigValue<int> cfgPoliceTriOutlineColor     ("PoliceTriOutlineColor",  
 static ConfigValue<int> cfgOpponentTriColor          ("OpponentTriColor",          7);
 static ConfigValue<int> cfgOpponentTriOutlineColor   ("OpponentTriOutlineColor",   0);
 
-void mmHudMapFeatureHandler::DrawColoredTri(unsigned int color, const Matrix34 *a2) {
+void mmHudMapFeatureHandler::DrawColoredTri(unsigned int color, const Matrix34 &a2) {
     rglEnableDisable(RGL_DEPTH_TEST, false);
     Matrix44::Convert(gfxRenderState::sm_World, a2);
     *(int*)0x685778 |= 0x88;
@@ -2170,7 +2170,7 @@ void mmHudMapFeatureHandler::DrawColoredTri(unsigned int color, const Matrix34 *
     rglEnableDisable(RGL_DEPTH_TEST, true);
 }
 
-void mmHudMapFeatureHandler::DrawWhiteTri(const Matrix34 *a1) {
+void mmHudMapFeatureHandler::DrawWhiteTri(const Matrix34 &a1) {
     rglEnableDisable(RGL_DEPTH_TEST, false);
     Matrix44::Convert(gfxRenderState::sm_World, a1);
     *(int*)0x685778 |= 0x88;
@@ -2184,7 +2184,7 @@ void mmHudMapFeatureHandler::DrawWhiteTri(const Matrix34 *a1) {
     rglEnableDisable(RGL_DEPTH_TEST, true);
 }
 
-void mmHudMapFeatureHandler::DrawLightOrangeTri(const Matrix34 *a1) {
+void mmHudMapFeatureHandler::DrawLightOrangeTri(const Matrix34 &a1) {
     rglEnableDisable(RGL_DEPTH_TEST, false);
     Matrix44::Convert(gfxRenderState::sm_World, a1);
     *(int*)0x685778 |= 0x88;
@@ -2198,7 +2198,7 @@ void mmHudMapFeatureHandler::DrawLightOrangeTri(const Matrix34 *a1) {
     rglEnableDisable(RGL_DEPTH_TEST, true);
 }
 
-void mmHudMapFeatureHandler::DrawLightGreenTri(const Matrix34 *a1) {
+void mmHudMapFeatureHandler::DrawLightGreenTri(const Matrix34 &a1) {
     rglEnableDisable(RGL_DEPTH_TEST, false);
     Matrix44::Convert(gfxRenderState::sm_World, a1);
     *(int*)0x685778 |= 0x88;
@@ -2216,7 +2216,7 @@ hook::Type<unsigned int> HudmapIconColors(0x5C4740);
 hook::Type<Vector3> YAXIS(0x6A3B28);
 Matrix34 mtx;
 
-void mmHudMapFeatureHandler::DrawIcon(int iconType, const Matrix34 *matrix) {
+void mmHudMapFeatureHandler::DrawIcon(int iconType, const Matrix34 &matrix) {
     mtx.Set(matrix);
 
     mtx.m10 = YAXIS->X;
@@ -2230,12 +2230,12 @@ void mmHudMapFeatureHandler::DrawIcon(int iconType, const Matrix34 *matrix) {
     uint color = *HudmapIconColors[iconType];
 
     if (iconType >= 0)
-        DrawColoredTri(color, &mtx);
+        DrawColoredTri(color, mtx);
     if (iconType < 0)
-        DrawWhiteTri(&mtx);
+        DrawWhiteTri(mtx);
 }
 
-void mmHudMapFeatureHandler::DrawNfsMwPlayerIcon(const Matrix34 *matrix) {
+void mmHudMapFeatureHandler::DrawNfsMwPlayerIcon(const Matrix34 &matrix) {
     mtx.Set(matrix);
 
     mtx.m10 = YAXIS->X;
@@ -2246,10 +2246,10 @@ void mmHudMapFeatureHandler::DrawNfsMwPlayerIcon(const Matrix34 *matrix) {
     mtx.m31 += 15.f;
     mtx.Scale(*getPtr<float>(this, 0x64));
 
-    DrawLightOrangeTri(&mtx);
+    DrawLightOrangeTri(mtx);
 }
 
-void mmHudMapFeatureHandler::DrawNfsMwOpponentIcon(const Matrix34 *matrix) {
+void mmHudMapFeatureHandler::DrawNfsMwOpponentIcon(const Matrix34 &matrix) {
     mtx.Set(matrix);
 
     mtx.m10 = YAXIS->X;
@@ -2260,7 +2260,7 @@ void mmHudMapFeatureHandler::DrawNfsMwOpponentIcon(const Matrix34 *matrix) {
     mtx.m31 += 15.f;
     mtx.Scale(*getPtr<float>(this, 0x64));
 
-    DrawLightGreenTri(&mtx);
+    DrawLightGreenTri(mtx);
 }
 
 void mmHudMapFeatureHandler::DrawPlayer() {
@@ -2282,78 +2282,78 @@ void mmHudMapFeatureHandler::DrawPlayer() {
     *getPtr<float>(this, 0x64) = triSize;
 
     if (hudMapColorStyle == 0) {
-        DrawIcon(0, playerMtx);
+        DrawIcon(0, *playerMtx);
         *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-        DrawIcon(5, playerMtx);
+        DrawIcon(5, *playerMtx);
     }
     if (hudMapColorStyle == 1) {
         if (audio->IsPolice(vehName)) {
-            DrawIcon(2, playerMtx);
+            DrawIcon(2, *playerMtx);
             *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-            DrawIcon(1, playerMtx);
+            DrawIcon(1, *playerMtx);
         }
         else {
-            DrawIcon(-1, playerMtx);
+            DrawIcon(-1, *playerMtx);
             *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-            DrawIcon(0, playerMtx);
+            DrawIcon(0, *playerMtx);
         }
     }
     if (hudMapColorStyle == 2) {
-        DrawIcon(0, playerMtx);
+        DrawIcon(0, *playerMtx);
         *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
         if (audio->IsPolice(vehName)) {
-            DrawIcon(2, playerMtx);
+            DrawIcon(2, *playerMtx);
             if (siren != nullptr && siren->Active) {
                 if (elapsedTime3)
-                    DrawIcon(1, playerMtx);
+                    DrawIcon(1, *playerMtx);
             }
         }
         else {
-            DrawIcon(5, playerMtx);
+            DrawIcon(5, *playerMtx);
         }
     }
     if (hudMapColorStyle == 3) {
-        DrawIcon(0, playerMtx);
+        DrawIcon(0, *playerMtx);
         *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
         if (audio->IsPolice(vehName)) {
             if (siren != nullptr && siren->Active) {
-                DrawIcon(2, playerMtx);
+                DrawIcon(2, *playerMtx);
                 if (elapsedTime1)
-                    DrawIcon(1, playerMtx);
+                    DrawIcon(1, *playerMtx);
                 if (elapsedTime2)
-                    DrawIcon(-1, playerMtx);
+                    DrawIcon(-1, *playerMtx);
             }
             if (siren != nullptr && !siren->Active) {
-                DrawIcon(-1, playerMtx);
+                DrawIcon(-1, *playerMtx);
             }
         }
         else {
-            DrawNfsMwPlayerIcon(playerMtx);
+            DrawNfsMwPlayerIcon(*playerMtx);
         }
     }
     if (hudMapColorStyle == 4) {
-        DrawIcon(0, playerMtx);
+        DrawIcon(0, *playerMtx);
         *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
         if (audio->IsPolice(vehName)) {
             if (siren != nullptr && siren->Active) {
-                DrawIcon(2, playerMtx);
+                DrawIcon(2, *playerMtx);
                 if (elapsedTime1)
-                    DrawIcon(1, playerMtx);
+                    DrawIcon(1, *playerMtx);
                 if (elapsedTime2)
-                    DrawIcon(-1, playerMtx);
+                    DrawIcon(-1, *playerMtx);
             }
             if (siren != nullptr && !siren->Active) {
-                DrawIcon(4, playerMtx);
+                DrawIcon(4, *playerMtx);
             }
         }
         else {
-            DrawIcon(8, playerMtx);
+            DrawIcon(8, *playerMtx);
         }
     }
     if (hudMapColorStyle >= 5) {
-        DrawIcon(playerTriOutlineColor, playerMtx);
+        DrawIcon(playerTriOutlineColor, *playerMtx);
         *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-        DrawIcon(playerTriColor, playerMtx);
+        DrawIcon(playerTriColor, *playerMtx);
     }
 }
 
@@ -2377,50 +2377,50 @@ void mmHudMapFeatureHandler::DrawCops() {
             *getPtr<float>(this, 0x64) = triSize;
 
             if (hudMapColorStyle == 0) {
-                DrawIcon(0, policeMtx);
+                DrawIcon(0, *policeMtx);
                 *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-                DrawIcon(1, policeMtx);
+                DrawIcon(1, *policeMtx);
             }
             if (hudMapColorStyle == 1) {
-                DrawIcon(2, policeMtx);
+                DrawIcon(2, *policeMtx);
                 *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-                DrawIcon(1, policeMtx);
+                DrawIcon(1, *policeMtx);
             }
             if (hudMapColorStyle == 2) {
-                DrawIcon(0, policeMtx);
+                DrawIcon(0, *policeMtx);
                 *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-                DrawIcon(2, policeMtx);
+                DrawIcon(2, *policeMtx);
                 if (elapsedTime3)
-                    DrawIcon(1, policeMtx);
+                    DrawIcon(1, *policeMtx);
                 if (policeState == 12 || policeState == 0)
-                    DrawIcon(2, policeMtx);
+                    DrawIcon(2, *policeMtx);
             }
             if (hudMapColorStyle == 3) {
-                DrawIcon(0, policeMtx);
+                DrawIcon(0, *policeMtx);
                 *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-                DrawIcon(2, policeMtx);
+                DrawIcon(2, *policeMtx);
                 if (elapsedTime1)
-                    DrawIcon(1, policeMtx);
+                    DrawIcon(1, *policeMtx);
                 if (elapsedTime2)
-                    DrawIcon(-1, policeMtx);
+                    DrawIcon(-1, *policeMtx);
                 if (policeState == 12 || policeState == 0)
-                    DrawIcon(-1, policeMtx);
+                    DrawIcon(-1, *policeMtx);
             }
             if (hudMapColorStyle == 4) {
-                DrawIcon(0, policeMtx);
+                DrawIcon(0, *policeMtx);
                 *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-                DrawIcon(2, policeMtx);
+                DrawIcon(2, *policeMtx);
                 if (elapsedTime1)
-                    DrawIcon(1, policeMtx);
+                    DrawIcon(1, *policeMtx);
                 if (elapsedTime2)
-                    DrawIcon(-1, policeMtx);
+                    DrawIcon(-1, *policeMtx);
                 if (policeState == 12 || policeState == 0)
-                    DrawIcon(4, policeMtx);
+                    DrawIcon(4, *policeMtx);
             }
             if (hudMapColorStyle >= 5) {
-                DrawIcon(policeTriOutlineColor, policeMtx);
+                DrawIcon(policeTriOutlineColor, *policeMtx);
                 *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-                DrawIcon(policeTriColor, policeMtx);
+                DrawIcon(policeTriColor, *policeMtx);
             }
         }
     }
@@ -2441,9 +2441,9 @@ void mmHudMapFeatureHandler::DrawOpponents() {
 
             // check if we're in multiplayer
             if (MMSTATE->unk_EC) {
-                DrawIcon(0, opponentMtx);
+                DrawIcon(0, *opponentMtx);
                 *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-                DrawIcon(i + 2, opponentMtx);
+                DrawIcon(i + 2, *opponentMtx);
             } 
             else {
                 auto opponent = AIMAP->Opponent(i);
@@ -2453,40 +2453,40 @@ void mmHudMapFeatureHandler::DrawOpponents() {
 
                 if (curDamage <= maxDamage) {
                     if (hudMapColorStyle == 0) {
-                        DrawIcon(0, opponentMtx);
+                        DrawIcon(0, *opponentMtx);
                         *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-                        DrawIcon(7, opponentMtx);
+                        DrawIcon(7, *opponentMtx);
                     }
                     if (hudMapColorStyle == 1) {
-                        DrawIcon(0, opponentMtx);
+                        DrawIcon(0, *opponentMtx);
                         *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-                        DrawIcon(i + 2, opponentMtx);
+                        DrawIcon(i + 2, *opponentMtx);
                     }
                     if (hudMapColorStyle == 2) {
-                        DrawIcon(0, opponentMtx);
+                        DrawIcon(0, *opponentMtx);
                         *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-                        DrawIcon(3, opponentMtx);
+                        DrawIcon(3, *opponentMtx);
                     }
                     if (hudMapColorStyle == 3) {
-                        DrawIcon(0, opponentMtx);
+                        DrawIcon(0, *opponentMtx);
                         *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-                        DrawNfsMwOpponentIcon(opponentMtx);
+                        DrawNfsMwOpponentIcon(*opponentMtx);
                     }
                     if (hudMapColorStyle == 4) {
-                        DrawIcon(0, opponentMtx);
+                        DrawIcon(0, *opponentMtx);
                         *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-                        DrawIcon(6, opponentMtx);
+                        DrawIcon(6, *opponentMtx);
                     }
                     if (hudMapColorStyle >= 5) {
-                        DrawIcon(opponentTriOutlineColor, opponentMtx);
+                        DrawIcon(opponentTriOutlineColor, *opponentMtx);
                         *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-                        DrawIcon(opponentTriColor, opponentMtx);
+                        DrawIcon(opponentTriColor, *opponentMtx);
                     }
                 }
                 else {
-                    DrawIcon(0, opponentMtx);
+                    DrawIcon(0, *opponentMtx);
                     *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
-                    DrawIcon(16, opponentMtx);
+                    DrawIcon(16, *opponentMtx);
                 }
             }
         }
@@ -2871,14 +2871,14 @@ void mmDashViewHandler::Cull() {
 
             //draw dash
             if (dashView->DashModStatic != nullptr && dashView->field_6d8) {
-                Matrix44::Convert(gfxRenderState::sm_World, &dashView->field_408.field_48);
+                Matrix44::Convert(gfxRenderState::sm_World, dashView->field_408.field_48);
                 gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
                 dashView->DashModStatic->Draw(*dashView->ShaderSet);
             }
             
             //draw roof
             if (dashView->RoofModStatic != nullptr) {
-                Matrix44::Convert(gfxRenderState::sm_World, &dashView->field_508.field_48);
+                Matrix44::Convert(gfxRenderState::sm_World, dashView->field_508.field_48);
                 gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
                 dashView->RoofModStatic->Draw(*dashView->ShaderSet);
             }
@@ -2891,7 +2891,7 @@ void mmDashViewHandler::Cull() {
                 float speedMPH = carsim->getSpeedMPH();
                 int gear = transmission->getGear();
 
-                dashMatrix.Set(&dashView->field_408.field_48);
+                dashMatrix.Set(dashView->field_408.field_48);
                 float gearOffsetX = dashMatrix.m00 * dashView->GearPivotOffset.X + dashMatrix.m10 * dashView->GearPivotOffset.Y + dashMatrix.m20 * dashView->GearPivotOffset.Z;
                 float gearOffsetY = dashMatrix.m01 * dashView->GearPivotOffset.X + dashMatrix.m11 * dashView->GearPivotOffset.Y + dashMatrix.m21 * dashView->GearPivotOffset.Z;
                 float gearOffsetZ = dashMatrix.m02 * dashView->GearPivotOffset.X + dashMatrix.m12 * dashView->GearPivotOffset.Y + dashMatrix.m22 * dashView->GearPivotOffset.Z;
@@ -2899,7 +2899,7 @@ void mmDashViewHandler::Cull() {
                 dashMatrix.m31 += gearOffsetY;
                 dashMatrix.m32 += gearOffsetZ;
 
-                Matrix44::Convert(gfxRenderState::sm_World, &dashMatrix);
+                Matrix44::Convert(gfxRenderState::sm_World, dashMatrix);
                 gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
                 if (transmission->IsAuto()) {
@@ -2952,7 +2952,7 @@ void mmDashViewHandler::Cull() {
 
             //draw extra dash
             if (dashView->DashExtraModStatic != nullptr) {
-                Matrix44::Convert(gfxRenderState::sm_World, &dashView->field_408.field_48);
+                Matrix44::Convert(gfxRenderState::sm_World, dashView->field_408.field_48);
                 gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
                 dashView->DashExtraModStatic->Draw(*dashView->ShaderSet);
             }
@@ -2990,7 +2990,7 @@ void mmDashViewHandler::Cull() {
                 dWord_6a4->m31 += wheelPosDifY;
                 dWord_6a4->m32 += wheelPosDifZ;
 
-                Matrix44::Convert(gfxRenderState::sm_World, dWord_6a4);
+                Matrix44::Convert(gfxRenderState::sm_World, *dWord_6a4);
                 gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
                 dashView->WheelModStatic->Draw(*dashView->ShaderSet);
             }
@@ -4415,7 +4415,7 @@ void dgBangerInstanceHandler::DrawShadow() {
                 shadowMatrix.m31 -= data->getCG().Y;
                 shadowMatrix.m32 += shadowMatrix.m12 * 2.4f;
 
-                Matrix44::Convert(gfxRenderState::sm_World, &shadowMatrix);
+                Matrix44::Convert(gfxRenderState::sm_World, shadowMatrix);
                 gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
                 model->Draw(shaders);
@@ -4436,7 +4436,7 @@ void dgBangerInstanceHandler::DrawShadow() {
                 shadowMatrix.m30 += shadowMatrix.m10 * posDiffY;
                 shadowMatrix.m32 += shadowMatrix.m12 * posDiffY;
 
-                Matrix44::Convert(gfxRenderState::sm_World, &shadowMatrix);
+                Matrix44::Convert(gfxRenderState::sm_World, shadowMatrix);
                 gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
                 model->Draw(shaders);
@@ -4831,7 +4831,7 @@ void vehCarModelFeatureHandler::DrawShadow() {
             {
                 RSTATE->SetBlendSet(0, 0x80);
 
-                Matrix44::Convert(gfxRenderState::sm_World, &shadowMatrix);
+                Matrix44::Convert(gfxRenderState::sm_World, shadowMatrix);
                 gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
                 shadow->Draw(shaders);
@@ -4883,7 +4883,7 @@ void vehCarModelFeatureHandler::DrawShadow() {
                 shadowMatrix.m30 += shadowMatrix.m10 * posDiffY;
                 shadowMatrix.m32 += shadowMatrix.m12 * posDiffY;
 
-                Matrix44::Convert(gfxRenderState::sm_World, &shadowMatrix);
+                Matrix44::Convert(gfxRenderState::sm_World, shadowMatrix);
                 gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
                 body->Draw(shaders);
@@ -5196,7 +5196,7 @@ void pedestrianInstanceHandler::Draw(int a1) {
         auto pedMatrix = inst->GetMatrix(&dummyMatrix);
         pedMatrix.Scale(boneScale);
 
-        Matrix44::Convert(gfxRenderState::sm_World, &pedMatrix);
+        Matrix44::Convert(gfxRenderState::sm_World, pedMatrix);
         gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
         inst->getAnimationInstance()->Draw(a1 == 3);
@@ -5259,7 +5259,7 @@ void pedestrianInstanceHandler::DrawShadow() {
 
             shadowMatrix.Scale(boneScale);
 
-            Matrix44::Convert(gfxRenderState::sm_World, &shadowMatrix);
+            Matrix44::Convert(gfxRenderState::sm_World, shadowMatrix);
             gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
             animationInstance->Draw(true);
         }
@@ -5363,7 +5363,7 @@ void aiVehicleInstanceFeatureHandler::Draw(int a1) {
 
     //setup renderer
     Matrix34 carMatrix = inst->GetMatrix(&aiVehicleMatrix);
-    Matrix44::Convert(gfxRenderState::sm_World, &carMatrix);
+    Matrix44::Convert(gfxRenderState::sm_World, carMatrix);
     gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
     //get our shader set
@@ -5376,11 +5376,11 @@ void aiVehicleInstanceFeatureHandler::Draw(int a1) {
 
     if (plighton != nullptr) {
         if (aiMap::Instance->drawHeadlights)
-            DrawPart(plighton, &carMatrix, shaders, *getPtr<int>(this, 6));
+            DrawPart(plighton, carMatrix, shaders, *getPtr<int>(this, 6));
     }
     if (plightoff != nullptr) {
         if (!aiMap::Instance->drawHeadlights)
-            DrawPart(plightoff, &carMatrix, shaders, *getPtr<int>(this, 6));
+            DrawPart(plightoff, carMatrix, shaders, *getPtr<int>(this, 6));
     }
 
     //call original
@@ -5409,7 +5409,7 @@ void aiVehicleInstanceFeatureHandler::DrawShadow() {
         {
             RSTATE->SetBlendSet(0, 0x80);
 
-            Matrix44::Convert(gfxRenderState::sm_World, &shadowMatrix);
+            Matrix44::Convert(gfxRenderState::sm_World, shadowMatrix);
             gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
             shadow->Draw(shaders);
@@ -5461,7 +5461,7 @@ void aiVehicleInstanceFeatureHandler::DrawShadow() {
             shadowMatrix.m30 += shadowMatrix.m10 * posDiffY;
             shadowMatrix.m32 += shadowMatrix.m12 * posDiffY;
 
-            Matrix44::Convert(gfxRenderState::sm_World, &shadowMatrix);
+            Matrix44::Convert(gfxRenderState::sm_World, shadowMatrix);
             gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
             body->Draw(shaders);
@@ -5488,7 +5488,7 @@ void aiVehicleInstanceFeatureHandler::DrawGlow() {
 
     //setup renderer
     Matrix34 carMatrix = inst->GetMatrix(&aiVehicleMatrix);
-    Matrix44::Convert(gfxRenderState::sm_World, &carMatrix);
+    Matrix44::Convert(gfxRenderState::sm_World, carMatrix);
     gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
     //get our shader set
@@ -5577,7 +5577,7 @@ void aiVehicleInstanceFeatureHandler::DrawGlow() {
         }
         if (ambientHeadlightStyle == 1 || ambientHeadlightStyle == 2) {
             //MM1 headlights
-            Matrix44::Convert(gfxRenderState::sm_World, &carMatrix);
+            Matrix44::Convert(gfxRenderState::sm_World, carMatrix);
             gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
             if (hlight != nullptr && aiMap::Instance->drawHeadlights) {
@@ -5587,7 +5587,7 @@ void aiVehicleInstanceFeatureHandler::DrawGlow() {
     }
 }
 
-void aiVehicleInstanceFeatureHandler::DrawPart(modStatic* model, const Matrix34* matrix, modShader* shaders, int lod) {
+void aiVehicleInstanceFeatureHandler::DrawPart(modStatic* model, const Matrix34& matrix, modShader* shaders, int lod) {
     auto inst = reinterpret_cast<aiVehicleInstance*>(this);
     hook::Type<gfxTexture*> g_ReflectionMap = 0x628914;
     bool isSoftware = *(bool*)0x6830D4;
@@ -5604,7 +5604,7 @@ void aiVehicleInstanceFeatureHandler::DrawPart(modStatic* model, const Matrix34*
     if (g_ReflectionMap != nullptr && !isSoftware && state->EnableReflections &&
         !(lvlLevel::Singleton->GetRoomInfo(inst->getRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean)))
     {
-        modShader::BeginEnvMap(g_ReflectionMap, *matrix);
+        modShader::BeginEnvMap(g_ReflectionMap, matrix);
         model->DrawEnvMapped(shaders, g_ReflectionMap, 1.0f);
         modShader::EndEnvMap();
     }
@@ -5771,7 +5771,7 @@ void vehTrailerFeatureHandler::Install() {
 */
 Matrix34 trailerMatrix = Matrix34();
 
-void vehTrailerInstanceFeatureHandler::DrawPartReflections(modStatic* a1, Matrix34* a2, modShader* a3) {
+void vehTrailerInstanceFeatureHandler::DrawPartReflections(modStatic* a1, Matrix34& a2, modShader* a3) {
     hook::Type<gfxTexture*> g_ReflectionMap = 0x628914;
     bool isSoftware = *(bool*)0x6830D4;
 
@@ -5792,7 +5792,7 @@ void vehTrailerInstanceFeatureHandler::DrawPartReflections(modStatic* a1, Matrix
     }
 }
 
-void vehTrailerInstanceFeatureHandler::DrawPart(int a1, int a2, Matrix34* a3, modShader* a4) {
+void vehTrailerInstanceFeatureHandler::DrawPart(int a1, int a2, Matrix34& a3, modShader* a4) {
     auto inst = reinterpret_cast<vehTrailerInstance*>(this);
     auto geomID = inst->getGeomSetId() - 1;
     auto geomSet = lvlInstance::GetGeomTableEntry(geomID);
@@ -5842,69 +5842,69 @@ void vehTrailerInstanceFeatureHandler::Draw(int a1) {
     int whlIds[4] = { 3, 4, 5, 6 };
 
     //draw trailer
-    DrawPart(a1, 0, &trailerMtx, shaders);
+    DrawPart(a1, 0, trailerMtx, shaders);
 
     //draw (s)whl0-4
     for (int i = 0; i < 4; i++) {
         auto wheel = wheels[i];
         if (fabs(wheel->getRotationRate()) > 26.f && sWhlGeometries[i] != nullptr && vehCarModel::EnableSpinningWheels)
         {
-            DrawPart(a1, sWhlIds[i], &wheel->getMatrix(), shaders);
+            DrawPart(a1, sWhlIds[i], wheel->getMatrix(), shaders);
         }
         else {
-            DrawPart(a1, whlIds[i], &wheel->getMatrix(), shaders);
+            DrawPart(a1, whlIds[i], wheel->getMatrix(), shaders);
         }
     }
 
     if (fabs(twhl2->getRotationRate()) > 26.f && tswhl4 != nullptr && vehCarModel::EnableSpinningWheels)
     {
-        DrawTwhl4(a1, 21, &twhl2->getMatrix(), shaders);
+        DrawTwhl4(a1, 21, twhl2->getMatrix(), shaders);
     }
     else {
-        DrawTwhl4(a1, 15, &twhl2->getMatrix(), shaders);
+        DrawTwhl4(a1, 15, twhl2->getMatrix(), shaders);
     }
 
     if (fabs(twhl3->getRotationRate()) > 26.f && tswhl5 != nullptr && vehCarModel::EnableSpinningWheels)
     {
-        DrawTwhl5(a1, 22, &twhl3->getMatrix(), shaders);
+        DrawTwhl5(a1, 22, twhl3->getMatrix(), shaders);
     }
     else {
-        DrawTwhl5(a1, 16, &twhl3->getMatrix(), shaders);
+        DrawTwhl5(a1, 16, twhl3->getMatrix(), shaders);
     }
 }
 
-void vehTrailerInstanceFeatureHandler::DrawTwhl4(int a1, int a2, Matrix34* a3, modShader* a4) {
+void vehTrailerInstanceFeatureHandler::DrawTwhl4(int a1, int a2, Matrix34& a3, modShader* a4) {
     auto inst = reinterpret_cast<vehTrailerInstance*>(this);
     auto trailer = inst->getTrailer();
     auto carsim = trailer->getTrailerJoint()->getCarSim();
 
-    a3->Set(&trailer->getWheel(2)->getMatrix());
+    a3.Set(trailer->getWheel(2)->getMatrix());
     auto trailerMtx = inst->GetMatrix(&trailerMatrix);
 
     float offsetX = carsim->TrailerBackBackLeftWheelPosDiff.Y * trailerMtx.m10 + carsim->TrailerBackBackLeftWheelPosDiff.Z * trailerMtx.m20 + carsim->TrailerBackBackLeftWheelPosDiff.X * trailerMtx.m00;
     float offsetY = carsim->TrailerBackBackLeftWheelPosDiff.Y * trailerMtx.m11 + carsim->TrailerBackBackLeftWheelPosDiff.Z * trailerMtx.m21 + carsim->TrailerBackBackLeftWheelPosDiff.X * trailerMtx.m01;
     float offsetZ = carsim->TrailerBackBackLeftWheelPosDiff.Y * trailerMtx.m12 + carsim->TrailerBackBackLeftWheelPosDiff.Z * trailerMtx.m22 + carsim->TrailerBackBackLeftWheelPosDiff.X * trailerMtx.m02;
-    a3->m30 += offsetX;
-    a3->m31 += offsetY;
-    a3->m32 += offsetZ;
+    a3.m30 += offsetX;
+    a3.m31 += offsetY;
+    a3.m32 += offsetZ;
 
     DrawPart(a1, a2, a3, a4);
 }
 
-void vehTrailerInstanceFeatureHandler::DrawTwhl5(int a1, int a2, Matrix34* a3, modShader* a4) {
+void vehTrailerInstanceFeatureHandler::DrawTwhl5(int a1, int a2, Matrix34& a3, modShader* a4) {
     auto inst = reinterpret_cast<vehTrailerInstance*>(this);
     auto trailer = inst->getTrailer();
     auto carsim = trailer->getTrailerJoint()->getCarSim();
 
-    a3->Set(&trailer->getWheel(3)->getMatrix());
+    a3.Set(trailer->getWheel(3)->getMatrix());
     auto trailerMtx = inst->GetMatrix(&trailerMatrix);
 
     float offsetX = carsim->TrailerBackBackRightWheelPosDiff.Y * trailerMtx.m10 + carsim->TrailerBackBackRightWheelPosDiff.Z * trailerMtx.m20 + carsim->TrailerBackBackRightWheelPosDiff.X * trailerMtx.m00;
     float offsetY = carsim->TrailerBackBackRightWheelPosDiff.Y * trailerMtx.m11 + carsim->TrailerBackBackRightWheelPosDiff.Z * trailerMtx.m21 + carsim->TrailerBackBackRightWheelPosDiff.X * trailerMtx.m01;
     float offsetZ = carsim->TrailerBackBackRightWheelPosDiff.Y * trailerMtx.m12 + carsim->TrailerBackBackRightWheelPosDiff.Z * trailerMtx.m22 + carsim->TrailerBackBackRightWheelPosDiff.X * trailerMtx.m02;
-    a3->m30 += offsetX;
-    a3->m31 += offsetY;
-    a3->m32 += offsetZ;
+    a3.m30 += offsetX;
+    a3.m31 += offsetY;
+    a3.m32 += offsetZ;
 
     DrawPart(a1, a2, a3, a4);
 }
@@ -5932,7 +5932,7 @@ void vehTrailerInstanceFeatureHandler::DrawShadow() {
         {
             RSTATE->SetBlendSet(0, 0x80);
 
-            Matrix44::Convert(gfxRenderState::sm_World, &shadowMatrix);
+            Matrix44::Convert(gfxRenderState::sm_World, shadowMatrix);
             gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
             shadow->Draw(shaders);
@@ -5984,7 +5984,7 @@ void vehTrailerInstanceFeatureHandler::DrawShadow() {
             shadowMatrix.m30 += shadowMatrix.m10 * posDiffY;
             shadowMatrix.m32 += shadowMatrix.m12 * posDiffY;
 
-            Matrix44::Convert(gfxRenderState::sm_World, &shadowMatrix);
+            Matrix44::Convert(gfxRenderState::sm_World, shadowMatrix);
             gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
             trailer->Draw(shaders);
@@ -6021,7 +6021,7 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
     //setup renderer
     gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
     inst->GetMatrix(&trailerMatrix);
-    Matrix44::Convert(gfxRenderState::sm_World, &trailerMatrix);
+    Matrix44::Convert(gfxRenderState::sm_World, trailerMatrix);
 
     //get our shader set
     int shaderSet = *getPtr<int>(this, 24);
@@ -6223,7 +6223,7 @@ void vehCableCarInstanceHandler::DrawShadow()
     {
         //setup renderer
         gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
-        Matrix44::Convert(gfxRenderState::sm_World, &shadowMatrix);
+        Matrix44::Convert(gfxRenderState::sm_World, shadowMatrix);
 
         //draw shadow
         modStatic* shadow = lvlInstance::GetGeomTableEntry(geomSet + 1)->getHighestLOD();
@@ -6249,7 +6249,7 @@ void vehCableCarInstanceHandler::DrawGlow()
     Matrix34 instMtx = inst->GetMatrix(&cableCarMatrix);
     memcpy(&cableCarMatrix, &instMtx, sizeof(Matrix34));
 
-    Matrix44::Convert(gfxRenderState::sm_World, &cableCarMatrix);
+    Matrix44::Convert(gfxRenderState::sm_World, cableCarMatrix);
 
     //get our shader set
     int shaderSet = 0;

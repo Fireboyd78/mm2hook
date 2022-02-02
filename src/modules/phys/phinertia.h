@@ -69,7 +69,7 @@ namespace MM2
             mtx->m32 = position->Z;
         }
 
-        inline void SetMatrix(Matrix34 *matrix) const {
+        inline void SetMatrix(Matrix34 matrix) const {
             GetMatrix()->Set(matrix);
         }
 

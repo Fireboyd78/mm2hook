@@ -928,7 +928,7 @@ namespace MM2
                 this->genBreakableMgr->Draw(this->carSim->getWorldMatrix(), shaders, lod);
 
             //setup renderer
-            Matrix44::Convert(gfxRenderState::sm_World, this->carSim->getWorldMatrix());
+            Matrix44::Convert(gfxRenderState::sm_World, *this->carSim->getWorldMatrix());
             gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
             //draw the body
@@ -1156,7 +1156,7 @@ namespace MM2
                 {
                     auto carMatrix = this->carSim->getWorldMatrix();
                     auto refWheel = this->carSim->getWheel(2);
-                    dummyWhl4Matrix.Set(&refWheel->getMatrix());
+                    dummyWhl4Matrix.Set(refWheel->getMatrix());
 
                     float offsetX = carSim->BackBackLeftWheelPosDiff.Y * carMatrix->m10 + carSim->BackBackLeftWheelPosDiff.Z * carMatrix->m20 + carSim->BackBackLeftWheelPosDiff.X * carMatrix->m00;
                     float offsetY = carSim->BackBackLeftWheelPosDiff.Y * carMatrix->m11 + carSim->BackBackLeftWheelPosDiff.Z * carMatrix->m21 + carSim->BackBackLeftWheelPosDiff.X * carMatrix->m01;
@@ -1180,7 +1180,7 @@ namespace MM2
                 {
                     auto carMatrix = this->carSim->getWorldMatrix();
                     auto refWheel = this->carSim->getWheel(3);
-                    dummyWhl5Matrix.Set(&refWheel->getMatrix());
+                    dummyWhl5Matrix.Set(refWheel->getMatrix());
 
                     float offsetX = carSim->BackBackRightWheelPosDiff.Y * carMatrix->m10 + carSim->BackBackRightWheelPosDiff.Z * carMatrix->m20 + carSim->BackBackRightWheelPosDiff.X * carMatrix->m00;
                     float offsetY = carSim->BackBackRightWheelPosDiff.Y * carMatrix->m11 + carSim->BackBackRightWheelPosDiff.Z * carMatrix->m21 + carSim->BackBackRightWheelPosDiff.X * carMatrix->m01;
@@ -1250,7 +1250,7 @@ namespace MM2
                 {
                     auto carMatrix = this->carSim->getWorldMatrix();
                     auto refWheel = this->carSim->getWheel(2);
-                    dummyWhl4Matrix.Set(&refWheel->getMatrix());
+                    dummyWhl4Matrix.Set(refWheel->getMatrix());
 
                     float offsetX = carSim->BackBackLeftWheelPosDiff.Y * carMatrix->m10 + carSim->BackBackLeftWheelPosDiff.Z * carMatrix->m20 + carSim->BackBackLeftWheelPosDiff.X * carMatrix->m00;
                     float offsetY = carSim->BackBackLeftWheelPosDiff.Y * carMatrix->m11 + carSim->BackBackLeftWheelPosDiff.Z * carMatrix->m21 + carSim->BackBackLeftWheelPosDiff.X * carMatrix->m01;
@@ -1274,7 +1274,7 @@ namespace MM2
                 {
                     auto carMatrix = this->carSim->getWorldMatrix();
                     auto refWheel = this->carSim->getWheel(3);
-                    dummyWhl5Matrix.Set(&refWheel->getMatrix());
+                    dummyWhl5Matrix.Set(refWheel->getMatrix());
 
                     float offsetX = carSim->BackBackRightWheelPosDiff.Y * carMatrix->m10 + carSim->BackBackRightWheelPosDiff.Z * carMatrix->m20 + carSim->BackBackRightWheelPosDiff.X * carMatrix->m00;
                     float offsetY = carSim->BackBackRightWheelPosDiff.Y * carMatrix->m11 + carSim->BackBackRightWheelPosDiff.Z * carMatrix->m21 + carSim->BackBackRightWheelPosDiff.X * carMatrix->m01;
@@ -1328,7 +1328,7 @@ namespace MM2
                 return;
 
             //setup renderer
-            Matrix44::Convert(gfxRenderState::sm_World, this->carSim->getWorldMatrix());
+            Matrix44::Convert(gfxRenderState::sm_World, *this->carSim->getWorldMatrix());
             gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
 
@@ -1479,7 +1479,7 @@ namespace MM2
                 }
                 if (vehCarModel::HeadlightType == 1 || vehCarModel::HeadlightType == 2) {
                     //MM1 headlights
-                    Matrix44::Convert(gfxRenderState::sm_World, this->carSim->getWorldMatrix());
+                    Matrix44::Convert(gfxRenderState::sm_World, *this->carSim->getWorldMatrix());
                     gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
                     if (enabledElectrics[2] || enabledElectrics[3])
@@ -1536,7 +1536,7 @@ namespace MM2
                 }
                 if (vehCarModel::SirenType == 1 || vehCarModel::SirenType == 2) {
                     //MM1 siren
-                    Matrix44::Convert(gfxRenderState::sm_World, this->carSim->getWorldMatrix());
+                    Matrix44::Convert(gfxRenderState::sm_World, *this->carSim->getWorldMatrix());
                     gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
                     if (siren != nullptr && siren->Active) {

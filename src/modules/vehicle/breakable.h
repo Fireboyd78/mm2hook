@@ -82,11 +82,11 @@ namespace MM2
                     if (lodModel != nullptr)
                     {
                         Matrix34 drawMatrix = Matrix34();
-                        drawMatrix.Set(&i->matrix);
+                        drawMatrix.Set(i->matrix);
                         drawMatrix.Dot(*a1);
 
                         //setup renderer
-                        Matrix44::Convert(gfxRenderState::sm_World, &drawMatrix);
+                        Matrix44::Convert(gfxRenderState::sm_World, drawMatrix);
                         gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
                         lodModel->Draw(a2);

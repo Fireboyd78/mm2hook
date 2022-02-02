@@ -161,13 +161,13 @@ public:
 
 class mmHudMapFeatureHandler {
 public:
-    void DrawColoredTri(unsigned int color, const MM2::Matrix34 *a2);
-    void DrawWhiteTri(const MM2::Matrix34 *a1);
-    void DrawLightOrangeTri(const MM2::Matrix34 *a1);
-    void DrawLightGreenTri(const MM2::Matrix34 *a1);
-    void DrawIcon(int iconType, const MM2::Matrix34 *matrix);
-    void DrawNfsMwPlayerIcon(const MM2::Matrix34 *matrix);
-    void DrawNfsMwOpponentIcon(const MM2::Matrix34 *matrix);
+    void DrawColoredTri(unsigned int color, const MM2::Matrix34 &a2);
+    void DrawWhiteTri(const MM2::Matrix34 &a1);
+    void DrawLightOrangeTri(const MM2::Matrix34 &a1);
+    void DrawLightGreenTri(const MM2::Matrix34 &a1);
+    void DrawIcon(int iconType, const MM2::Matrix34 &matrix);
+    void DrawNfsMwPlayerIcon(const MM2::Matrix34 &matrix);
+    void DrawNfsMwOpponentIcon(const MM2::Matrix34 &matrix);
     void DrawPlayer();
     void DrawCops();
     void DrawOpponents();
@@ -358,7 +358,7 @@ public:
     void Draw(int a1);
     void DrawShadow();
     void DrawGlow();
-    void DrawPart(MM2::modStatic* model, const MM2::Matrix34* matrix, MM2::modShader* shaders, int lod);
+    void DrawPart(MM2::modStatic* model, const MM2::Matrix34& matrix, MM2::modShader* shaders, int lod);
     void AddGeomHook(const char* pkgName, const char* name, int flags);
     static void Install();
 };
@@ -373,12 +373,12 @@ public:
 class vehTrailerInstanceFeatureHandler {
 public:
     void Draw(int a1);
-    void DrawTwhl4(int a1, int a2, MM2::Matrix34* a3, MM2::modShader* a4);
-    void DrawTwhl5(int a1, int a2, MM2::Matrix34* a3, MM2::modShader* a4);
+    void DrawTwhl4(int a1, int a2, MM2::Matrix34& a3, MM2::modShader* a4);
+    void DrawTwhl5(int a1, int a2, MM2::Matrix34& a3, MM2::modShader* a4);
     void DrawShadow();
     void DrawGlow();
-    void DrawPart(int a1, int a2, MM2::Matrix34* a3, MM2::modShader* a4);
-    void DrawPartReflections(MM2::modStatic* a1, MM2::Matrix34* a2, MM2::modShader* a3);
+    void DrawPart(int a1, int a2, MM2::Matrix34& a3, MM2::modShader* a4);
+    void DrawPartReflections(MM2::modStatic* a1, MM2::Matrix34& a2, MM2::modShader* a3);
     static void Install();
 };
 
