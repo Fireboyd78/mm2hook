@@ -73,9 +73,9 @@ namespace MM2
                     float scaleX = spark->Scale * positions[aj].X;
                     float scaleY = spark->Scale * positions[aj].Y;
 
-                    float z = gfxRenderState::sm_Camera->m23 * scaleY + gfxRenderState::sm_Camera->m13 * scaleX + spark->Pos.Z;
-                    float y = gfxRenderState::sm_Camera->m22 * scaleY + gfxRenderState::sm_Camera->m12 * scaleX + spark->Pos.Y;
-                    float x = gfxRenderState::sm_Camera->m21 * scaleY + gfxRenderState::sm_Camera->m11 * scaleX + spark->Pos.X;
+                    float z = gfxRenderState::sm_Camera->m12 * scaleY + gfxRenderState::sm_Camera->m02 * scaleX + spark->Pos.Z;
+                    float y = gfxRenderState::sm_Camera->m11 * scaleY + gfxRenderState::sm_Camera->m01 * scaleX + spark->Pos.Y;
+                    float x = gfxRenderState::sm_Camera->m10 * scaleY + gfxRenderState::sm_Camera->m00 * scaleX + spark->Pos.X;
 
                     vglVertex(x, y, z);
                 }
