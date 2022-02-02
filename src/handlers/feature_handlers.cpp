@@ -2083,9 +2083,9 @@ void BridgeFerryHandler::Draw(int lod) {
             }
             else {
                 int alphaRef = (&RSTATE->Data)->AlphaRef;
-                if ((&RSTATE->Data)->AlphaRef != dgBangerInstance::sm_RefAlpha)
+                if ((&RSTATE->Data)->AlphaRef != dgBangerInstance::getRefAlpha())
                 {
-                    (&RSTATE->Data)->AlphaRef = dgBangerInstance::sm_RefAlpha;
+                    (&RSTATE->Data)->AlphaRef = dgBangerInstance::getRefAlpha();
                     gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
                 }
 
