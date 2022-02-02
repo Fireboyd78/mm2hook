@@ -377,8 +377,8 @@ public:
     void DrawTwhl5(int a1, int a2, MM2::Matrix34& a3, MM2::modShader* a4);
     void DrawShadow();
     void DrawGlow();
-    void DrawPart(int a1, int a2, MM2::Matrix34& a3, MM2::modShader* a4);
-    void DrawPartReflections(MM2::modStatic* a1, MM2::Matrix34& a2, MM2::modShader* a3);
+    void DrawPart(int a1, int a2, const MM2::Matrix34& a3, MM2::modShader* a4);
+    void DrawPartReflections(MM2::modStatic* a1, const MM2::Matrix34& a2, MM2::modShader* a3);
     static void Install();
 };
 

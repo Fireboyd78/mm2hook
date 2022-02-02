@@ -5771,14 +5771,13 @@ void vehTrailerFeatureHandler::Install() {
 */
 Matrix34 trailerMatrix = Matrix34();
 
-void vehTrailerInstanceFeatureHandler::DrawPartReflections(modStatic* a1, Matrix34& a2, modShader* a3) {
+void vehTrailerInstanceFeatureHandler::DrawPartReflections(modStatic* a1, const Matrix34& a2, modShader* a3) {
     hook::Type<gfxTexture*> g_ReflectionMap = 0x628914;
     bool isSoftware = *(bool*)0x6830D4;
 
-    //convert world matrix for reflection drawing
-    Matrix44* worldMatrix = gfxRenderState::sm_World;
-    Matrix34 envInput = Matrix34();
-    worldMatrix->ToMatrix34(envInput);
+    //setup renderer
+    Matrix44::Convert(gfxRenderState::sm_World, a2);
+    gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
     //draw trailer
     a1->Draw(a3);
@@ -5786,13 +5785,13 @@ void vehTrailerInstanceFeatureHandler::DrawPartReflections(modStatic* a1, Matrix
     //draw reflections
     auto state = &MMSTATE;
     if (g_ReflectionMap != nullptr && !isSoftware && state->EnableReflections) {
-        modShader::BeginEnvMap(g_ReflectionMap, envInput);
+        modShader::BeginEnvMap(g_ReflectionMap, a2);
         a1->DrawEnvMapped(a3, g_ReflectionMap, 1.0f);
         modShader::EndEnvMap();
     }
 }
 
-void vehTrailerInstanceFeatureHandler::DrawPart(int a1, int a2, Matrix34& a3, modShader* a4) {
+void vehTrailerInstanceFeatureHandler::DrawPart(int a1, int a2, const Matrix34& a3, modShader* a4) {
     auto inst = reinterpret_cast<vehTrailerInstance*>(this);
     auto geomID = inst->getGeomSetId() - 1;
     auto geomSet = lvlInstance::GetGeomTableEntry(geomID);
