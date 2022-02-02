@@ -19,10 +19,10 @@ namespace MM2
         AGE_API Vector2(float x, float y) : X(x), Y(y) {}
 
         AGE_API float Mag(void) const {
-            return sqrtf(X * X + Y * Y);
+            return sqrtf(this->Mag2());
         }
         AGE_API float Mag2(void) const {
-            return X * X + Y * Y;
+            return (X * X + Y * Y);
         }
 
         AGE_API void Set(float x, float y) {
