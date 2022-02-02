@@ -260,7 +260,7 @@ namespace MM2
 
         virtual AGE_API const Matrix34 & GetMatrix(Matrix34 *a1)
                                                             PURE;
-        virtual AGE_API void SetMatrix(const Matrix34 *a1)  PURE;
+        virtual AGE_API void SetMatrix(const Matrix34 &a1)  PURE;
         
         virtual AGE_API void SetVariant(int a1)             { hook::Thunk<0x4643D0>::Call<void>(this, a1); }
         virtual AGE_API const float GetRadius()             { return hook::Thunk<0x4643E0>::Call<float>(this); }

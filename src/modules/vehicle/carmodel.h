@@ -882,8 +882,8 @@ namespace MM2
                                                             { return hook::Thunk<0x4CEF50>::Call<const Vector3 &>(this); }
         AGE_API const Matrix34 & GetMatrix(Matrix34 *a1)
                                                             { return hook::Thunk<0x4CEF90>::Call<const Matrix34 &>(this, a1); }
-        AGE_API void SetMatrix(const Matrix34 *a1) override 
-                                                            { hook::Thunk<0x4CEFA0>::Call<void>(this, a1); }
+        AGE_API void SetMatrix(const Matrix34 &a1) override 
+                                                            { hook::Thunk<0x4CEFA0>::Call<void>(this, &a1); }
         AGE_API dgPhysEntity * GetEntity() override         { return hook::Thunk<0x4CEFC0>::Call<dgPhysEntity*>(this); }
         AGE_API dgPhysEntity * AttachEntity() override 
                                                             { return hook::Thunk<0x4CEFD0>::Call<dgPhysEntity*>(this); }

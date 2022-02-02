@@ -21,7 +21,7 @@ namespace MM2
         //overrides
         AGE_API Vector3 const& GetPosition() override              { return hook::Thunk<0x553030>::Call<Vector3 const&>(this); };
         AGE_API Matrix34 const& GetMatrix(Matrix34* a1) override   { return hook::Thunk<0x553020>::Call<Matrix34 const&>(this, a1); };
-        AGE_API void SetMatrix(Matrix34 const *a1) override        { hook::Thunk<0x553010>::Call<void>(this, a1); }
+        AGE_API void SetMatrix(Matrix34 const &a1) override        { hook::Thunk<0x553010>::Call<void>(this, &a1); }
         AGE_API dgPhysEntity* GetEntity() override                 { return hook::Thunk<0x52F50>::Call<dgPhysEntity*>(this); };
         AGE_API dgPhysEntity* AttachEntity() override              { return hook::Thunk<0x552FBD>::Call<dgPhysEntity*>(this); };
         AGE_API void Detach() override                             { hook::Thunk<0x552F80>::Call<void>(this); }
