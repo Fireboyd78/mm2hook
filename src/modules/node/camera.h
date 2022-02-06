@@ -23,8 +23,14 @@ namespace MM2
     // Class definitions
     class asCamera : public asNode {
     private:
-        byte _buffer[0x158];
+        byte _buffer[0x154];
+    protected:
+        hook::Field<0xD4, Matrix34> _matrix;
     public:
+        inline Matrix34 * getMatrix() {
+            return _matrix.ptr(this);
+        }
+
         AGE_API asCamera(void) {
             scoped_vtable x(this);
             hook::Thunk<0x4A2340>::Call<void>(this);
@@ -66,6 +72,9 @@ namespace MM2
         //fields
         inline Matrix34 * getMatrix(void)                   { return &matrix_1; }
         inline Vector3 * getPosition(void)                  { return reinterpret_cast<Vector3 *>(&matrix_1.m30); }
+
+        inline Matrix34 * getMatrix2(void)                  { return &matrix_2; }
+        inline Vector3 * getPosition2(void)                 { return reinterpret_cast<Vector3 *>(&matrix_2.m30); }
 
         inline float getFOV(void)                           { return CameraFOV; }
         inline void setFOV(float fov)                       { CameraFOV = fov; }
@@ -126,6 +135,14 @@ namespace MM2
         AGE_API void ApproachIt()                           { hook::Thunk<0x522060>::Call<void>(this); }
 
     public:
+        inline Matrix34 * GetMatrix() {
+            return this->unk_90;
+        }
+
+        inline void approachIt() {
+            this->ApproachIt();
+        }
+
         AGE_API camAppCS(void) {
             scoped_vtable x(this);
             hook::Thunk<0x521F70>::Call<void>(this);
@@ -152,10 +169,14 @@ namespace MM2
     class camCarCS : public camAppCS {
     protected:
         vehCar *car;
-        int unk_10C; // one of: -1, 0, 1?
+        int camPan; // one of: -1, 0, 1?
     public:
         inline vehCar * getCar(void) const {
             return this->car;
+        }
+
+        inline int getCamPan() {
+            return this->camPan;
         }
 
         AGE_API camCarCS(void) {
@@ -243,12 +264,32 @@ namespace MM2
         
         Vector3 unk_130;
 
-        float unk_13C; // related to camCarCS::unk_10C: if -1, use PI; otherwise, use this value (see: camPOVCS::Update @ 0x51D62A)
+        float Angle; // related to camCarCS::unk_10C: if -1, use PI; otherwise, use this value (see: camPOVCS::Update @ 0x51D62A)
         float Pitch;
-        float unk_144; // yaw? (roates matrix if != 0)
+        float Yaw; // (rotates matrix if != 0)
     private:
         AGE_API void UpdatePOV()                            { hook::Thunk<0x51D5A0>::Call<void>(this); }
     public:
+        inline Vector3 getOffset() {
+            return this->Offset;
+        }
+
+        inline Vector3 getReverseOffset() {
+            return this->ReverseOffset;
+        }
+
+        inline float getAngle() {
+            return this->Angle;
+        }
+
+        inline float getPitch() {
+            return this->Pitch;
+        }
+
+        inline float getYaw() {
+            return this->Yaw;
+        }
+
         AGE_API camPovCS(void) {
             scoped_vtable x(this);
             hook::Thunk<0x51D410>::Call<void>(this);

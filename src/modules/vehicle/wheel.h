@@ -142,6 +142,10 @@ namespace MM2
             return this->RotationRate;
         }
 
+        inline float getAccumulatedRotation(void) {
+            return this->AccumulatedRotation;
+        }
+
         inline float getWobbleLimit(void) {
             return this->WobbleLimit;
         }

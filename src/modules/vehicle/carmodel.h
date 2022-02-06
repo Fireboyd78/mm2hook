@@ -35,8 +35,9 @@ namespace MM2
         static float HeadlightFlashingSpeed;
         static bool PartReflections;
         static bool WheelReflections;
-        static bool mm1StyleTransmission;
-        static bool breakableRenderTweak;
+        static bool Mm1StyleTransmission;
+        static bool BreakableRenderTweak;
+        static bool WheelWobble;
 
         //light states
         static bool HeadlightsState;
@@ -292,9 +293,9 @@ namespace MM2
             }
             else
             {
-                auto carMatrix = this->carSim->getWorldMatrix();
-                this->headlights[0].Direction = Vector3(-carMatrix->m20, -carMatrix->m21, -carMatrix->m22);
-                this->headlights[1].Direction = Vector3(-carMatrix->m20, -carMatrix->m21, -carMatrix->m22);
+                auto carMatrix = this->getCarMatrix();
+                this->headlights[0].Direction = Vector3(-carMatrix.m20, -carMatrix.m21, -carMatrix.m22);
+                this->headlights[1].Direction = Vector3(-carMatrix.m20, -carMatrix.m21, -carMatrix.m22);
             }
 
             bool bothLightsBroken = !(enabledElectrics[2] || enabledElectrics[3]);
@@ -310,11 +311,11 @@ namespace MM2
 
                 auto light = &this->headlights[i];
                 auto lightPos = this->headlightPositions[i];
-                auto carMatrix = this->carSim->getWorldMatrix();
+                auto carMatrix = this->getCarMatrix();
 
-                float lX = lightPos.Y * carMatrix->m10 + lightPos.Z * carMatrix->m20 + lightPos.X * carMatrix->m00 + carMatrix->m30;
-                float lY = lightPos.Y * carMatrix->m11 + lightPos.Z * carMatrix->m21 + lightPos.X * carMatrix->m01 + carMatrix->m31;
-                float lZ = lightPos.Y * carMatrix->m12 + lightPos.Z * carMatrix->m22 + lightPos.X * carMatrix->m02 + carMatrix->m32;
+                float lX = lightPos.Y * carMatrix.m10 + lightPos.Z * carMatrix.m20 + lightPos.X * carMatrix.m00 + carMatrix.m30;
+                float lY = lightPos.Y * carMatrix.m11 + lightPos.Z * carMatrix.m21 + lightPos.X * carMatrix.m01 + carMatrix.m31;
+                float lZ = lightPos.Y * carMatrix.m12 + lightPos.Z * carMatrix.m22 + lightPos.X * carMatrix.m02 + carMatrix.m32;
                 light->Position = Vector3(lX, lY, lZ);
 
                 Vector3* someCameraThing = (Vector3*)0x685490;
@@ -341,9 +342,9 @@ namespace MM2
             }
             else
             {
-                auto carMatrix = this->carSim->getWorldMatrix();
-                this->extraHeadlights[0].Direction = Vector3(-carMatrix->m20, -carMatrix->m21, -carMatrix->m22);
-                this->extraHeadlights[1].Direction = Vector3(-carMatrix->m20, -carMatrix->m21, -carMatrix->m22);
+                auto carMatrix = this->getCarMatrix();
+                this->extraHeadlights[0].Direction = Vector3(-carMatrix.m20, -carMatrix.m21, -carMatrix.m22);
+                this->extraHeadlights[1].Direction = Vector3(-carMatrix.m20, -carMatrix.m21, -carMatrix.m22);
             }
 
             bool bothLightsBroken = !(enabledElectrics[2] || enabledElectrics[3]);
@@ -359,11 +360,11 @@ namespace MM2
 
                 auto light = &this->extraHeadlights[i];
                 auto lightPos = this->extraHeadlightPositions[i];
-                auto carMatrix = this->carSim->getWorldMatrix();
+                auto carMatrix = this->getCarMatrix();
 
-                float lX = lightPos.Y * carMatrix->m10 + lightPos.Z * carMatrix->m20 + lightPos.X * carMatrix->m00 + carMatrix->m30;
-                float lY = lightPos.Y * carMatrix->m11 + lightPos.Z * carMatrix->m21 + lightPos.X * carMatrix->m01 + carMatrix->m31;
-                float lZ = lightPos.Y * carMatrix->m12 + lightPos.Z * carMatrix->m22 + lightPos.X * carMatrix->m02 + carMatrix->m32;
+                float lX = lightPos.Y * carMatrix.m10 + lightPos.Z * carMatrix.m20 + lightPos.X * carMatrix.m00 + carMatrix.m30;
+                float lY = lightPos.Y * carMatrix.m11 + lightPos.Z * carMatrix.m21 + lightPos.X * carMatrix.m01 + carMatrix.m31;
+                float lZ = lightPos.Y * carMatrix.m12 + lightPos.Z * carMatrix.m22 + lightPos.X * carMatrix.m02 + carMatrix.m32;
                 light->Position = Vector3(lX, lY, lZ);
 
                 Vector3* someCameraThing = (Vector3*)0x685490;
@@ -387,15 +388,15 @@ namespace MM2
                 auto breaklt = this->getGenBreakableMgr()->Get(i + 3);
 
                 if (breaklt == nullptr || (breaklt != nullptr && breaklt->isAttached)) {
-                    auto carMatrix = this->carSim->getWorldMatrix();
-                    this->foglights[i]->Direction = Vector3(-carMatrix->m20, -carMatrix->m21, -carMatrix->m22);
+                    auto carMatrix = this->getCarMatrix();
+                    this->foglights[i]->Direction = Vector3(-carMatrix.m20, -carMatrix.m21, -carMatrix.m22);
 
                     auto light = this->foglights[i];
                     auto lightPos = this->foglightPositions[i];
 
-                    float lX = lightPos.Y * carMatrix->m10 + lightPos.Z * carMatrix->m20 + lightPos.X * carMatrix->m00 + carMatrix->m30;
-                    float lY = lightPos.Y * carMatrix->m11 + lightPos.Z * carMatrix->m21 + lightPos.X * carMatrix->m01 + carMatrix->m31;
-                    float lZ = lightPos.Y * carMatrix->m12 + lightPos.Z * carMatrix->m22 + lightPos.X * carMatrix->m02 + carMatrix->m32;
+                    float lX = lightPos.Y * carMatrix.m10 + lightPos.Z * carMatrix.m20 + lightPos.X * carMatrix.m00 + carMatrix.m30;
+                    float lY = lightPos.Y * carMatrix.m11 + lightPos.Z * carMatrix.m21 + lightPos.X * carMatrix.m01 + carMatrix.m31;
+                    float lZ = lightPos.Y * carMatrix.m12 + lightPos.Z * carMatrix.m22 + lightPos.X * carMatrix.m02 + carMatrix.m32;
                     light->Position = Vector3(lX, lY, lZ);
 
                     Vector3* someCameraThing = (Vector3*)0x685490;
@@ -405,10 +406,10 @@ namespace MM2
             ltLight::DrawGlowEnd();
         }
         
-        AGE_API void DrawPart(modStatic* model, const Matrix34* matrix, modShader* shaders)
-                                                            { hook::Thunk<0x4CE880>::Call<void>(this, model, matrix, shaders); }
+        AGE_API void DrawPart(modStatic* model, const Matrix34& matrix, modShader* shaders)
+                                                            { hook::Thunk<0x4CE880>::Call<void>(this, model, &matrix, shaders); }
 
-        AGE_API void DrawPart(int lod, int geomId, const Matrix34* matrix, modShader* shaders)
+        AGE_API void DrawPart(int lod, int geomId, const Matrix34& matrix, modShader* shaders)
         {
             if (this->getGeomSetId() == 0)
                 return;
@@ -418,7 +419,7 @@ namespace MM2
                 DrawPart(model, matrix, shaders);
         }
 
-        void DrawPartReflected(int lod, int geomId, const Matrix34* matrix, modShader* shaders)
+        void DrawPartReflected(int lod, int geomId, const Matrix34& matrix, modShader* shaders)
         {
             if (this->getGeomSetId() == 0)
                 return;
@@ -431,14 +432,14 @@ namespace MM2
                 auto reflectionMap = lvlLevel::Singleton->GetEnvMap(this->getRoomId(), this->GetPosition(), &reflectionIntensity);
                 if (reflectionMap != nullptr)
                 {
-                    modShader::BeginEnvMap(reflectionMap, *matrix);
+                    modShader::BeginEnvMap(reflectionMap, matrix);
                     model->DrawEnvMapped(shaders, reflectionMap, reflectionIntensity);
                     modShader::EndEnvMap();
                 }
             }
         }
                                                             
-        void DrawPart(int lod, int geomId, const Matrix34* matrix, modShader* shaders, bool reflected)
+        void DrawPart(int lod, int geomId, const Matrix34& matrix, modShader* shaders, bool reflected)
         {
             if (reflected && !(lvlLevel::Singleton->GetRoomInfo(this->getRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean)))
                 DrawPartReflected(lod, geomId, matrix, shaders);
@@ -873,6 +874,38 @@ namespace MM2
             }
         }
         
+        // We made this matrix to draw car body with wobble angling
+        Matrix34 getCarMatrix()
+        {
+            if (!vehCarModel::WheelWobble || !this->carSim->OnGround())
+                return *this->carSim->getWorldMatrix();
+
+            Matrix34 matrix;
+            Vector3 vec;
+
+            memcpy(&matrix, this->carSim->getWorldMatrix(), sizeof(Matrix34));
+
+            float rotation = (fabs(this->carSim->getWheel(1)->getRotationRate()) * datTimeManager::Seconds - 1.5707964f) * 0.31830987f;
+
+            float rotationPercent = fmaxf(0.f, fminf(rotation, 1.f));
+            float invRotationPercent = 1.f - rotationPercent;
+
+            vec.X = matrix.m20 + matrix.m00;
+            vec.Y = matrix.m21 + matrix.m01;
+            vec.Z = matrix.m22 + matrix.m02;
+
+            auto carDamage = this->car->getCarDamage();
+            float damagePercent = (carDamage->getCurDamage() - carDamage->getMedDamage()) / (carDamage->getMaxDamage() - carDamage->getMedDamage());
+
+            damagePercent = fmaxf(0.f, fminf(damagePercent, 1.f));
+
+            float angle = sin(this->carSim->getWheel(1)->getAccumulatedRotation()) * damagePercent * invRotationPercent * 0.02f;
+
+            matrix.Rotate(vec, angle);
+
+            return matrix;
+        }
+
         /*
             lvlInstance virtuals
         */
@@ -924,11 +957,11 @@ namespace MM2
             }
 
             //draw BREAK objects above the body
-            if (breakableRenderTweak)
-                this->genBreakableMgr->Draw(this->carSim->getWorldMatrix(), shaders, lod);
+            if (BreakableRenderTweak)
+                this->genBreakableMgr->Draw(this->getCarMatrix(), shaders, lod);
 
             //setup renderer
-            Matrix44::Convert(gfxRenderState::sm_World, *this->carSim->getWorldMatrix());
+            Matrix44::Convert(gfxRenderState::sm_World, this->getCarMatrix());
             gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
             //draw the body
@@ -937,8 +970,8 @@ namespace MM2
                 bodyModel->Draw(shaders);
 
             //draw BREAK objects below the body
-            if (!breakableRenderTweak)
-                this->genBreakableMgr->Draw(this->carSim->getWorldMatrix(), shaders, lod);
+            if (!BreakableRenderTweak)
+                this->genBreakableMgr->Draw(this->getCarMatrix(), shaders, lod);
 
             //draw decal
             auto decalModel = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 11)->getLOD(lod);
@@ -951,7 +984,7 @@ namespace MM2
                     gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
                 }
 
-                DrawPart(decalModel, this->carSim->getWorldMatrix(), shaders);
+                DrawPart(decalModel, this->getCarMatrix(), shaders);
 
                 if ((&RSTATE->Data)->AlphaRef != oldAlphaRef2)
                 {
@@ -966,7 +999,7 @@ namespace MM2
             if (lod == 3 && reflectionMap != nullptr && bodyModel != nullptr &&
                 !(lvlLevel::Singleton->GetRoomInfo(this->getRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean)))
             {
-                modShader::BeginEnvMap(reflectionMap, *this->carSim->getWorldMatrix());
+                modShader::BeginEnvMap(reflectionMap, this->getCarMatrix());
                 bodyModel->DrawEnvMapped(shaders, reflectionMap, reflectionIntensity);
                 modShader::EndEnvMap();
             }
@@ -975,7 +1008,7 @@ namespace MM2
             if (lod == 3)
             {
                 Matrix34 fndrMatrix = Matrix34();
-                auto carMatrix = *this->carSim->getWorldMatrix();
+                auto carMatrix = this->getCarMatrix();
                 fndrMatrix.Identity();
 
                 fndrMatrix.m10 = carMatrix.m10;
@@ -999,7 +1032,7 @@ namespace MM2
                     fndrMatrix.m31 = fndr0offset.Y * fndrMatrix.m11 + fndr0offset.Z * fndrMatrix.m21 + fndr0offset.X * fndrMatrix.m01 + whlMatrix.m31;
                     fndrMatrix.m32 = fndr0offset.Y * fndrMatrix.m12 + fndr0offset.Z * fndrMatrix.m22 + fndr0offset.X * fndrMatrix.m02 + whlMatrix.m32;
 
-                    DrawPart(3, 49, &fndrMatrix, shaders, vehCarModel::PartReflections);
+                    DrawPart(3, 49, fndrMatrix, shaders, vehCarModel::PartReflections);
                 }
 
                 auto fndr1model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 50)->getHighLOD();
@@ -1019,7 +1052,7 @@ namespace MM2
                     fndrMatrix.m31 = fndr1offset.Y * fndrMatrix.m11 + fndr1offset.Z * fndrMatrix.m21 + fndr1offset.X * fndrMatrix.m01 + whlMatrix.m31;
                     fndrMatrix.m32 = fndr1offset.Y * fndrMatrix.m12 + fndr1offset.Z * fndrMatrix.m22 + fndr1offset.X * fndrMatrix.m02 + whlMatrix.m32;
 
-                    DrawPart(3, 50, &fndrMatrix, shaders, vehCarModel::PartReflections);
+                    DrawPart(3, 50, fndrMatrix, shaders, vehCarModel::PartReflections);
                 }
 
                 //draw FNDR2/3, we have to draw them here to be rendered over WHL2/3
@@ -1040,7 +1073,7 @@ namespace MM2
                     fndrMatrix.m31 = fndr2offset.Y * fndrMatrix.m11 + fndr2offset.Z * fndrMatrix.m21 + fndr2offset.X * fndrMatrix.m01 + whlMatrix.m31;
                     fndrMatrix.m32 = fndr2offset.Y * fndrMatrix.m12 + fndr2offset.Z * fndrMatrix.m22 + fndr2offset.X * fndrMatrix.m02 + whlMatrix.m32;
 
-                    DrawPart(3, 63, &fndrMatrix, shaders, vehCarModel::PartReflections);
+                    DrawPart(3, 63, fndrMatrix, shaders, vehCarModel::PartReflections);
                 }
 
                 auto fndr3model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 64)->getHighLOD();
@@ -1060,7 +1093,7 @@ namespace MM2
                     fndrMatrix.m31 = fndr3offset.Y * fndrMatrix.m11 + fndr3offset.Z * fndrMatrix.m21 + fndr3offset.X * fndrMatrix.m01 + whlMatrix.m31;
                     fndrMatrix.m32 = fndr3offset.Y * fndrMatrix.m12 + fndr3offset.Z * fndrMatrix.m22 + fndr3offset.X * fndrMatrix.m02 + whlMatrix.m32;
 
-                    DrawPart(3, 64, &fndrMatrix, shaders, vehCarModel::PartReflections);
+                    DrawPart(3, 64, fndrMatrix, shaders, vehCarModel::PartReflections);
                 }
             }
 
@@ -1085,10 +1118,10 @@ namespace MM2
                         auto shubModel = lvlInstance::GetGeomTableEntry(geomSetIdOffset + shubId)->getLOD(lod);
                         if (fabs(wheel->getRotationRate()) > 26.f && shubModel != nullptr && vehCarModel::EnableSpinningWheels)
                         {
-                            DrawPart(lod, shubId, &wheel->getMatrix(), shaders, vehCarModel::PartReflections);
+                            DrawPart(lod, shubId, wheel->getMatrix(), shaders, vehCarModel::PartReflections);
                         }
                         else {
-                            DrawPart(lod, hubId, &wheel->getMatrix(), shaders, vehCarModel::PartReflections);
+                            DrawPart(lod, hubId, wheel->getMatrix(), shaders, vehCarModel::PartReflections);
                         }
                     }
 
@@ -1098,10 +1131,10 @@ namespace MM2
                         auto swhlModel = lvlInstance::GetGeomTableEntry(geomSetIdOffset + swhlId)->getLOD(lod);
                         if (fabs(wheel->getRotationRate()) > 26.f && swhlModel != nullptr && vehCarModel::EnableSpinningWheels)
                         {
-                            DrawPart(lod, swhlId, &wheel->getMatrix(), shaders, vehCarModel::WheelReflections);
+                            DrawPart(lod, swhlId, wheel->getMatrix(), shaders, vehCarModel::WheelReflections);
                         }
                         else {
-                            DrawPart(lod, whlId, &wheel->getMatrix(), shaders, vehCarModel::WheelReflections);
+                            DrawPart(lod, whlId, wheel->getMatrix(), shaders, vehCarModel::WheelReflections);
                         }
                     }
                 }
@@ -1112,10 +1145,10 @@ namespace MM2
             {
                 if (car->IsPlayer() && vehCarModel::HeadlightsState || !car->IsPlayer() && vehCar::sm_DrawHeadlights)
                     //plighton
-                    DrawPart(lod, 53, this->carSim->getWorldMatrix(), shaders, vehCarModel::PartReflections);
+                    DrawPart(lod, 53, this->getCarMatrix(), shaders, vehCarModel::PartReflections);
                 else
                     //plightoff
-                    DrawPart(lod, 54, this->carSim->getWorldMatrix(), shaders, vehCarModel::PartReflections);
+                    DrawPart(lod, 54, this->getCarMatrix(), shaders, vehCarModel::PartReflections);
             }
 
             Matrix34 dummyWhl4Matrix = Matrix34();
@@ -1127,26 +1160,197 @@ namespace MM2
                 //suspension
                 for (int i = 0; i < 4; i++)
                 {
-                    DrawPart(lod, 13 + i, &this->carSim->ShockSuspensions[i].getSuspensionMatrix(), shaders, vehCarModel::PartReflections);
+                    if (vehCarModel::WheelWobble)
+                    {
+                        Matrix34 matrix;
+                        Vector3 vec;
+
+                        memcpy(&matrix, &this->carSim->ShockSuspensions[i].getSuspensionMatrix(), sizeof(Matrix34));
+
+                        float rotation = (fabs(this->carSim->ShockSuspensions[1].getWheel()->getRotationRate()) * datTimeManager::Seconds - 1.5707964f) * 0.31830987f;
+
+                        float rotationPercent = fmaxf(0.f, fminf(rotation, 1.f));
+                        float invRotationPercent = 1.f - rotationPercent;
+
+                        vec.X = this->getCarMatrix().m20 + this->getCarMatrix().m00;
+                        vec.Y = this->getCarMatrix().m21 + this->getCarMatrix().m01;
+                        vec.Z = this->getCarMatrix().m22 + this->getCarMatrix().m02;
+
+                        auto carDamage = this->car->getCarDamage();
+                        float damagePercent = (carDamage->getCurDamage() - carDamage->getMedDamage()) / (carDamage->getMaxDamage() - carDamage->getMedDamage());
+
+                        damagePercent = fmaxf(0.f, fminf(damagePercent, 1.f));
+
+                        float angle = sin(this->carSim->ShockSuspensions[1].getWheel()->getAccumulatedRotation()) * damagePercent * invRotationPercent * 0.02f;
+
+                        matrix.Set(this->carSim->ShockSuspensions[i].getSuspensionPivot());
+
+                        matrix.m01 += angle;
+                        matrix.m11 += angle;
+                        matrix.m21 += angle;
+
+                        matrix.Dot(this->getCarMatrix());
+
+                        matrix.Rotate(vec, angle);
+
+                        DrawPart(lod, 13 + i, matrix, shaders, vehCarModel::PartReflections);
+                    }
+                    else {
+                        DrawPart(lod, 13 + i, this->carSim->ShockSuspensions[i].getSuspensionMatrix(), shaders, vehCarModel::PartReflections);
+                    }
                 }
                 for (int i = 0; i < 4; i++)
                 {
-                    DrawPart(lod, 17 + i, &this->carSim->ArmSuspensions[i].getSuspensionMatrix(), shaders, vehCarModel::PartReflections);
+                    if (vehCarModel::WheelWobble)
+                    {
+                        Matrix34 matrix;
+
+                        memcpy(&matrix, &this->carSim->ArmSuspensions[i].getSuspensionMatrix(), sizeof(Matrix34));
+
+                        float rotation = (fabs(this->carSim->ArmSuspensions[i].getWheel()->getRotationRate()) * datTimeManager::Seconds - 1.5707964f) * 0.31830987f;
+
+                        float rotationPercent = fmaxf(0.f, fminf(rotation, 1.f));
+                        float invRotationPercent = 1.f - rotationPercent;
+
+                        auto carDamage = this->car->getCarDamage();
+                        float damagePercent = (carDamage->getCurDamage() - carDamage->getMedDamage()) / (carDamage->getMaxDamage() - carDamage->getMedDamage());
+
+                        damagePercent = fmaxf(0.f, fminf(damagePercent, 1.f));
+
+                        float angle = sin(this->carSim->ArmSuspensions[i].getWheel()->getMatrix().m11) * damagePercent * invRotationPercent * 0.02f;
+
+                        matrix.Set(this->carSim->ArmSuspensions[i].getSuspensionPivot());
+
+                        matrix.m01 += angle;
+                        matrix.m11 += angle;
+                        matrix.m21 += angle;
+
+                        matrix.Dot(this->getCarMatrix());
+
+                        DrawPart(lod, 17 + i, matrix, shaders, vehCarModel::PartReflections);
+                    }
+                    else {
+                        DrawPart(lod, 17 + i, this->carSim->ArmSuspensions[i].getSuspensionMatrix(), shaders, vehCarModel::PartReflections);
+                    }
                 }
                 for (int i = 0; i < 2; i++)
                 {
-                    DrawPart(lod, 21 + i, &this->carSim->ShaftSuspensions[i].getSuspensionMatrix(), shaders, vehCarModel::PartReflections);
+                    if (vehCarModel::WheelWobble)
+                    {
+                        Matrix34 matrix;
+                        Vector3 vec;
+
+                        memcpy(&matrix, &this->carSim->ShaftSuspensions[i].getSuspensionMatrix(), sizeof(Matrix34));
+
+                        float rotation = (fabs(this->carSim->ShaftSuspensions[1].getWheel()->getRotationRate()) * datTimeManager::Seconds - 1.5707964f) * 0.31830987f;
+
+                        float rotationPercent = fmaxf(0.f, fminf(rotation, 1.f));
+                        float invRotationPercent = 1.f - rotationPercent;
+
+                        vec.X = this->getCarMatrix().m20 + this->getCarMatrix().m00;
+                        vec.Y = this->getCarMatrix().m21 + this->getCarMatrix().m01;
+                        vec.Z = this->getCarMatrix().m22 + this->getCarMatrix().m02;
+
+                        auto carDamage = this->car->getCarDamage();
+                        float damagePercent = (carDamage->getCurDamage() - carDamage->getMedDamage()) / (carDamage->getMaxDamage() - carDamage->getMedDamage());
+
+                        damagePercent = fmaxf(0.f, fminf(damagePercent, 1.f));
+
+                        float angle = sin(this->carSim->ShaftSuspensions[1].getWheel()->getAccumulatedRotation()) * damagePercent * invRotationPercent * 0.02f;
+
+                        matrix.Set(this->carSim->ShaftSuspensions[i].getSuspensionPivot());
+
+                        matrix.m01 += angle;
+                        matrix.m11 += angle;
+                        matrix.m21 += angle;
+
+                        matrix.Dot(this->getCarMatrix());
+
+                        matrix.Rotate(vec, angle);
+
+                        DrawPart(lod, 21 + i, matrix, shaders, vehCarModel::PartReflections);
+                    }
+                    else {
+                        DrawPart(lod, 21 + i, this->carSim->ShaftSuspensions[i].getSuspensionMatrix(), shaders, vehCarModel::PartReflections);
+                    }
                 }
 
-                DrawPart(lod, 23, &this->carSim->AxleFront.getAxleMatrix(), shaders, vehCarModel::PartReflections);
-                DrawPart(lod, 24, &this->carSim->AxleRear.getAxleMatrix(), shaders, vehCarModel::PartReflections);
-                
+                auto axleFrontmodel = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 23)->getLOD(lod);
+                if (axleFrontmodel != nullptr)
+                {
+                    if (vehCarModel::WheelWobble)
+                    {
+                        Matrix34 matrix;
+                        Vector3 vec;
+
+                        memcpy(&matrix, &this->carSim->AxleFront.getAxleMatrix(), sizeof(Matrix34));
+
+                        float rotation = (fabs(this->carSim->AxleFront.getRightWheel()->getRotationRate()) * datTimeManager::Seconds - 1.5707964f) * 0.31830987f;
+
+                        float rotationPercent = fmaxf(0.f, fminf(rotation, 1.f));
+                        float invRotationPercent = 1.f - rotationPercent;
+
+                        vec.X = this->getCarMatrix().m20 + this->getCarMatrix().m00;
+                        vec.Y = this->getCarMatrix().m21 + this->getCarMatrix().m01;
+                        vec.Z = this->getCarMatrix().m22 + this->getCarMatrix().m02;
+
+                        auto carDamage = this->car->getCarDamage();
+                        float damagePercent = (carDamage->getCurDamage() - carDamage->getMedDamage()) / (carDamage->getMaxDamage() - carDamage->getMedDamage());
+
+                        damagePercent = fmaxf(0.f, fminf(damagePercent, 1.f));
+
+                        float angle = sin(this->carSim->AxleFront.getRightWheel()->getAccumulatedRotation()) * damagePercent * invRotationPercent * 0.02f;
+
+                        matrix.Rotate(vec, angle);
+
+                        DrawPart(lod, 23, matrix, shaders, vehCarModel::PartReflections);
+                    }
+                    else {
+                        DrawPart(lod, 23, this->carSim->AxleFront.getAxleMatrix(), shaders, vehCarModel::PartReflections);
+                    }
+                }
+
+                auto axleRearmodel = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 24)->getLOD(lod);
+                if (axleRearmodel != nullptr)
+                {
+                    if (vehCarModel::WheelWobble)
+                    {
+                        Matrix34 matrix;
+                        Vector3 vec;
+
+                        memcpy(&matrix, &this->carSim->AxleRear.getAxleMatrix(), sizeof(Matrix34));
+
+                        float rotation = (fabs(this->carSim->AxleRear.getRightWheel()->getRotationRate()) * datTimeManager::Seconds - 1.5707964f) * 0.31830987f;
+
+                        float rotationPercent = fmaxf(0.f, fminf(rotation, 1.f));
+                        float invRotationPercent = 1.f - rotationPercent;
+
+                        vec.X = this->getCarMatrix().m20 + this->getCarMatrix().m00;
+                        vec.Y = this->getCarMatrix().m21 + this->getCarMatrix().m01;
+                        vec.Z = this->getCarMatrix().m22 + this->getCarMatrix().m02;
+
+                        auto carDamage = this->car->getCarDamage();
+                        float damagePercent = (carDamage->getCurDamage() - carDamage->getMedDamage()) / (carDamage->getMaxDamage() - carDamage->getMedDamage());
+
+                        damagePercent = fmaxf(0.f, fminf(damagePercent, 1.f));
+
+                        float angle = sin(this->carSim->AxleRear.getRightWheel()->getAccumulatedRotation()) * damagePercent * invRotationPercent * 0.02f;
+
+                        matrix.Rotate(vec, angle);
+
+                        DrawPart(lod, 24, matrix, shaders, vehCarModel::PartReflections);
+                    }
+                    else {
+                        DrawPart(lod, 24, this->carSim->AxleRear.getAxleMatrix(), shaders, vehCarModel::PartReflections);
+                    }
+                }
+
                 //engine
                 if ((this->wheelBrokenStatus & 0x40000) != 0)
                 {
                     auto engineMatrixPtr = this->carSim->getEngine()->getVisualMatrixPtr();
                     if(engineMatrixPtr != nullptr)
-                        DrawPart(lod, 25, engineMatrixPtr, shaders, vehCarModel::PartReflections);
+                        DrawPart(lod, 25, *engineMatrixPtr, shaders, vehCarModel::PartReflections);
                 }
 
                 //extra hubs
@@ -1167,10 +1371,10 @@ namespace MM2
 
                     if (fabs(refWheel->getRotationRate()) > 26.f && shub4model != nullptr && vehCarModel::EnableSpinningWheels)
                     {
-                        DrawPart(lod, 71, &dummyWhl4Matrix, shaders, vehCarModel::WheelReflections);
+                        DrawPart(lod, 71, dummyWhl4Matrix, shaders, vehCarModel::WheelReflections);
                     }
                     else {
-                        DrawPart(lod, 61, &dummyWhl4Matrix, shaders, vehCarModel::WheelReflections);
+                        DrawPart(lod, 61, dummyWhl4Matrix, shaders, vehCarModel::WheelReflections);
                     }
                 }
 
@@ -1191,10 +1395,10 @@ namespace MM2
 
                     if (fabs(refWheel->getRotationRate()) > 26.f && shub5model != nullptr && vehCarModel::EnableSpinningWheels)
                     {
-                        DrawPart(lod, 72, &dummyWhl5Matrix, shaders, vehCarModel::WheelReflections);
+                        DrawPart(lod, 72, dummyWhl5Matrix, shaders, vehCarModel::WheelReflections);
                     }
                     else {
-                        DrawPart(lod, 62, &dummyWhl5Matrix, shaders, vehCarModel::WheelReflections);
+                        DrawPart(lod, 62, dummyWhl5Matrix, shaders, vehCarModel::WheelReflections);
                     }
                 }
 
@@ -1222,7 +1426,7 @@ namespace MM2
                     fndrMatrix.m31 = fndr4offset.Y * fndrMatrix.m11 + fndr4offset.Z * fndrMatrix.m21 + fndr4offset.X * fndrMatrix.m01 + dummyWhl4Matrix.m31;
                     fndrMatrix.m32 = fndr4offset.Y * fndrMatrix.m12 + fndr4offset.Z * fndrMatrix.m22 + fndr4offset.X * fndrMatrix.m02 + dummyWhl4Matrix.m32;
 
-                    DrawPart(3, 65, &fndrMatrix, shaders, vehCarModel::PartReflections);
+                    DrawPart(3, 65, fndrMatrix, shaders, vehCarModel::PartReflections);
                 }
 
                 auto fndr5model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 66)->getHighLOD();
@@ -1240,7 +1444,7 @@ namespace MM2
                     fndrMatrix.m31 = fndr5offset.Y * fndrMatrix.m11 + fndr5offset.Z * fndrMatrix.m21 + fndr5offset.X * fndrMatrix.m01 + dummyWhl5Matrix.m31;
                     fndrMatrix.m32 = fndr5offset.Y * fndrMatrix.m12 + fndr5offset.Z * fndrMatrix.m22 + fndr5offset.X * fndrMatrix.m02 + dummyWhl5Matrix.m32;
 
-                    DrawPart(3, 66, &fndrMatrix, shaders, vehCarModel::PartReflections);
+                    DrawPart(3, 66, fndrMatrix, shaders, vehCarModel::PartReflections);
                 }
 
                 //extra wheels
@@ -1261,10 +1465,10 @@ namespace MM2
 
                     if (fabs(refWheel->getRotationRate()) > 26.f && swhl4model != nullptr && vehCarModel::EnableSpinningWheels)
                     {
-                        DrawPart(lod, 59, &dummyWhl4Matrix, shaders, vehCarModel::WheelReflections);
+                        DrawPart(lod, 59, dummyWhl4Matrix, shaders, vehCarModel::WheelReflections);
                     }
                     else {
-                        DrawPart(lod, 51, &dummyWhl4Matrix, shaders, vehCarModel::WheelReflections);
+                        DrawPart(lod, 51, dummyWhl4Matrix, shaders, vehCarModel::WheelReflections);
                     }
                 }
 
@@ -1285,10 +1489,10 @@ namespace MM2
 
                     if (fabs(refWheel->getRotationRate()) > 26.f && swhl5model != nullptr && vehCarModel::EnableSpinningWheels)
                     {
-                        DrawPart(lod, 60, &dummyWhl5Matrix, shaders, vehCarModel::WheelReflections);
+                        DrawPart(lod, 60, dummyWhl5Matrix, shaders, vehCarModel::WheelReflections);
                     }
                     else {
-                        DrawPart(lod, 52, &dummyWhl5Matrix, shaders, vehCarModel::WheelReflections);
+                        DrawPart(lod, 52, dummyWhl5Matrix, shaders, vehCarModel::WheelReflections);
                     }
                 }
             }
@@ -1328,7 +1532,7 @@ namespace MM2
                 return;
 
             //setup renderer
-            Matrix44::Convert(gfxRenderState::sm_World, *this->carSim->getWorldMatrix());
+            Matrix44::Convert(gfxRenderState::sm_World, this->getCarMatrix());
             gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
 
@@ -1479,7 +1683,7 @@ namespace MM2
                 }
                 if (vehCarModel::HeadlightType == 1 || vehCarModel::HeadlightType == 2) {
                     //MM1 headlights
-                    Matrix44::Convert(gfxRenderState::sm_World, *this->carSim->getWorldMatrix());
+                    Matrix44::Convert(gfxRenderState::sm_World, this->getCarMatrix());
                     gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
                     if (enabledElectrics[2] || enabledElectrics[3])
@@ -1531,12 +1735,12 @@ namespace MM2
                     //MM2 siren
                     if (siren != nullptr && siren->HasLights && siren->Active)
                     {
-                        siren->Draw(this->carSim->getWorldMatrix());
+                        siren->Draw(&this->getCarMatrix());
                     }
                 }
                 if (vehCarModel::SirenType == 1 || vehCarModel::SirenType == 2) {
                     //MM1 siren
-                    Matrix44::Convert(gfxRenderState::sm_World, *this->carSim->getWorldMatrix());
+                    Matrix44::Convert(gfxRenderState::sm_World, this->getCarMatrix());
                     gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
                     if (siren != nullptr && siren->Active) {
@@ -1559,8 +1763,6 @@ namespace MM2
         AGE_API void DrawReflected(float a1) override
                                                             { hook::Thunk<0x4CF080>::Call<void>(this, a1); }
         AGE_API unsigned int SizeOf() override              { return hook::Thunk<0x4CDFE0>::Call<int>(this); }
-
-
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<vehCarModel, lvlInstance>("vehCarModel")

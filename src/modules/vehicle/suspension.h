@@ -15,18 +15,27 @@ namespace MM2
     private:
         Matrix34 SuspensionPivot;
         Matrix34 SuspensionMatrix;
-        vehCarSim* m_CarSimPtr;
+        vehCarSim* CarSim;
         vehWheel* Wheel;
         float unknown128; //something to do with angle from wheel to pivot
         int Mode;
     public:
-        inline vehWheel* getWheel() {
+        inline vehWheel * getWheel() {
             return this->Wheel;
         }
 
         inline Matrix34 getSuspensionMatrix()
         {
             return this->SuspensionMatrix;
+        }
+
+        inline Matrix34 getSuspensionPivot()
+        {
+            return this->SuspensionPivot;
+        }
+
+        inline vehCarSim * getCarSim() {
+            return this->CarSim;
         }
     public:
         AGE_API vehSuspension()                             { hook::Thunk<0x4D9990>::Call<void>(this); }

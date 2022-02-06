@@ -72,7 +72,7 @@ namespace MM2
         AGE_API void EjectAll(int room)                     { hook::Thunk<0x4D8BB0>::Call<void>(this, room); }
 
 
-        AGE_API void Draw(const Matrix34* a1, modShader* a2, int a3)
+        AGE_API void Draw(const Matrix34& a1, modShader* a2, int a3)
         {
             for (auto i = this->first; i; i = i->next)
             {
@@ -83,7 +83,7 @@ namespace MM2
                     {
                         Matrix34 drawMatrix = Matrix34();
                         drawMatrix.Set(i->matrix);
-                        drawMatrix.Dot(*a1);
+                        drawMatrix.Dot(a1);
 
                         //setup renderer
                         Matrix44::Convert(gfxRenderState::sm_World, drawMatrix);
@@ -98,7 +98,7 @@ namespace MM2
                             bool isSoftware = *(bool*)0x6830D4;
 
                             auto level = *lvlLevel::Singleton;
-                            Vector3 carPosition = Vector3(a1->m30, a1->m31, a1->m32);
+                            Vector3 carPosition = Vector3(a1.m30, a1.m31, a1.m32);
 
                             auto state = &MMSTATE;
                             if (a3 == 3 && (g_ReflectionMap != nullptr && !isSoftware && state->EnableReflections) &&

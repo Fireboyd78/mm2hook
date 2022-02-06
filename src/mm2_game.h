@@ -760,6 +760,10 @@ namespace MM2
             auto player = game->getPlayer();
             return player;
         }
+
+        inline asCamera * getCamera() {
+            return &this->m_Camera;
+        }
     public:
         ANGEL_ALLOCATOR
         void* operator new (std::size_t, void* p) throw() { return p; }
@@ -978,7 +982,7 @@ namespace MM2
         int field_74;
         int field_78;
         int field_7c;
-        mmPlayer* m_PlayerPtr;
+        mmPlayer* Player;
         int field_84;
         int field_88;
         int field_8c;

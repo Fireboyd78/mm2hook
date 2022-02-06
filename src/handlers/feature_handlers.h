@@ -466,3 +466,9 @@ public:
     void Update();
     static void Install();
 };
+
+class camPovCSHandler {
+public:
+    void UpdatePOV();
+    static void Install();
+};

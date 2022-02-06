@@ -13,7 +13,7 @@ namespace MM2
     // Class definitions
     class vehAxle : public asNode {
     private:
-        vehCarSim *m_CarSimPtr;
+        vehCarSim *CarSim;
         Matrix34 AxlePivot;
         Matrix34 AxleMatrix;
         vehWheel *LeftWheel;
@@ -35,6 +35,14 @@ namespace MM2
 
         inline Matrix34 getAxleMatrix() {
             return this->AxleMatrix;
+        }
+
+        inline Matrix34 getAxlePivot() {
+            return this->AxlePivot;
+        }
+
+        inline vehCarSim * getCarSim() {
+            return this->CarSim;
         }
     public:
         AGE_API vehAxle()                                   { hook::Thunk<0x4D9990>::Call<void>(this); }

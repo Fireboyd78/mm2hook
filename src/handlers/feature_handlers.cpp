@@ -86,6 +86,8 @@ static init_handler g_feature_handlers[] = {
 
     CreateHandler<MenuManagerHandler>("MenuManager"),
 
+    CreateHandler<camPovCSHandler>("camPovCS"),
+
     CreateHandler<luaDrawableHandler>("luaDrawableHandler")
 };
 
@@ -2682,23 +2684,49 @@ void mmDashViewHandler::UpdateCS() {
     auto car = player->getCar();
     auto carModel = car->getModel();
 
-    sm_DashOffset = carModel->GetMatrix(&sm_DashOffset);
+    if (cfgEnableHeadBobbing.Get())
+    {
+        sm_DashOffset = carModel->GetMatrix(&sm_DashOffset);
 
-    auto steering = *getPtr<float>(player, 0x2264);
-    auto wheelFact = *getPtr<float>(this, 0x400);
+        auto steering = *getPtr<float>(player, 0x2264);
+        auto wheelFact = *getPtr<float>(this, 0x400);
 
-    Vector3 velocity = carModel->GetVelocity();
+        Vector3 velocity = carModel->GetVelocity();
 
-    auto velY = (velocity.Y * cfgHeadBobVelocityScaleY);
-    auto velZ = (velocity.Z - (velocity.Y + velocity.X)) * -cfgHeadBobVelocityScaleZ;
+        auto velY = (velocity.Y * cfgHeadBobVelocityScaleY);
+        auto velZ = (velocity.Z - (velocity.Y + velocity.X)) * -cfgHeadBobVelocityScaleZ;
 
-    auto bodyRoll = -(steering * wheelFact) * (cfgHeadBobSteeringFactor * (cfgHeadBobSteeringSpeedFactor * velZ));
+        auto bodyRoll = -(steering * wheelFact) * (cfgHeadBobSteeringFactor * (cfgHeadBobSteeringSpeedFactor * velZ));
 
-    auto headBobY = ((sm_DashOffset.m31 - dashCam->m31) * -cfgHeadBobOffsetScaleY) + velY + bodyRoll;
-    auto headBobZ = ((sm_DashOffset.m32 - dashCam->m32) * -cfgHeadBobOffsetScaleZ) * velZ;
+        auto headBobY = ((sm_DashOffset.m31 - dashCam->m31) * -cfgHeadBobOffsetScaleY) + velY + bodyRoll;
+        auto headBobZ = ((sm_DashOffset.m32 - dashCam->m32) * -cfgHeadBobOffsetScaleZ) * velZ;
 
-    dashCam->m31 += (headBobY * cfgHeadBobMultiplierY);
-    dashCam->m32 += (headBobZ * cfgHeadBobMultiplierZ);
+        dashCam->m31 += (headBobY * cfgHeadBobMultiplierY);
+        dashCam->m32 += (headBobZ * cfgHeadBobMultiplierZ);
+    }
+
+    if (vehCarModel::WheelWobble && car->getCarSim()->OnGround())
+    {
+        Vector3 vec;
+
+        float rotation = (fabs(car->getCarSim()->getWheel(1)->getRotationRate()) * datTimeManager::Seconds - 1.5707964f) * 0.31830987f;
+
+        float rotationPercent = fmaxf(0.f, fminf(rotation, 1.f));
+        float invRotationPercent = 1.f - rotationPercent;
+
+        vec.X = dashCam->m20 + dashCam->m00;
+        vec.Y = dashCam->m21 + dashCam->m01;
+        vec.Z = dashCam->m22 + dashCam->m02;
+
+        auto carDamage = car->getCarDamage();
+        float damagePercent = (carDamage->getCurDamage() - carDamage->getMedDamage()) / (carDamage->getMaxDamage() - carDamage->getMedDamage());
+
+        damagePercent = fmaxf(0.f, fminf(damagePercent, 1.f));
+
+        float wobbleAngle = sin(car->getCarSim()->getWheel(1)->getAccumulatedRotation()) * damagePercent * invRotationPercent * 0.005f;
+
+        dashCam->Rotate(vec, wobbleAngle);
+    }
 
     hook::Thunk<0x4A3370>::Call<void>(this);
 }
@@ -2727,7 +2755,7 @@ void mmDashViewHandler::Init(char* vehName, mmPlayer* player) {
     if (!dashView->field_604)
         return;
 
-    auto model = dashView->m_PlayerPtr->getCar()->getModel();
+    auto model = dashView->Player->getCar()->getModel();
     int geomId = model->getGeomSetId();
     auto geomTableEntry = lvlInstance::GetGeomTableEntry(geomId);
     int shaderCount = geomTableEntry->numShaders;
@@ -2828,10 +2856,10 @@ void mmDashViewHandler::Init(char* vehName, mmPlayer* player) {
 
 void mmDashViewHandler::Cull() {
     auto dashView = reinterpret_cast<mmDashView*>(this);
-    int shaderCount = dashView->m_PlayerPtr->getCar()->getModel()->GetGeomTablePtr()->numShaders;
+    int shaderCount = dashView->Player->getCar()->getModel()->GetGeomTablePtr()->numShaders;
 
     if (dashView->field_604) {
-        if (*getPtr<float>(dashView->m_PlayerPtr, 0x1D6C) == 0.f) {
+        if (*getPtr<float>(dashView->Player, 0x1D6C) == 0.f) {
             RadialGauge::bDebugPivot = dashView->PivotDebug;
             byte zEnable = RSTATE->Data.ZEnable;
             bool lighting = RSTATE->Data.Lighting;
@@ -2885,7 +2913,7 @@ void mmDashViewHandler::Cull() {
 
             //draw gear indicator
             if (dashView->GearIndicatorModStatic != nullptr) {
-                auto carsim = dashView->m_PlayerPtr->getCar()->getCarSim();
+                auto carsim = dashView->Player->getCar()->getCarSim();
                 auto transmission = carsim->getTransmission();
                 float trottleInput = carsim->getEngine()->getThrottleInput();
                 float speedMPH = carsim->getSpeedMPH();
@@ -2966,7 +2994,7 @@ void mmDashViewHandler::Cull() {
                 float wheelPivotOffsetY = dashView->field_58c + dashView->WheelPivotOffset.Y;
                 float wheelPivotOffsetZ = dashView->field_590 + dashView->WheelPivotOffset.Z;
 
-                dWord_6a4->RotateZ(-(*getPtr<float>(dashView->m_PlayerPtr, 0x2264) * dashView->WheelFact));
+                dWord_6a4->RotateZ(-(*getPtr<float>(dashView->Player, 0x2264) * dashView->WheelFact));
 
                 float wheelOffsetX = wheelPivotOffsetZ * dashView->field_6bc + wheelPivotOffsetY * dashView->field_6b0 + wheelPivotOffsetX * dashView->field_6a4;
                 float wheelOffsetY = wheelPivotOffsetZ * dashView->field_6c0 + wheelPivotOffsetY * dashView->field_6b4 + wheelPivotOffsetX * dashView->field_6a8;
@@ -3029,8 +3057,8 @@ void mmDashViewHandler::Cull() {
 }
 
 void mmDashViewHandler::Install() {
-    if (cfgEnableHeadBobbing) {
-        InstallCallback("mmDashView::Update", "Allows for a custom implementation of head-bobbing in dashboards.",
+    if (cfgEnableHeadBobbing.Get() || vehCarModel::WheelWobble) {
+        InstallCallback("mmDashView::Update", "Allows for a custom implementation of head-bobbing and wheel wobbling in dashboards.",
             &UpdateCS, {
                 cb::call(0x430F87), // replaces call to asLinearCS::Update
             }
@@ -4695,7 +4723,7 @@ void vehCarHandler::Update() {
         }
     }
 
-    if (vehCarModel::mm1StyleTransmission) {
+    if (vehCarModel::Mm1StyleTransmission) {
         vehCarHandler::Mm1StyleTransmission();
     }
 
@@ -4770,7 +4798,7 @@ void vehCarHandler::Install(void) {
         }
     );
 
-    if (vehCarModel::mm1StyleTransmission) {
+    if (vehCarModel::Mm1StyleTransmission) {
         // deactivate auto Handbrake system
         InstallPatch({ 0xD8, 0x1D, 0x3C, 0x4, 0x5B, 0x0 }, {
             0x405C81,
@@ -4963,6 +4991,7 @@ void vehCarModelFeatureHandler::Install() {
     ConfigValue<bool> cfgEnableLEDSiren("EnableLEDSiren", false);
     ConfigValue<bool> cfgNfsMwStyleTotaledCar("NFSMWStyleTotaledCar", false);
     ConfigValue<bool> cfgBreakableRenderTweak("BreakableRenderTweak", false);
+    ConfigValue<bool> cfgWheelWobble("PhysicalWheelWobble", true);
     ConfigValue<int> cfgSirenStyle("SirenStyle", 0);
     ConfigValue<int> cfgHeadlightStyle("HeadlightStyle", 0);
     ConfigValue<float> cfgSirenCycleRate("SirenCycle", 0.25f);
@@ -4980,47 +5009,20 @@ void vehCarModelFeatureHandler::Install() {
     vehCarModel::PartReflections = cfgPartReflections.Get();
     vehCarModel::WheelReflections = vehCarModel::PartReflections;
 
-    vehCarModel::mm1StyleTransmission = cfgMm1StyleTransmission.Get();
-    vehCarModel::breakableRenderTweak = cfgBreakableRenderTweak.Get();
+    vehCarModel::Mm1StyleTransmission = cfgMm1StyleTransmission.Get();
+    vehCarModel::BreakableRenderTweak = cfgBreakableRenderTweak.Get();
+
+    vehCarModel::WheelWobble = cfgWheelWobble.Get();
 }
 
 /*
     vehWheelHandler
 */
 
-static ConfigValue<bool> cfgWheelWobble("PhysicalWheelWobble", false);
-
 void vehWheelHandler::Update()
 {
     //call original
     hook::Thunk<0x4D34E0>::Call<void>(this);
-
-    auto wheel = reinterpret_cast<vehWheel*>(this);
-    auto carSim = wheel->getCarSim();
-
-    if (wheel->getWobbleLimit() == 0.f || carSim == nullptr || !carSim->OnGround())
-        return;
-
-    auto carMatrix = carSim->getWorldMatrix();
-    auto icsMatrix = carSim->getICS()->GetMatrix();
-    auto gravCenter = carSim->getCenterOfGravity();
-
-    carMatrix->Identity();
-
-    float angle = wheel->getMatrix().m11 * wheel->getWobbleAmount() * wheel->getWobbleLimit();
-
-    carMatrix->RotateX(angle * 0.25f);
-    carMatrix->RotateZ(angle * 0.25f);
-
-    carMatrix->Dot(*icsMatrix);
-
-    float posX = icsMatrix->m00 * gravCenter.X + icsMatrix->m10 * gravCenter.Y + icsMatrix->m20 * gravCenter.Z;
-    float posY = icsMatrix->m01 * gravCenter.X + icsMatrix->m11 * gravCenter.Y + icsMatrix->m21 * gravCenter.Z;
-    float posZ = icsMatrix->m02 * gravCenter.X + icsMatrix->m12 * gravCenter.Y + icsMatrix->m22 * gravCenter.Z;
-
-    carMatrix->m30 += posX;
-    carMatrix->m31 += posY;
-    carMatrix->m32 += posZ;
 }
 
 void vehWheelHandler::Install()
@@ -5037,9 +5039,6 @@ void vehWheelHandler::Install()
             cb::call(0x4D754B),
         }
     );
-
-    if (!cfgWheelWobble.Get())
-        return;
 
     InstallVTableHook("vehWheel::Update",
         &Update, {
@@ -7608,6 +7607,88 @@ void MenuManagerHandler::Install() {
     InstallVTableHook("MenuManager::Update",
         &Update, {
             0x5B3290,
+        }
+    );
+}
+
+/*
+    camPovCSHandler
+*/
+
+void camPovCSHandler::UpdatePOV() {
+    auto camPov = reinterpret_cast<camPovCS*>(this);
+    auto matrix = camPov->GetMatrix();
+    auto matrix2 = camPov->getMatrix2();
+    auto reverseOffset = camPov->getReverseOffset();
+    auto camPan = camPov->getCamPan();
+    auto position2 = camPov->getPosition2();
+    auto car = camPov->getCar();
+
+    float angle = 0.f;
+    float angle2 = 0.f;
+    float pitch = camPov->getPitch();
+    float yaw = camPov->getYaw();
+
+    matrix2->Identity();
+
+    if (camPan != -1)
+        reverseOffset = camPov->getOffset();
+
+    position2->X = reverseOffset.X;
+    position2->Y = reverseOffset.Y;
+    position2->Z = reverseOffset.Z;
+
+    matrix2->Dot(*matrix);
+
+    if (camPan == -1)
+        angle = -pitch;
+    else
+        angle = pitch;
+
+    if (angle != 0.f)
+        matrix2->Rotate(*(Vector3*)&matrix2->m00, angle);
+
+    if (camPan == -1)
+        angle2 = 3.1415927f;
+    else
+        angle2 = camPov->getAngle();
+
+    if (yaw != 0.f)
+        angle2 = yaw;
+
+    if (angle2 != 0.f)
+        matrix2->Rotate(*(Vector3*)&matrix2->m10, angle2);
+
+    if (vehCarModel::WheelWobble && car->getCarSim()->OnGround())
+    {
+        Vector3 vec;
+
+        float rotation = (fabs(car->getCarSim()->getWheel(1)->getRotationRate()) * datTimeManager::Seconds - 1.5707964f) * 0.31830987f;
+
+        float rotationPercent = fmaxf(0.f, fminf(rotation, 1.f));
+        float invRotationPercent = 1.f - rotationPercent;
+
+        vec.X = matrix2->m20 + matrix2->m00;
+        vec.Y = matrix2->m21 + matrix2->m01;
+        vec.Z = matrix2->m22 + matrix2->m02;
+
+        auto carDamage = car->getCarDamage();
+        float damagePercent = (carDamage->getCurDamage() - carDamage->getMedDamage()) / (carDamage->getMaxDamage() - carDamage->getMedDamage());
+
+        damagePercent = fmaxf(0.f, fminf(damagePercent, 1.f));
+
+        float wobbleAngle = sin(car->getCarSim()->getWheel(1)->getAccumulatedRotation()) * damagePercent * invRotationPercent * 0.005f;
+
+        matrix2->Rotate(vec, wobbleAngle);
+    }
+
+    camPov->approachIt();
+}
+
+void camPovCSHandler::Install() {
+    InstallCallback("camPovCS::UpdatePOV", "Implements wobble cam feature.",
+        &UpdatePOV, {
+            cb::call(0x51D573),
         }
     );
 }
