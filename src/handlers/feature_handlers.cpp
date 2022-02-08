@@ -2711,8 +2711,8 @@ void mmDashViewHandler::UpdateCS() {
 
         float rotation = (fabs(car->getCarSim()->getWheel(1)->getRotationRate()) * datTimeManager::Seconds - 1.5707964f) * 0.31830987f;
 
-        float rotationPercent = fmaxf(0.f, fminf(rotation, 1.f));
-        float invRotationPercent = 1.f - rotationPercent;
+        float rotationAmount = fmaxf(0.f, fminf(rotation, 1.f));
+        float invRotationAmount = 1.f - rotationAmount;
 
         vec.X = dashCam->m20 + dashCam->m00;
         vec.Y = dashCam->m21 + dashCam->m01;
@@ -2723,7 +2723,7 @@ void mmDashViewHandler::UpdateCS() {
 
         damagePercent = fmaxf(0.f, fminf(damagePercent, 1.f));
 
-        float wobbleAngle = sin(car->getCarSim()->getWheel(1)->getAccumulatedRotation()) * damagePercent * invRotationPercent * 0.005f;
+        float wobbleAngle = sin(car->getCarSim()->getWheel(1)->getAccumulatedRotation()) * damagePercent * invRotationAmount * 0.005f;
 
         dashCam->Rotate(vec, wobbleAngle);
     }
@@ -6376,14 +6376,6 @@ void vehSirenHandler::Install() {
         0x4D6638,
     });
 
-    //don't draw Angels siren lights
-    InstallPatch({
-        0xE9, 0xD1, 0x0, 0x0, 0x0,
-        0x90,
-    }, {
-        0x4D68C1,
-    });
-
     ConfigValue<float> cfgSirenRotationSpeed("SirenRotationSpeed", 3.1415927f);
     ConfigValue<float> cfgSirenRotationStyle("SirenRotationStyle", 1.5707964f);
 
@@ -7665,8 +7657,8 @@ void camPovCSHandler::UpdatePOV() {
 
         float rotation = (fabs(car->getCarSim()->getWheel(1)->getRotationRate()) * datTimeManager::Seconds - 1.5707964f) * 0.31830987f;
 
-        float rotationPercent = fmaxf(0.f, fminf(rotation, 1.f));
-        float invRotationPercent = 1.f - rotationPercent;
+        float rotationAmount = fmaxf(0.f, fminf(rotation, 1.f));
+        float invRotationAmount = 1.f - rotationAmount;
 
         vec.X = matrix2->m20 + matrix2->m00;
         vec.Y = matrix2->m21 + matrix2->m01;
@@ -7677,7 +7669,7 @@ void camPovCSHandler::UpdatePOV() {
 
         damagePercent = fmaxf(0.f, fminf(damagePercent, 1.f));
 
-        float wobbleAngle = sin(car->getCarSim()->getWheel(1)->getAccumulatedRotation()) * damagePercent * invRotationPercent * 0.005f;
+        float wobbleAngle = sin(car->getCarSim()->getWheel(1)->getAccumulatedRotation()) * damagePercent * invRotationAmount * 0.005f;
 
         matrix2->Rotate(vec, wobbleAngle);
     }

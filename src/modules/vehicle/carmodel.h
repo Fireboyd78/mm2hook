@@ -162,7 +162,7 @@ namespace MM2
 
                     GetPivot(outMatrix, basename, mtxName);
                     this->GetSurfaceColor(sirenEntry->getHighLOD(), &siren->ltLightPool[siren->LightCount].Color);
-                    siren->AddLight(&Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32), &siren->ltLightPool[siren->LightCount].Color);
+                    siren->AddLight(Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32), siren->ltLightPool[siren->LightCount].Color);
                 }
             }
         }
@@ -286,6 +286,8 @@ namespace MM2
             if (this->headlights == nullptr)
                 return;
 
+            Vector3 someCameraThing = *(Vector3*)0x685490;
+
             if (rotate)
             {
                 this->headlights[0].Direction.RotateY(datTimeManager::Seconds * vehCarModel::HeadlightFlashingSpeed);
@@ -318,7 +320,6 @@ namespace MM2
                 float lZ = lightPos.Y * carMatrix.m12 + lightPos.Z * carMatrix.m22 + lightPos.X * carMatrix.m02 + carMatrix.m32;
                 light->Position = Vector3(lX, lY, lZ);
 
-                Vector3* someCameraThing = (Vector3*)0x685490;
                 light->DrawGlow(someCameraThing);
             }
             ltLight::DrawGlowEnd();
@@ -367,7 +368,7 @@ namespace MM2
                 float lZ = lightPos.Y * carMatrix.m12 + lightPos.Z * carMatrix.m22 + lightPos.X * carMatrix.m02 + carMatrix.m32;
                 light->Position = Vector3(lX, lY, lZ);
 
-                Vector3* someCameraThing = (Vector3*)0x685490;
+                Vector3 someCameraThing = *(Vector3*)0x685490;
                 light->DrawGlow(someCameraThing);
             }
             ltLight::DrawGlowEnd();
@@ -399,7 +400,7 @@ namespace MM2
                     float lZ = lightPos.Y * carMatrix.m12 + lightPos.Z * carMatrix.m22 + lightPos.X * carMatrix.m02 + carMatrix.m32;
                     light->Position = Vector3(lX, lY, lZ);
 
-                    Vector3* someCameraThing = (Vector3*)0x685490;
+                    Vector3 someCameraThing = *(Vector3*)0x685490;
                     light->DrawGlow(someCameraThing);
                 }
             }
@@ -887,8 +888,8 @@ namespace MM2
 
             float rotation = (fabs(this->carSim->getWheel(1)->getRotationRate()) * datTimeManager::Seconds - 1.5707964f) * 0.31830987f;
 
-            float rotationPercent = fmaxf(0.f, fminf(rotation, 1.f));
-            float invRotationPercent = 1.f - rotationPercent;
+            float rotationAmount = fmaxf(0.f, fminf(rotation, 1.f));
+            float invRotationAmount = 1.f - rotationAmount;
 
             vec.X = matrix.m20 + matrix.m00;
             vec.Y = matrix.m21 + matrix.m01;
@@ -899,7 +900,7 @@ namespace MM2
 
             damagePercent = fmaxf(0.f, fminf(damagePercent, 1.f));
 
-            float angle = sin(this->carSim->getWheel(1)->getAccumulatedRotation()) * damagePercent * invRotationPercent * 0.02f;
+            float angle = sin(this->carSim->getWheel(1)->getAccumulatedRotation()) * damagePercent * invRotationAmount * 0.02f;
 
             matrix.Rotate(vec, angle);
 
@@ -1169,8 +1170,8 @@ namespace MM2
 
                         float rotation = (fabs(this->carSim->ShockSuspensions[1].getWheel()->getRotationRate()) * datTimeManager::Seconds - 1.5707964f) * 0.31830987f;
 
-                        float rotationPercent = fmaxf(0.f, fminf(rotation, 1.f));
-                        float invRotationPercent = 1.f - rotationPercent;
+                        float rotationAmount = fmaxf(0.f, fminf(rotation, 1.f));
+                        float invRotationAmount = 1.f - rotationAmount;
 
                         vec.X = this->getCarMatrix().m20 + this->getCarMatrix().m00;
                         vec.Y = this->getCarMatrix().m21 + this->getCarMatrix().m01;
@@ -1181,7 +1182,7 @@ namespace MM2
 
                         damagePercent = fmaxf(0.f, fminf(damagePercent, 1.f));
 
-                        float angle = sin(this->carSim->ShockSuspensions[1].getWheel()->getAccumulatedRotation()) * damagePercent * invRotationPercent * 0.02f;
+                        float angle = sin(this->carSim->ShockSuspensions[1].getWheel()->getAccumulatedRotation()) * damagePercent * invRotationAmount * 0.02f;
 
                         matrix.Set(this->carSim->ShockSuspensions[i].getSuspensionPivot());
 
@@ -1209,15 +1210,15 @@ namespace MM2
 
                         float rotation = (fabs(this->carSim->ArmSuspensions[i].getWheel()->getRotationRate()) * datTimeManager::Seconds - 1.5707964f) * 0.31830987f;
 
-                        float rotationPercent = fmaxf(0.f, fminf(rotation, 1.f));
-                        float invRotationPercent = 1.f - rotationPercent;
+                        float rotationAmount = fmaxf(0.f, fminf(rotation, 1.f));
+                        float invRotationAmount = 1.f - rotationAmount;
 
                         auto carDamage = this->car->getCarDamage();
                         float damagePercent = (carDamage->getCurDamage() - carDamage->getMedDamage()) / (carDamage->getMaxDamage() - carDamage->getMedDamage());
 
                         damagePercent = fmaxf(0.f, fminf(damagePercent, 1.f));
 
-                        float angle = sin(this->carSim->ArmSuspensions[i].getWheel()->getMatrix().m11) * damagePercent * invRotationPercent * 0.02f;
+                        float angle = sin(this->carSim->ArmSuspensions[i].getWheel()->getMatrix().m11) * damagePercent * invRotationAmount * 0.02f;
 
                         matrix.Set(this->carSim->ArmSuspensions[i].getSuspensionPivot());
 
@@ -1244,8 +1245,8 @@ namespace MM2
 
                         float rotation = (fabs(this->carSim->ShaftSuspensions[1].getWheel()->getRotationRate()) * datTimeManager::Seconds - 1.5707964f) * 0.31830987f;
 
-                        float rotationPercent = fmaxf(0.f, fminf(rotation, 1.f));
-                        float invRotationPercent = 1.f - rotationPercent;
+                        float rotationAmount = fmaxf(0.f, fminf(rotation, 1.f));
+                        float invRotationAmount = 1.f - rotationAmount;
 
                         vec.X = this->getCarMatrix().m20 + this->getCarMatrix().m00;
                         vec.Y = this->getCarMatrix().m21 + this->getCarMatrix().m01;
@@ -1256,7 +1257,7 @@ namespace MM2
 
                         damagePercent = fmaxf(0.f, fminf(damagePercent, 1.f));
 
-                        float angle = sin(this->carSim->ShaftSuspensions[1].getWheel()->getAccumulatedRotation()) * damagePercent * invRotationPercent * 0.02f;
+                        float angle = sin(this->carSim->ShaftSuspensions[1].getWheel()->getAccumulatedRotation()) * damagePercent * invRotationAmount * 0.02f;
 
                         matrix.Set(this->carSim->ShaftSuspensions[i].getSuspensionPivot());
 
@@ -1287,8 +1288,8 @@ namespace MM2
 
                         float rotation = (fabs(this->carSim->AxleFront.getRightWheel()->getRotationRate()) * datTimeManager::Seconds - 1.5707964f) * 0.31830987f;
 
-                        float rotationPercent = fmaxf(0.f, fminf(rotation, 1.f));
-                        float invRotationPercent = 1.f - rotationPercent;
+                        float rotationAmount = fmaxf(0.f, fminf(rotation, 1.f));
+                        float invRotationAmount = 1.f - rotationAmount;
 
                         vec.X = this->getCarMatrix().m20 + this->getCarMatrix().m00;
                         vec.Y = this->getCarMatrix().m21 + this->getCarMatrix().m01;
@@ -1299,7 +1300,7 @@ namespace MM2
 
                         damagePercent = fmaxf(0.f, fminf(damagePercent, 1.f));
 
-                        float angle = sin(this->carSim->AxleFront.getRightWheel()->getAccumulatedRotation()) * damagePercent * invRotationPercent * 0.02f;
+                        float angle = sin(this->carSim->AxleFront.getRightWheel()->getAccumulatedRotation()) * damagePercent * invRotationAmount * 0.02f;
 
                         matrix.Rotate(vec, angle);
 
@@ -1322,8 +1323,8 @@ namespace MM2
 
                         float rotation = (fabs(this->carSim->AxleRear.getRightWheel()->getRotationRate()) * datTimeManager::Seconds - 1.5707964f) * 0.31830987f;
 
-                        float rotationPercent = fmaxf(0.f, fminf(rotation, 1.f));
-                        float invRotationPercent = 1.f - rotationPercent;
+                        float rotationAmount = fmaxf(0.f, fminf(rotation, 1.f));
+                        float invRotationAmount = 1.f - rotationAmount;
 
                         vec.X = this->getCarMatrix().m20 + this->getCarMatrix().m00;
                         vec.Y = this->getCarMatrix().m21 + this->getCarMatrix().m01;
@@ -1334,7 +1335,7 @@ namespace MM2
 
                         damagePercent = fmaxf(0.f, fminf(damagePercent, 1.f));
 
-                        float angle = sin(this->carSim->AxleRear.getRightWheel()->getAccumulatedRotation()) * damagePercent * invRotationPercent * 0.02f;
+                        float angle = sin(this->carSim->AxleRear.getRightWheel()->getAccumulatedRotation()) * damagePercent * invRotationAmount * 0.02f;
 
                         matrix.Rotate(vec, angle);
 
@@ -1735,7 +1736,7 @@ namespace MM2
                     //MM2 siren
                     if (siren != nullptr && siren->HasLights && siren->Active)
                     {
-                        siren->Draw(&this->getCarMatrix());
+                        siren->Draw(this->getCarMatrix());
                     }
                 }
                 if (vehCarModel::SirenType == 1 || vehCarModel::SirenType == 2) {

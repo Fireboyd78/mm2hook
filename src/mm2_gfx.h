@@ -599,9 +599,9 @@ namespace MM2
         static AGE_API void ShutdownLights() { hook::StaticThunk<0x59ABD0>::Call<void>(); }
         static AGE_API void DrawGlowBegin() { hook::StaticThunk<0x59AE30>::Call<void>(); }
         static AGE_API void DrawGlowEnd() { hook::StaticThunk<0x59AEF0>::Call<void>(); }
-        static AGE_API void SetUpGfxLightBegin(Vector3 const* a1)
+        static AGE_API void SetUpGfxLightBegin(const Vector3& a1)
         {
-            hook::StaticThunk<0x59B390>::Call<void>(a1);
+            hook::StaticThunk<0x59B390>::Call<void>(&a1);
         }
         static AGE_API void SetUpGfxLightEnd() { hook::StaticThunk<0x59B460>::Call<void>(); }
         static AGE_API int GetNumPointLights() { return hook::StaticThunk<0x59B3E0>::Call<int>(); }
@@ -613,28 +613,28 @@ namespace MM2
         AGE_API void Default() { hook::Thunk<0x59ABF0>::Call<void>(this); }
         AGE_API void Random() { hook::Thunk<0x59AC40>::Call<void>(this); }
         AGE_API void Draw(float scale) { hook::Thunk<0x59ACB0>::Call<void>(this, scale); }
-        AGE_API void DrawGlow(Vector3* position) { hook::Thunk<0x59AD90>::Call<void>(this, position); }
-        AGE_API void DrawHighlight(Vector3* a1, Matrix34* a2)
+        AGE_API void DrawGlow(const Vector3& position) { hook::Thunk<0x59AD90>::Call<void>(this, &position); }
+        AGE_API void DrawHighlight(const Vector3& a1, const Matrix34& a2)
         {
-            hook::Thunk<0x59AFB0>::Call<void>(this, a1, a2);
+            hook::Thunk<0x59AFB0>::Call<void>(this, &a1, &a2);
         }
         AGE_API void SetUpGfxLight() { hook::Thunk<0x59B5B0>::Call<void>(this); }
-        AGE_API bool SetGfxLight(gfxLight* a1, Vector3* a2)
+        AGE_API bool SetGfxLight(gfxLight* a1, const Vector3& a2)
         {
-            return hook::Thunk<0x59B740>::Call<bool>(this, a1, a2);
+            return hook::Thunk<0x59B740>::Call<bool>(this, a1, &a2);
         }
-        AGE_API void Illuminate(Vector3* outColor, Vector3* a2, Vector3* a3)
+        AGE_API void Illuminate(Vector3& outColor, Vector3& a2, Vector3& a3)
         {
-            hook::Thunk<0x59B990>::Call<void>(this, outColor, a2, a3);
+            hook::Thunk<0x59B990>::Call<void>(this, &outColor, &a2, &a3);
         }
-        AGE_API float ComputeIntensity(Vector3* a1, float a2)
+        AGE_API float ComputeIntensity(const Vector3& a1, float a2)
         {
-            return hook::Thunk<0x59BA50>::Call<float>(this, a1, a2);
+            return hook::Thunk<0x59BA50>::Call<float>(this, &a1, a2);
         }
-        AGE_API float ComputeDistance(Vector3* a1) { return hook::Thunk<0x59BB70>::Call<float>(this, a1); }
+        AGE_API float ComputeDistance(const Vector3& a1) { return hook::Thunk<0x59BB70>::Call<float>(this, &a1); }
 
         //TODO
-        /*AGE_API void SetUpProjection(ltProjection* a1)  { hook::Thunk<0x59BBB0 >::Call<void>(this, a1); }*/
+        /*AGE_API void SetUpProjection(ltProjection& a1)  { hook::Thunk<0x59BBB0 >::Call<void>(this, &a1); }*/
 
         AGE_API void FileIO(datParser* a1) { hook::Thunk<0x59BCA0>::Call<void>(this, a1); }
 
@@ -693,7 +693,7 @@ namespace MM2
         //member funcs
         AGE_API void DrawBegin() { hook::Thunk<0x59BFA0>::Call<void>(this); }
         AGE_API void DrawEnd() { hook::Thunk<0x59C0C0>::Call<void>(this); }
-        AGE_API void Draw(Vector3* position, Vector3* color, float a3) { hook::Thunk<0x59C1C0>::Call<void>(this, position, color, a3); }
+        AGE_API void Draw(Vector3 &position, Vector3 &color, float intensity) { hook::Thunk<0x59C1C0>::Call<void>(this, &position, &color, intensity); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<ltLensFlare>("ltLensFlare")
