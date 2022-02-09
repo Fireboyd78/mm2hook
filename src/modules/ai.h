@@ -31,6 +31,7 @@
 #include "ai\aiVehicleSpline.h"
 #include "ai\aiBanger.h"
 #include "ai\aiVehicleData.h"
+#include "ai\aiGoal.h"
 
 namespace MM2
 {

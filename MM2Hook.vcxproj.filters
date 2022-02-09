@@ -951,6 +951,9 @@
     <ClInclude Include="src\modules\vehicle\surfaceaudiosubdata.h">
       <Filter>Source Files\modules\vehicle</Filter>
     </ClInclude>
+    <ClInclude Include="src\modules\ai\aiGoal.h">
+      <Filter>Source Files\modules\ai</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
