@@ -7,7 +7,6 @@ namespace MM2
 {
     const auto DisableGlobalSeed = (void(*)(void))(0x4BBD50);
     const auto EnableGlobalSeed = (void(*)(void))(0x4BBD80);
-    const auto frand = (float(*)(void))(0x4BBE30);
     const auto ApplyBirdPoopDamage = (void(*)(gfxTexture *, gfxTexture *, float, float))(0x5923C0);
 
     fxTexelDamage::fxTexelDamage()

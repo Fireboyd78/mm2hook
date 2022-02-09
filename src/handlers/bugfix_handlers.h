@@ -185,6 +185,7 @@ public:
 
 class aiGoalAvoidPlayerHandler {
 public:
+    void AvoidPlayer();
     static void Install();
 };
 

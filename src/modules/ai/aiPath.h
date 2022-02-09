@@ -100,6 +100,16 @@ namespace MM2
         }
 
     public:
+        inline float getSpeedLimit()
+        {
+            return this->SpeedLimit;
+        }
+
+        inline short getFlags()
+        {
+            return this->Flags;
+        }
+
         aiPath(void)                                        DONOTCALL;
         aiPath(const aiPath &&)                             DONOTCALL;
 

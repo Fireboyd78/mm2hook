@@ -11,12 +11,17 @@ namespace MM2
 
     // External declarations
     extern class AudImpact;
+    extern class aiRailSet;
 
     // Class definitions
 
     class aiVehicleSpline : public aiVehicle {
+    private:
+        hook::Field<0x10, aiRailSet> _railSet;
+        hook::Field<0xE6, short> _playerId;
+        hook::Field<0xF4, float> _curSpeed;
     protected:
-        byte _buffer[0x188];
+        byte _buffer[0x184];
     public:
         aiVehicleSpline(void)                               DONOTCALL;
         aiVehicleSpline(const aiVehicleSpline &&)           DONOTCALL;
@@ -45,9 +50,31 @@ namespace MM2
         virtual void StopVoice(void)                        FORWARD_THUNK;
 
         //fields
+        inline float getCurSpeed()
+        {
+            return _curSpeed.get(this);
+        }
+
+        inline void setCurSpeed(float speed)
+        {
+            _curSpeed.set(this, speed);
+        }
+
+        inline short getPlayerId()
+        {
+            return _playerId.get(this);
+        }
+
+        inline aiRailSet * getRailSet()
+        {
+            return _railSet.ptr(this);
+        }
+
         inline aiVehicleInstance * getVehicleInstance(void) const {
             return *getPtr<aiVehicleInstance*>(this, 0xD4);
         }
+
+        AGE_API void SolveYPositionAndOrientation()         { hook::Thunk<0x5690C0>::Call<void>(this); }
 
         //lua
         static void BindLua(LuaState L) {

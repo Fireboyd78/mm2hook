@@ -47,6 +47,36 @@ namespace MM2
         float field_74;
         float field_78;
         float field_7C;
+    public:
+        inline short getCurLane()
+        {
+            return this->CurLane;
+        }
+
+        inline aiPath * getCurLink()
+        {
+            return this->CurLink;
+        }
+
+        inline float getExheedLimit()
+        {
+            return this->ExheedLimit;
+        }
+
+        inline float getCurAccelFactor()
+        {
+            return this->CurAccelFactor;
+        }
+
+        inline float getRoadDist()
+        {
+            return this->RoadDist;
+        }
+
+        inline void setRoadDist(float dist)
+        {
+            this->RoadDist = dist;
+        }
     };
     ASSERT_SIZEOF(aiRailSet, 0x80);
 

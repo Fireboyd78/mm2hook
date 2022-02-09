@@ -913,11 +913,17 @@ void aiVehicleInstanceHandler::Install()
     aiGoalAvoidPlayerHandler
 */
 
+void aiGoalAvoidPlayerHandler::AvoidPlayer() {
+    auto goal = reinterpret_cast<aiGoalAvoidPlayer*>(this);
+    goal->avoidPlayer();
+}
+
 void aiGoalAvoidPlayerHandler::Install() {
-    // fixes traffic reactions when they avoid the player
-    InstallPatch({ 0x90, 0x90, 0x90 }, {
-        0x56B235,
-    });
+    InstallCallback("aiGoalAvoidPlayer::AvoidPlayer", "Fixes traffic reactions when they avoid the player.",
+        &AvoidPlayer, {
+            cb::call(0x56AF63),
+        }
+    );
 }
 
 /*
