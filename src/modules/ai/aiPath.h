@@ -7,13 +7,89 @@ namespace MM2
     class aiPath;
 
     // External declarations
-
+    extern class aiPedestrian;
+    extern class aiVehicleAmbient;
+    extern class aiVehicleSpline;
+    extern class aiIntersection;
+    extern class aiObstacle;
 
     // Class definitions
 
     class aiPath {
     private:
-        byte _buffer[0x164];
+        int field_0;
+        int RInterRoadIdx;
+        short Count;
+        short Id;
+        short Flags;
+        short NumBlocks;
+        short* Blocks;
+        float HalfWidth;
+        float SpeedLimit;
+        int NumPeds;
+        aiPedestrian* PedFirst;
+        int NumRoadTurns;
+        void* RoadTurns;
+        char AmbPlayerFlags;
+        char PedPlayerFlags;
+        int field_30;
+        int field_34;
+        short LNumLanes;
+        short LNumTrams;
+        short LNumTrains;
+        short LUnk1;
+        short LAmbientType;
+        float* LLaneDistances;
+        float* LOuterDistances;
+        float LUnk2[10];
+        float* LLaneShit;
+        void* LTramData;
+        void* LTrainData;
+        void* LUnk3;
+        aiVehicleAmbient* LAmbients;
+        aiVehicleSpline* LSplines;
+        int LUnk4;
+        aiObstacle* LObstacles;
+        void* LBangers;
+        aiPedestrian* LPedestrians;
+        short RNumLanes;
+        short RNumTrams;
+        short RNumTrains;
+        short RUnk1;
+        short RAmbientType;
+        float* RLaneDistances;
+        float* ROuterDistances;
+        float RUnk2[10];
+        float* RLaneShit;
+        void* RTramData;
+        void* RTrainData;
+        void* RUnk3;
+        aiVehicleAmbient* RAmbients;
+        aiVehicleSpline* RSplines;
+        int RUnk4;
+        aiObstacle* RObstacles;
+        void* RBangers;
+        aiPedestrian* RPedestrians;
+        float RSectionDist;
+        int SectionOrigin;
+        Vector3 SectionAxis;
+        int Tangents;
+        aiIntersection* LIntersection;
+        short LInterUnk1;
+        short LInterVehicleRule;
+        short LInterRoadIdx;
+        short LInterUnk3;
+        Vector3 LInterTrafficLightOrigin;
+        Vector3 LInterTrafficLightAxis;
+        aiIntersection* RIntersection;
+        short RInterUnk1;
+        short RInterVehicleRule;
+        short RInterUnk2;
+        short RInterUnk3;
+        Vector3 RInterTrafficLightOrigin;
+        Vector3 RInterTrafficLightAxis;
+        short AllwaysGo;
+        short AllwaysStop;
     private:
         //lua helper
         std::tuple<int, float> luaIsPosOnRoad(Vector3* pos, float margin)
