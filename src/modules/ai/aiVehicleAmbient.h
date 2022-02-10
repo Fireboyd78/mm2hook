@@ -9,13 +9,20 @@ namespace MM2
     class aiVehicleAmbient;
 
     // External declarations
-
+    extern class aiGoalCollision;
+    extern class aiGoalRandomDrive;
+    extern class aiGoalRegainRail;
+    extern class aiGoalAvoidPlayer;
 
     // Class definitions
 
     class aiVehicleAmbient : public aiVehicleSpline {
     private:
-        byte _buffer[0x14];
+        int field_18C;
+        aiGoalCollision* Collision;
+        aiGoalRandomDrive* RandomDrive;
+        aiGoalRegainRail* RegainRail;
+        aiGoalAvoidPlayer* AvoidPlayer;
     public:
         aiVehicleAmbient(void)                              DONOTCALL;
         aiVehicleAmbient(const aiVehicleAmbient &&)         DONOTCALL;
