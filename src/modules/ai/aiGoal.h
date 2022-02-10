@@ -6,6 +6,9 @@ namespace MM2
     // Forward declarations
     class aiGoal;
     class aiGoalAvoidPlayer;
+    class aiGoalRegainRail;
+    class aiGoalRandomDrive;
+    class aiGoalCollision;
 
     // External declarations
 
@@ -20,13 +23,12 @@ namespace MM2
 
     class aiGoalAvoidPlayer : public aiGoal {
     private:
-        int field_8;
+        byte field_8;
         float Side;
         float Heading;
         float PlayerSideReactDist;
         aiRailSet* RailSet;
         aiVehicleAmbient* VehicleAmbient;
-        int field_20;
     private:
         AGE_API void AvoidPlayer()
         {
@@ -66,19 +68,13 @@ namespace MM2
         LABEL_1:
             float speedCalc = this->VehicleAmbient->getCurSpeed() / (this->RailSet->getCurLink()->getSpeedLimit() + this->RailSet->getExheedLimit());
 
-            if ((byte)this->field_20)
-            {
-                if (sideDistZ >= -0.02f) {
-                    if (sideDistZ > 0.02f)
-                        sideDistZ = 0.02f;
-                    this->Heading -= speedCalc * sideDistZ;
-                }
-                else {
-                    this->Heading += speedCalc * 0.02f;
-                }
+            if (sideDistZ >= -0.02f) {
+                if (sideDistZ > 0.02f)
+                    sideDistZ = 0.02f;
+                this->Heading -= speedCalc * sideDistZ;
             }
             else {
-                this->Heading -= speedCalc * 0.02f;
+                this->Heading += speedCalc * 0.02f;
             }
 
             vehicleMtx->MakeRotateY(this->Heading);
@@ -107,7 +103,33 @@ namespace MM2
             this->AvoidPlayer();
         }
     };
-    ASSERT_SIZEOF(aiGoalAvoidPlayer, 0x24);
+    ASSERT_SIZEOF(aiGoalAvoidPlayer, 0x20);
+
+    class aiGoalRegainRail : public aiGoal {
+    private:
+        aiRailSet* RailSet;
+        aiVehicleAmbient* VehicleAmbient;
+        Vector3 StartPos;
+        float RoadDist;
+        float RegainDist;
+    };
+    ASSERT_SIZEOF(aiGoalRegainRail, 0x24);
+
+    class aiGoalRandomDrive : public aiGoal {
+    private:
+        aiRailSet* RailSet;
+        aiVehicleSpline* VehicleSpline;
+        short CalcLane;
+        short Stopped;
+    };
+    ASSERT_SIZEOF(aiGoalRandomDrive, 0x14);
+
+    class aiGoalCollision : public aiGoal {
+    private:
+        aiVehicleSpline* VehicleSpline;
+        aiRailSet* RailSet;
+    };
+    ASSERT_SIZEOF(aiGoalCollision, 0x10);
 
     // Lua initialization
 
