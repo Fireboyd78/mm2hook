@@ -3,22 +3,17 @@
 
 #include <modules\core.h>
 #include <modules\node.h>
-#include <modules\level.h>
 
 /*
-    phbound
+    phcore
 */
-#include "phys\phboundbox.h"
-#include "phys\phboundhotdog.h"
-#include "phys\phboundsphere.h"
-#include "phys\phboundgeom.h"
-#include "phys\phbound.h"
-#include "phys\phboundpolygonal.h"
-#include "phys\phboundterrain.h"
-#include "phys\phboundterrainlocal.h"
-#include "phys\phboundcollision.h"
-#include "phys\phimpactbase.h"
-#include "phys\phcollisionprim.h"
+
+#include "phys\phmaterial.h"
+#include "phys\phline.h"
+#include "phys\phpoly.h"
+#include "phys\phisectpoint.h"
+#include "phys\phmath.h"
+#include "phys\phconvexpoly.h"
 
 /*
     phcollide
@@ -34,17 +29,6 @@
 #include "phys\phcollision.h"
 
 /*
-    phcore
-*/
-
-#include "phys\phmaterial.h"
-#include "phys\phline.h"
-#include "phys\phpoly.h"
-#include "phys\phisectpoint.h"
-#include "phys\phmath.h"
-#include "phys\phconvexpoly.h"
-
-/*
     phinertia
 */
 
@@ -55,15 +39,34 @@
     phys
 */
 
+#include "phys\phintersection.h"
+#include "phys\segment.h"
+#include "phys\impact.h"
+#include "phys\levelbound.h"
 #include "phys\physmgr.h"
 #include "phys\physentity.h"
-#include "phys\segment.h"
-#include "phys\bound.h"
-#include "phys\levelbound.h"
-#include "phys\impact.h"
 #include "phys\trailerjoint.h"
 
-#include "phys\phintersection.h"
+/*
+    phbound
+*/
+
+#include "phys\phimpactbase.h"
+#include "phys\phbound.h"
+#include "phys\phboundhotdog.h"
+#include "phys\phboundsphere.h"
+#include "phys\phboundpolygonal.h"
+#include "phys\phboundbox.h"
+#include "phys\phboundgeom.h"
+#include "phys\phboundterrain.h"
+#include "phys\phboundterrainlocal.h"
+#include "phys\phboundcollision.h"
+#include "phys\phcollisionprim.h"
+
+/*
+    bound
+*/
+#include "phys\bound.h"
 
 namespace MM2
 {
