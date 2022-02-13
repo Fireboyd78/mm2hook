@@ -428,6 +428,7 @@ public:
     BOOL Offroad(MM2::vehCar* perpCar);
     BOOL TireScreeching(MM2::vehCar* perpCar);
     BOOL HornSpamming(MM2::vehCar* perpCar);
+    BOOL Fov(MM2::vehCar* perpCar);
     void PerpEscapes(bool a1);
     void DetectPerpetrator();
     void Update();
