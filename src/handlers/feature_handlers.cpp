@@ -6798,7 +6798,7 @@ void aiPoliceOfficerFeatureHandler::Update() {
 
     if (*getPtr<WORD>(this, 0x977A) != 0 && *getPtr<WORD>(this, 0x977A) != 12)
     {
-        if (physMgr->sm_OpponentOptimization)
+        if (physMgr->OpponentOptimization)
         {
             physMgr->DeclareMover(copCar->getModel(), 2, 0x13);
 

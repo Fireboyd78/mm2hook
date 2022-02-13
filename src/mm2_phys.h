@@ -9,8 +9,11 @@ namespace MM2
     template<>
     void luaAddModule<module_phys>(LuaState L) {
         luaBind<phMaterial>(L);
-        luaBind<lvlMaterial>(L);
+        luaBind<phPolygon>(L);
+        luaBind<LuaRaycastResult>(L);
+        luaBind<PhysicsStats>(L);
         luaBind<phInertialCS>(L);
+        luaBind<dgPhysManager::CollisionTableEntry>(L);
         luaBind<dgPhysManager>(L);
         luaBind<phJoint>(L);
         luaBind<dgTrailerJoint>(L);

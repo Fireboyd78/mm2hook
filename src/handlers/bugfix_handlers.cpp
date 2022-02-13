@@ -1028,7 +1028,7 @@ void aiRouteRacerHandler::Update() {
     }
     else
     {
-        if (physMgr->sm_OpponentOptimization)
+        if (physMgr->OpponentOptimization)
         {
             physMgr->DeclareMover(car->getModel(), 2, 0x13);
 
