@@ -52,7 +52,7 @@ namespace MM2
                                                                     { return hook::Thunk<0x446FA0>::Call<int>(this, roomId, out, outSize); }
         AGE_API virtual int GetVisitList(int* a1, int a2, Vector3 const& a3, Vector3 const& a4, int a5, int a6) override
                                                                     { return hook::Thunk<0x447030>::Call<int>(this, a1, a2, a3, a4, a5, a6); }
-        AGE_API virtual bool Collide(int a1, class lvlSegment& a2, class lvlIntersection& a3) override
+        AGE_API virtual bool Collide(int a1, struct lvlSegment& a2, struct lvlIntersection& a3) override
                                                                     { return false; }
         AGE_API virtual bool GetBoundSphere(Vector4& a1, int a2) override
                                                                     { return hook::Thunk<0x445310>::Call<bool>(this, a1, a2); }

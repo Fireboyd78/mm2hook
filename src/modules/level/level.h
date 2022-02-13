@@ -105,7 +105,7 @@ namespace MM2
                                                                     PURE;
         AGE_API virtual int GetVisitList(int* a1, int a2, Vector3 const& a3, Vector3 const& a4, int a5, int a6)
                                                                     { return 0; }
-        AGE_API virtual bool Collide(int a1, class lvlSegment & a2, class lvlIntersection & a3)
+        AGE_API virtual bool Collide(int a1, struct lvlSegment & a2, struct lvlIntersection & a3)
                                                                     { return false; }
         AGE_API virtual bool GetBoundSphere(Vector4& a1, int a2)    { return false; }
         AGE_API virtual const class lvlLevelBound* GetBound()       PURE;
