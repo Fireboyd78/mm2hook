@@ -4,15 +4,39 @@
 namespace MM2
 {
     // Forward declarations
-    class phSegment;
+    struct phSegment;
+    struct lvlSegmentInfo;
+    struct lvlSegment;
 
     // External declarations
-
+    extern struct sdlPolyCached;
 
     // Class definitions
+    struct lvlSegmentInfo
+    {
+        int StartRoomId;
+        int EndRoomId;
+        sdlPolyCached* Polygon;
+    };
 
-    class phSegment {};
+    struct phSegment
+    {
+        int unknown0;
+        Vector3 StartPos;
+        Vector3 EndPos;
+    };
+    ASSERT_SIZEOF(phSegment, 0x1C);
 
-    // Lua initialization
+    struct lvlSegment : phSegment
+    {
+        bool IsVertical;
+        float InvLength;
+        lvlSegmentInfo* SegmentInfo;
 
+        AGE_API void Set(Vector3 const& startPosition, Vector3 const& endPosition, int flag, lvlSegmentInfo* info)
+        {
+            hook::Thunk<0x469F90>::Call<void>(this, &startPosition, &endPosition, flag, info);
+        }
+    };
+    ASSERT_SIZEOF(lvlSegment, 0x28);
 }
