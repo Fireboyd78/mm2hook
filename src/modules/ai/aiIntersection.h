@@ -18,7 +18,7 @@ namespace MM2
 
     class aiIntersection {
     public:
-        aiPath * *paths;
+        aiPath **paths;
         int16_t pathCount;
         aiVehicle *prevVeh;
         aiVehicle *nextVeh;

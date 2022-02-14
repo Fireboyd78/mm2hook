@@ -5,16 +5,38 @@
 namespace MM2
 {
     // Forward declarations
+    class aiVehicleActive;
     class aiVehicleManager;
 
     // External declarations
     extern class asNode;
+    extern class ltLight;
 
     // Class definitions
+    class aiVehicleActive : dgPhysEntity {
+    private:
+        byte buffer[0xA48];
+    public:
+        /*
+            dgPhysEntity virtuals
+        */
+        virtual AGE_API void Update() override                    { hook::Thunk<0x553890>::Call<void>(this); }
+        virtual AGE_API void PostUpdate() override                { hook::Thunk<0x553960>::Call<void>(this); }
+        virtual AGE_API phInertialCS* GetICS() override           { return hook::Thunk<0x5543B0>::Call<phInertialCS*>(this); }
+        virtual AGE_API lvlInstance* GetInst() override           { return hook::Thunk<0x553430>::Call<lvlInstance*>(this); }
+        virtual AGE_API void DetachMe() override                  { hook::Thunk<0x553690>::Call<void>(this); }
+    };
+    ASSERT_SIZEOF(aiVehicleActive, 0xAFC);
 
     class aiVehicleManager : public asNode {
     private:
-        byte _buffer[0x177A4 - sizeof(asNode)];
+        aiVehicleData vehicleDatas[32];
+        int numVehicleDatas;
+        aiVehicleActive* activeActives[32];
+        aiVehicleActive aiVehicleActives[32];
+        short attachedCount;
+        short gap;
+        ltLight* sharedLight;
     public:
         static hook::Type<aiVehicleManager *> Instance;
         static hook::Type<int> SignalClock;
@@ -44,7 +66,7 @@ namespace MM2
 
         //helpers
         int getDataCount() {
-            return *getPtr<int>(this, 0x1798);
+            return this->numVehicleDatas;
         }
 
         aiVehicleData * getData(int num) {
@@ -54,8 +76,7 @@ namespace MM2
                 num = max - 1;
 
             //return data
-            auto dataArray =  getPtr<aiVehicleData>(this, 0x18);
-            return &dataArray[num];
+            return &this->vehicleDatas[num];
         }
 
         //lua
