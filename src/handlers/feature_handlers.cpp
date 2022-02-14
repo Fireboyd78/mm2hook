@@ -2725,6 +2725,14 @@ void mmDashViewHandler::UpdateCS() {
 
         float wobbleAngle = sin(car->getCarSim()->getWheel(1)->getAccumulatedRotation()) * damagePercent * invRotationAmount * 0.005f;
 
+        if (!vehCarModel::MM1StyleWobble)
+        {
+            auto wheelWobbleLimit = car->getCarSim()->getWheel(1)->getWobbleLimit();
+            auto wheelWobbleAmount = car->getCarSim()->getWheel(1)->getWobbleAmount();
+
+            wobbleAngle = sin(car->getCarSim()->getWheel(1)->getAccumulatedRotation()) * damagePercent * wheelWobbleLimit * wheelWobbleAmount * 0.05f;
+        }
+
         dashCam->Rotate(vec, wobbleAngle);
     }
 
@@ -4639,7 +4647,7 @@ void vehCarHandler::InitCarAudio(LPCSTR vehName, int vehType) {
     car->InitAudio(vehName, vehType);
 }
 
-void vehCarHandler::Mm1StyleTransmission() {
+void vehCarHandler::MM1StyleTransmission() {
     auto car = reinterpret_cast<vehCar*>(this);
     auto carsim = car->getCarSim();
     auto engine = carsim->getEngine();
@@ -4723,8 +4731,8 @@ void vehCarHandler::Update() {
         }
     }
 
-    if (vehCarModel::Mm1StyleTransmission) {
-        vehCarHandler::Mm1StyleTransmission();
+    if (vehCarModel::MM1StyleTransmission) {
+        vehCarHandler::MM1StyleTransmission();
     }
 
     //play splash sound if we just hit the water
@@ -4798,7 +4806,7 @@ void vehCarHandler::Install(void) {
         }
     );
 
-    if (vehCarModel::Mm1StyleTransmission) {
+    if (vehCarModel::MM1StyleTransmission) {
         // deactivate auto Handbrake system
         InstallPatch({ 0xD8, 0x1D, 0x3C, 0x4, 0x5B, 0x0 }, {
             0x405C81,
@@ -4932,8 +4940,6 @@ void vehCarModelFeatureHandler::DrawShadow() {
     }
 }
 
-static ConfigValue<bool> cfgMm1StyleTransmission("MM1StyleTransmission", false);
-
 void vehCarModelFeatureHandler::DrawGlow() {
     auto model = reinterpret_cast<vehCarModel*>(this);
     model->vehCarModel::DrawGlow();
@@ -4991,7 +4997,9 @@ void vehCarModelFeatureHandler::Install() {
     ConfigValue<bool> cfgEnableLEDSiren("EnableLEDSiren", false);
     ConfigValue<bool> cfgNfsMwStyleTotaledCar("NFSMWStyleTotaledCar", false);
     ConfigValue<bool> cfgBreakableRenderTweak("BreakableRenderTweak", false);
+    ConfigValue<bool> cfgMM1StyleTransmission("MM1StyleTransmission", false);
     ConfigValue<bool> cfgWheelWobble("PhysicalWheelWobble", true);
+    ConfigValue<bool> cfgMM1StyleWobble("MM1StyleWobble", false);
     ConfigValue<int> cfgSirenStyle("SirenStyle", 0);
     ConfigValue<int> cfgHeadlightStyle("HeadlightStyle", 0);
     ConfigValue<float> cfgSirenCycleRate("SirenCycle", 0.25f);
@@ -5009,10 +5017,11 @@ void vehCarModelFeatureHandler::Install() {
     vehCarModel::PartReflections = cfgPartReflections.Get();
     vehCarModel::WheelReflections = vehCarModel::PartReflections;
 
-    vehCarModel::Mm1StyleTransmission = cfgMm1StyleTransmission.Get();
+    vehCarModel::MM1StyleTransmission = cfgMM1StyleTransmission.Get();
     vehCarModel::BreakableRenderTweak = cfgBreakableRenderTweak.Get();
 
     vehCarModel::WheelWobble = cfgWheelWobble.Get();
+    vehCarModel::MM1StyleWobble = cfgMM1StyleWobble.Get();
 }
 
 /*
@@ -7707,6 +7716,14 @@ void camPovCSHandler::UpdatePOV() {
         damagePercent = fmaxf(0.f, fminf(damagePercent, 1.f));
 
         float wobbleAngle = sin(car->getCarSim()->getWheel(1)->getAccumulatedRotation()) * damagePercent * invRotationAmount * 0.005f;
+
+        if (!vehCarModel::MM1StyleWobble)
+        {
+            auto wheelWobbleLimit = car->getCarSim()->getWheel(1)->getWobbleLimit();
+            auto wheelWobbleAmount = car->getCarSim()->getWheel(1)->getWobbleAmount();
+
+            wobbleAngle = sin(car->getCarSim()->getWheel(1)->getAccumulatedRotation()) * damagePercent * wheelWobbleLimit * wheelWobbleAmount * 0.05f;
+        }
 
         matrix2->Rotate(vec, wobbleAngle);
     }

@@ -41,9 +41,10 @@ bool vehCarModel::LeftSignalLightState = false;
 bool vehCarModel::RightSignalLightState = false;
 bool vehCarModel::FoglightsState = false;
 
-bool vehCarModel::Mm1StyleTransmission = false;
+bool vehCarModel::MM1StyleTransmission = true;
 bool vehCarModel::BreakableRenderTweak = false;
 bool vehCarModel::WheelWobble = true;
+bool vehCarModel::MM1StyleWobble = false;
 
 /*
     vehBreakableMgr

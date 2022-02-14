@@ -305,7 +305,7 @@ public:
     void InitCarAudio(LPCSTR vehName, int vehType);
     const MM2::phBound * GetModelBound(int a1);
 
-    void Mm1StyleTransmission();
+    void MM1StyleTransmission();
     void PlayExplosion();
     void Splash();
     void Update();

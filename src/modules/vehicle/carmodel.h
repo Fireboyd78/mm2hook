@@ -35,9 +35,10 @@ namespace MM2
         static float HeadlightFlashingSpeed;
         static bool PartReflections;
         static bool WheelReflections;
-        static bool Mm1StyleTransmission;
+        static bool MM1StyleTransmission;
         static bool BreakableRenderTweak;
         static bool WheelWobble;
+        static bool MM1StyleWobble;
 
         //light states
         static bool HeadlightsState;
@@ -902,6 +903,14 @@ namespace MM2
 
             float angle = sin(this->carSim->getWheel(1)->getAccumulatedRotation()) * damagePercent * invRotationAmount * 0.02f;
 
+            if (!vehCarModel::MM1StyleWobble)
+            {
+                auto wheelWobbleLimit = this->carSim->getWheel(1)->getWobbleLimit();
+                auto wheelWobbleAmount = this->carSim->getWheel(1)->getWobbleAmount();
+
+                angle = sin(this->carSim->getWheel(1)->getAccumulatedRotation()) * damagePercent * wheelWobbleLimit * wheelWobbleAmount * 0.2f;
+            }
+
             matrix.Rotate(vec, angle);
 
             return matrix;
@@ -1184,6 +1193,14 @@ namespace MM2
 
                         float angle = sin(this->carSim->ShockSuspensions[1].getWheel()->getAccumulatedRotation()) * damagePercent * invRotationAmount * 0.02f;
 
+                        if (!vehCarModel::MM1StyleWobble)
+                        {
+                            auto wheelWobbleLimit = this->carSim->ShockSuspensions[1].getWheel()->getWobbleLimit();
+                            auto wheelWobbleAmount = this->carSim->ShockSuspensions[1].getWheel()->getWobbleAmount();
+
+                            angle = sin(this->carSim->ShockSuspensions[1].getWheel()->getAccumulatedRotation()) * damagePercent * wheelWobbleLimit * wheelWobbleAmount * 0.2f;
+                        }
+
                         matrix.Set(this->carSim->ShockSuspensions[i].getSuspensionPivot());
 
                         matrix.m01 += angle;
@@ -1219,6 +1236,14 @@ namespace MM2
                         damagePercent = fmaxf(0.f, fminf(damagePercent, 1.f));
 
                         float angle = sin(this->carSim->ArmSuspensions[i].getWheel()->getMatrix().m11) * damagePercent * invRotationAmount * 0.02f;
+
+                        if (!vehCarModel::MM1StyleWobble)
+                        {
+                            auto wheelWobbleLimit = this->carSim->ArmSuspensions[1].getWheel()->getWobbleLimit();
+                            auto wheelWobbleAmount = this->carSim->ArmSuspensions[1].getWheel()->getWobbleAmount();
+
+                            angle = sin(this->carSim->ArmSuspensions[1].getWheel()->getAccumulatedRotation()) * damagePercent * wheelWobbleLimit * wheelWobbleAmount * 0.2f;
+                        }
 
                         matrix.Set(this->carSim->ArmSuspensions[i].getSuspensionPivot());
 
@@ -1258,6 +1283,14 @@ namespace MM2
                         damagePercent = fmaxf(0.f, fminf(damagePercent, 1.f));
 
                         float angle = sin(this->carSim->ShaftSuspensions[1].getWheel()->getAccumulatedRotation()) * damagePercent * invRotationAmount * 0.02f;
+
+                        if (!vehCarModel::MM1StyleWobble)
+                        {
+                            auto wheelWobbleLimit = this->carSim->ShaftSuspensions[1].getWheel()->getWobbleLimit();
+                            auto wheelWobbleAmount = this->carSim->ShaftSuspensions[1].getWheel()->getWobbleAmount();
+
+                            angle = sin(this->carSim->ShaftSuspensions[1].getWheel()->getAccumulatedRotation()) * damagePercent * wheelWobbleLimit * wheelWobbleAmount * 0.2f;
+                        }
 
                         matrix.Set(this->carSim->ShaftSuspensions[i].getSuspensionPivot());
 
@@ -1302,6 +1335,14 @@ namespace MM2
 
                         float angle = sin(this->carSim->AxleFront.getRightWheel()->getAccumulatedRotation()) * damagePercent * invRotationAmount * 0.02f;
 
+                        if (!vehCarModel::MM1StyleWobble)
+                        {
+                            auto wheelWobbleLimit = this->carSim->AxleFront.getRightWheel()->getWobbleLimit();
+                            auto wheelWobbleAmount = this->carSim->AxleFront.getRightWheel()->getWobbleAmount();
+
+                            angle = sin(this->carSim->AxleFront.getRightWheel()->getAccumulatedRotation()) * damagePercent * wheelWobbleLimit * wheelWobbleAmount * 0.2f;
+                        }
+
                         matrix.Rotate(vec, angle);
 
                         DrawPart(lod, 23, matrix, shaders, vehCarModel::PartReflections);
@@ -1336,6 +1377,14 @@ namespace MM2
                         damagePercent = fmaxf(0.f, fminf(damagePercent, 1.f));
 
                         float angle = sin(this->carSim->AxleRear.getRightWheel()->getAccumulatedRotation()) * damagePercent * invRotationAmount * 0.02f;
+
+                        if (!vehCarModel::MM1StyleWobble)
+                        {
+                            auto wheelWobbleLimit = this->carSim->AxleRear.getRightWheel()->getWobbleLimit();
+                            auto wheelWobbleAmount = this->carSim->AxleRear.getRightWheel()->getWobbleAmount();
+
+                            angle = sin(this->carSim->AxleRear.getRightWheel()->getAccumulatedRotation()) * damagePercent * wheelWobbleLimit * wheelWobbleAmount * 0.2f;
+                        }
 
                         matrix.Rotate(vec, angle);
 
