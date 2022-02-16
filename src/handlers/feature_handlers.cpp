@@ -6534,50 +6534,12 @@ BOOL aiPoliceOfficerFeatureHandler::Offroad(vehCar *car) {
     return FALSE;
 }
 
-BOOL aiPoliceOfficerFeatureHandler::Fov(vehCar *perpCar) {
-    auto police = reinterpret_cast<aiPoliceOfficer*>(this);
-    auto policeMtx = &police->getVehiclePhysics()->GetMatrix();
-    auto perpMtx = perpCar->getCarSim()->getICS()->GetMatrix();
-
-    lvlSegment segment;
-    lvlIntersection isect;
-
-    Vector3 vec;
-    Vector3 vec2;
-
-    vec.X = perpMtx->m30 - policeMtx->m30;
-    vec.Y = perpMtx->m31 - policeMtx->m31;
-    vec.Z = perpMtx->m32 - policeMtx->m32;
-
-    float distX = vec.X * policeMtx->m00 + vec.Y * policeMtx->m01 + vec.Z * policeMtx->m02;
-    float distZ = vec.X * -policeMtx->m20 + vec.Y * -policeMtx->m21 + vec.Z * -policeMtx->m22;
-
-    float dist = atan2(distX, distZ);
-    if (dist <= -1.57f || dist >= 1.57f)
-        return FALSE;
-
-    vec.X = perpMtx->m30;
-    vec.Y = perpMtx->m31;
-    vec.Z = perpMtx->m32;
-
-    vec2.X = policeMtx->m30;
-    vec2.Y = policeMtx->m31;
-    vec2.Z = policeMtx->m32;
-
-    vec.Y += 1.f;
-    vec2.Y += 1.f;
-
-    segment.Set(vec, vec2, 0, nullptr);
-    return dgPhysManager::Instance->Collide(segment, &isect, 0, nullptr, 0x20, 0) == FALSE;
-}
-
 BOOL aiPoliceOfficerFeatureHandler::IsPlayerDrivingMadly(vehCar *perpCar) {
     auto police = reinterpret_cast<aiPoliceOfficer*>(this);
-    char* vehName = perpCar->getCarDamage()->GetName(); // we can't use vehCarSim because the game forces vpcop to vpmustang99...
 
-    if (!perpCar->getAudio()->IsPolice(vehName)) {
+    if (!police->IsPerpACop(perpCar)) {
         if (vehPoliceCarAudio::iNumCopsPursuingPlayer < aiPoliceOfficer::MaximumNumCops || aiPoliceOfficer::MaximumNumCops <= 0) {
-            if (aiPoliceOfficerFeatureHandler::Fov(perpCar))
+            if (police->Fov(perpCar))
             {
                 float speed = perpCar->getCarSim()->getSpeedMPH();
                 float speedLimit = getSpeedLimit(perpCar) * 2.857142857142857f;
@@ -6616,7 +6578,7 @@ BOOL aiPoliceOfficerFeatureHandler::IsPlayerDrivingMadly(vehCar *perpCar) {
 BOOL aiPoliceOfficerFeatureHandler::IsOppDrivingMadly(vehCar *perpCar) {
     auto police = reinterpret_cast<aiPoliceOfficer*>(this);
 
-    if (aiPoliceOfficerFeatureHandler::Fov(perpCar))
+    if (police->Fov(perpCar))
     {
         float speed = perpCar->getCarSim()->getSpeedMPH();
         float speedLimit = getSpeedLimit(perpCar) * 2.857142857142857f;
@@ -6897,11 +6859,6 @@ void aiPoliceOfficerFeatureHandler::Install() {
             cb::call(0x53DB45),
         }
     );
-
-    // fix aiPoliceOfficer::Collision
-    InstallPatch({ 0x8B, 0x91, 0xF4, 0x0, 0x0, 0x0 }, {
-        0x53E37E,
-    });
 }
 
 /*
