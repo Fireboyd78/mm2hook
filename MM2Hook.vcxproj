@@ -374,6 +374,7 @@
     <ClCompile Include="src\implot\implot_demo.cpp" />
     <ClCompile Include="src\implot\implot_items.cpp" />
     <ClCompile Include="src\luafilesystem\lfs.c" />
+    <ClCompile Include="src\mm2_common.cpp" />
     <ClCompile Include="src\mm2_effects.cpp" />
     <ClCompile Include="src\events\dispatcher.cpp" />
     <ClCompile Include="src\mm2_particle.cpp" />

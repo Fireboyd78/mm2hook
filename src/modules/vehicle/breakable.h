@@ -78,7 +78,7 @@ namespace MM2
             {
                 if (i->isAttached)
                 {
-                    auto lodModel = i->model->getLOD(a3);
+                    auto lodModel = i->model->GetLOD(a3);
                     if (lodModel != nullptr)
                     {
                         Matrix34 drawMatrix = Matrix34();

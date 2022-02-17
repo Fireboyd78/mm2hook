@@ -854,7 +854,7 @@ void gfxPipelineHandler::SetRes(int width, int height, int cdepth, int zdepth, b
     }
 
     // We don't want to set the width/height if we are in a menu, it just fucks it up
-    if (MMSTATE->SplashScreen != 0) {
+    if (MMSTATE->NextState != 0) {
         if (datArgParser::Get("max")) {
             HDC hDC = GetDC(NULL);
             width = GetDeviceCaps(hDC, HORZRES);
@@ -2022,15 +2022,15 @@ void BridgeFerryHandler::Draw(int lod) {
     auto data = bangerInst->GetData();
 
     int billFlags = data->getBillFlags();
-    int geomSetId = bangerInst->getGeomSetId();
+    int geomSetId = bangerInst->GetGeomIndex();
     int geomSetIdOffset = geomSetId - 1;
     int shaderSet = *getPtr<unsigned __int16>(this, 0x14) >> 12;
 
     auto geomEntry = lvlInstance::GetGeomTableEntry(geomSetIdOffset);
     auto shaders = geomEntry->pShaders[shaderSet];
-    auto model = geomEntry->getLOD(lod);
+    auto model = geomEntry->GetLOD(lod);
 
-    if (bangerInst->getFlags() & 4) {
+    if (bangerInst->GetFlags() & 4) {
         if (lod < 3)
             lod += 1;
     }
@@ -2764,7 +2764,7 @@ void mmDashViewHandler::Init(char* vehName, mmPlayer* player) {
         return;
 
     auto model = dashView->Player->getCar()->getModel();
-    int geomId = model->getGeomSetId();
+    int geomId = model->GetGeomIndex();
     auto geomTableEntry = lvlInstance::GetGeomTableEntry(geomId);
     int shaderCount = geomTableEntry->numShaders;
     auto shaderSet = *dashView->ShaderSet;
@@ -3625,8 +3625,8 @@ void mmPlayerHandler::BustPlayer() {
         auto police2Pos = copCar->getModel()->GetPosition();
 
         if (vehPoliceCarAudio::iNumCopsPursuingPlayer == 0 && bustedTimer > 0.f) {
-            if (lvlLevel::Singleton->GetRoomInfo(copCar->getModel()->getRoomId())->Flags & static_cast<int>(RoomFlags::Water)) {
-                if (lvlLevel::Singleton->GetWaterLevel(copCar->getModel()->getRoomId()) > copCarSim->getWorldMatrix()->m31) {
+            if (lvlLevel::Singleton->GetRoomInfo(copCar->getModel()->GetRoomId())->Flags & static_cast<int>(RoomFlags::Water)) {
+                if (lvlLevel::Singleton->GetWaterLevel(copCar->getModel()->GetRoomId()) > copCarSim->getWorldMatrix()->m31) {
                     enableBustedTimer = false;
                     bustedTimer = 0.f;
                     enableResetTimer = false;
@@ -3861,7 +3861,7 @@ void mmPlayerHandler::Update() {
     auto flagsId = VehicleListPtr->GetVehicleInfo(basename)->GetFlags();
 
     //check if we're out of the level
-    int playerRoom = car->GetInst()->getRoomId();
+    int playerRoom = car->GetInst()->GetRoomId();
     if (playerRoom == 0 && enableOutOfMapFixCached) {
         Zoink();
     }
@@ -4284,7 +4284,7 @@ void mmSingleRoamHandler::EscapeDeepWater() {
     auto carPos = car->getModel()->GetPosition();
     auto level = *lvlLevel::Singleton;
 
-    if (level->GetRoomInfo(car->getModel()->getRoomId())->Flags & static_cast<int>(RoomFlags::Water)) {
+    if (level->GetRoomInfo(car->getModel()->GetRoomId())->Flags & static_cast<int>(RoomFlags::Water)) {
         if (cfgResetToNearestLocation.Get()) {
             ResetToNearestLocation();
         }
@@ -4306,7 +4306,7 @@ void mmSingleRoamHandler::EscapeDeepWater() {
         player->getCamView()->SetCam(player->getCurrentCameraPtr());
 
         if (MMSTATE->ShowDash || *getPtr<int>(player, 0x880)) {
-            MMSTATE->unk_36C = 1;
+            MMSTATE->ViewMode = 1;
             *getPtr<int>(player, 0xE48) = 1;
             player->getCamView()->SetCam(player->getDashCam());
             player->getHUD()->ActivateDash();
@@ -4394,11 +4394,11 @@ void dgBangerInstanceHandler::DrawShadow() {
     auto timeWeather = $::timeWeathers.ptr(cityLevel::timeOfDay);
 
     if (MMSTATE->TimeOfDay == 3 || MMSTATE->WeatherType != 0 ||
-        lvlLevel::Singleton->GetRoomInfo(inst->getRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean))
+        lvlLevel::Singleton->GetRoomInfo(inst->GetRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean))
         return;
 
     //get our geometry id
-    int geomSetId = inst->getGeomSetId();
+    int geomSetId = inst->GetGeomIndex();
     int geomSetIdOffset = geomSetId - 1;
 
     //get shaders
@@ -4406,7 +4406,7 @@ void dgBangerInstanceHandler::DrawShadow() {
     auto shaders = lvlInstance::GetGeomTableEntry(geomSetIdOffset)->pShaders[shaderSet];
 
     //get model
-    modStatic* model = lvlInstance::GetGeomTableEntry(geomSetIdOffset)->getHighestLOD();
+    modStatic* model = lvlInstance::GetGeomTableEntry(geomSetIdOffset)->GetHighestLOD();
 
     if (model != nullptr)
     {
@@ -4439,7 +4439,7 @@ void dgBangerInstanceHandler::DrawShadow() {
             Matrix34 shadowMatrix;
             Matrix34 dummyMatrix;
 
-            if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, inst->getRoomId(), &inst->GetMatrix(&dummyMatrix)))
+            if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, inst->GetRoomId(), &inst->GetMatrix(&dummyMatrix)))
             {
                 shadowMatrix.m01 = 0.f;
 
@@ -4461,7 +4461,7 @@ void dgBangerInstanceHandler::DrawShadow() {
             Matrix34 shadowMatrix;
             Matrix34 dummyMatrix;
 
-            if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, inst->getRoomId(), &inst->GetMatrix(&dummyMatrix)))
+            if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, inst->GetRoomId(), &inst->GetMatrix(&dummyMatrix)))
             {
                 float posDiffY = inst->GetMatrix(&dummyMatrix).m31 - shadowMatrix.m31;
 
@@ -4526,7 +4526,7 @@ bool dgBangerInstanceHandler::BeginGeom(const char* a1, const char* a2, int a3)
 {
     //We hook this to set flag 64 (shadow)
     auto inst = reinterpret_cast<lvlInstance*>(this);
-    inst->setFlag(64);
+    inst->SetFlag(64);
 
     //Call original
     return inst->BeginGeom(a1, a2, a3);
@@ -4739,8 +4739,8 @@ void vehCarHandler::Update() {
     if (enableWaterSplashSoundCached) {
         bool splashState = car->getSplash()->isActive();
         if (splashState && car->getCarSim()->getSpeedMPH() > 3.f
-            && level->GetRoomInfo(model->getRoomId())->Flags & static_cast<int>(RoomFlags::Water)
-            && level->GetWaterLevel(model->getRoomId()) > model->GetPosition().Y) {
+            && level->GetRoomInfo(model->GetRoomId())->Flags & static_cast<int>(RoomFlags::Water)
+            && level->GetWaterLevel(model->GetRoomId()) > model->GetPosition().Y) {
             Splash();
         }
     }
@@ -4841,12 +4841,12 @@ void vehCarModelFeatureHandler::Draw(int a1) {
 void vehCarModelFeatureHandler::DrawShadow() {
     auto model = reinterpret_cast<vehCarModel*>(this);
     auto carMatrix = model->getCarSim()->getWorldMatrix();
-    auto roomId = model->getRoomId();
+    auto roomId = model->GetRoomId();
 
-    if (model->getFlags() & 200)
+    if (model->GetFlags() & 200)
     {
         //get our geometry id
-        int geomSetId = model->getGeomSetId();
+        int geomSetId = model->GetGeomIndex();
         int geomSetIdOffset = geomSetId - 1;
 
         //get shaders
@@ -4857,7 +4857,7 @@ void vehCarModelFeatureHandler::DrawShadow() {
         auto timeWeather = $::timeWeathers.ptr(cityLevel::timeOfDay);
 
         //get model
-        modStatic* shadow = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 1)->getHighLOD();
+        modStatic* shadow = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 1)->GetHighLOD();
 
         if (shadow != nullptr)
         {
@@ -4875,10 +4875,10 @@ void vehCarModelFeatureHandler::DrawShadow() {
         }
 
         if (MMSTATE->TimeOfDay == 3 || MMSTATE->WeatherType != 0 ||
-            lvlLevel::Singleton->GetRoomInfo(model->getRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean))
+            lvlLevel::Singleton->GetRoomInfo(model->GetRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean))
             return;
 
-        modStatic* body = lvlInstance::GetGeomTableEntry(geomSetIdOffset)->getHighLOD();
+        modStatic* body = lvlInstance::GetGeomTableEntry(geomSetIdOffset)->GetHighLOD();
 
         if (body != nullptr)
         {
@@ -5168,7 +5168,7 @@ void pedestrianInstanceHandler::Init(char* a1, int a2, int a3) {
     hook::Thunk<0x54B0D0>::Call<void>(this, a1, a2, a3);
 
     auto inst = reinterpret_cast<aiPedestrian*>(this)->getInstance();
-    inst->setFlag(64);
+    inst->SetFlag(64);
 }
 
 void pedestrianInstanceHandler::DrawRagdoll() {
@@ -5222,7 +5222,7 @@ void pedestrianInstanceHandler::DrawShadow() {
     auto timeWeather = $::timeWeathers.ptr(cityLevel::timeOfDay);
 
     if (MMSTATE->TimeOfDay == 3 || MMSTATE->WeatherType != 0 ||
-        lvlLevel::Singleton->GetRoomInfo(inst->getRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean))
+        lvlLevel::Singleton->GetRoomInfo(inst->GetRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean))
         return;
 
     int srcBlend = (&RSTATE->Data)->SrcBlend;
@@ -5252,7 +5252,7 @@ void pedestrianInstanceHandler::DrawShadow() {
     Matrix34 shadowMatrix;
     Matrix34 dummyMatrix;
 
-    if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, inst->getRoomId(), &inst->GetMatrix(&dummyMatrix)))
+    if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, inst->GetRoomId(), &inst->GetMatrix(&dummyMatrix)))
     {
         if (inst->GetEntity() == nullptr)
         {
@@ -5366,7 +5366,7 @@ int ambientHeadlightStyle = 0;
 
 void aiVehicleInstanceFeatureHandler::Draw(int a1) {
     auto inst = reinterpret_cast<aiVehicleInstance*>(this);
-    auto geomID = inst->getGeomSetId() - 1;
+    auto geomID = inst->GetGeomIndex() - 1;
     auto geomSet = lvlInstance::GetGeomTableEntry(geomID);
 
     //setup renderer
@@ -5379,8 +5379,8 @@ void aiVehicleInstanceFeatureHandler::Draw(int a1) {
     auto shaders = geomSet->pShaders[shaderSet];
 
     //get objects
-    modStatic* plighton = lvlInstance::GetGeomTableEntry(geomID + 19)->getHighLOD();
-    modStatic* plightoff = lvlInstance::GetGeomTableEntry(geomID + 20)->getHighLOD();
+    modStatic* plighton = lvlInstance::GetGeomTableEntry(geomID + 19)->GetHighLOD();
+    modStatic* plightoff = lvlInstance::GetGeomTableEntry(geomID + 20)->GetHighLOD();
 
     if (plighton != nullptr) {
         if (aiMap::Instance->drawHeadlights)
@@ -5397,7 +5397,7 @@ void aiVehicleInstanceFeatureHandler::Draw(int a1) {
 
 void aiVehicleInstanceFeatureHandler::DrawShadow() {
     auto inst = reinterpret_cast<aiVehicleInstance*>(this);
-    auto geomID = inst->getGeomSetId() - 1;
+    auto geomID = inst->GetGeomIndex() - 1;
     auto geomSet = lvlInstance::GetGeomTableEntry(geomID);
     auto vehicleMatrix = inst->GetMatrix(&aiVehicleMatrix);
     auto timeWeather = $::timeWeathers.ptr(cityLevel::timeOfDay);
@@ -5407,13 +5407,13 @@ void aiVehicleInstanceFeatureHandler::DrawShadow() {
     auto shaders = geomSet->pShaders[shaderSet];
 
     //get model
-    modStatic* shadow = lvlInstance::GetGeomTableEntry(geomID + 1)->getHighLOD();
+    modStatic* shadow = lvlInstance::GetGeomTableEntry(geomID + 1)->GetHighLOD();
 
     if (shadow != nullptr)
     {
         Matrix34 shadowMatrix;
 
-        if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, inst->getRoomId(), &vehicleMatrix))
+        if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, inst->GetRoomId(), &vehicleMatrix))
         {
             RSTATE->SetBlendSet(0, 0x80);
 
@@ -5425,10 +5425,10 @@ void aiVehicleInstanceFeatureHandler::DrawShadow() {
     }
 
     if (MMSTATE->TimeOfDay == 3 || MMSTATE->WeatherType != 0 ||
-        lvlLevel::Singleton->GetRoomInfo(inst->getRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean))
+        lvlLevel::Singleton->GetRoomInfo(inst->GetRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean))
         return;
 
-    modStatic* body = lvlInstance::GetGeomTableEntry(geomID)->getHighLOD();
+    modStatic* body = lvlInstance::GetGeomTableEntry(geomID)->GetHighLOD();
 
     if (body != nullptr)
     {
@@ -5458,7 +5458,7 @@ void aiVehicleInstanceFeatureHandler::DrawShadow() {
 
         Matrix34 shadowMatrix;
 
-        if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, inst->getRoomId(), &vehicleMatrix))
+        if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, inst->GetRoomId(), &vehicleMatrix))
         {
             float posDiffY = vehicleMatrix.m31 - shadowMatrix.m31;
 
@@ -5491,7 +5491,7 @@ void aiVehicleInstanceFeatureHandler::DrawShadow() {
 
 void aiVehicleInstanceFeatureHandler::DrawGlow() {
     auto inst = reinterpret_cast<aiVehicleInstance*>(this);
-    auto geomID = inst->getGeomSetId() - 1;
+    auto geomID = inst->GetGeomIndex() - 1;
     auto geomSet = lvlInstance::GetGeomTableEntry(geomID);
 
     //setup renderer
@@ -5504,13 +5504,13 @@ void aiVehicleInstanceFeatureHandler::DrawGlow() {
     auto shaders = geomSet->pShaders[shaderSet];
 
     //get objects
-    modStatic* hlight = lvlInstance::GetGeomTableEntry(geomID + 2)->getHighestLOD();
-    modStatic* tlight = lvlInstance::GetGeomTableEntry(geomID + 3)->getHighestLOD();
-    modStatic* slight0 = lvlInstance::GetGeomTableEntry(geomID + 4)->getHighestLOD();
-    modStatic* slight1 = lvlInstance::GetGeomTableEntry(geomID + 5)->getHighestLOD();
-    modStatic* blight = lvlInstance::GetGeomTableEntry(geomID + 18)->getHighestLOD();
-    modStatic* tslight0 = lvlInstance::GetGeomTableEntry(geomID + 21)->getHighestLOD();
-    modStatic* tslight1 = lvlInstance::GetGeomTableEntry(geomID + 22)->getHighestLOD();
+    modStatic* hlight = lvlInstance::GetGeomTableEntry(geomID + 2)->GetHighestLOD();
+    modStatic* tlight = lvlInstance::GetGeomTableEntry(geomID + 3)->GetHighestLOD();
+    modStatic* slight0 = lvlInstance::GetGeomTableEntry(geomID + 4)->GetHighestLOD();
+    modStatic* slight1 = lvlInstance::GetGeomTableEntry(geomID + 5)->GetHighestLOD();
+    modStatic* blight = lvlInstance::GetGeomTableEntry(geomID + 18)->GetHighestLOD();
+    modStatic* tslight0 = lvlInstance::GetGeomTableEntry(geomID + 21)->GetHighestLOD();
+    modStatic* tslight1 = lvlInstance::GetGeomTableEntry(geomID + 22)->GetHighestLOD();
 
     //get lights stuff
     int *activate = *getPtr<int*>(this, 0x14);
@@ -5610,7 +5610,7 @@ void aiVehicleInstanceFeatureHandler::DrawPart(modStatic* model, const Matrix34&
     //draw reflections
     auto state = &MMSTATE;
     if (g_ReflectionMap != nullptr && !isSoftware && state->EnableReflections &&
-        !(lvlLevel::Singleton->GetRoomInfo(inst->getRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean)))
+        !(lvlLevel::Singleton->GetRoomInfo(inst->GetRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean)))
     {
         modShader::BeginEnvMap(g_ReflectionMap, matrix);
         model->DrawEnvMapped(shaders, g_ReflectionMap, 1.0f);
@@ -5801,7 +5801,7 @@ void vehTrailerInstanceFeatureHandler::DrawPartReflections(modStatic* a1, const 
 
 void vehTrailerInstanceFeatureHandler::DrawPart(int a1, int a2, const Matrix34& a3, modShader* a4) {
     auto inst = reinterpret_cast<vehTrailerInstance*>(this);
-    auto geomID = inst->getGeomSetId() - 1;
+    auto geomID = inst->GetGeomIndex() - 1;
     auto geomSet = lvlInstance::GetGeomTableEntry(geomID);
 
     //setup renderer
@@ -5813,7 +5813,7 @@ void vehTrailerInstanceFeatureHandler::DrawPart(int a1, int a2, const Matrix34& 
 
     if (part != nullptr) {
         if (vehCarModel::PartReflections && a1 == 3 &&
-            !(lvlLevel::Singleton->GetRoomInfo(inst->getRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean)))
+            !(lvlLevel::Singleton->GetRoomInfo(inst->GetRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean)))
             DrawPartReflections(part, a3, a4);
         else
             part->Draw(a4);
@@ -5822,7 +5822,7 @@ void vehTrailerInstanceFeatureHandler::DrawPart(int a1, int a2, const Matrix34& 
 
 void vehTrailerInstanceFeatureHandler::Draw(int a1) {
     auto inst = reinterpret_cast<vehTrailerInstance*>(this);
-    auto geomID = inst->getGeomSetId() - 1;
+    auto geomID = inst->GetGeomIndex() - 1;
     auto geomSet = lvlInstance::GetGeomTableEntry(geomID);
     auto trailer = inst->getTrailer();
     auto trailerMtx = inst->GetMatrix(&trailerMatrix);
@@ -5919,7 +5919,7 @@ void vehTrailerInstanceFeatureHandler::DrawTwhl5(int a1, int a2, Matrix34& a3, m
 void vehTrailerInstanceFeatureHandler::DrawShadow() {
     auto inst = reinterpret_cast<vehTrailerInstance*>(this);
     auto trailerMtx = inst->GetMatrix(&trailerMatrix);
-    int geomSet = inst->getGeomSetId() - 1;
+    int geomSet = inst->GetGeomIndex() - 1;
 
     //get our shader set
     int shaderSet = *getPtr<int>(this, 24);
@@ -5929,13 +5929,13 @@ void vehTrailerInstanceFeatureHandler::DrawShadow() {
     auto timeWeather = $::timeWeathers.ptr(cityLevel::timeOfDay);
 
     //get model
-    modStatic* shadow = lvlInstance::GetGeomTableEntry(geomSet + 1)->getHighLOD();
+    modStatic* shadow = lvlInstance::GetGeomTableEntry(geomSet + 1)->GetHighLOD();
 
     if (shadow != nullptr)
     {
         Matrix34 shadowMatrix;
 
-        if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, inst->getRoomId(), &trailerMtx))
+        if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, inst->GetRoomId(), &trailerMtx))
         {
             RSTATE->SetBlendSet(0, 0x80);
 
@@ -5947,10 +5947,10 @@ void vehTrailerInstanceFeatureHandler::DrawShadow() {
     }
 
     if (MMSTATE->TimeOfDay == 3 || MMSTATE->WeatherType != 0 ||
-        lvlLevel::Singleton->GetRoomInfo(inst->getRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean))
+        lvlLevel::Singleton->GetRoomInfo(inst->GetRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean))
         return;
 
-    modStatic* trailer = lvlInstance::GetGeomTableEntry(geomSet)->getHighLOD();
+    modStatic* trailer = lvlInstance::GetGeomTableEntry(geomSet)->GetHighLOD();
 
     if (trailer != nullptr)
     {
@@ -5980,7 +5980,7 @@ void vehTrailerInstanceFeatureHandler::DrawShadow() {
 
         Matrix34 shadowMatrix;
 
-        if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, inst->getRoomId(), &trailerMtx))
+        if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, inst->GetRoomId(), &trailerMtx))
         {
             float posDiffY = trailerMtx.m31 - shadowMatrix.m31;
 
@@ -6023,7 +6023,7 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
     auto carsim = trailer->getTrailerJoint()->getCarSim();
     float brakeInput = carsim->getBrake();
     int gear = carsim->getTransmission()->getGear();
-    int geomSet = inst->getGeomSetId() - 1;
+    int geomSet = inst->GetGeomIndex() - 1;
 
     //setup renderer
     gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
@@ -6035,16 +6035,16 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
     auto shaders = lvlInstance::GetGeomTableEntry(geomSet)->pShaders[shaderSet];
 
     //get lights
-    modStatic* tlight = lvlInstance::GetGeomTableEntry(geomSet + 2)->getHighestLOD();
-    modStatic* rlight = lvlInstance::GetGeomTableEntry(geomSet + 8)->getHighestLOD();
-    modStatic* blight = lvlInstance::GetGeomTableEntry(geomSet + 9)->getHighestLOD();
-    modStatic* hlight = lvlInstance::GetGeomTableEntry(geomSet + 10)->getHighestLOD();
-    modStatic* slight0 = lvlInstance::GetGeomTableEntry(geomSet + 11)->getHighestLOD();
-    modStatic* slight1 = lvlInstance::GetGeomTableEntry(geomSet + 12)->getHighestLOD();
-    modStatic* siren0 = lvlInstance::GetGeomTableEntry(geomSet + 13)->getHighestLOD();
-    modStatic* siren1 = lvlInstance::GetGeomTableEntry(geomSet + 14)->getHighestLOD();
-    modStatic* tslight0 = lvlInstance::GetGeomTableEntry(geomSet + 23)->getHighestLOD();
-    modStatic* tslight1 = lvlInstance::GetGeomTableEntry(geomSet + 24)->getHighestLOD();
+    modStatic* tlight = lvlInstance::GetGeomTableEntry(geomSet + 2)->GetHighestLOD();
+    modStatic* rlight = lvlInstance::GetGeomTableEntry(geomSet + 8)->GetHighestLOD();
+    modStatic* blight = lvlInstance::GetGeomTableEntry(geomSet + 9)->GetHighestLOD();
+    modStatic* hlight = lvlInstance::GetGeomTableEntry(geomSet + 10)->GetHighestLOD();
+    modStatic* slight0 = lvlInstance::GetGeomTableEntry(geomSet + 11)->GetHighestLOD();
+    modStatic* slight1 = lvlInstance::GetGeomTableEntry(geomSet + 12)->GetHighestLOD();
+    modStatic* siren0 = lvlInstance::GetGeomTableEntry(geomSet + 13)->GetHighestLOD();
+    modStatic* siren1 = lvlInstance::GetGeomTableEntry(geomSet + 14)->GetHighestLOD();
+    modStatic* tslight0 = lvlInstance::GetGeomTableEntry(geomSet + 23)->GetHighestLOD();
+    modStatic* tslight1 = lvlInstance::GetGeomTableEntry(geomSet + 24)->GetHighestLOD();
 
     //draw rlight
     if (rlight != nullptr && gear == 0) {
@@ -6216,7 +6216,7 @@ void vehCableCarInstanceHandler::DrawShadow()
 {
     //get vars
     auto inst = reinterpret_cast<lvlInstance*>(this);
-    int geomSet = inst->getGeomSetId() - 1;
+    int geomSet = inst->GetGeomIndex() - 1;
 
     //get our shader set
     int shaderSet = 0;
@@ -6226,14 +6226,14 @@ void vehCableCarInstanceHandler::DrawShadow()
     Matrix34 shadowMatrix;
     Matrix34 dummyMatrix;
 
-    if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, inst->getRoomId(), &inst->GetMatrix(&dummyMatrix)))
+    if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, inst->GetRoomId(), &inst->GetMatrix(&dummyMatrix)))
     {
         //setup renderer
         gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
         Matrix44::Convert(gfxRenderState::sm_World, shadowMatrix);
 
         //draw shadow
-        modStatic* shadow = lvlInstance::GetGeomTableEntry(geomSet + 1)->getHighestLOD();
+        modStatic* shadow = lvlInstance::GetGeomTableEntry(geomSet + 1)->GetHighestLOD();
         if (shadow != nullptr)
         {
             shadow->Draw(shaders);
@@ -6249,7 +6249,7 @@ void vehCableCarInstanceHandler::DrawGlow()
 
     //get vars
     auto inst = reinterpret_cast<lvlInstance*>(this);
-    int geomSet = inst->getGeomSetId() - 1;
+    int geomSet = inst->GetGeomIndex() - 1;
 
     //setup renderer
     gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
@@ -6263,7 +6263,7 @@ void vehCableCarInstanceHandler::DrawGlow()
     auto shaders = lvlInstance::GetGeomTableEntry(geomSet)->pShaders[shaderSet];
 
     //get lights
-    modStatic* hlight = lvlInstance::GetGeomTableEntry(geomSet + 2)->getHighestLOD();
+    modStatic* hlight = lvlInstance::GetGeomTableEntry(geomSet + 2)->GetHighestLOD();
     if (hlight != nullptr)
     {
         hlight->Draw(shaders);
@@ -6274,7 +6274,7 @@ bool vehCableCarInstanceHandler::BeginGeom(const char* a1, const char* a2, int a
 {
     //We hook this to set flag 64 (shadow)
     auto inst = reinterpret_cast<lvlInstance*>(this);
-    inst->setFlag(64);
+    inst->SetFlag(64);
 
     //Call original
     return inst->BeginGeom(a1, a2, a3);
@@ -6501,7 +6501,7 @@ BOOL aiPoliceOfficerFeatureHandler::Offroad(vehCar *car) {
     auto AIMAP = &aiMap::Instance;
 
     auto position = car->getModel()->GetPosition();
-    auto roomId = car->getModel()->getRoomId();
+    auto roomId = car->getModel()->GetRoomId();
 
     short outId, outType;
     float outDist;
@@ -6645,7 +6645,7 @@ void aiPoliceOfficerFeatureHandler::DetectPerpetrator() {
 
                 *getPtr<float>(this, 0x9794) = sqrt(posDiffX * posDiffX + posDiffY * posDiffY + posDiffZ * posDiffZ);
 
-                AIMAP->MapComponent(vehPlayer->getCar()->getModel()->GetPosition(), getPtr<short>(this, 0x97A4), getPtr<short>(this, 0x97A2), vehPlayer->getCar()->getModel()->getRoomId());
+                AIMAP->MapComponent(vehPlayer->getCar()->getModel()->GetPosition(), getPtr<short>(this, 0x97A4), getPtr<short>(this, 0x97A2), vehPlayer->getCar()->getModel()->GetRoomId());
                 police->FollowPerpetrator();
                 return;
             }
@@ -6672,7 +6672,7 @@ void aiPoliceOfficerFeatureHandler::DetectPerpetrator() {
 
                 *getPtr<float>(this, 0x9794) = sqrt(posDiffX * posDiffX + posDiffY * posDiffY + posDiffZ * posDiffZ);
 
-                AIMAP->MapComponent(opponent->getCar()->getModel()->GetPosition(), getPtr<short>(this, 0x97A4), getPtr<short>(this, 0x97A2), opponent->getCar()->getModel()->getRoomId());
+                AIMAP->MapComponent(opponent->getCar()->getModel()->GetPosition(), getPtr<short>(this, 0x97A4), getPtr<short>(this, 0x97A2), opponent->getCar()->getModel()->GetRoomId());
                 police->FollowPerpetrator();
                 return;
             }
@@ -6701,7 +6701,7 @@ void aiPoliceOfficerFeatureHandler::Update() {
                 perpCar->getModel()->GetPosition(),
                 getPtr<short>(vehPhysics, 8),
                 getPtr<short>(vehPhysics, 4) + 1,
-                perpCar->getModel()->getRoomId());
+                perpCar->getModel()->GetRoomId());
 
             float posDiffX = copCar->getModel()->GetPosition().X - perpCar->getModel()->GetPosition().X;
             float posDiffZ = copCar->getModel()->GetPosition().Z - perpCar->getModel()->GetPosition().Z;
@@ -6761,8 +6761,8 @@ void aiPoliceOfficerFeatureHandler::Update() {
         }
 
         // if cop has fallen into water
-        if (level->GetRoomInfo(copCar->getModel()->getRoomId())->Flags & static_cast<int>(RoomFlags::Water)) {
-            if (level->GetWaterLevel(copCar->getModel()->getRoomId()) > copCar->getModel()->GetPosition().Y) {
+        if (level->GetRoomInfo(copCar->getModel()->GetRoomId())->Flags & static_cast<int>(RoomFlags::Water)) {
+            if (level->GetWaterLevel(copCar->getModel()->GetRoomId()) > copCar->getModel()->GetPosition().Y) {
                 PerpEscapes(0);
                 *getPtr<WORD>(this, 0x977A) = 12;
             }

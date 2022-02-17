@@ -41,7 +41,7 @@ namespace MM2
 
         AGE_API void Init(const char* basename, const Vector3& vector, int variant)
         {
-            this->setFlag(0xC8);
+            this->SetFlag(0xC8);
 
             bool hasGeometry = false;
 
@@ -83,12 +83,12 @@ namespace MM2
 
             //clamp variant value
             int shadersPerVariant = 1;
-            if (this->getGeomSetId() != 0)
-                shadersPerVariant = lvlInstance::GetGeomTableEntry(this->getGeomSetId())->numShadersPerPaintjob;
+            if (this->GetGeomIndex() != 0)
+                shadersPerVariant = lvlInstance::GetGeomTableEntry(this->GetGeomIndex())->numShadersPerPaintjob;
             this->Variant = variant % shadersPerVariant;
 
             //get our geometry id
-            int geomSetId = this->getGeomSetId();
+            int geomSetId = this->GetGeomIndex();
             int geomSetIdOffset = geomSetId - 1;
 
             //pre-load our variant
@@ -99,10 +99,10 @@ namespace MM2
                 this->Optimize(this->Variant);
 
             //load trailer hitch offset
-            if (this->getGeomSetId() != 0)
+            if (this->GetGeomIndex() != 0)
             {
                 auto hitchEntry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 7);
-                if (hitchEntry->getHighLOD() != nullptr)
+                if (hitchEntry->GetHighLOD() != nullptr)
                 {
                     Matrix34 outMatrix;
                     GetPivot(outMatrix, basename, "trailer_hitch");

@@ -1277,6 +1277,9 @@
     <ClCompile Include="src\implot\implot.cpp">
       <Filter>Source Files\implot</Filter>
     </ClCompile>
+    <ClCompile Include="src\mm2_common.cpp">
+      <Filter>Source Files\mm2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\AGE.h">

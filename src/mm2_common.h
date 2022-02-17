@@ -25,8 +25,12 @@ Multiple declarations will cause compiler errors!
 // Allocator
 // Calls MM2's internal operator new
 //
-#define ANGEL_ALLOCATOR void* operator new(size_t size) { return hook::StaticThunk<0x577360>::Call<void*>(size); }
+#define ANGEL_ALLOCATOR void* operator new(size_t size)          { return hook::StaticThunk<0x577360>::Call<void*>(size); } \
+                        void operator delete(void * pointer)     { hook::StaticThunk<0x577380>::Call<void>(pointer);}       \
+                        void operator delete[](void * pointer)   { hook::StaticThunk<0x5773C0>::Call<void>(pointer);}
 
+#define LEVEL_ALLOCATOR void* operator new(size_t size)          { return hook::StaticThunk<0x463110>::Call<void*>(size); } \
+                        void operator delete(void * pointer)     { hook::StaticThunk<0x463170>::Call<void>(pointer);}       
 //
 // MM2 uses DirectX 7
 //
@@ -132,17 +136,17 @@ namespace MM2 {
 
     class Timer {
     public:
-        static float TicksToSeconds;
-        static float TicksToMilliseconds;
+        static hook::Type<float> TicksToSeconds;
+        static hook::Type<float> TicksToMilliseconds;
 
         DWORD StartTime;
 
         AGE_API Timer()                                     { hook::Thunk<0x4C7840>::Call<void>(this); }
 
-        AGE_API void BeginBenchmark()                       { hook::Thunk<0x4C7980>::Call<void>(this); }
-        AGE_API void EndBenchmark()                         { hook::Thunk<0x4C79F0>::Call<void>(this); }
-        AGE_API uint QuickTicks()                           { return hook::Thunk<0x4C7810>::Call<uint>(this); }
-        AGE_API ulong Ticks()                               { return hook::Thunk<0x4C77E0>::Call<ulong>(this); }
+        static AGE_API void BeginBenchmark()                { hook::StaticThunk<0x4C7980>::Call<void>(); }
+        static AGE_API void EndBenchmark()                  { hook::StaticThunk<0x4C79F0>::Call<void>(); }
+        static AGE_API uint QuickTicks()                    { return hook::StaticThunk<0x4C7810>::Call<uint>(); }
+        static AGE_API uint Ticks()                         { return hook::StaticThunk<0x4C77E0>::Call<uint>(); }   
     };
 
     class NetStartArray {
@@ -193,6 +197,7 @@ namespace MM2 {
             .addVariableRef("PedestrianDensity", &dgStatePack::PedestrianDensity)
             .addVariableRef("CopDensity", &dgStatePack::CopDensity)
             .addVariableRef("OpponentDensity", &dgStatePack::OpponentDensity)
+            .addVariableRef("NumCTFRacers", &dgStatePack::NumberOfCTFRacers)
 
             .addVariableRef("MaxAmbientVehicles", &dgStatePack::MaxAmbientVehicles)
 
@@ -272,6 +277,7 @@ namespace MM2 {
         inline int getSkillLevel(void) {
             return (int)SkillLevel;
         }
+
         inline void setSkillLevel(int level) {
             SkillLevel = (dgSkillLevel)level;
         }
@@ -327,7 +333,23 @@ namespace MM2 {
         }
 
         void setNetName(LPCSTR name) {
-            memcpy(&NetName, name, sizeof(NetName) - 1); //copy all but last char to avoid overflow
+            memcpy(&NetName, name, sizeof(NetName) - 1);
+        }
+
+        LPCSTR getVehicleName() {
+            return (LPCSTR)VehicleName;
+        }
+
+        void setVehicleName(LPCSTR name) {
+            memcpy(&VehicleName, name, sizeof(VehicleName) - 1);
+        }
+
+        LPCSTR getCityName() {
+            return (LPCSTR)CityName;
+        }
+
+        void setCityName(LPCSTR name) {
+            memcpy(&CityName, name, sizeof(CityName) - 1);
         }
     public:
         char CityName[40];
@@ -365,7 +387,7 @@ namespace MM2 {
 
         float TimeLimit;
 
-        int SplashScreen; // -1 = ???, 0 = main menu, 1 = race
+        int NextState; // -1 = ???, 0 = main menu, 1 = race
         BOOL DisableRegen; // educated guess based on a skipped call to mmPlayer::UpdateRegen if true
 
         /*
@@ -403,8 +425,8 @@ namespace MM2 {
             View settings (NAMES NEED CONFIRMATION!)
         */
 
-        bool unk_36C;
-        char MapMode;
+        byte ViewMode;
+        byte MapMode;
         bool UseWideFOV;
         bool ShowDash;
 
@@ -468,10 +490,16 @@ namespace MM2 {
             .addStaticProperty("Instance", [] { return (mmStatePack*)0x6B1610; }) //HACK but it should work
 
             .addProperty("NetName", &getNetName, &setNetName)
+            .addProperty("VehicleName", &getVehicleName, &setVehicleName)
+            .addProperty("CityName", &getCityName, &setCityName)
+            .addVariableRef("VehiclePaintjob", &mmStatePack::VehiclePaintjob)
             .addVariableRef("InCrashCourse", &mmStatePack::InCrashCourse)
             .addVariableRef("FarClip", &mmStatePack::FarClip)
             .addVariableRef("TimeLimitOverride", &mmStatePack::TimeLimitOverride)
             .addProperty("UsePortals", &getUsePortals, &setUsePortals)
+            .addVariableRef("ViewMode", &mmStatePack::ViewMode, false)
+            .addVariableRef("MapMode", &mmStatePack::MapMode, false)
+            .addVariableRef("NextState", &mmStatePack::NextState, false)
             .endClass();
         }
     };

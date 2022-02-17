@@ -152,17 +152,17 @@ namespace MM2
                                                             { hook::Thunk<0x4CDC50>::Call<void>(this, manager, basename, breakableName, geomId, someId); }
         AGE_API void InitSirenLight(const char* basename, const char* mtxName, int geomId)
         {
-            if (this->getGeomSetId() != 0)
+            if (this->GetGeomIndex() != 0)
             {
-                auto sirenEntry = lvlInstance::GetGeomTableEntry((this->getGeomSetId() - 1) + geomId);
+                auto sirenEntry = lvlInstance::GetGeomTableEntry((this->GetGeomIndex() - 1) + geomId);
 
-                if (sirenEntry->getHighLOD() != nullptr)
+                if (sirenEntry->GetHighLOD() != nullptr)
                 {
                     auto siren = this->car->getSiren();
                     Matrix34 outMatrix;
 
                     GetPivot(outMatrix, basename, mtxName);
-                    this->GetSurfaceColor(sirenEntry->getHighLOD(), &siren->ltLightPool[siren->LightCount].Color);
+                    this->GetSurfaceColor(sirenEntry->GetHighLOD(), &siren->ltLightPool[siren->LightCount].Color);
                     siren->AddLight(Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32), siren->ltLightPool[siren->LightCount].Color);
                 }
             }
@@ -176,7 +176,7 @@ namespace MM2
 
             if (!(byte)this->dword_a4) {
                 if (this->carSim->getSpeedMPH() > 100.f) {
-                    this->wheelBreakableMgr->EjectAll(this->getRoomId());
+                    this->wheelBreakableMgr->EjectAll(this->GetRoomId());
                     this->wheelBrokenStatus = 0;
                     this->dword_a4 = 1;
                     return;
@@ -272,9 +272,9 @@ namespace MM2
             int hubStatusFlag = 1 << ((id * 3) + 1);
             int fenderStatusFlag = 1 << ((id * 3) + 2);
 
-            this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(wheelStatusFlag), this->getRoomId());
-            this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(hubStatusFlag), this->getRoomId());
-            this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(fenderStatusFlag), this->getRoomId());
+            this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(wheelStatusFlag), this->GetRoomId());
+            this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(hubStatusFlag), this->GetRoomId());
+            this->wheelBreakableMgr->Eject(this->wheelBreakableMgr->Get(fenderStatusFlag), this->GetRoomId());
 
             this->wheelBrokenStatus &= ~(wheelStatusFlag | hubStatusFlag | fenderStatusFlag);
         }
@@ -328,13 +328,13 @@ namespace MM2
 
         AGE_API void DrawExtraHeadlights(bool rotate)
         {
-            int geomSetId = this->getGeomSetId();
+            int geomSetId = this->GetGeomIndex();
             int geomSetIdOffset = geomSetId - 1;
 
             auto headlight2 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 73);
             auto headlight3 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 74);
 
-            if (headlight2->getHighLOD() == nullptr || headlight3->getHighLOD() == nullptr)
+            if (headlight2->GetHighLOD() == nullptr || headlight3->GetHighLOD() == nullptr)
                 return;
 
             if (rotate)
@@ -377,14 +377,14 @@ namespace MM2
 
         AGE_API void DrawFoglights()
         {
-            int geomSetId = this->getGeomSetId();
+            int geomSetId = this->GetGeomIndex();
             int geomSetIdOffset = geomSetId - 1;
 
             ltLight::DrawGlowBegin();
             for (int i = 0; i < 4; i++)
             {
                 auto foglight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 75 + i);
-                if (foglight->getHighLOD() == nullptr)
+                if (foglight->GetHighLOD() == nullptr)
                     continue;
 
                 auto breaklt = this->getGenBreakableMgr()->Get(i + 3);
@@ -413,25 +413,25 @@ namespace MM2
 
         AGE_API void DrawPart(int lod, int geomId, const Matrix34& matrix, modShader* shaders)
         {
-            if (this->getGeomSetId() == 0)
+            if (this->GetGeomIndex() == 0)
                 return;
 
-            auto model = lvlInstance::GetGeomTableEntry(this->getGeomSetId() + geomId - 1)->getLOD(lod);
+            auto model = lvlInstance::GetGeomTableEntry(this->GetGeomIndex() + geomId - 1)->GetLOD(lod);
             if (model != nullptr)
                 DrawPart(model, matrix, shaders);
         }
 
         void DrawPartReflected(int lod, int geomId, const Matrix34& matrix, modShader* shaders)
         {
-            if (this->getGeomSetId() == 0)
+            if (this->GetGeomIndex() == 0)
                 return;
 
-            auto model = lvlInstance::GetGeomTableEntry(this->getGeomSetId() + geomId - 1)->getLOD(lod);
+            auto model = lvlInstance::GetGeomTableEntry(this->GetGeomIndex() + geomId - 1)->GetLOD(lod);
             if (model != nullptr) {
                 DrawPart(model, matrix, shaders);
 
                 float reflectionIntensity = 1.f;
-                auto reflectionMap = lvlLevel::Singleton->GetEnvMap(this->getRoomId(), this->GetPosition(), &reflectionIntensity);
+                auto reflectionMap = lvlLevel::Singleton->GetEnvMap(this->GetRoomId(), this->GetPosition(), &reflectionIntensity);
                 if (reflectionMap != nullptr)
                 {
                     modShader::BeginEnvMap(reflectionMap, matrix);
@@ -443,7 +443,7 @@ namespace MM2
                                                             
         void DrawPart(int lod, int geomId, const Matrix34& matrix, modShader* shaders, bool reflected)
         {
-            if (reflected && !(lvlLevel::Singleton->GetRoomInfo(this->getRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean)))
+            if (reflected && !(lvlLevel::Singleton->GetRoomInfo(this->GetRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean)))
                 DrawPartReflected(lod, geomId, matrix, shaders);
             else
                 DrawPart(lod, geomId, matrix, shaders);
@@ -614,26 +614,26 @@ namespace MM2
 
             //clamp variant value
             int shadersPerVariant = 1;
-            if (this->getGeomSetId() != 0)
-                shadersPerVariant = lvlInstance::GetGeomTableEntry(this->getGeomSetId())->numShadersPerPaintjob;
+            if (this->GetGeomIndex() != 0)
+                shadersPerVariant = lvlInstance::GetGeomTableEntry(this->GetGeomIndex())->numShadersPerPaintjob;
             this->variant = this->variant % shadersPerVariant;
 
             //get our geometry id
-            int geomSetId = this->getGeomSetId();
+            int geomSetId = this->GetGeomIndex();
             int geomSetIdOffset = geomSetId - 1;
 
             //pre-load our variant
             lvlInstance::PreLoadShader(this->variant);
 
             //init fxTexelDamage
-            if (this->getGeomSetId() != 0) 
+            if (this->GetGeomIndex() != 0)
             {
                 auto bodyEntry = lvlInstance::GetGeomTableEntry(geomSetIdOffset);
-                if (bodyEntry->getHighLOD() != nullptr)
+                if (bodyEntry->GetHighLOD() != nullptr)
                 {
                     this->texelDamage = new fxTexelDamage();
 
-                    if (!texelDamage->Init(bodyEntry->getHighLOD(), bodyEntry->pShaders[this->getVariant()], bodyEntry->numShaders)) 
+                    if (!texelDamage->Init(bodyEntry->GetHighLOD(), bodyEntry->pShaders[this->getVariant()], bodyEntry->numShaders)) 
                     {
                         delete texelDamage;
                         texelDamage = nullptr;
@@ -678,12 +678,12 @@ namespace MM2
             }
 
             //load headlights
-            if (this->getGeomSetId() != 0) 
+            if (this->GetGeomIndex() != 0)
             {
                 auto headlight0entry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 47);
                 auto headlight1entry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 48);
 
-                if (headlight0entry->getHighLOD() != nullptr && headlight1entry->getHighLOD() != nullptr)
+                if (headlight0entry->GetHighLOD() != nullptr && headlight1entry->GetHighLOD() != nullptr)
                 {
                     this->headlights = new ltLight[2];
                     Matrix34 outMatrix;
@@ -692,25 +692,25 @@ namespace MM2
                     headlights[0].Color = Vector3(1.f, 1.f, 1.f);
                     headlights[0].Type = 1;
                     headlights[0].SpotExponent = 3.f;
-                    this->GetSurfaceColor(headlight0entry->getHighLOD(), &headlights[0].Color);
+                    this->GetSurfaceColor(headlight0entry->GetHighLOD(), &headlights[0].Color);
                     this->headlightPositions[0] = Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32);
 
                     GetPivot(outMatrix, basename, "headlight1");
                     headlights[1].Color = Vector3(1.f, 1.f, 1.f);
                     headlights[1].Type = 1;
                     headlights[1].SpotExponent = 3.f;
-                    this->GetSurfaceColor(headlight1entry->getHighLOD(), &headlights[1].Color);
+                    this->GetSurfaceColor(headlight1entry->GetHighLOD(), &headlights[1].Color);
                     this->headlightPositions[1] = Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32);
                 }
             }
 
             //load extra headlights
-            if (this->getGeomSetId() != 0)
+            if (this->GetGeomIndex() != 0)
             {
                 auto headlight2entry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 73);
                 auto headlight3entry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 74);
 
-                if (headlight2entry->getHighLOD() != nullptr && headlight3entry->getHighLOD() != nullptr)
+                if (headlight2entry->GetHighLOD() != nullptr && headlight3entry->GetHighLOD() != nullptr)
                 {
                     this->extraHeadlights = new ltLight[2];
                     Matrix34 outMatrix;
@@ -719,25 +719,25 @@ namespace MM2
                     extraHeadlights[0].Color = Vector3(1.f, 1.f, 1.f);
                     extraHeadlights[0].Type = 1;
                     extraHeadlights[0].SpotExponent = 3.f;
-                    this->GetSurfaceColor(headlight2entry->getHighLOD(), &extraHeadlights[0].Color);
+                    this->GetSurfaceColor(headlight2entry->GetHighLOD(), &extraHeadlights[0].Color);
                     this->extraHeadlightPositions[0] = Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32);
 
                     GetPivot(outMatrix, basename, "headlight3");
                     extraHeadlights[1].Color = Vector3(1.f, 1.f, 1.f);
                     extraHeadlights[1].Type = 1;
                     extraHeadlights[1].SpotExponent = 3.f;
-                    this->GetSurfaceColor(headlight3entry->getHighLOD(), &extraHeadlights[1].Color);
+                    this->GetSurfaceColor(headlight3entry->GetHighLOD(), &extraHeadlights[1].Color);
                     this->extraHeadlightPositions[1] = Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32);
                 }
             }
 
             //load foglights
-            if (this->getGeomSetId() != 0)
+            if (this->GetGeomIndex() != 0)
             {
                 for (int i = 0; i < 4; i++)
                 {
                     auto foglightEntry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 75 + i);
-                    if (foglightEntry->getHighLOD() == nullptr)
+                    if (foglightEntry->GetHighLOD() == nullptr)
                         continue;
 
                     Matrix34 outMatrix;
@@ -748,16 +748,16 @@ namespace MM2
                     foglights[i]->Color = Vector3(1.f, 1.f, 1.f);
                     foglights[i]->Type = 1;
                     foglights[i]->SpotExponent = 3.f;
-                    this->GetSurfaceColor(foglightEntry->getHighLOD(), &foglights[i]->Color);
+                    this->GetSurfaceColor(foglightEntry->GetHighLOD(), &foglights[i]->Color);
                     this->foglightPositions[i] = Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32);
                 }
             }
 
             //load FNDR offsets
-            if (this->getGeomSetId() != 0)
+            if (this->GetGeomIndex() != 0)
             {
                 auto fndrEntry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 49);
-                if (fndrEntry->getHighLOD() != nullptr)
+                if (fndrEntry->GetHighLOD() != nullptr)
                 {
                     Matrix34 outMatrix;
                     auto carsim = this->carSim;
@@ -779,7 +779,7 @@ namespace MM2
 
                 //extra FNDR2/3 offsets
                 auto fndr2Entry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 63);
-                if (fndr2Entry->getHighLOD() != nullptr)
+                if (fndr2Entry->GetHighLOD() != nullptr)
                 {
                     Matrix34 outMatrix;
                     auto carsim = this->carSim;
@@ -797,7 +797,7 @@ namespace MM2
 
                 //extra FNDR4/5 offsets
                 auto fndr4Entry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 65);
-                if (fndr4Entry->getHighLOD() != nullptr)
+                if (fndr4Entry->GetHighLOD() != nullptr)
                 {
                     Matrix34 outMatrix;
                     auto carsim = this->carSim;
@@ -864,10 +864,10 @@ namespace MM2
             InitBreakable(this->wheelBreakableMgr, basename, "engine", 25, 1 << 18);
 
             //load trailer hitch offset
-            if (this->getGeomSetId() != 0)
+            if (this->GetGeomIndex() != 0)
             {
                 auto hitchEntry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 42);
-                if (hitchEntry->getHighLOD() != nullptr)
+                if (hitchEntry->GetHighLOD() != nullptr)
                 {
                     Matrix34 outMatrix;
                     GetPivot(outMatrix, basename, "trailer_hitch");
@@ -937,11 +937,11 @@ namespace MM2
         {
             if (lod < 0 || lod > 3)
                 return;
-            if (this->getGeomSetId() == 0)
+            if (this->GetGeomIndex() == 0)
                 return;
 
             //get our geometry id
-            int geomSetId = this->getGeomSetId();
+            int geomSetId = this->GetGeomIndex();
             int geomSetIdOffset = geomSetId - 1;
 
             //get shaders
@@ -975,7 +975,7 @@ namespace MM2
             gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
             //draw the body
-            auto bodyModel = mainGeomEntry->getLOD(lod);
+            auto bodyModel = mainGeomEntry->GetLOD(lod);
             if (bodyModel != nullptr)
                 bodyModel->Draw(shaders);
 
@@ -984,7 +984,7 @@ namespace MM2
                 this->genBreakableMgr->Draw(this->getCarMatrix(), shaders, lod);
 
             //draw decal
-            auto decalModel = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 11)->getLOD(lod);
+            auto decalModel = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 11)->GetLOD(lod);
             if (decalModel != nullptr)
             {
                 int oldAlphaRef2 = (&RSTATE->Data)->AlphaRef;
@@ -1005,9 +1005,9 @@ namespace MM2
 
             //draw reflection (only in H LOD)
             float reflectionIntensity = 1.f;
-            auto reflectionMap = lvlLevel::Singleton->GetEnvMap(this->getRoomId(), this->GetPosition(), &reflectionIntensity);
+            auto reflectionMap = lvlLevel::Singleton->GetEnvMap(this->GetRoomId(), this->GetPosition(), &reflectionIntensity);
             if (lod == 3 && reflectionMap != nullptr && bodyModel != nullptr &&
-                !(lvlLevel::Singleton->GetRoomInfo(this->getRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean)))
+                !(lvlLevel::Singleton->GetRoomInfo(this->GetRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean)))
             {
                 modShader::BeginEnvMap(reflectionMap, this->getCarMatrix());
                 bodyModel->DrawEnvMapped(shaders, reflectionMap, reflectionIntensity);
@@ -1025,7 +1025,7 @@ namespace MM2
                 fndrMatrix.m11 = carMatrix.m11;
                 fndrMatrix.m12 = carMatrix.m12;
 
-                auto fndr0model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 49)->getHighLOD();
+                auto fndr0model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 49)->GetHighLOD();
                 if (fndr0model != nullptr && (wheelBrokenStatus & 0x4) != 0)
                 {
                     auto whlMatrix = this->carSim->getWheel(0)->getMatrix();
@@ -1045,7 +1045,7 @@ namespace MM2
                     DrawPart(3, 49, fndrMatrix, shaders, vehCarModel::PartReflections);
                 }
 
-                auto fndr1model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 50)->getHighLOD();
+                auto fndr1model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 50)->GetHighLOD();
                 if (fndr1model != nullptr && (wheelBrokenStatus & 0x20) != 0)
                 {
                     auto whlMatrix = this->carSim->getWheel(1)->getMatrix();
@@ -1066,7 +1066,7 @@ namespace MM2
                 }
 
                 //draw FNDR2/3, we have to draw them here to be rendered over WHL2/3
-                auto fndr2model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 63)->getHighLOD();
+                auto fndr2model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 63)->GetHighLOD();
                 if (fndr2model != nullptr && (wheelBrokenStatus & 0x100) != 0)
                 {
                     auto whlMatrix = this->carSim->getWheel(2)->getMatrix();
@@ -1086,7 +1086,7 @@ namespace MM2
                     DrawPart(3, 63, fndrMatrix, shaders, vehCarModel::PartReflections);
                 }
 
-                auto fndr3model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 64)->getHighLOD();
+                auto fndr3model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 64)->GetHighLOD();
                 if (fndr3model != nullptr && (wheelBrokenStatus & 0x800) != 0)
                 {
                     auto whlMatrix = this->carSim->getWheel(3)->getMatrix();
@@ -1125,7 +1125,7 @@ namespace MM2
                     //hub
                     if ((this->wheelBrokenStatus & hubStatusFlag) != 0)
                     {
-                        auto shubModel = lvlInstance::GetGeomTableEntry(geomSetIdOffset + shubId)->getLOD(lod);
+                        auto shubModel = lvlInstance::GetGeomTableEntry(geomSetIdOffset + shubId)->GetLOD(lod);
                         if (fabs(wheel->getRotationRate()) > 26.f && shubModel != nullptr && vehCarModel::EnableSpinningWheels)
                         {
                             DrawPart(lod, shubId, wheel->getMatrix(), shaders, vehCarModel::PartReflections);
@@ -1138,7 +1138,7 @@ namespace MM2
                     //wheel
                     if ((this->wheelBrokenStatus & wheelStatusFlag) != 0)
                     {
-                        auto swhlModel = lvlInstance::GetGeomTableEntry(geomSetIdOffset + swhlId)->getLOD(lod);
+                        auto swhlModel = lvlInstance::GetGeomTableEntry(geomSetIdOffset + swhlId)->GetLOD(lod);
                         if (fabs(wheel->getRotationRate()) > 26.f && swhlModel != nullptr && vehCarModel::EnableSpinningWheels)
                         {
                             DrawPart(lod, swhlId, wheel->getMatrix(), shaders, vehCarModel::WheelReflections);
@@ -1309,7 +1309,7 @@ namespace MM2
                     }
                 }
 
-                auto axleFrontmodel = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 23)->getLOD(lod);
+                auto axleFrontmodel = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 23)->GetLOD(lod);
                 if (axleFrontmodel != nullptr)
                 {
                     if (vehCarModel::WheelWobble)
@@ -1352,7 +1352,7 @@ namespace MM2
                     }
                 }
 
-                auto axleRearmodel = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 24)->getLOD(lod);
+                auto axleRearmodel = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 24)->GetLOD(lod);
                 if (axleRearmodel != nullptr)
                 {
                     if (vehCarModel::WheelWobble)
@@ -1404,8 +1404,8 @@ namespace MM2
                 }
 
                 //extra hubs
-                auto hub4model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 61)->getLOD(lod);
-                auto shub4model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 71)->getLOD(lod);
+                auto hub4model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 61)->GetLOD(lod);
+                auto shub4model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 71)->GetLOD(lod);
                 if (hub4model != nullptr && (this->wheelBrokenStatus & 0x2000) != 0)
                 {
                     auto carMatrix = this->carSim->getWorldMatrix();
@@ -1428,8 +1428,8 @@ namespace MM2
                     }
                 }
 
-                auto hub5model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 62)->getLOD(lod);
-                auto shub5model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 72)->getLOD(lod);
+                auto hub5model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 62)->GetLOD(lod);
+                auto shub5model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 72)->GetLOD(lod);
                 if (hub5model != nullptr && (this->wheelBrokenStatus & 0x10000) != 0)
                 {
                     auto carMatrix = this->carSim->getWorldMatrix();
@@ -1461,7 +1461,7 @@ namespace MM2
                 fndrMatrix.m12 = carMatrix.m12;
 
                 //extra fenders
-                auto fndr4model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 65)->getHighLOD();
+                auto fndr4model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 65)->GetHighLOD();
                 if (fndr4model != nullptr && (wheelBrokenStatus & 0x4000) != 0)
                 {
                     fndrMatrix.m00 = dummyWhl4Matrix.m00;
@@ -1479,7 +1479,7 @@ namespace MM2
                     DrawPart(3, 65, fndrMatrix, shaders, vehCarModel::PartReflections);
                 }
 
-                auto fndr5model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 66)->getHighLOD();
+                auto fndr5model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 66)->GetHighLOD();
                 if (fndr5model != nullptr && (wheelBrokenStatus & 0x20000) != 0)
                 {
                     fndrMatrix.m00 = dummyWhl5Matrix.m00;
@@ -1498,8 +1498,8 @@ namespace MM2
                 }
 
                 //extra wheels
-                auto whl4model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 51)->getLOD(lod);
-                auto swhl4model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 59)->getLOD(lod);
+                auto whl4model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 51)->GetLOD(lod);
+                auto swhl4model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 59)->GetLOD(lod);
                 if (whl4model != nullptr && (this->wheelBrokenStatus & 0x1000) != 0)
                 {
                     auto carMatrix = this->carSim->getWorldMatrix();
@@ -1522,8 +1522,8 @@ namespace MM2
                     }
                 }
 
-                auto whl5model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 52)->getLOD(lod);
-                auto swhl5model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 60)->getLOD(lod);
+                auto whl5model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 52)->GetLOD(lod);
+                auto swhl5model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 60)->GetLOD(lod);
                 if (whl5model != nullptr && (this->wheelBrokenStatus & 0x8000) != 0)
                 {
                     auto carMatrix = this->carSim->getWorldMatrix();
@@ -1564,7 +1564,7 @@ namespace MM2
                 return;
 
             //get our geometry id
-            int geomSetId = this->getGeomSetId();
+            int geomSetId = this->GetGeomIndex();
             int geomSetIdOffset = geomSetId - 1;
 
             //get shaders
@@ -1587,12 +1587,12 @@ namespace MM2
 
 
             //draw signals
-            modStatic* slight0 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 5)->getHighestLOD();
-            modStatic* slight1 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 6)->getHighestLOD();
+            modStatic* slight0 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 5)->GetHighestLOD();
+            modStatic* slight1 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 6)->GetHighestLOD();
 
             //draw taillight signals
-            modStatic* tslight0 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 101)->getHighestLOD();
-            modStatic* tslight1 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 102)->getHighestLOD();
+            modStatic* tslight0 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 101)->GetHighestLOD();
+            modStatic* tslight1 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 102)->GetHighestLOD();
 
             //check signal clock
             bool drawSignal = fmod(datTimeManager::ElapsedTime, 1.f) > 0.5f;
@@ -1661,7 +1661,7 @@ namespace MM2
             if (enabledElectrics[0] || enabledElectrics[1])
             {   
                 //draw tlight
-                modStatic* tlight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 3)->getHighestLOD();
+                modStatic* tlight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 3)->GetHighestLOD();
                 if (tlight != nullptr) {
                     //draw brake copy
                     if (carsim->getBrake() > 0.1)
@@ -1672,7 +1672,7 @@ namespace MM2
                 }
 
                 //draw blight
-                modStatic* blight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 7)->getHighestLOD();
+                modStatic* blight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 7)->GetHighestLOD();
                 if (blight != nullptr) {
                     //draw brake copy
                     if (carsim->getBrake() > 0.1)
@@ -1680,22 +1680,22 @@ namespace MM2
                 }
 
                 //draw rlight
-                modStatic* rlight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 4)->getHighestLOD();
+                modStatic* rlight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 4)->GetHighestLOD();
                 if (rlight != nullptr && gear == 0) {
                     rlight->Draw(shaders);
                 }
             }
 
             //Draw siren and headlights
-            modStatic* hlight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 2)->getHighestLOD();
-            modStatic* siren0 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 9)->getHighestLOD();
-            modStatic* siren1 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 10)->getHighestLOD();
+            modStatic* hlight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 2)->GetHighestLOD();
+            modStatic* siren0 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 9)->GetHighestLOD();
+            modStatic* siren1 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 10)->GetHighestLOD();
 
             //Draw foglights
-            modStatic* flight0 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 103)->getHighestLOD();
-            modStatic* flight1 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 104)->getHighestLOD();
-            modStatic* flight2 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 105)->getHighestLOD();
-            modStatic* flight3 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 106)->getHighestLOD();
+            modStatic* flight0 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 103)->GetHighestLOD();
+            modStatic* flight1 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 104)->GetHighestLOD();
+            modStatic* flight2 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 105)->GetHighestLOD();
+            modStatic* flight3 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 106)->GetHighestLOD();
 
             //Get breakable foglights
             auto breaklt0 = this->getGenBreakableMgr()->Get(3);

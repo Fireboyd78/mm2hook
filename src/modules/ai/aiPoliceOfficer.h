@@ -148,7 +148,7 @@ namespace MM2
 
         AGE_API BOOL HitMe(vehCar *perpCar)
         {
-            return (this->getCar()->getModel()->getFlags() >> 15) & 1;
+            return (this->getCar()->getModel()->GetFlags() >> 15) & 1;
         }
 
         AGE_API BOOL IsPerpACop(vehCar *perpCar)
