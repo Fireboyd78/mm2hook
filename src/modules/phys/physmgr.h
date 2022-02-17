@@ -331,9 +331,16 @@ namespace MM2
 
         AGE_API void IgnoreMover(lvlInstance* instance)                  { hook::Thunk<0x468860>::Call<void>(this, instance); }
         AGE_API void DeclareMover(lvlInstance* instance, int a2, int a3) { hook::Thunk<0x468370>::Call<void>(this, instance, a2, a3); }
-        AGE_API bool Collide(lvlSegment& segment, lvlIntersection* intersection, int roomId, lvlInstance* ignoreInstance, ushort flags1, int flags2 )
+        AGE_API bool Collide(lvlSegment& segment, lvlIntersection* intersection, int roomId, lvlInstance* ignoreInstance, ushort flags1, int flags2)
                                                                          { return hook::Thunk<0x468E40>::Call<bool>(this, &segment, intersection, roomId, ignoreInstance, flags1, flags2); }
-        AGE_API bool CollideTerrain(dgPhysManager::CollisionTableEntry* entry) { return hook::Thunk<0x469A60>::Call<bool>(this, entry); }
+        AGE_API bool CollideProbe(lvlSegment& segment, lvlIntersection* intersection, lvlInstance* instance)
+                                                                         { return hook::Thunk<0x469110>::Call<bool>(this, &segment, intersection, instance); }
+        AGE_API bool TrivialCollideInstances(lvlInstance* bangerInstance, lvlInstance* bangerInstance2)
+                                                                         { return hook::Thunk<0x4692E0>::Call<bool>(this, bangerInstance, bangerInstance2); }
+        AGE_API bool CollideInstances(lvlInstance* instance, lvlInstance* bangerInstance)
+                                                                         { return hook::Thunk<0x469620>::Call<bool>(this, instance, bangerInstance); }
+        AGE_API bool CollideTerrain(dgPhysManager::CollisionTableEntry* entry)
+                                                                         { return hook::Thunk<0x469A60>::Call<bool>(this, entry); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<dgPhysManager>("dgPhysManager")
