@@ -44,7 +44,7 @@ namespace MM2
         //members
         aiVehicleData* GetData()                                   { return hook::Thunk<0x553F80>::Call<aiVehicleData*>(this); }
         AGE_API void DrawPart(modStatic* a1, const Matrix34& a2, modShader* a3, int a4)
-                                                                   { hook::Thunk<0x552870>::Call<void>(this, a1, a2, a3, a4); }
+                                                                   { hook::Thunk<0x552870>::Call<void>(this, a1, &a2, a3, a4); }
 
         //lua
         static void BindLua(LuaState L) {
