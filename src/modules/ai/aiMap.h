@@ -1,4 +1,5 @@
 #pragma once
+#include <modules\ai.h>
 
 #include "ArrayList.h"
 
@@ -13,7 +14,6 @@
 #include "aiPoliceOfficer.h"
 #include "aiRouteRacer.h"
 #include "aiSubway.h"
-#include "aiVehicleMGR.h"
 #include "aiVehicleAmbient.h"
 #include "aiVehiclePlayer.h"
 #include "aiVehicleSpline.h"
@@ -27,6 +27,7 @@ namespace MM2
     
     // External declarations
     extern class asNode;
+    extern class aiVehicleManager;
 
     // Class definitions
     enum class aiMapComponentType

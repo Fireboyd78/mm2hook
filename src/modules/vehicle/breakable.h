@@ -57,6 +57,30 @@ namespace MM2
             this->Variant = variant;
         }
 
+        inline float getImpactThreshold() {
+            return this->ImpactThreshold;
+        }
+
+        inline void setImpactThreshold(float threshold) {
+            this->ImpactThreshold = threshold;
+        }
+
+        inline float getField_10() {
+            return this->field_10;
+        }
+
+        inline void setField_10(float a1) {
+            this->field_10 = a1;
+        }
+
+        inline float getField_18() {
+            return this->field_18;
+        }
+
+        inline void setField_18(float a1) {
+            this->field_18 = a1;
+        }
+
     public:
         ANGEL_ALLOCATOR
 
@@ -70,6 +94,7 @@ namespace MM2
                                                             { hook::Thunk<0x4D8600 >::Call<void>(this, a1, a2, a3, a4, a5); }
         AGE_API void Eject(vehBreakable *a1, int room)      { hook::Thunk<0x4D8940>::Call<void>(this, a1, room); }
         AGE_API void EjectAll(int room)                     { hook::Thunk<0x4D8BB0>::Call<void>(this, room); }
+        AGE_API void Reset()                                { hook::Thunk<0x4D8710>::Call<void>(this); }
 
         AGE_API void Draw(const Matrix34& matrix, modShader* shaders, int lod)
         {

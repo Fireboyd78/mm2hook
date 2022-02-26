@@ -8,53 +8,9 @@ namespace MM2
     class aiVehicle;
 
     // External declarations
-    extern class aiVehicleInstance;
-    extern class dgPhysEntity;
-    extern class phBound;
-    extern class aiVehicleData;
+
 
     // Class definitions
-    class aiVehicleInstance : public lvlInstance {
-    private:
-        hook::Field<0x14, aiVehicleSpline*> _spline;
-    public:
-        aiVehicleInstance(void)                                    DONOTCALL;
-
-        //properties
-        inline aiVehicleSpline * getSpline()
-        {
-            return _spline.get(this);
-        }
-
-        //overrides
-        AGE_API Vector3 const& GetPosition() override              { return hook::Thunk<0x553030>::Call<Vector3 const&>(this); };
-        AGE_API Matrix34 const& GetMatrix(Matrix34* a1) override   { return hook::Thunk<0x553020>::Call<Matrix34 const&>(this, a1); };
-        AGE_API void SetMatrix(Matrix34 const &a1) override        { hook::Thunk<0x553010>::Call<void>(this, &a1); }
-        AGE_API dgPhysEntity* GetEntity() override                 { return hook::Thunk<0x552F50>::Call<dgPhysEntity*>(this); };
-        AGE_API dgPhysEntity* AttachEntity() override              { return hook::Thunk<0x552FB0>::Call<dgPhysEntity*>(this); };
-        AGE_API void Detach() override                             { hook::Thunk<0x552F80>::Call<void>(this); }
-        AGE_API void Draw(int a1) override                         { hook::Thunk<0x552160>::Call<void>(this, a1); }
-        AGE_API void DrawShadow() override                         { hook::Thunk<0x552CC0>::Call<void>(this); }
-        AGE_API void DrawShadowMap() override                      { hook::Thunk<0x552F30>::Call<void>(this); }
-        AGE_API void DrawGlow() override                           { hook::Thunk<0x552930>::Call<void>(this); }
-        AGE_API void DrawReflected(float a1) override              { hook::Thunk<0x552CB0>::Call<void>(this, a1); }
-        AGE_API unsigned int SizeOf() override                     { return hook::Thunk<0x553060>::Call<int>(this); };
-        AGE_API phBound* GetBound(int a1) override                 { return hook::Thunk<0x552F40>::Call<phBound*>(this, a1); };
-        
-        //members
-        aiVehicleData* GetData()                                   { return hook::Thunk<0x553F80>::Call<aiVehicleData*>(this); }
-        AGE_API void DrawPart(modStatic* a1, const Matrix34& a2, modShader* a3, int a4)
-                                                                   { hook::Thunk<0x552870>::Call<void>(this, a1, &a2, a3, a4); }
-
-        //lua
-        static void BindLua(LuaState L) {
-            LuaBinding(L).beginExtendClass<aiVehicleInstance, lvlInstance>("aiVehicleInstance")
-                //members
-                .addFunction("GetData", &GetData)
-                .endClass();
-        }
-    };
-
     class aiObstacle {
     public:
         aiObstacle(void)                                    DONOTCALL;
