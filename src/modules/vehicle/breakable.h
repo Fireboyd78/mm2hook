@@ -12,14 +12,14 @@ namespace MM2
     
     class vehBreakable {
     public:
-        bool isAttached; // still attached to the parent?
-        int index; // index into the list of breakables
-        Matrix34 matrix;
-        lvlInstance::GeomTableEntry* model;
-        int bangerDataIndex;
-        int geometryIndex;
-        lvlInstance* instance;
-        vehBreakable *next;
+        bool IsAttached; // still attached to the parent?
+        int Index; // index into the list of breakables
+        Matrix34 Matrix;
+        lvlInstance::GeomTableEntry* Model;
+        int BangerDataIndex;
+        int GeometryIndex;
+        lvlInstance* Instance;
+        vehBreakable *Next;
     public:
         AGE_API vehBreakable(modStatic **a1, Matrix34 *a2, int a3, int a4, int a5)
                                                             { hook::Thunk<0x4D8530>::Call<void>(this); }
@@ -37,24 +37,24 @@ namespace MM2
     public:
         static bool EnableReflections;
     private:
-        vehBreakable *first; // linked-list
-        float maxImpact; // educated guess (default: 10000.0)
-        Matrix34 *matrix; // origin?
-        int variant; // always zero by default, used in Eject to set Banger variant
+        vehBreakable *First; // linked-list
+        float ImpactThreshold; // educated guess (default: 10000.0)
+        Matrix34 *Matrix; // origin?
+        int Variant; // always zero by default, used in Eject to set Banger variant
 
         // TODO: figure out what these do
 
-        float p5; // (default: 4.0)
-        float p6; // (default: 0.0)
-        float p7; // (default: 2.0)
-        float p8; // (default: 0.0)
+        float field_10; // (default: 4.0)
+        float field_14; // (default: 0.0)
+        float field_18; // (default: 2.0)
+        float field_1C; // (default: 0.0)
     public:
         inline int getVariant() {
-            return this->variant;
+            return this->Variant;
         }
 
         inline void setVariant(int variant) {
-            this->variant = variant;
+            this->Variant = variant;
         }
 
     public:
@@ -71,25 +71,24 @@ namespace MM2
         AGE_API void Eject(vehBreakable *a1, int room)      { hook::Thunk<0x4D8940>::Call<void>(this, a1, room); }
         AGE_API void EjectAll(int room)                     { hook::Thunk<0x4D8BB0>::Call<void>(this, room); }
 
-
-        AGE_API void Draw(const Matrix34& a1, modShader* a2, int a3)
+        AGE_API void Draw(const Matrix34& matrix, modShader* shaders, int lod)
         {
-            for (auto i = this->first; i; i = i->next)
+            for (auto i = this->First; i; i = i->Next)
             {
-                if (i->isAttached)
+                if (i->IsAttached)
                 {
-                    auto lodModel = i->model->GetLOD(a3);
-                    if (lodModel != nullptr)
+                    auto model = i->Model->GetLOD(lod);
+                    if (model != nullptr)
                     {
                         Matrix34 drawMatrix = Matrix34();
-                        drawMatrix.Set(i->matrix);
-                        drawMatrix.Dot(a1);
+                        drawMatrix.Set(i->Matrix);
+                        drawMatrix.Dot(matrix);
 
                         //setup renderer
                         Matrix44::Convert(gfxRenderState::sm_World, drawMatrix);
                         gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
-                        lodModel->Draw(a2);
+                        model->Draw(shaders);
 
                         //reflection
                         if (EnableReflections)
@@ -98,14 +97,14 @@ namespace MM2
                             bool isSoftware = *(bool*)0x6830D4;
 
                             auto level = *lvlLevel::Singleton;
-                            Vector3 carPosition = Vector3(a1.m30, a1.m31, a1.m32);
+                            Vector3 carPosition = Vector3(matrix.m30, matrix.m31, matrix.m32);
 
                             auto state = &MMSTATE;
-                            if (a3 == 3 && (g_ReflectionMap != nullptr && !isSoftware && state->EnableReflections) &&
+                            if (lod == 3 && (g_ReflectionMap != nullptr && !isSoftware && state->EnableReflections) &&
                                 !(level->GetRoomInfo(level->FindRoomId(carPosition, 0))->Flags & static_cast<int>(RoomFlags::Subterranean)))
                             {
                                 modShader::BeginEnvMap(g_ReflectionMap, drawMatrix);
-                                lodModel->DrawEnvMapped(a2, g_ReflectionMap, 1.f);
+                                model->DrawEnvMapped(shaders, g_ReflectionMap, 1.f);
                                 modShader::EndEnvMap();
                             }
                         }
