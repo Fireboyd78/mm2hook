@@ -363,8 +363,6 @@ namespace MM2
                 else {
                     for (int i = 0; i < 4; i++)
                     {
-                        int swhlId = 55 + i;
-
                         Matrix34 wheelMatrix;
 
                         wheelMatrix.Identity();
