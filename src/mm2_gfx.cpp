@@ -29,3 +29,8 @@ declfield(gfxRenderState::sm_Modelview)         = 0x685738;
 declfield(gfxRenderState::m_Touched)            = 0x685778;
 declfield(gfxRenderState::m_TouchedMask)        = 0x685780;
 declfield(gfxRenderState::m_TouchedMasks)       = 0x5CD604;
+
+/*
+    ltLight
+*/
+declfield(ltLight::GlowScale)                   = 0x5DDE9C;
