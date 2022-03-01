@@ -28,11 +28,13 @@ Multiple declarations will cause compiler errors!
 #define ANGEL_ALLOCATOR void* operator new(size_t size)                        { return hook::StaticThunk<0x577360>::Call<void*>(size); } \
                         void operator delete(void * pointer)                   { hook::StaticThunk<0x577380>::Call<void>(pointer);} \
                         void operator delete[](void * pointer)                 { hook::StaticThunk<0x5773C0>::Call<void>(pointer);} \
+                        void* operator new(size_t size, void * data)           { return data; } \
+                        void operator delete(void * pointer, void * place)     { (void)place; }
 
 #define LEVEL_ALLOCATOR void* operator new(size_t size)                        { return hook::StaticThunk<0x463110>::Call<void*>(size); } \
                         void operator delete(void * pointer)                   { hook::StaticThunk<0x463170>::Call<void>(pointer);} \
                         void* operator new(size_t size, void * data)           { return data; } \
-                        void operator delete(void * pointer, void * place)     { place; }
+                        void operator delete(void * pointer, void * place)     { (void)place; }
 
 //
 // MM2 uses DirectX 7
