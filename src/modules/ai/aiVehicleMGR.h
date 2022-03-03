@@ -156,6 +156,51 @@ namespace MM2
             return this->Spline;
         }
 
+        inline int getSignalFrequency()
+        {
+            return this->SignalFrequency;
+        }
+
+        inline byte getSignalState()
+        {
+            return this->SignalState;
+        }
+
+        inline void setSignalState(byte state)
+        {
+            this->SignalState = state;
+        }
+
+        inline short getLOD()
+        {
+            return this->LOD;
+        }
+
+        inline void setLOD(int lod)
+        {
+            this->LOD = lod;
+        }
+
+        inline short getVariant()
+        {
+            return this->Variant;
+        }
+
+        inline vehBreakableMgr * getBreakableMgr()
+        {
+            return this->BreakableMgr;
+        }
+
+        inline Vector3 getHeadlightPosition()
+        {
+            return this->HeadlightPosition;
+        }
+
+        inline Vector3 getVehiclePosition()
+        {
+            return this->VehiclePosition;
+        }
+
         //members
         AGE_API aiVehicleData * GetData()                          { return hook::Thunk<0x553F80>::Call<aiVehicleData*>(this); }
         AGE_API void SetColor()                                    { hook::Thunk<0x552110>::Call<void>(this); }

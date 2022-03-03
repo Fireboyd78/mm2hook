@@ -355,6 +355,14 @@ public:
 
 class aiVehicleInstanceFeatureHandler {
 public:
+    bool InitVehicleGeom(const char* basename, const char* bodyGeom, int bodyFlags);
+    void InitDefaultBreakables(const char* basename, const char* breakableName, int breakableGeomId);
+    void InitAdditionalBreakables(const char* basename, const char* breakableName, int breakableGeomId);
+    void DrawPart(MM2::modStatic* model, const MM2::Matrix34& matrix, MM2::modShader* shaders, bool reflected);
+    void Reset();
+    void Draw(int lod);
+    void DrawShadow();
+    void DrawGlow();
     static void Install();
 };
 
