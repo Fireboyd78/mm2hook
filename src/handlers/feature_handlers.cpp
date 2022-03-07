@@ -5425,20 +5425,37 @@ bool aiVehicleInstanceFeatureHandler::InitVehicleGeom(const char* basename, cons
     return false;
 }
 
-void aiVehicleInstanceFeatureHandler::InitDefaultBreakables(const char* basename, const char* breakableName, int breakableGeomId)
+bool aiVehicleInstanceFeatureHandler::InitBreakable(const char* basename, const char* breakableName, int geomId, int flags)
 {
     auto inst = reinterpret_cast<aiVehicleInstance*>(this);
-    inst->InitBreakable(basename, breakableName, breakableGeomId + 1);
+
+    if (inst->GetGeomIndex() == 0 || lvlInstance::GetGeomTableEntry(geomId + (inst->GetGeomIndex() - 1))->GetHighLOD() == nullptr)
+        return false;
+
+    if (inst->getBreakableMgr() == nullptr)
+    {
+        inst->setBreakableMgr(new vehBreakableMgr());
+        inst->getBreakableMgr()->Init(&inst->getSpline()->GetMatrix());
+    }
+
+    auto breakable = lvlInstance::GetGeomTableEntry(geomId + (inst->GetGeomIndex() - 1));
+    inst->getBreakableMgr()->Add(basename, breakableName, breakable->LOD, geomId + inst->GetGeomIndex(), flags);
+
+    return true;
 }
 
-void aiVehicleInstanceFeatureHandler::InitAdditionalBreakables(const char* basename, const char* breakableName, int breakableGeomId)
+void aiVehicleInstanceFeatureHandler::InitDefaultBreakables(const char* basename, const char* breakableName, int geomId)
 {
-    auto inst = reinterpret_cast<aiVehicleInstance*>(this);
-    inst->InitBreakable(basename, breakableName, breakableGeomId + 1);
-    inst->InitBreakable(basename, "break01", 15);
-    inst->InitBreakable(basename, "break12", 16);
-    inst->InitBreakable(basename, "break23", 17);
-    inst->InitBreakable(basename, "break03", 18);
+    InitBreakable(basename, breakableName, geomId + 1, 0);
+}
+
+void aiVehicleInstanceFeatureHandler::InitAdditionalBreakables(const char* basename, const char* breakableName, int geomId)
+{
+    InitBreakable(basename, breakableName, geomId + 1, 0);
+    InitBreakable(basename, "break01", 15, 0);
+    InitBreakable(basename, "break12", 16, 0);
+    InitBreakable(basename, "break23", 17, 0);
+    InitBreakable(basename, "break03", 18, 0);
 }
 
 void aiVehicleInstanceFeatureHandler::DrawPart(modStatic* model, const Matrix34& matrix, modShader* shaders, bool reflected)

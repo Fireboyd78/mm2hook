@@ -191,6 +191,11 @@ namespace MM2
             return this->BreakableMgr;
         }
 
+        inline void setBreakableMgr(vehBreakableMgr* breakableMgr)
+        {
+            this->BreakableMgr = breakableMgr;
+        }
+
         inline Vector3 getHeadlightPosition()
         {
             return this->HeadlightPosition;
