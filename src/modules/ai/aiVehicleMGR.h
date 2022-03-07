@@ -204,8 +204,8 @@ namespace MM2
         //members
         AGE_API aiVehicleData * GetData()                          { return hook::Thunk<0x553F80>::Call<aiVehicleData*>(this); }
         AGE_API void SetColor()                                    { hook::Thunk<0x552110>::Call<void>(this); }
-        AGE_API void InitBreakable(const char* basename, const char* breakableName, int breakableGeomId)
-                                                                   { hook::Thunk<0x552010>::Call<void>(this, basename, breakableName, breakableGeomId); }
+        AGE_API bool InitBreakable(const char* basename, const char* breakableName, int geomId)
+                                                                   { return hook::Thunk<0x552010>::Call<bool>(this, basename, breakableName, geomId); }
 
         //overrides
         AGE_API void Reset() override                              { hook::Thunk<0x552100>::Call<void>(this); }
