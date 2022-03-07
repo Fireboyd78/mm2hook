@@ -5416,7 +5416,17 @@ bool aiVehicleInstanceFeatureHandler::InitVehicleGeom(const char* basename, cons
         gfxForceLVERTEX = true;
         inst->AddGeom(basename, "TSLIGHT0", 0);
         inst->AddGeom(basename, "TSLIGHT1", 0);
+
+        inst->AddGeom(basename, "FLIGHT0", 0);
+        inst->AddGeom(basename, "FLIGHT1", 0);
+        inst->AddGeom(basename, "FLIGHT2", 0);
+        inst->AddGeom(basename, "FLIGHT3", 0);
         gfxForceLVERTEX = false;
+
+        inst->AddGeom(basename, "breaklt0", 0);
+        inst->AddGeom(basename, "breaklt1", 0);
+        inst->AddGeom(basename, "breaklt2", 0);
+        inst->AddGeom(basename, "breaklt3", 0);
 
         inst->EndGeom();
     }
@@ -5456,6 +5466,10 @@ void aiVehicleInstanceFeatureHandler::InitAdditionalBreakables(const char* basen
     InitBreakable(basename, "break12", 16, 0);
     InitBreakable(basename, "break23", 17, 0);
     InitBreakable(basename, "break03", 18, 0);
+    InitBreakable(basename, "breaklt0", 37, 1);
+    InitBreakable(basename, "breaklt1", 38, 2);
+    InitBreakable(basename, "breaklt2", 39, 3);
+    InitBreakable(basename, "breaklt3", 40, 4);
 }
 
 void aiVehicleInstanceFeatureHandler::DrawPart(modStatic* model, const Matrix34& matrix, modShader* shaders, bool reflected)
@@ -5887,6 +5901,22 @@ void aiVehicleInstanceFeatureHandler::DrawGlow()
 
             if (hlight != nullptr && aiMap::Instance->drawHeadlights)
                 hlight->Draw(shaders);
+
+            if (MMSTATE->WeatherType == 2)
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    modStatic* flight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 33 + i)->GetHighestLOD();
+                    if (flight != nullptr)
+                    {
+                        auto breaklt = inst->getBreakableMgr()->Get(i + 1);
+                        if (breaklt == nullptr || (breaklt != nullptr && breaklt->IsAttached))
+                        {
+                            flight->Draw(shaders);
+                        }
+                    }
+                }
+            }
         }
     }
 }

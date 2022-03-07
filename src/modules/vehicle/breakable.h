@@ -13,7 +13,7 @@ namespace MM2
     class vehBreakable {
     public:
         bool IsAttached; // still attached to the parent?
-        int Index; // index into the list of breakables
+        int Flags; // breakable flag id
         Matrix34 Matrix;
         lvlInstance::GeomTableEntry* Model;
         int BangerDataIndex;
@@ -38,7 +38,7 @@ namespace MM2
         static bool EnableReflections;
     private:
         vehBreakable *First; // linked-list
-        float ImpactThreshold; // educated guess (default: 10000.0)
+        float ImpulseThreshold; // educated guess (default: 10000.0)
         Matrix34 *Matrix; // origin?
         int Variant; // always zero by default, used in Eject to set Banger variant
 
@@ -58,11 +58,11 @@ namespace MM2
         }
 
         inline float getImpactThreshold() {
-            return this->ImpactThreshold;
+            return this->ImpulseThreshold;
         }
 
         inline void setImpactThreshold(float threshold) {
-            this->ImpactThreshold = threshold;
+            this->ImpulseThreshold = threshold;
         }
 
         inline float getField_10() {
@@ -138,7 +138,7 @@ namespace MM2
             }
         }
 
-        AGE_API vehBreakable * Get(int index)               { return hook::Thunk<0x4D86F0>::Call<vehBreakable *>(this, index); }
+        AGE_API vehBreakable * Get(int flags)               { return hook::Thunk<0x4D86F0>::Call<vehBreakable *>(this, flags); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<vehBreakableMgr>("vehBreakableMgr")
