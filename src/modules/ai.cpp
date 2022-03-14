@@ -36,5 +36,3 @@ int aiPoliceOfficer::MaximumNumCops = 3;
     aiVehicleInstance
 */
 int aiVehicleInstance::AmbientHeadlightStyle = 0;
-int aiVehicleInstance::MM1StyleShadows = 0;
-bool aiVehicleInstance::ShadowTransparency = true;

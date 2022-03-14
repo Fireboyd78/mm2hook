@@ -5688,7 +5688,7 @@ void aiVehicleInstanceFeatureHandler::DrawShadow()
         }
     }
 
-    if (MMSTATE->TimeOfDay == 3 || MMSTATE->WeatherType != 0 || aiVehicleInstance::MM1StyleShadows < 4 ||
+    if (MMSTATE->TimeOfDay == 3 || MMSTATE->WeatherType != 0 || cfgMM1StyleShadows.Get() < 4 ||
         lvlLevel::Singleton->GetRoomInfo(inst->GetRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean))
         return;
 
@@ -5704,7 +5704,7 @@ void aiVehicleInstanceFeatureHandler::DrawShadow()
         }
 
         int destBlend = (&RSTATE->Data)->DestBlend;
-        if (aiVehicleInstance::ShadowTransparency)
+        if (cfgShadowTransparency.Get())
         {
             if ((&RSTATE->Data)->DestBlend != 9)
             {
@@ -5975,8 +5975,6 @@ void aiVehicleInstanceFeatureHandler::Install()
     ConfigValue<int> cfgAmbientHeadlightStyle("AmbientHeadlightStyle", 0);
 
     aiVehicleInstance::AmbientHeadlightStyle = cfgAmbientHeadlightStyle.Get();
-    aiVehicleInstance::MM1StyleShadows = cfgMM1StyleShadows.Get();
-    aiVehicleInstance::ShadowTransparency = cfgShadowTransparency.Get();
 }
 
 /*

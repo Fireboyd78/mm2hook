@@ -133,8 +133,6 @@ namespace MM2
     class aiVehicleInstance : public lvlInstance {
     public:
         static int AmbientHeadlightStyle;
-        static int MM1StyleShadows;
-        static bool ShadowTransparency;
     private:
         aiVehicleSpline* Spline;
         short SignalFrequency;
