@@ -36,13 +36,13 @@ namespace MM2
         float field_134;
         float field_138;
         float field_13C;
-        float float140;
-        float float144;
-        float float148;
-        float float14C;
-        float float150;
-        float float154;
-        float float158;
+        float field_140;
+        float field_144;
+        float field_148;
+        float field_14C;
+        float field_150;
+        float field_154;
+        float field_158;
         D3DVIEWPORT7 m_Viewport;
         float Fov;
         float Aspect;
@@ -589,6 +589,8 @@ namespace MM2
         byte unk_43;
         int ShadowMode;
         int unk_48;
+    public:
+        static hook::Type<float> GlowScale;
 
         ANGEL_ALLOCATOR 
 
@@ -789,6 +791,8 @@ namespace MM2
 
     declhook(0x6830EC, _Type<int>, window_X);
     declhook(0x683110, _Type<int>, window_Y);
+
+    declhook(0x6857D8, _Type<bool>, gfxForceLVERTEX);
 
     declhook(0x6854A0, _TypeProxy<gfxRenderStateData>, LASTRSTATE);
     declhook(0x6856A0, _TypeProxy<gfxRenderState>, RSTATE);

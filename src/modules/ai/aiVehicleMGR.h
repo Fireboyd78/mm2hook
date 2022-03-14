@@ -2,6 +2,9 @@
 #include <modules\ai.h>
 #include <modules\ai\aiVehicleData.h>
 
+#include "aiVehicleSpline.h"
+#include "aiRailSet.h"
+
 namespace MM2
 {
     // Forward declarations
@@ -15,8 +18,36 @@ namespace MM2
     // Class definitions
     class aiVehicleActive : dgPhysEntity {
     private:
-        byte buffer[0xA48];
+        datCallback* CallBack;
+        asParticles Particles;
+        asParticles Particles2;
+        asBirthRule BirthRule;
+        asBirthRule BirthRule2;
+        float CurDamage;
+        float MaxDamage;
+        int field_2D0;
+        lvlInstance* Instance;
+        phInertialCS ICS;
+        phSleep Sleep;
+        vehWeelCheap WheelFrontLeft;
+        vehWeelCheap WheelFrontRight;
+        vehWeelCheap WheelBackLeft;
+        vehWeelCheap WheelBackRight;
     public:
+        inline vehWeelCheap * getWheel(int num) {
+            switch (num) {
+            case 0:
+                return &WheelFrontLeft;
+            case 1:
+                return &WheelFrontRight;
+            case 2:
+                return &WheelBackLeft;
+            case 3:
+                return &WheelBackRight;
+            }
+            return nullptr;
+        }
+
         /*
             dgPhysEntity virtuals
         */
@@ -30,13 +61,13 @@ namespace MM2
 
     class aiVehicleManager : public asNode {
     private:
-        aiVehicleData vehicleDatas[32];
-        int numVehicleDatas;
-        aiVehicleActive* activeActives[32];
-        aiVehicleActive aiVehicleActives[32];
-        short attachedCount;
-        short gap;
-        ltLight* sharedLight;
+        aiVehicleData VehicleDatas[32];
+        int NumVehicleDatas;
+        aiVehicleActive* ActiveActives[32];
+        aiVehicleActive AiVehicleActives[32];
+        short AttachedCount;
+        short Gap;
+        ltLight* SharedLight;
     public:
         static hook::Type<aiVehicleManager *> Instance;
         static hook::Type<int> SignalClock;
@@ -66,7 +97,7 @@ namespace MM2
 
         //helpers
         int getDataCount() {
-            return this->numVehicleDatas;
+            return this->NumVehicleDatas;
         }
 
         aiVehicleData * getData(int num) {
@@ -76,7 +107,12 @@ namespace MM2
                 num = max - 1;
 
             //return data
-            return &this->vehicleDatas[num];
+            return &this->VehicleDatas[num];
+        }
+
+        inline ltLight * getSharedLight()
+        {
+            return this->SharedLight;
         }
 
         //lua
@@ -92,8 +128,113 @@ namespace MM2
             .endClass();
         }
     };
-
     ASSERT_SIZEOF(aiVehicleManager, 0x177A4);
+
+    class aiVehicleInstance : public lvlInstance {
+    public:
+        static int AmbientHeadlightStyle;
+    private:
+        aiVehicleSpline* Spline;
+        short SignalFrequency;
+        byte SignalState;
+        short LOD;
+        short Variant;
+        vehBreakableMgr* BreakableMgr;
+        Vector3 HeadlightPosition;
+        Vector3 VehiclePosition;
+    public:
+        AGE_API aiVehicleInstance(aiVehicleSpline* spline, char* basename)
+        {
+            hook::Thunk<0x551D90>::Call<void>(this, spline, basename);
+        }
+
+        //properties
+        inline aiVehicleSpline * getSpline()
+        {
+            return this->Spline;
+        }
+
+        inline int getSignalFrequency()
+        {
+            return this->SignalFrequency;
+        }
+
+        inline byte getSignalState()
+        {
+            return this->SignalState;
+        }
+
+        inline void setSignalState(byte state)
+        {
+            this->SignalState = state;
+        }
+
+        inline short getLOD()
+        {
+            return this->LOD;
+        }
+
+        inline void setLOD(int lod)
+        {
+            this->LOD = lod;
+        }
+
+        inline short getVariant()
+        {
+            return this->Variant;
+        }
+
+        inline vehBreakableMgr * getBreakableMgr()
+        {
+            return this->BreakableMgr;
+        }
+
+        inline void setBreakableMgr(vehBreakableMgr* breakableMgr)
+        {
+            this->BreakableMgr = breakableMgr;
+        }
+
+        inline Vector3 getHeadlightPosition()
+        {
+            return this->HeadlightPosition;
+        }
+
+        inline Vector3 getVehiclePosition()
+        {
+            return this->VehiclePosition;
+        }
+
+        //members
+        AGE_API aiVehicleData * GetData()                          { return hook::Thunk<0x553F80>::Call<aiVehicleData*>(this); }
+        AGE_API void SetColor()                                    { hook::Thunk<0x552110>::Call<void>(this); }
+        AGE_API bool InitBreakable(const char* basename, const char* breakableName, int geomId)
+                                                                   { return hook::Thunk<0x552010>::Call<bool>(this, basename, breakableName, geomId); }
+
+        //overrides
+        AGE_API void Reset() override                              { hook::Thunk<0x552100>::Call<void>(this); }
+        AGE_API Vector3 const& GetPosition() override              { return hook::Thunk<0x553030>::Call<Vector3 const&>(this); }
+        AGE_API Matrix34 const& GetMatrix(Matrix34* a1) override   { return hook::Thunk<0x553020>::Call<Matrix34 const&>(this, a1); }
+        AGE_API void SetMatrix(Matrix34 const &a1) override        { hook::Thunk<0x553010>::Call<void>(this, &a1); }
+        AGE_API dgPhysEntity* GetEntity() override                 { return hook::Thunk<0x552F50>::Call<dgPhysEntity*>(this); }
+        AGE_API dgPhysEntity* AttachEntity() override              { return hook::Thunk<0x552FB0>::Call<dgPhysEntity*>(this); }
+        AGE_API void Detach() override                             { hook::Thunk<0x552F80>::Call<void>(this); }
+        AGE_API void Draw(int lod) override                        { hook::Thunk<0x552160>::Call<void>(this, lod); }
+        AGE_API void DrawShadow() override                         { hook::Thunk<0x552CC0>::Call<void>(this); }
+        AGE_API void DrawShadowMap() override                      { hook::Thunk<0x552F30>::Call<void>(this); }
+        AGE_API void DrawGlow() override                           { hook::Thunk<0x552930>::Call<void>(this); }
+        AGE_API void DrawReflected(float a1) override              { hook::Thunk<0x552CB0>::Call<void>(this, a1); }
+        AGE_API unsigned int SizeOf() override                     { return hook::Thunk<0x553060>::Call<int>(this); }
+        AGE_API phBound* GetBound(int a1) override                 { return hook::Thunk<0x552F40>::Call<phBound*>(this, a1); }
+
+        //lua
+        static void BindLua(LuaState L) {
+            LuaBinding(L).beginExtendClass<aiVehicleInstance, lvlInstance>("aiVehicleInstance")
+                //members
+                .addFunction("GetData", &GetData)
+                .endClass();
+        }
+    };
+    ASSERT_SIZEOF(aiVehicleInstance, 0x3C);
 
     // Lua initialization
 

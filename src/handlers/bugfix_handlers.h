@@ -177,12 +177,6 @@ public:
     static void Install();
 };
 
-class aiVehicleInstanceHandler {
-public:
-    void Reset();
-    static void Install();
-};
-
 class aiGoalAvoidPlayerHandler {
 public:
     void AvoidPlayer();

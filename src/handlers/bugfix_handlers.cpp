@@ -7,7 +7,6 @@ static init_handler g_bugfix_handlers[] = {
     CreateHandler<aiPedestrianHandler>("aiPedestrian"),
     CreateHandler<aiPoliceForceHandler>("aiPoliceForce"),
     CreateHandler<aiVehicleAmbientHandler>("aiVehicleAmbient"),
-    CreateHandler<aiVehicleInstanceHandler>("aiVehicleInstance"),
     CreateHandler<aiGoalAvoidPlayerHandler>("aiGoalAvoidPlayer"),
     CreateHandler<aiRouteRacerHandler>("aiRouteRacer"),
 
@@ -885,26 +884,6 @@ void asMeshCardInfoHandler::Install()
     InstallCallback("asMeshCardInfo::Draw", "Scales particles correctly based on current cull mode.",
         &asMeshCardInfo::Draw, {
             cb::jmp(0x461770),
-        }
-    );
-}
-
-/*
-    aiVehicleInstanceHandler
-*/
-
-void aiVehicleInstanceHandler::Reset()
-{
-    *getPtr<byte>(this, 0x1A) = 0;
-    hook::Thunk<0x552100>::Call<void>(this); // call original
-}
-
-void aiVehicleInstanceHandler::Install()
-{
-    // fixes four ways persisting after level reset
-    InstallVTableHook("aiVehicleInstance::DrawGlow",
-        &Reset, {
-            0x5B590C,
         }
     );
 }

@@ -39,22 +39,22 @@ namespace MM2
         AGE_API void FileIO(datParser &parser) override { hook::Thunk<0x56F7C0>::Call<void>(this, &parser); }
 
         //lua helpers
-        Vector3* GetWheelPosition(int id) {
+        Vector3 GetWheelPosition(int id) {
             //clamp
             if (id > 5) id = 5;
 
             //
-            return &WheelPositions[id];
+            return WheelPositions[id];
         }
 
-        void SetWheelPosition(int id, Vector3* position) {
+        void SetWheelPosition(int id, Vector3 position) {
             //clamp
             if (id > 5) id = 5;
 
-            auto wheelPosPtr = &WheelPositions[id];
-            wheelPosPtr->X = position->X;
-            wheelPosPtr->Y = position->Y;
-            wheelPosPtr->Z = position->Z;
+            auto wheelPos = WheelPositions[id];
+            wheelPos.X = position.X;
+            wheelPos.Y = position.Y;
+            wheelPos.Z = position.Z;
         }
 
         int getDataId() {

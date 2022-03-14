@@ -389,7 +389,7 @@ namespace MM2
 
                 auto breaklt = this->getGenBreakableMgr()->Get(i + 3);
 
-                if (breaklt == nullptr || (breaklt != nullptr && breaklt->isAttached)) {
+                if (breaklt == nullptr || (breaklt != nullptr && breaklt->IsAttached)) {
                     auto carMatrix = this->getCarMatrix();
                     this->foglights[i]->Direction = Vector3(-carMatrix.m20, -carMatrix.m21, -carMatrix.m22);
 
@@ -459,7 +459,7 @@ namespace MM2
 
             if (lvlInstance::BeginGeomWithGroup(basename, "body", "player", 0xC)) 
             {
-                //gfxForceLVERTEX = 1;
+                gfxForceLVERTEX = true;
                 lvlInstance::AddGeom(basename, "shadow", 0);
                 lvlInstance::AddGeom(basename, "hlight", 0);
                 lvlInstance::AddGeom(basename, "tlight", 0);
@@ -467,7 +467,7 @@ namespace MM2
                 lvlInstance::AddGeom(basename, "slight0", 0);
                 lvlInstance::AddGeom(basename, "slight1", 0);
                 lvlInstance::AddGeom(basename, "blight", 0);
-                //gfxForceLVERTEX = 0;
+                gfxForceLVERTEX = false;
 
                 lvlInstance::AddGeom(basename, "bodydamage", 0);
                 lvlInstance::AddGeom(basename, "siren0", 0);
@@ -514,10 +514,10 @@ namespace MM2
                 lvlInstance::AddGeom(basename, "srn2", 0);
                 lvlInstance::AddGeom(basename, "srn3", 0);
 
-                //gfxForceLVERTEX = 1;
+                gfxForceLVERTEX = true;
                 lvlInstance::AddGeom(basename, "headlight0", 0);
                 lvlInstance::AddGeom(basename, "headlight1", 0);
-                //gfxForceLVERTEX = 0;
+                gfxForceLVERTEX = false;
 
                 lvlInstance::AddGeom(basename, "fndr0", 0);
                 lvlInstance::AddGeom(basename, "fndr1", 0);
@@ -551,7 +551,7 @@ namespace MM2
                 lvlInstance::AddGeom(basename, "shub4", 0);
                 lvlInstance::AddGeom(basename, "shub5", 0);
 
-                //gfxForceLVERTEX = 1;
+                gfxForceLVERTEX = true;
                 lvlInstance::AddGeom(basename, "headlight2", 0);
                 lvlInstance::AddGeom(basename, "headlight3", 0);
 
@@ -559,7 +559,7 @@ namespace MM2
                 lvlInstance::AddGeom(basename, "foglight1", 0);
                 lvlInstance::AddGeom(basename, "foglight2", 0);
                 lvlInstance::AddGeom(basename, "foglight3", 0);
-                //gfxForceLVERTEX = 0;
+                gfxForceLVERTEX = false;
 
                 lvlInstance::AddGeom(basename, "srn4", 0);
                 lvlInstance::AddGeom(basename, "srn5", 0);
@@ -585,7 +585,7 @@ namespace MM2
                 lvlInstance::AddGeom(basename, "lightbar0", 0);
                 lvlInstance::AddGeom(basename, "lightbar1", 0);
 
-                //gfxForceLVERTEX = 1;
+                gfxForceLVERTEX = true;
                 lvlInstance::AddGeom(basename, "tslight0", 0);
                 lvlInstance::AddGeom(basename, "tslight1", 0);
 
@@ -593,7 +593,7 @@ namespace MM2
                 lvlInstance::AddGeom(basename, "flight1", 0);
                 lvlInstance::AddGeom(basename, "flight2", 0);
                 lvlInstance::AddGeom(basename, "flight3", 0);
-                //gfxForceLVERTEX = 0;
+                gfxForceLVERTEX = false;
 
                 lvlInstance::AddGeom(basename, "breaklt0", 0);
                 lvlInstance::AddGeom(basename, "breaklt1", 0);
@@ -1750,28 +1750,28 @@ namespace MM2
                     {
                         if (flight0 != nullptr)
                         {
-                            if (breaklt0 == nullptr || (breaklt0 != nullptr && breaklt0->isAttached))
+                            if (breaklt0 == nullptr || (breaklt0 != nullptr && breaklt0->IsAttached))
                             {
                                 flight0->Draw(shaders);
                             }
                         }
                         if (flight1 != nullptr)
                         {
-                            if (breaklt1 == nullptr || (breaklt1 != nullptr && breaklt1->isAttached))
+                            if (breaklt1 == nullptr || (breaklt1 != nullptr && breaklt1->IsAttached))
                             {
                                 flight1->Draw(shaders);
                             }
                         }
                         if (flight2 != nullptr)
                         {
-                            if (breaklt2 == nullptr || (breaklt2 != nullptr && breaklt2->isAttached))
+                            if (breaklt2 == nullptr || (breaklt2 != nullptr && breaklt2->IsAttached))
                             {
                                 flight2->Draw(shaders);
                             }
                         }
                         if (flight3 != nullptr)
                         {
-                            if (breaklt3 == nullptr || (breaklt3 != nullptr && breaklt3->isAttached))
+                            if (breaklt3 == nullptr || (breaklt3 != nullptr && breaklt3->IsAttached))
                             {
                                 flight3->Draw(shaders);
                             }

@@ -12,16 +12,19 @@ namespace MM2
     // External declarations
     extern class AudImpact;
     extern class aiRailSet;
+    extern class aiVehicleInstance;
 
     // Class definitions
 
     class aiVehicleSpline : public aiVehicle {
     private:
         hook::Field<0x10, aiRailSet> _railSet;
+        hook::Field<0xD4, aiVehicleInstance*> _vehInstance;
         hook::Field<0xE6, short> _playerId;
         hook::Field<0xF4, float> _curSpeed;
+        hook::Field<0xFC, float> _wheelRotation;
     protected:
-        byte _buffer[0x184];
+        byte _buffer[0x180];
     public:
         aiVehicleSpline(void)                               DONOTCALL;
         aiVehicleSpline(const aiVehicleSpline &&)           DONOTCALL;
@@ -60,6 +63,11 @@ namespace MM2
             _curSpeed.set(this, speed);
         }
 
+        inline float getWheelRotation()
+        {
+            return _wheelRotation.get(this);
+        }
+
         inline short getPlayerId()
         {
             return _playerId.get(this);
@@ -71,7 +79,7 @@ namespace MM2
         }
 
         inline aiVehicleInstance * getVehicleInstance(void) const {
-            return *getPtr<aiVehicleInstance*>(this, 0xD4);
+            return _vehInstance.get(this);
         }
 
         AGE_API void SolveYPositionAndOrientation()         { hook::Thunk<0x5690C0>::Call<void>(this); }

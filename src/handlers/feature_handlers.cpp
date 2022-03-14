@@ -1812,8 +1812,8 @@ void mmGameHandler::UpdateHorn(bool a1) {
 
     //update police audio
     if (isVehiclePolice && siren != nullptr && !player->IsMaxDamaged()) {
-        if ((lightbar0 == nullptr || (lightbar0 != nullptr && lightbar0->isAttached)) ||
-            (lightbar1 == nullptr || (lightbar1 != nullptr && lightbar1->isAttached))) {
+        if ((lightbar0 == nullptr || (lightbar0 != nullptr && lightbar0->IsAttached)) ||
+            (lightbar1 == nullptr || (lightbar1 != nullptr && lightbar1->IsAttached))) {
             if (buttonReleasedThisFrame && (horn_lastReleaseTime - horn_lastPressTime) < horn_sirenThreshold) {
                 if (siren->Active) {
                     siren->Active = false;
@@ -4385,7 +4385,7 @@ void dgBangerInstanceHandler::Reset() {
     glowLoaded = false;
 }
 
-static ConfigValue<int> cfgMm1StyleShadows("MM1StyleShadows", 0);
+static ConfigValue<int> cfgMM1StyleShadows("MM1StyleShadows", 0);
 static ConfigValue<bool> cfgShadowTransparency("ShadowTransparency", true);
 
 void dgBangerInstanceHandler::DrawShadow() {
@@ -4534,7 +4534,7 @@ bool dgBangerInstanceHandler::BeginGeom(const char* a1, const char* a2, int a3)
 
 void dgBangerInstanceHandler::Install()
 {
-    if (cfgMm1StyleShadows.Get() >= 1) {
+    if (cfgMM1StyleShadows.Get() >= 1) {
         InstallVTableHook("dgBangerInstance::DrawShadow",
             &DrawShadow, {
                 0x5B14C4,
@@ -4723,8 +4723,8 @@ void vehCarHandler::Update() {
     auto lightbar1 = model->getGenBreakableMgr()->Get(2);
     auto level = *lvlLevel::Singleton;
 
-    if ((lightbar0 != nullptr && !lightbar0->isAttached) ||
-        (lightbar1 != nullptr && !lightbar1->isAttached)) {
+    if ((lightbar0 != nullptr && !lightbar0->IsAttached) ||
+        (lightbar1 != nullptr && !lightbar1->IsAttached)) {
         if (siren != nullptr && siren->Active) {
             siren->Active = false;
             audio->StopSiren();
@@ -4977,7 +4977,7 @@ void vehCarModelFeatureHandler::Install() {
         }
     );
 
-    if (cfgMm1StyleShadows.Get() >= 3) {
+    if (cfgMM1StyleShadows.Get() >= 3) {
         InstallVTableHook("vehCarModel::DrawShadow",
             &DrawShadow, {
                 0x5B2CE0,
@@ -5309,7 +5309,7 @@ void pedestrianInstanceHandler::DrawShadow() {
 
 void pedestrianInstanceHandler::Install()
 {
-    if (cfgMm1StyleShadows.Get() >= 2) {
+    if (cfgMM1StyleShadows.Get() >= 2) {
         InstallVTableHook("aiPedestrianInstance::DrawShadow",
             &DrawShadow, {
                 0x5B6320
@@ -5361,53 +5361,317 @@ void pedestrianInstanceHandler::Install()
 /*
     aiVehicleInstanceFeatureHandler
 */
-Matrix34 aiVehicleMatrix = Matrix34();
-int ambientHeadlightStyle = 0;
 
-void aiVehicleInstanceFeatureHandler::Draw(int a1) {
+bool aiVehicleInstanceFeatureHandler::InitVehicleGeom(const char* basename, const char* bodyGeom, int bodyFlags)
+{
     auto inst = reinterpret_cast<aiVehicleInstance*>(this);
-    auto geomID = inst->GetGeomIndex() - 1;
-    auto geomSet = lvlInstance::GetGeomTableEntry(geomID);
 
-    //setup renderer
-    Matrix34 carMatrix = inst->GetMatrix(&aiVehicleMatrix);
-    Matrix44::Convert(gfxRenderState::sm_World, carMatrix);
-    gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
+    if (inst->BeginGeom(basename, bodyGeom, bodyFlags))
+    {
+        gfxForceLVERTEX = true;
+        inst->AddGeom(basename, "SHADOW", 0);
+        inst->AddGeom(basename, "HLIGHT", 0);
+        inst->AddGeom(basename, "TLIGHT", 0);
+        inst->AddGeom(basename, "SLIGHT0", 0);
+        inst->AddGeom(basename, "SLIGHT1", 0);
+        inst->AddGeom(basename, "BLIGHT", 0); //NEW MM2HOOK OBJECT
+        gfxForceLVERTEX = false;
 
-    //get our shader set
-    auto shaderSet = *getPtr<signed short>(this, 0x1E);
-    auto shaders = geomSet->pShaders[shaderSet];
+        inst->AddGeom(basename, "WHL0", 4);
+        inst->AddGeom(basename, "WHL1", 4);
+        inst->AddGeom(basename, "WHL2", 4);
+        inst->AddGeom(basename, "WHL3", 4);
 
-    //get objects
-    modStatic* plighton = lvlInstance::GetGeomTableEntry(geomID + 19)->GetHighLOD();
-    modStatic* plightoff = lvlInstance::GetGeomTableEntry(geomID + 20)->GetHighLOD();
+        inst->AddGeom(basename, "break0", 2);
+        inst->AddGeom(basename, "break1", 2);
+        inst->AddGeom(basename, "break2", 2);
+        inst->AddGeom(basename, "break3", 2);
 
-    if (plighton != nullptr) {
-        if (aiMap::Instance->drawHeadlights)
-            DrawPart(plighton, carMatrix, shaders, *getPtr<int>(this, 6));
+        //NEW MM2HOOK OBJECTS
+        inst->AddGeom(basename, "break01", 2);
+        inst->AddGeom(basename, "break12", 2);
+        inst->AddGeom(basename, "break23", 2);
+        inst->AddGeom(basename, "break03", 2);
+        //NEW MM2HOOK OBJECTS
+
+        gfxForceLVERTEX = true;
+        inst->AddGeom(basename, "headlight0", 0);
+        inst->AddGeom(basename, "headlight1", 0);
+        gfxForceLVERTEX = false;
+
+        inst->AddGeom(basename, "WHL4", 0);
+        inst->AddGeom(basename, "WHL5", 0);
+
+        //NEW MM2HOOK OBJECTS
+        inst->AddGeom(basename, "PLIGHTON", 0);
+        inst->AddGeom(basename, "PLIGHTOFF", 0);
+
+        inst->AddGeom(basename, "SWHL0", 0);
+        inst->AddGeom(basename, "SWHL1", 0);
+        inst->AddGeom(basename, "SWHL2", 0);
+        inst->AddGeom(basename, "SWHL3", 0);
+        inst->AddGeom(basename, "SWHL4", 0);
+        inst->AddGeom(basename, "SWHL5", 0);
+
+        gfxForceLVERTEX = true;
+        inst->AddGeom(basename, "TSLIGHT0", 0);
+        inst->AddGeom(basename, "TSLIGHT1", 0);
+
+        inst->AddGeom(basename, "FLIGHT0", 0);
+        inst->AddGeom(basename, "FLIGHT1", 0);
+        inst->AddGeom(basename, "FLIGHT2", 0);
+        inst->AddGeom(basename, "FLIGHT3", 0);
+        gfxForceLVERTEX = false;
+
+        inst->AddGeom(basename, "breaklt0", 0);
+        inst->AddGeom(basename, "breaklt1", 0);
+        inst->AddGeom(basename, "breaklt2", 0);
+        inst->AddGeom(basename, "breaklt3", 0);
+
+        inst->EndGeom();
     }
-    if (plightoff != nullptr) {
-        if (!aiMap::Instance->drawHeadlights)
-            DrawPart(plightoff, carMatrix, shaders, *getPtr<int>(this, 6));
-    }
 
-    //call original
-    hook::Thunk<0x552160>::Call<void>(this, a1);
+    // return false so the game doesn't try loading the geometry again (we already took care of it above)
+    return false;
 }
 
-void aiVehicleInstanceFeatureHandler::DrawShadow() {
+bool aiVehicleInstanceFeatureHandler::InitBreakable(const char* basename, const char* breakableName, int geomId, int flags)
+{
     auto inst = reinterpret_cast<aiVehicleInstance*>(this);
-    auto geomID = inst->GetGeomIndex() - 1;
-    auto geomSet = lvlInstance::GetGeomTableEntry(geomID);
-    auto vehicleMatrix = inst->GetMatrix(&aiVehicleMatrix);
+
+    if (inst->GetGeomIndex() == 0 || lvlInstance::GetGeomTableEntry(geomId + (inst->GetGeomIndex() - 1))->GetHighLOD() == nullptr)
+        return false;
+
+    if (inst->getBreakableMgr() == nullptr)
+    {
+        inst->setBreakableMgr(new vehBreakableMgr());
+        inst->getBreakableMgr()->Init(&inst->getSpline()->GetMatrix());
+    }
+
+    auto breakable = lvlInstance::GetGeomTableEntry(geomId + (inst->GetGeomIndex() - 1));
+    inst->getBreakableMgr()->Add(basename, breakableName, breakable->LOD, geomId + inst->GetGeomIndex(), flags);
+
+    return true;
+}
+
+void aiVehicleInstanceFeatureHandler::InitDefaultBreakables(const char* basename, const char* breakableName, int geomId)
+{
+    InitBreakable(basename, breakableName, geomId + 1, 0);
+}
+
+void aiVehicleInstanceFeatureHandler::InitAdditionalBreakables(const char* basename, const char* breakableName, int geomId)
+{
+    InitBreakable(basename, breakableName, geomId + 1, 0);
+    InitBreakable(basename, "break01", 15, 0);
+    InitBreakable(basename, "break12", 16, 0);
+    InitBreakable(basename, "break23", 17, 0);
+    InitBreakable(basename, "break03", 18, 0);
+    InitBreakable(basename, "breaklt0", 37, 1);
+    InitBreakable(basename, "breaklt1", 38, 2);
+    InitBreakable(basename, "breaklt2", 39, 3);
+    InitBreakable(basename, "breaklt3", 40, 4);
+}
+
+void aiVehicleInstanceFeatureHandler::DrawPart(modStatic* model, const Matrix34& matrix, modShader* shaders, bool reflected)
+{
+    auto inst = reinterpret_cast<aiVehicleInstance*>(this);
+
+    //setup renderer
+    Matrix44::Convert(gfxRenderState::sm_World, matrix);
+    gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
+
+    //draw model
+    model->Draw(shaders);
+
+    //draw reflections
+    if (reflected && !(lvlLevel::Singleton->GetRoomInfo(inst->GetRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean)))
+    {
+        float reflectionIntensity = 1.f;
+        auto reflectionMap = lvlLevel::Singleton->GetEnvMap(inst->GetRoomId(), inst->GetPosition(), &reflectionIntensity);
+        if (reflectionMap != nullptr)
+        {
+            modShader::BeginEnvMap(reflectionMap, matrix);
+            model->DrawEnvMapped(shaders, reflectionMap, reflectionIntensity);
+            modShader::EndEnvMap();
+        }
+    }
+}
+
+void aiVehicleInstanceFeatureHandler::Reset()
+{
+    auto inst = reinterpret_cast<aiVehicleInstance*>(this);
+    auto breakableMgr = inst->getBreakableMgr();
+
+    inst->setSignalState(0);
+
+    if (breakableMgr != nullptr)
+        breakableMgr->Reset();
+}
+
+void aiVehicleInstanceFeatureHandler::Draw(int lod)
+{
+    auto inst = reinterpret_cast<aiVehicleInstance*>(this);
+    auto data = inst->GetData();
+    auto spline = inst->getSpline();
+    auto carMatrix = spline->GetMatrix();
+
+    //get our geometry id
+    int geomSetId = inst->GetGeomIndex();
+    int geomSetIdOffset = geomSetId - 1;
+
+    //get shaders
+    auto mainGeomEntry = lvlInstance::GetGeomTableEntry(geomSetIdOffset);
+    auto shaders = mainGeomEntry->pShaders[inst->getVariant()];
+
+    //draw the body
+    auto bodyModel = mainGeomEntry->GetLOD(lod);
+    if (bodyModel != nullptr)
+        DrawPart(bodyModel, carMatrix, shaders, lod == 3);
+
+    //draw breakables
+    inst->getBreakableMgr()->Draw(carMatrix, shaders, 3);
+
+    //draw wheels (only in H LOD)
+    if (lod == 3)
+    {
+        if (inst->GetEntity() != nullptr)
+        {
+            auto vehicleActive = (aiVehicleActive*)inst->GetEntity();
+
+            for (int i = 0; i < 4; i++)
+            {
+                modStatic* wheelModel = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 7 + i)->GetHighLOD();
+                if (wheelModel != nullptr)
+                    DrawPart(wheelModel, vehicleActive->getWheel(i)->getMatrix(), shaders, vehCarModel::PartReflections);
+            }
+
+            modStatic* whl4Model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 21)->GetHighLOD();
+            if (whl4Model != nullptr)
+            {
+                Matrix34 whl4Matrix;
+
+                whl4Matrix.Identity();
+                whl4Matrix.SetRow(3, data->GetWheelPosition(4));
+                whl4Matrix.Dot(carMatrix);
+
+                DrawPart(whl4Model, whl4Matrix, shaders, vehCarModel::PartReflections);
+            }
+
+            modStatic* whl5Model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 22)->GetHighLOD();
+            if (whl5Model != nullptr)
+            {
+                Matrix34 whl5Matrix;
+
+                whl5Matrix.Identity();
+                whl5Matrix.SetRow(3, data->GetWheelPosition(5));
+                whl5Matrix.Dot(carMatrix);
+
+                DrawPart(whl5Model, whl5Matrix, shaders, vehCarModel::PartReflections);
+            }
+        }
+        else {
+            for (int i = 0; i < 4; i++)
+            {
+                Matrix34 wheelMatrix;
+
+                wheelMatrix.Identity();
+                wheelMatrix.SetRow(3, data->GetWheelPosition(i));
+                wheelMatrix.MakeRotateX(-spline->getWheelRotation());
+                wheelMatrix.Dot(carMatrix);
+
+                modStatic* wheelModel = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 7 + i)->GetHighLOD();
+                if (wheelModel != nullptr)
+                {
+                    modStatic* sWheelModel = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 25 + i)->GetHighLOD();
+                    if (spline->getCurSpeed() > 20.f && sWheelModel != nullptr && vehCarModel::EnableSpinningWheels)
+                    {
+                        DrawPart(sWheelModel, wheelMatrix, shaders, vehCarModel::PartReflections);
+                    }
+                    else {
+                        DrawPart(wheelModel, wheelMatrix, shaders, vehCarModel::PartReflections);
+                    }
+                }
+            }
+
+            modStatic* whl4Model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 21)->GetHighLOD();
+            if (whl4Model != nullptr)
+            {
+                Matrix34 whl4Matrix;
+
+                whl4Matrix.Identity();
+                whl4Matrix.SetRow(3, data->GetWheelPosition(4));
+                whl4Matrix.MakeRotateX(-spline->getWheelRotation());
+                whl4Matrix.Dot(carMatrix);
+
+                modStatic* swhl4Model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 29)->GetHighLOD();
+                if (spline->getCurSpeed() > 20.f && swhl4Model != nullptr && vehCarModel::EnableSpinningWheels)
+                {
+                    DrawPart(swhl4Model, whl4Matrix, shaders, vehCarModel::PartReflections);
+                }
+                else {
+                    DrawPart(whl4Model, whl4Matrix, shaders, vehCarModel::PartReflections);
+                }
+            }
+
+            modStatic* whl5Model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 22)->GetHighLOD();
+            if (whl5Model != nullptr)
+            {
+                Matrix34 whl5Matrix;
+
+                whl5Matrix.Identity();
+                whl5Matrix.SetRow(3, data->GetWheelPosition(5));
+                whl5Matrix.MakeRotateX(-spline->getWheelRotation());
+                whl5Matrix.Dot(carMatrix);
+
+                modStatic* swhl5Model = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 30)->GetHighLOD();
+                if (spline->getCurSpeed() > 20.f && swhl5Model != nullptr && vehCarModel::EnableSpinningWheels)
+                {
+                    DrawPart(swhl5Model, whl5Matrix, shaders, vehCarModel::PartReflections);
+                }
+                else {
+                    DrawPart(whl5Model, whl5Matrix, shaders, vehCarModel::PartReflections);
+                }
+            }
+        }
+    }
+
+    //draw pop-up headlights
+    if (lod >= 2)
+    {
+        modStatic* plighton = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 23)->GetHighLOD();
+        if (plighton != nullptr)
+        {
+            if (aiMap::Instance->drawHeadlights)
+                DrawPart(plighton, carMatrix, shaders, vehCarModel::PartReflections);
+        }
+
+        modStatic* plightoff = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 24)->GetHighLOD();
+        if (plightoff != nullptr)
+        {
+            if (!aiMap::Instance->drawHeadlights)
+                DrawPart(plightoff, carMatrix, shaders, vehCarModel::PartReflections);
+        }
+    }
+
+    inst->setLOD(lod + 1);
+}
+
+void aiVehicleInstanceFeatureHandler::DrawShadow()
+{
+    auto inst = reinterpret_cast<aiVehicleInstance*>(this);
+
+    //get our geometry id
+    int geomSetId = inst->GetGeomIndex();
+    int geomSetIdOffset = geomSetId - 1;
+
+    auto vehicleMatrix = inst->getSpline()->GetMatrix();
     auto timeWeather = $::timeWeathers.ptr(cityLevel::timeOfDay);
 
-    //get our shader set
-    auto shaderSet = *getPtr<signed short>(this, 0x1E);
-    auto shaders = geomSet->pShaders[shaderSet];
+    //get shaders
+    auto shaders = lvlInstance::GetGeomTableEntry(geomSetIdOffset)->pShaders[inst->getVariant()];
 
-    //get model
-    modStatic* shadow = lvlInstance::GetGeomTableEntry(geomID + 1)->GetHighLOD();
+    //get shadow
+    modStatic* shadow = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 1)->GetHighLOD();
 
     if (shadow != nullptr)
     {
@@ -5424,11 +5688,11 @@ void aiVehicleInstanceFeatureHandler::DrawShadow() {
         }
     }
 
-    if (MMSTATE->TimeOfDay == 3 || MMSTATE->WeatherType != 0 ||
+    if (MMSTATE->TimeOfDay == 3 || MMSTATE->WeatherType != 0 || cfgMM1StyleShadows.Get() < 4 ||
         lvlLevel::Singleton->GetRoomInfo(inst->GetRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean))
         return;
 
-    modStatic* body = lvlInstance::GetGeomTableEntry(geomID)->GetHighLOD();
+    modStatic* body = lvlInstance::GetGeomTableEntry(geomSetIdOffset)->GetHighLOD();
 
     if (body != nullptr)
     {
@@ -5489,55 +5753,55 @@ void aiVehicleInstanceFeatureHandler::DrawShadow() {
     }
 }
 
-void aiVehicleInstanceFeatureHandler::DrawGlow() {
+void aiVehicleInstanceFeatureHandler::DrawGlow()
+{
     auto inst = reinterpret_cast<aiVehicleInstance*>(this);
-    auto geomID = inst->GetGeomIndex() - 1;
-    auto geomSet = lvlInstance::GetGeomTableEntry(geomID);
+    auto spline = inst->getSpline();
+    auto carMatrix = spline->GetMatrix();
 
     //setup renderer
-    Matrix34 carMatrix = inst->GetMatrix(&aiVehicleMatrix);
     Matrix44::Convert(gfxRenderState::sm_World, carMatrix);
     gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
-    //get our shader set
-    auto shaderSet = *getPtr<signed short>(this, 0x1E);
-    auto shaders = geomSet->pShaders[shaderSet];
+    //get our geometry id
+    int geomSetId = inst->GetGeomIndex();
+    int geomSetIdOffset = geomSetId - 1;
 
-    //get objects
-    modStatic* hlight = lvlInstance::GetGeomTableEntry(geomID + 2)->GetHighestLOD();
-    modStatic* tlight = lvlInstance::GetGeomTableEntry(geomID + 3)->GetHighestLOD();
-    modStatic* slight0 = lvlInstance::GetGeomTableEntry(geomID + 4)->GetHighestLOD();
-    modStatic* slight1 = lvlInstance::GetGeomTableEntry(geomID + 5)->GetHighestLOD();
-    modStatic* blight = lvlInstance::GetGeomTableEntry(geomID + 18)->GetHighestLOD();
-    modStatic* tslight0 = lvlInstance::GetGeomTableEntry(geomID + 21)->GetHighestLOD();
-    modStatic* tslight1 = lvlInstance::GetGeomTableEntry(geomID + 22)->GetHighestLOD();
+    //get shaders
+    auto shaders = lvlInstance::GetGeomTableEntry(geomSetIdOffset)->pShaders[inst->getVariant()];
 
-    //get lights stuff
-    int *activate = *getPtr<int*>(this, 0x14);
-    float speed = *getPtr<float>(activate, 0xF4);
-    float brake = *getPtr<float>(activate, 0x54);
-    byte toggleSignal = *getPtr<byte>(this, 0x1A);
-    int signalDelayTime = *getPtr<int>(this, 0x18); // adjusts the delay time for signal lights among traffic vehicles
+    //get lights
+    modStatic* hlight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 2)->GetHighestLOD();
+    modStatic* tlight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 3)->GetHighestLOD();
+    modStatic* slight0 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 4)->GetHighestLOD();
+    modStatic* slight1 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 5)->GetHighestLOD();
+    modStatic* blight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 6)->GetHighestLOD();
+    modStatic* tslight0 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 31)->GetHighestLOD();
+    modStatic* tslight1 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 32)->GetHighestLOD();
 
-    //draw blight
-    if (blight != nullptr) {
-        if (brake < 0.f || speed == 0.f)
+    //draw brake light
+    if (blight != nullptr)
+    {
+        if (spline->getRailSet()->getCurAccelFactor() < 0.f || spline->getCurSpeed() == 0.f)
             blight->Draw(shaders);
     }
 
-    //draw tlight
-    if (tlight != nullptr) {
+    //draw taillight
+    if (tlight != nullptr)
+    {
         //draw brake copy
-        if (brake < 0.f || speed == 0.f)
+        if (spline->getRailSet()->getCurAccelFactor() < 0.f || spline->getCurSpeed() == 0.f)
             tlight->Draw(shaders);
         //draw headlight copy
         if (aiMap::Instance->drawHeadlights)
             tlight->Draw(shaders);
     }
 
-    //draw signals
-    if (toggleSignal & 1) {
-        if ((aiVehicleManager::SignalClock + signalDelayTime) & 8) {
+    //draw left signal
+    if (inst->getSignalState() & 1)
+    {
+        if ((aiVehicleManager::SignalClock + inst->getSignalFrequency()) & 8)
+        {
             if (slight0 != nullptr)
                 slight0->Draw(shaders);
             if (tslight0 != nullptr)
@@ -5547,7 +5811,7 @@ void aiVehicleInstanceFeatureHandler::DrawGlow() {
     else {
         if (tslight0 != nullptr) {
             //draw brake copy
-            if (brake < 0.f || speed == 0.f)
+            if (spline->getRailSet()->getCurAccelFactor() < 0.f || spline->getCurSpeed() == 0.f)
                 tslight0->Draw(shaders);
             //draw headlight copy
             if (aiMap::Instance->drawHeadlights)
@@ -5555,8 +5819,11 @@ void aiVehicleInstanceFeatureHandler::DrawGlow() {
         }
     }
 
-    if (toggleSignal & 2) {
-        if ((aiVehicleManager::SignalClock + signalDelayTime) & 8) {
+    //draw right signal
+    if (inst->getSignalState() & 2)
+    {
+        if ((aiVehicleManager::SignalClock + inst->getSignalFrequency()) & 8)
+        {
             if (slight1 != nullptr)
                 slight1->Draw(shaders);
             if (tslight1 != nullptr)
@@ -5566,7 +5833,7 @@ void aiVehicleInstanceFeatureHandler::DrawGlow() {
     else {
         if (tslight1 != nullptr) {
             //draw brake copy
-            if (brake < 0.f || speed == 0.f)
+            if (spline->getRailSet()->getCurAccelFactor() < 0.f || spline->getCurSpeed() == 0.f)
                 tslight1->Draw(shaders);
             //draw headlight copy
             if (aiMap::Instance->drawHeadlights)
@@ -5575,135 +5842,139 @@ void aiVehicleInstanceFeatureHandler::DrawGlow() {
     }
 
     //draw headlights
-    if (ambientHeadlightStyle < 3) {
-        if (ambientHeadlightStyle == 0 || ambientHeadlightStyle == 2) {
+    if (aiVehicleInstance::AmbientHeadlightStyle < 3)
+    {
+        if (aiVehicleInstance::AmbientHeadlightStyle == 0 || aiVehicleInstance::AmbientHeadlightStyle == 2)
+        {
             //MM2 headlights
-            if (aiMap::Instance->drawHeadlights) {
-                //call original
-                hook::Thunk<0x552930>::Call<void>(this);
+            if (aiMap::Instance->drawHeadlights)
+            {
+                ltLight::DrawGlowBegin();
+
+                Vector3 someCameraThing = *(Vector3*)0x685490;
+
+                auto light = aiVehicleManager::Instance->getSharedLight();
+                auto lightPos = inst->getHeadlightPosition();
+
+                float posDiffX = carMatrix.m30 - someCameraThing.X;
+                float posDiffY = carMatrix.m31 - someCameraThing.Y;
+                float posDiffZ = carMatrix.m32 - someCameraThing.Z;
+
+                float invGlowScale = -ltLight::GlowScale;
+                posDiffX *= invGlowScale * 0.1f;
+                posDiffY *= invGlowScale * 0.1f;
+                posDiffZ *= invGlowScale * 0.1f;
+
+                light->Direction = Vector3(-carMatrix.m20, -carMatrix.m21, -carMatrix.m22);
+
+                modStatic* headlight0 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 19)->GetHighLOD();
+                if (headlight0 != nullptr)
+                {
+                    float lX = lightPos.Y * carMatrix.m10 + lightPos.Z * carMatrix.m20 + lightPos.X * carMatrix.m00 + carMatrix.m30 + posDiffX;
+                    float lY = lightPos.Y * carMatrix.m11 + lightPos.Z * carMatrix.m21 + lightPos.X * carMatrix.m01 + carMatrix.m31 + posDiffY;
+                    float lZ = lightPos.Y * carMatrix.m12 + lightPos.Z * carMatrix.m22 + lightPos.X * carMatrix.m02 + carMatrix.m32 + posDiffZ;
+
+                    light->Position = Vector3(lX, lY, lZ);
+                    light->DrawGlow(someCameraThing);
+                }
+
+                modStatic* headlight1 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 20)->GetHighLOD();
+                if (headlight1 != nullptr)
+                {
+                    float lX = lightPos.Y * carMatrix.m10 + lightPos.Z * carMatrix.m20 + -lightPos.X * carMatrix.m00 + carMatrix.m30 + posDiffX;
+                    float lY = lightPos.Y * carMatrix.m11 + lightPos.Z * carMatrix.m21 + -lightPos.X * carMatrix.m01 + carMatrix.m31 + posDiffY;
+                    float lZ = lightPos.Y * carMatrix.m12 + lightPos.Z * carMatrix.m22 + -lightPos.X * carMatrix.m02 + carMatrix.m32 + posDiffZ;
+
+                    light->Position = Vector3(lX, lY, lZ);
+                    light->DrawGlow(someCameraThing);
+                }
+
+                ltLight::DrawGlowEnd();
             }
         }
-        if (ambientHeadlightStyle == 1 || ambientHeadlightStyle == 2) {
+
+        if (aiVehicleInstance::AmbientHeadlightStyle == 1 || aiVehicleInstance::AmbientHeadlightStyle == 2)
+        {
             //MM1 headlights
             Matrix44::Convert(gfxRenderState::sm_World, carMatrix);
             gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
-            if (hlight != nullptr && aiMap::Instance->drawHeadlights) {
+            if (hlight != nullptr && aiMap::Instance->drawHeadlights)
                 hlight->Draw(shaders);
+
+            if (MMSTATE->WeatherType == 2)
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    modStatic* flight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 33 + i)->GetHighestLOD();
+                    if (flight != nullptr)
+                    {
+                        auto breaklt = inst->getBreakableMgr()->Get(i + 1);
+                        if (breaklt == nullptr || (breaklt != nullptr && breaklt->IsAttached))
+                        {
+                            flight->Draw(shaders);
+                        }
+                    }
+                }
             }
         }
     }
 }
 
-void aiVehicleInstanceFeatureHandler::DrawPart(modStatic* model, const Matrix34& matrix, modShader* shaders, int lod) {
-    auto inst = reinterpret_cast<aiVehicleInstance*>(this);
-    hook::Type<gfxTexture*> g_ReflectionMap = 0x628914;
-    bool isSoftware = *(bool*)0x6830D4;
-
-    //setup renderer
-    Matrix44::Convert(gfxRenderState::sm_World, matrix);
-    gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
-
-    //draw car part
-    model->Draw(shaders);
-
-    //draw reflections
-    auto state = &MMSTATE;
-    if (g_ReflectionMap != nullptr && !isSoftware && state->EnableReflections &&
-        !(lvlLevel::Singleton->GetRoomInfo(inst->GetRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean)))
-    {
-        modShader::BeginEnvMap(g_ReflectionMap, matrix);
-        model->DrawEnvMapped(shaders, g_ReflectionMap, 1.0f);
-        modShader::EndEnvMap();
-    }
-}
-
-void aiVehicleInstanceFeatureHandler::AddGeomHook(const char* pkgName, const char* name, int flags) {
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, name, flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "blight", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "plighton", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "plightoff", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "tslight0", flags);
-    hook::Thunk<0x463BA0>::Call<int>(this, pkgName, "tslight1", flags);
-}
-
-static ConfigValue<int> cfgAmbientHeadlightStyle ("AmbientHeadlightStyle", 0);
-
-void aiVehicleInstanceFeatureHandler::Install() {
-    InstallCallback("aiVehicleInstance::aiVehicleInstance", "Adds brake light and pop-up lights geometries.",
-        &AddGeomHook, {
-            cb::call(0x551F2F),
+void aiVehicleInstanceFeatureHandler::Install()
+{
+    InstallCallback("aiVehicleInstance::aiVehicleInstance", "Adds more geometries.",
+        &InitVehicleGeom, {
+            cb::call(0x551E17),
         }
     );
 
-    
-    InstallCallback("aiVehicleInstance::DrawPart", "Draws reflections on car body.",
-        &DrawPart, {
-            cb::call(0x552211),
+    InstallCallback("aiVehicleInstance::aiVehicleInstance", "Clamps default breakable geom ids.",
+        &InitDefaultBreakables, {
+            cb::call(0x551F70),
+            cb::call(0x551F7F),
+            cb::call(0x551F8E),
         }
     );
 
-    if (vehCarModel::PartReflections) {
-        InstallCallback("aiVehicleInstance::DrawPart", "Draws reflections on car parts.",
-            &DrawPart, {
-                cb::call(0x5522A2),
-                cb::call(0x5522D1),
-                cb::call(0x552300),
-                cb::call(0x55232F),
-                cb::call(0x5523AB),
-                cb::call(0x5524DC),
-                cb::call(0x55254C),
-                cb::call(0x5525BC),
-                cb::call(0x55262C),
-                cb::call(0x55268A),
-                cb::call(0x552766),
-                cb::call(0x5527B6),
-                cb::call(0x552806),
-                cb::call(0x552856),
-            }
-        );
-    }
+    InstallCallback("aiVehicleInstance::aiVehicleInstance", "Adds more breakables.",
+        &InitAdditionalBreakables, {
+            cb::call(0x551F9D),
+        }
+    );
+
+    InstallVTableHook("aiVehicleInstance::Reset",
+        &Reset, {
+            0x5B590C,
+        }
+    );
 
     InstallVTableHook("aiVehicleInstance::Draw",
         &Draw, {
-            0x5B5938
+            0x5B5938,
         }
     );
-    
-    if (cfgMm1StyleShadows.Get() >= 4) {
-        InstallVTableHook("aiVehicleInstance::DrawShadow",
-            &DrawShadow, {
-                0x5B593C
-            }
-        );
-    }
 
-    ambientHeadlightStyle = cfgAmbientHeadlightStyle.Get();
+    InstallVTableHook("aiVehicleInstance::DrawShadow",
+        &DrawShadow, {
+            0x5B593C,
+        }
+    );
+
     InstallVTableHook("aiVehicleInstance::DrawGlow",
         &DrawGlow, {
-            0x5B5944
+            0x5B5944,
         }
     );
 
-    // disable Angels reflections
-    InstallPatch({ 0xEB }, {
-        0x55224B,
+    //clamp headlight0 geom id to 19 (14 + 5)
+    InstallPatch({ 0x39, 0x98, 0x24, 0x19, 0x63, 0x0 }, {
+        0x551FCE,
     });
 
-    // removes Angels tlight
-    InstallPatch({ 0xEB }, {
-        0x552995,
-    });
+    ConfigValue<int> cfgAmbientHeadlightStyle("AmbientHeadlightStyle", 0);
 
-    // removes Angels slight0
-    InstallPatch({ 0xEB }, {
-        0x5529F2,
-    });
-
-    // removes Angels slight1
-    InstallPatch({ 0xEB }, {
-        0x552A2E,
-    });
+    aiVehicleInstance::AmbientHeadlightStyle = cfgAmbientHeadlightStyle.Get();
 }
 
 /*
@@ -6169,7 +6440,7 @@ void vehTrailerInstanceFeatureHandler::Install() {
         }
     );
 
-    if (cfgMm1StyleShadows.Get() >= 3) {
+    if (cfgMM1StyleShadows.Get() >= 3) {
         InstallVTableHook("vehTrailerInstance::DrawShadow",
             &DrawShadow, {
                 0x5B2FB4,

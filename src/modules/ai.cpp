@@ -31,3 +31,8 @@ float aiPoliceOfficer::SkidPlayTime = 0.f;
 float aiPoliceOfficer::HornPlayTime = 0.f;
 bool aiPoliceOfficer::FlyingCopFix = true;
 int aiPoliceOfficer::MaximumNumCops = 3;
+
+/*
+    aiVehicleInstance
+*/
+int aiVehicleInstance::AmbientHeadlightStyle = 0;

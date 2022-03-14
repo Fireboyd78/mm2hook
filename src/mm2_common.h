@@ -25,12 +25,17 @@ Multiple declarations will cause compiler errors!
 // Allocator
 // Calls MM2's internal operator new
 //
-#define ANGEL_ALLOCATOR void* operator new(size_t size)          { return hook::StaticThunk<0x577360>::Call<void*>(size); } \
-                        void operator delete(void * pointer)     { hook::StaticThunk<0x577380>::Call<void>(pointer);}       \
-                        void operator delete[](void * pointer)   { hook::StaticThunk<0x5773C0>::Call<void>(pointer);}
+#define ANGEL_ALLOCATOR void* operator new(size_t size)                        { return hook::StaticThunk<0x577360>::Call<void*>(size); } \
+                        void operator delete(void * pointer)                   { hook::StaticThunk<0x577380>::Call<void>(pointer);} \
+                        void operator delete[](void * pointer)                 { hook::StaticThunk<0x5773C0>::Call<void>(pointer);} \
+                        void* operator new(size_t size, void * data)           { return data; } \
+                        void operator delete(void * pointer, void * place)     { (void)place; }
 
-#define LEVEL_ALLOCATOR void* operator new(size_t size)          { return hook::StaticThunk<0x463110>::Call<void*>(size); } \
-                        void operator delete(void * pointer)     { hook::StaticThunk<0x463170>::Call<void>(pointer);}       
+#define LEVEL_ALLOCATOR void* operator new(size_t size)                        { return hook::StaticThunk<0x463110>::Call<void*>(size); } \
+                        void operator delete(void * pointer)                   { hook::StaticThunk<0x463170>::Call<void>(pointer);} \
+                        void* operator new(size_t size, void * data)           { return data; } \
+                        void operator delete(void * pointer, void * place)     { (void)place; }
+
 //
 // MM2 uses DirectX 7
 //
@@ -146,7 +151,7 @@ namespace MM2 {
         static AGE_API void BeginBenchmark()                { hook::StaticThunk<0x4C7980>::Call<void>(); }
         static AGE_API void EndBenchmark()                  { hook::StaticThunk<0x4C79F0>::Call<void>(); }
         static AGE_API uint QuickTicks()                    { return hook::StaticThunk<0x4C7810>::Call<uint>(); }
-        static AGE_API uint Ticks()                         { return hook::StaticThunk<0x4C77E0>::Call<uint>(); }   
+        static AGE_API uint Ticks()                         { return hook::StaticThunk<0x4C77E0>::Call<uint>(); }
     };
 
     class NetStartArray {
@@ -522,6 +527,7 @@ namespace MM2 {
     declhook(0x5346B0, _Func<int>::StdCall, $MyLoadStringA);
 
     declhook(0x4BBDF0, _Func<int>, irand);
+    declhook(0x4BBDC0, _Func<int>, irand2);
     declhook(0x4BBE30, _Func<float>, frand);
 
     declhook(0x5CED24, _Type<void(*)(int, LPCSTR, va_list)>, Printer);
