@@ -6628,8 +6628,8 @@ void vehSirenHandler::Reset() {
     siren->vehSiren::Reset();
 }
 
-void vehSirenHandler::SizeOf() {
-    hook::StaticThunk<0x577360>::Call<vehSiren*>(0x164);
+void vehSirenHandler::OperatorNew() {
+    new vehSiren();
 }
 
 void vehSirenHandler::Install() {
@@ -6645,15 +6645,30 @@ void vehSirenHandler::Install() {
         }
     );
 
-    InstallCallback("vehSiren::SizeOf", "Change size of vehSiren on vehicle initialization.",
-        &SizeOf, {
+    InstallCallback("vehCar::Init", "Use our new size of vehSiren on vehicle initialization.",
+        &OperatorNew, {
             cb::call(0x42BE30),
         }
     );
 
-    //jmp out ltLightPool destructor
-    InstallPatch({ 0xEB }, {
-        0x4D6638,
+    //set old size of vehSiren to 0
+    InstallPatch({ 0x6A, 0x0 }, {
+        0x42BE2E,
+    });
+
+    //increase ltLightPool size to hold 24 siren lights
+    InstallPatch({ 0x68, 0xB4, 0xA, 0x0, 0x0 }, {
+        0x4D66A4,
+    });
+
+    //count to 24
+    InstallPatch({ 0x6A, 0x18 }, {
+        0x4D66CC,
+    });
+
+    //set ltLight count to 24
+    InstallPatch({ 0xC7, 0x0, 0x18, 0x0, 0x0, 0x0 }, {
+        0x4D66D1,
     });
 
     ConfigValue<float> cfgSirenRotationSpeed("SirenRotationSpeed", 3.1415927f);

@@ -421,7 +421,7 @@ class vehSirenHandler {
 public:
     void Update();
     void Reset();
-    void SizeOf();
+    void OperatorNew();
     static void Install();
 };
 

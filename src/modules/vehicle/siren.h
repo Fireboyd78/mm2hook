@@ -76,18 +76,24 @@ namespace MM2
             return this->LensFlare;
         }
 
+        ANGEL_ALLOCATOR
+
+        AGE_API vehSiren(void)
+        {
+            scoped_vtable x(this);
+            hook::Thunk<0x4D6600>::Call<void>(this);
+        }
+
+        AGE_API ~vehSiren(void)
+        {
+            scoped_vtable x(this);
+            hook::Thunk<0x4D6630>::Call<void>(this);
+        }
+
         //member funcs
         AGE_API bool Init()
         {
-            if (this->ltLightPool == nullptr)
-            {
-                this->ltLightPool = new ltLight[24];
-            }
-            if (this->LensFlare == nullptr)
-            {
-                this->LensFlare = new ltLensFlare(0x14);
-            }
-            return true;
+            return hook::Thunk<0x4D6680>::Call<bool>(this);
         }
 
         AGE_API bool AddLight(const Vector3& position, const Vector3& color)                    
