@@ -16,7 +16,7 @@ namespace MM2
     public:
         static float SirenRotationSpeed;
         static float SirenRotationStyle;
-    public:
+    private:
         bool HasLights;
         bool Active;
         int LightCount;
@@ -26,14 +26,22 @@ namespace MM2
         ltLensFlare* LensFlare;
         //EXTRA FIELD. The hook expands on this class, this is only possible because it's only used like a pointer in the original MM code
         Vector3 extraLightPositions[24]; //SRN0-23
-
+    public:
         //lua helpers
         inline bool getHasLights() const {
-            return HasLights;
+            return this->HasLights;
+        }
+
+        inline bool getActive() const {
+            return this->Active;
+        }
+
+        inline void setActive(bool active) {
+            this->Active = active;
         }
 
         inline int getLightCount() const {
-            return LightCount;
+            return this->LightCount;
         }
 
         inline ltLight* getLight(int index) const {
@@ -42,7 +50,7 @@ namespace MM2
                 index = 0;
             if (index >= 24)
                 index = 23;
-            return &ltLightPool[index];
+            return &this->ltLightPool[index];
         }
 
         inline Vector3 getLightPosition(int index) const {
@@ -51,7 +59,7 @@ namespace MM2
                 index = 0;
             if (index >= 24)
                 index = 23;
-            return extraLightPositions[index];
+            return this->extraLightPositions[index];
         }
 
         inline void setLightPosition(int index, Vector3 position) {
@@ -60,7 +68,12 @@ namespace MM2
                 index = 0;
             if (index >= 24)
                 index = 23;
-            extraLightPositions[index] = position;
+            this->extraLightPositions[index] = position;
+        }
+
+        inline ltLensFlare * getLensFlare()
+        {
+            return this->LensFlare;
         }
 
         //member funcs

@@ -162,8 +162,8 @@ namespace MM2
                     Matrix34 outMatrix;
 
                     GetPivot(outMatrix, basename, mtxName);
-                    this->GetSurfaceColor(sirenEntry->GetHighLOD(), &siren->ltLightPool[siren->LightCount].Color);
-                    siren->AddLight(Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32), siren->ltLightPool[siren->LightCount].Color);
+                    this->GetSurfaceColor(sirenEntry->GetHighLOD(), &siren->getLight(siren->getLightCount())->Color);
+                    siren->AddLight(Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32), siren->getLight(siren->getLightCount())->Color);
                 }
             }
         }
@@ -1708,7 +1708,7 @@ namespace MM2
                     //MM2 headlights
                     if (vehCarModel::EnableHeadlightFlashing)
                     {
-                        if (siren != nullptr && siren->Active)
+                        if (siren != nullptr && siren->getActive())
                         {
                             this->DrawHeadlights(true);
                             this->DrawExtraHeadlights(true);
@@ -1783,7 +1783,7 @@ namespace MM2
             if (vehCarModel::SirenType < 3) {
                 if (vehCarModel::SirenType == 0 || vehCarModel::SirenType == 2) {
                     //MM2 siren
-                    if (siren != nullptr && siren->HasLights && siren->Active)
+                    if (siren != nullptr && siren->getHasLights() && siren->getActive())
                     {
                         siren->Draw(this->getCarMatrix());
                     }
@@ -1793,7 +1793,7 @@ namespace MM2
                     Matrix44::Convert(gfxRenderState::sm_World, this->getCarMatrix());
                     gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
-                    if (siren != nullptr && siren->Active) {
+                    if (siren != nullptr && siren->getActive()) {
                         bool drawLEDSiren = fmod(datTimeManager::ElapsedTime, 0.1f) > 0.05f;
 
                         if (!vehCarModel::EnableLEDSiren || drawLEDSiren) {

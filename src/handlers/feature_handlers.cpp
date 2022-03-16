@@ -668,15 +668,15 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
             if (popup != NULL) {
                 if (!popup->IsEnabled()) {
                     // toggle siren lights
-                    if (siren != nullptr && siren->HasLights || flagsId == 8) {
-                        siren->Active = !siren->Active;
+                    if (siren != nullptr && siren->getHasLights() || flagsId == 8) {
+                        siren->setActive(!siren->getActive());
 
                         // toggle trailer siren lights
                         if (trailer != nullptr) {
                             auto trailerSiren = trailer->getSiren();
 
                             if (trailerSiren != nullptr)
-                                trailerSiren->Active = !trailerSiren->Active;
+                                trailerSiren->setActive(!trailerSiren->getActive());
                         }
                     }
                 }
@@ -1789,7 +1789,7 @@ void mmGameHandler::UpdateHorn(bool a1) {
     auto policeAudio = audio->GetPoliceCarAudioPtr();
     char* vehName = car->getCarDamage()->GetName();
 
-    bool isSirenActive = siren->Active;
+    bool isSirenActive = siren->getActive();
     bool isVehiclePolice = audio->IsPolice(vehName);
 
     bool cancelHornInput = horn_holdTime < horn_sirenThreshold && isVehiclePolice;
@@ -1815,27 +1815,27 @@ void mmGameHandler::UpdateHorn(bool a1) {
         if ((lightbar0 == nullptr || (lightbar0 != nullptr && lightbar0->IsAttached)) ||
             (lightbar1 == nullptr || (lightbar1 != nullptr && lightbar1->IsAttached))) {
             if (buttonReleasedThisFrame && (horn_lastReleaseTime - horn_lastPressTime) < horn_sirenThreshold) {
-                if (siren->Active) {
-                    siren->Active = false;
+                if (siren->getActive()) {
+                    siren->setActive(false);
                     audio->StopSiren();
 
                     if (trailer != nullptr) {
                         auto trailerSiren = trailer->getSiren();
 
                         if (trailerSiren != nullptr)
-                            trailerSiren->Active = false;
+                            trailerSiren->setActive(false);
                     }
                 }
                 else
                 {
-                    siren->Active = true;
+                    siren->setActive(true);
                     audio->StartSiren();
 
                     if (trailer != nullptr) {
                         auto trailerSiren = trailer->getSiren();
 
                         if (trailerSiren != nullptr)
-                            trailerSiren->Active = true;
+                            trailerSiren->setActive(true);
                     }
                 }
             }
@@ -2305,7 +2305,7 @@ void mmHudMapFeatureHandler::DrawPlayer() {
         *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
         if (audio->IsPolice(vehName)) {
             DrawIcon(2, *playerMtx);
-            if (siren != nullptr && siren->Active) {
+            if (siren != nullptr && siren->getActive()) {
                 if (elapsedTime3)
                     DrawIcon(1, *playerMtx);
             }
@@ -2318,14 +2318,14 @@ void mmHudMapFeatureHandler::DrawPlayer() {
         DrawIcon(0, *playerMtx);
         *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
         if (audio->IsPolice(vehName)) {
-            if (siren != nullptr && siren->Active) {
+            if (siren != nullptr && siren->getActive()) {
                 DrawIcon(2, *playerMtx);
                 if (elapsedTime1)
                     DrawIcon(1, *playerMtx);
                 if (elapsedTime2)
                     DrawIcon(-1, *playerMtx);
             }
-            if (siren != nullptr && !siren->Active) {
+            if (siren != nullptr && !siren->getActive()) {
                 DrawIcon(-1, *playerMtx);
             }
         }
@@ -2337,14 +2337,14 @@ void mmHudMapFeatureHandler::DrawPlayer() {
         DrawIcon(0, *playerMtx);
         *getPtr<Matrix34*>(this, 0x64) = sizeHandler;
         if (audio->IsPolice(vehName)) {
-            if (siren != nullptr && siren->Active) {
+            if (siren != nullptr && siren->getActive()) {
                 DrawIcon(2, *playerMtx);
                 if (elapsedTime1)
                     DrawIcon(1, *playerMtx);
                 if (elapsedTime2)
                     DrawIcon(-1, *playerMtx);
             }
-            if (siren != nullptr && !siren->Active) {
+            if (siren != nullptr && !siren->getActive()) {
                 DrawIcon(4, *playerMtx);
             }
         }
@@ -3752,7 +3752,7 @@ void mmPlayerHandler::BustOpp() {
                 invertOppBustedTimer = false;
                 if (oppBustedTimer > bustedTimeout) {
                     *getPtr<int>(opponent, 0x27C) = 3;
-                    siren->Active = false;
+                    siren->setActive(false);
                     audio->StopSiren();
                     enableOppBustedTimer = false;
                     invertOppBustedTimer = false;
@@ -3879,7 +3879,7 @@ void mmPlayerHandler::Update() {
     if (bustedTarget != 0) {
         if (bustedTarget >= 2) {
             if (audio->IsPolice(basename) && flagsId == 8) {
-                if (siren != nullptr && siren->Active)
+                if (siren != nullptr && siren->getActive())
                     BustOpp();
             }
         }
@@ -4622,7 +4622,7 @@ void vehCarHandler::InitCarAudio(LPCSTR vehName, int vehType) {
     //Automatic vehtypes system
     bool vehicleHasSiren = false;
     if (car->getSiren() != nullptr) {
-        vehicleHasSiren = car->getSiren()->HasLights && car->getSiren()->LightCount > 0;
+        vehicleHasSiren = car->getSiren()->getHasLights() && car->getSiren()->getLightCount() > 0;
     }
 
     if (vehicleHasSiren || flagsId == 8 && !vehCarAudioContainer::IsPolice(vehName)) {
@@ -4725,8 +4725,8 @@ void vehCarHandler::Update() {
 
     if ((lightbar0 != nullptr && !lightbar0->IsAttached) ||
         (lightbar1 != nullptr && !lightbar1->IsAttached)) {
-        if (siren != nullptr && siren->Active) {
-            siren->Active = false;
+        if (siren != nullptr && siren->getActive()) {
+            siren->setActive(false);
             audio->StopSiren();
         }
     }
@@ -4754,8 +4754,8 @@ void vehCarHandler::Update() {
             audio->SilenceEngine(1);
             car->getCarSim()->getEngine()->setCurrentTorque(0.f);
             //play explosion sound if siren is activated
-            if (siren != nullptr && siren->Active) {
-                siren->Active = false;
+            if (siren != nullptr && siren->getActive()) {
+                siren->setActive(false);
                 audio->StopSiren();
 
                 if (audio->IsPlayer())
@@ -6015,7 +6015,7 @@ void vehTrailerFeatureHandler::Reset() {
     auto siren = trailer->getSiren();
 
     if (siren != nullptr)
-        siren->Active = false;
+        siren->setActive(false);
 
     //call original
     hook::Thunk<0x4D79C0>::Call<void>(this);
@@ -6416,7 +6416,7 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
     }
 
     //draw siren
-    if (siren != nullptr && siren->Active) {
+    if (siren != nullptr && siren->getActive()) {
         int sirenStage = fmod(datTimeManager::ElapsedTime, 2 * vehCarModel::SirenCycle) >= vehCarModel::SirenCycle ? 1 : 0;
         if (sirenStage == 0 && siren0 != nullptr) {
             siren0->Draw(shaders);
