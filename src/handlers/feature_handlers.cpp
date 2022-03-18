@@ -6651,11 +6651,6 @@ void vehSirenHandler::Install() {
         }
     );
 
-    //set old size of vehSiren to 0
-    InstallPatch({ 0x6A, 0x0 }, {
-        0x42BE2E,
-    });
-
     //increase ltLightPool size to hold 24 siren lights
     InstallPatch({ 0x68, 0xB4, 0xA, 0x0, 0x0 }, {
         0x4D66A4,
