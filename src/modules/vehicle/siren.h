@@ -65,7 +65,7 @@ namespace MM2
 
         ANGEL_ALLOCATOR
 
-            AGE_API vehSiren(void)
+        AGE_API vehSiren(void)
         {
             scoped_vtable x(this);
             hook::Thunk<0x4D6600>::Call<void>(this);
