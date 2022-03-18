@@ -421,7 +421,7 @@ class vehSirenHandler {
 public:
     void Update();
     void Reset();
-    MM2::vehSiren* OperatorNew();
+    static MM2::vehSiren* OperatorNew(uint size);
     static void Install();
 };
 

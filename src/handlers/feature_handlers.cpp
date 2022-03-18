@@ -6628,7 +6628,7 @@ void vehSirenHandler::Reset() {
     siren->vehSiren::Reset();
 }
 
-vehSiren* vehSirenHandler::OperatorNew() {
+vehSiren* vehSirenHandler::OperatorNew(uint size) {
     return hook::StaticThunk<0x577360>::Call<vehSiren*>(sizeof(vehSiren));
 }
 
