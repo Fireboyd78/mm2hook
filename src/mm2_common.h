@@ -529,6 +529,7 @@ namespace MM2 {
     declhook(0x4BBDF0, _Func<int>, irand);
     declhook(0x4BBDC0, _Func<int>, irand2);
     declhook(0x4BBE30, _Func<float>, frand);
+    declhook(0x4BBE50, _Func<float>, frand2);
 
     declhook(0x5CED24, _Type<void(*)(int, LPCSTR, va_list)>, Printer);
 

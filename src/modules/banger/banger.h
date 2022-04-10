@@ -30,10 +30,11 @@ namespace MM2
 
     class dgBangerInstance : public lvlInstance {
     private:
-        __int16 DataPack;
+        unsigned __int16 DataPack;
     private:
         static hook::Type<int> sm_RefAlpha;
     public:
+        static hook::Type<gfxTexture*> DefaultGlowTexture;
         /*
             dgBangerInstance
         */

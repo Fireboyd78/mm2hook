@@ -21,11 +21,6 @@ namespace MM2
     {
         declhook(0x6299A8, _Type<cityTimeWeatherLighting[16]>, timeWeathers);
 
-        namespace sdlCommon
-        {
-            declhook(0x45CBC0, _Func<bool>, BACKFACE);
-            declhook(0x448090, _Func<void>, UpdateLighting);
-        }
         namespace sdlPage16
         {
             declhook(0x45A4E0, _MemberFunc<void>, $$ctor);
@@ -78,21 +73,6 @@ namespace MM2
     };
 
     typename typedef void(*SDLIteratorCB)(const void *, int, int, int, const ushort *, void *);
-
-    class sdlCommon {
-    public:
-        static hook::Type<int> sm_RoomCount;
-        static hook::Type<Vector3> sm_CamPos;
-        static hook::Type<uint> sm_LightTable;
-
-        AGE_API static void UpdateLighting(void) {
-            $::sdlCommon::UpdateLighting();
-        }
-
-        AGE_API static bool BACKFACE(const Vector3 &vec1, const Vector3 &vec2) {
-            return $::sdlCommon::BACKFACE(&vec1, &vec2);
-        }
-    };
 
     class sdlPage16 {
         char unk_00;

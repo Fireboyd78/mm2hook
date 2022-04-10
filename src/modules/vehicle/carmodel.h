@@ -136,14 +136,49 @@ namespace MM2
             if (index >= 2)
                 index = 1;
             
-            auto headlightLightsArray = *getPtr<ltLight*>(this, 0xB0);
-            if (headlightLightsArray == nullptr)
-                return NULL;
-            return &headlightLightsArray[index];
+            return &this->headlights[index];
         }
 
         inline int getWheelBrokenStatus(void) const {
             return this->wheelBrokenStatus;
+        }
+
+        inline bool getEnabledElectrics(int num)
+        {
+            return this->enabledElectrics[num];
+        }
+
+        inline Vector3 getHeadlightPosition(int num)
+        {
+            return this->headlightPositions[num];
+        }
+
+        inline ltLight* getExtraHeadlight(int index) {
+            //cap index
+            if (index < 0)
+                index = 0;
+            if (index >= 2)
+                index = 1;
+
+            return &this->extraHeadlights[index];
+        }
+
+        inline Vector3 getExtraHeadlightPosition(int num)
+        {
+            return this->extraHeadlightPositions[num];
+        }
+
+        inline ltLight* getFoglight(int num)
+        {
+            if (num < 0 || num >= 4)
+                return nullptr;
+
+            return this->foglights[num];
+        }
+
+        inline Vector3 getFoglightPosition(int num)
+        {
+            return this->foglightPositions[num];
         }
 
         AGE_API void GetSurfaceColor(modStatic* model, Vector3* outVector)
@@ -162,8 +197,8 @@ namespace MM2
                     Matrix34 outMatrix;
 
                     GetPivot(outMatrix, basename, mtxName);
-                    this->GetSurfaceColor(sirenEntry->GetHighLOD(), &siren->ltLightPool[siren->LightCount].Color);
-                    siren->AddLight(Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32), siren->ltLightPool[siren->LightCount].Color);
+                    this->GetSurfaceColor(sirenEntry->GetHighLOD(), &siren->getLight(siren->getLightCount())->Color);
+                    siren->AddLight(Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32), siren->getLight(siren->getLightCount())->Color);
                 }
             }
         }
@@ -281,132 +316,7 @@ namespace MM2
 
         AGE_API bool GetVisible()                           { return hook::Thunk<0x4CF070>::Call<bool>(this); }
         AGE_API void SetVisible(bool a1)                    { hook::Thunk<0x4CF050>::Call<void>(this, a1); }
-        
-        AGE_API void DrawHeadlights(bool rotate)
-        {
-            if (this->headlights == nullptr)
-                return;
-
-            Vector3 someCameraThing = *(Vector3*)0x685490;
-
-            if (rotate)
-            {
-                this->headlights[0].Direction.RotateY(datTimeManager::Seconds * vehCarModel::HeadlightFlashingSpeed);
-                this->headlights[1].Direction.RotateY(datTimeManager::Seconds * -vehCarModel::HeadlightFlashingSpeed);
-            }
-            else
-            {
-                auto carMatrix = this->getCarMatrix();
-                this->headlights[0].Direction = Vector3(-carMatrix.m20, -carMatrix.m21, -carMatrix.m22);
-                this->headlights[1].Direction = Vector3(-carMatrix.m20, -carMatrix.m21, -carMatrix.m22);
-            }
-
-            bool bothLightsBroken = !(enabledElectrics[2] || enabledElectrics[3]);
-            if (bothLightsBroken)
-                return;
-
-            ltLight::DrawGlowBegin();
-            for (int i = 0; i < 2; i++)
-            {
-                bool isHeadlightBroken = !(enabledElectrics[i + 2]);
-                if (isHeadlightBroken)
-                    continue;
-
-                auto light = &this->headlights[i];
-                auto lightPos = this->headlightPositions[i];
-                auto carMatrix = this->getCarMatrix();
-
-                float lX = lightPos.Y * carMatrix.m10 + lightPos.Z * carMatrix.m20 + lightPos.X * carMatrix.m00 + carMatrix.m30;
-                float lY = lightPos.Y * carMatrix.m11 + lightPos.Z * carMatrix.m21 + lightPos.X * carMatrix.m01 + carMatrix.m31;
-                float lZ = lightPos.Y * carMatrix.m12 + lightPos.Z * carMatrix.m22 + lightPos.X * carMatrix.m02 + carMatrix.m32;
-                light->Position = Vector3(lX, lY, lZ);
-
-                light->DrawGlow(someCameraThing);
-            }
-            ltLight::DrawGlowEnd();
-        }
-
-        AGE_API void DrawExtraHeadlights(bool rotate)
-        {
-            int geomSetId = this->GetGeomIndex();
-            int geomSetIdOffset = geomSetId - 1;
-
-            auto headlight2 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 73);
-            auto headlight3 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 74);
-
-            if (headlight2->GetHighLOD() == nullptr || headlight3->GetHighLOD() == nullptr)
-                return;
-
-            if (rotate)
-            {
-                this->extraHeadlights[0].Direction.RotateY(datTimeManager::Seconds * vehCarModel::HeadlightFlashingSpeed);
-                this->extraHeadlights[1].Direction.RotateY(datTimeManager::Seconds * -vehCarModel::HeadlightFlashingSpeed);
-            }
-            else
-            {
-                auto carMatrix = this->getCarMatrix();
-                this->extraHeadlights[0].Direction = Vector3(-carMatrix.m20, -carMatrix.m21, -carMatrix.m22);
-                this->extraHeadlights[1].Direction = Vector3(-carMatrix.m20, -carMatrix.m21, -carMatrix.m22);
-            }
-
-            bool bothLightsBroken = !(enabledElectrics[2] || enabledElectrics[3]);
-            if (bothLightsBroken)
-                return;
-
-            ltLight::DrawGlowBegin();
-            for (int i = 0; i < 2; i++)
-            {
-                bool isHeadlightBroken = !(enabledElectrics[i + 2]);
-                if (isHeadlightBroken)
-                    continue;
-
-                auto light = &this->extraHeadlights[i];
-                auto lightPos = this->extraHeadlightPositions[i];
-                auto carMatrix = this->getCarMatrix();
-
-                float lX = lightPos.Y * carMatrix.m10 + lightPos.Z * carMatrix.m20 + lightPos.X * carMatrix.m00 + carMatrix.m30;
-                float lY = lightPos.Y * carMatrix.m11 + lightPos.Z * carMatrix.m21 + lightPos.X * carMatrix.m01 + carMatrix.m31;
-                float lZ = lightPos.Y * carMatrix.m12 + lightPos.Z * carMatrix.m22 + lightPos.X * carMatrix.m02 + carMatrix.m32;
-                light->Position = Vector3(lX, lY, lZ);
-
-                Vector3 someCameraThing = *(Vector3*)0x685490;
-                light->DrawGlow(someCameraThing);
-            }
-            ltLight::DrawGlowEnd();
-        }
-
-        AGE_API void DrawFoglights()
-        {
-            int geomSetId = this->GetGeomIndex();
-            int geomSetIdOffset = geomSetId - 1;
-
-            ltLight::DrawGlowBegin();
-            for (int i = 0; i < 4; i++)
-            {
-                auto foglight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 75 + i);
-                if (foglight->GetHighLOD() == nullptr)
-                    continue;
-
-                auto breaklt = this->getGenBreakableMgr()->Get(i + 3);
-
-                if (breaklt == nullptr || (breaklt != nullptr && breaklt->IsAttached)) {
-                    auto carMatrix = this->getCarMatrix();
-                    this->foglights[i]->Direction = Vector3(-carMatrix.m20, -carMatrix.m21, -carMatrix.m22);
-
-                    auto light = this->foglights[i];
-                    auto lightPos = this->foglightPositions[i];
-
-                    float lX = lightPos.Y * carMatrix.m10 + lightPos.Z * carMatrix.m20 + lightPos.X * carMatrix.m00 + carMatrix.m30;
-                    float lY = lightPos.Y * carMatrix.m11 + lightPos.Z * carMatrix.m21 + lightPos.X * carMatrix.m01 + carMatrix.m31;
-                    float lZ = lightPos.Y * carMatrix.m12 + lightPos.Z * carMatrix.m22 + lightPos.X * carMatrix.m02 + carMatrix.m32;
-                    light->Position = Vector3(lX, lY, lZ);
-
-                    Vector3 someCameraThing = *(Vector3*)0x685490;
-                    light->DrawGlow(someCameraThing);
-                }
-            }
-            ltLight::DrawGlowEnd();
-        }
+        AGE_API void DrawHeadlights(bool rotate)            { hook::Thunk<0x4CED50>::Call<void>(this, rotate); }
         
         AGE_API void DrawPart(modStatic* model, const Matrix34& matrix, modShader* shaders)
                                                             { hook::Thunk<0x4CE880>::Call<void>(this, model, &matrix, shaders); }
@@ -1557,261 +1467,8 @@ namespace MM2
 
         AGE_API void DrawShadow() override                  { hook::Thunk<0x4CE940>::Call<void>(this); }
         AGE_API void DrawShadowMap() override               { hook::Thunk<0x4CEA90>::Call<void>(this); }
-        
-        AGE_API void DrawGlow() override
-        {
-            if (!this->GetVisible())
-                return;
-
-            //get our geometry id
-            int geomSetId = this->GetGeomIndex();
-            int geomSetIdOffset = geomSetId - 1;
-
-            //get shaders
-            auto mainGeomEntry = lvlInstance::GetGeomTableEntry(geomSetIdOffset);
-            auto shaders = mainGeomEntry->pShaders[this->getVariant()];
-
-            //get car stuff we use to determine what to darw
-            auto car = this->getCar();
-            auto carsim = this->carSim;
-            auto siren = car->getSiren();
-            auto curDamage = car->getCarDamage()->getCurDamage();
-            auto maxDamage = car->getCarDamage()->getMaxDamage();
-            int gear = carsim->getTransmission()->getGear();
-            if (curDamage > maxDamage && vehCarModel::MWStyleTotaledCar)
-                return;
-
-            //setup renderer
-            Matrix44::Convert(gfxRenderState::sm_World, this->getCarMatrix());
-            gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
-
-
-            //draw signals
-            modStatic* slight0 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 5)->GetHighestLOD();
-            modStatic* slight1 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 6)->GetHighestLOD();
-
-            //draw taillight signals
-            modStatic* tslight0 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 101)->GetHighestLOD();
-            modStatic* tslight1 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 102)->GetHighestLOD();
-
-            //check signal clock
-            bool drawSignal = fmod(datTimeManager::ElapsedTime, 1.f) > 0.5f;
-
-            //draw stuff!
-            if (drawSignal && car->IsPlayer()) {
-                if (LeftSignalLightState || HazardLightsState) {
-                    if (slight0 != nullptr)
-                        slight0->Draw(shaders);
-                    if (tslight0 != nullptr)
-                        tslight0->Draw(shaders);
-                }
-                if (RightSignalLightState || HazardLightsState) {
-                    if (slight1 != nullptr)
-                        slight1->Draw(shaders);
-                    if (tslight1 != nullptr)
-                        tslight1->Draw(shaders);
-                }
-            }
-
-            //draw taillight signals for player
-            if (car->IsPlayer()) {
-                if (!LeftSignalLightState && !HazardLightsState) {
-                    if (tslight0 != nullptr) {
-                        //draw brake copy
-                        if (carsim->getBrake() > 0.1)
-                            tslight0->Draw(shaders);
-                        //draw headlight copy
-                        if (vehCarModel::HeadlightsState)
-                            tslight0->Draw(shaders);
-                    }
-                }
-                if (!RightSignalLightState && !HazardLightsState) {
-                    if (tslight1 != nullptr) {
-                        //draw brake copy
-                        if (carsim->getBrake() > 0.1)
-                            tslight1->Draw(shaders);
-                        //draw headlight copy
-                        if (vehCarModel::HeadlightsState)
-                            tslight1->Draw(shaders);
-                    }
-                }
-            }
-
-            //draw taillight signals for cops and opponents
-            if (!car->IsPlayer()) {
-                if (tslight0 != nullptr) {
-                    //draw brake copy
-                    if (carsim->getBrake() > 0.1)
-                        tslight0->Draw(shaders);
-                    //draw headlight copy
-                    if (vehCar::sm_DrawHeadlights)
-                        tslight0->Draw(shaders);
-                }
-                if (tslight1 != nullptr) {
-                    //draw brake copy
-                    if (carsim->getBrake() > 0.1)
-                        tslight1->Draw(shaders);
-                    //draw headlight copy
-                    if (vehCar::sm_DrawHeadlights)
-                        tslight1->Draw(shaders);
-                }
-            }
-
-            //only draw rear lights if the electrics allow it
-            if (enabledElectrics[0] || enabledElectrics[1])
-            {   
-                //draw tlight
-                modStatic* tlight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 3)->GetHighestLOD();
-                if (tlight != nullptr) {
-                    //draw brake copy
-                    if (carsim->getBrake() > 0.1)
-                        tlight->Draw(shaders);
-                    //draw headlight copy
-                    if (car->IsPlayer() && vehCarModel::HeadlightsState || !car->IsPlayer() && vehCar::sm_DrawHeadlights)
-                        tlight->Draw(shaders);
-                }
-
-                //draw blight
-                modStatic* blight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 7)->GetHighestLOD();
-                if (blight != nullptr) {
-                    //draw brake copy
-                    if (carsim->getBrake() > 0.1)
-                        blight->Draw(shaders);
-                }
-
-                //draw rlight
-                modStatic* rlight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 4)->GetHighestLOD();
-                if (rlight != nullptr && gear == 0) {
-                    rlight->Draw(shaders);
-                }
-            }
-
-            //Draw siren and headlights
-            modStatic* hlight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 2)->GetHighestLOD();
-            modStatic* siren0 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 9)->GetHighestLOD();
-            modStatic* siren1 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 10)->GetHighestLOD();
-
-            //Draw foglights
-            modStatic* flight0 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 103)->GetHighestLOD();
-            modStatic* flight1 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 104)->GetHighestLOD();
-            modStatic* flight2 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 105)->GetHighestLOD();
-            modStatic* flight3 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 106)->GetHighestLOD();
-
-            //Get breakable foglights
-            auto breaklt0 = this->getGenBreakableMgr()->Get(3);
-            auto breaklt1 = this->getGenBreakableMgr()->Get(4);
-            auto breaklt2 = this->getGenBreakableMgr()->Get(5);
-            auto breaklt3 = this->getGenBreakableMgr()->Get(6);
-
-            if (vehCarModel::HeadlightType < 3) {
-                if (vehCarModel::HeadlightType == 0 || vehCarModel::HeadlightType == 2) {
-                    //MM2 headlights
-                    if (vehCarModel::EnableHeadlightFlashing)
-                    {
-                        if (siren != nullptr && siren->Active)
-                        {
-                            this->DrawHeadlights(true);
-                            this->DrawExtraHeadlights(true);
-                        }
-                        else if (car->IsPlayer() && vehCarModel::HeadlightsState || !car->IsPlayer() && vehCar::sm_DrawHeadlights)
-                        {
-                            this->DrawHeadlights(false);
-                            this->DrawExtraHeadlights(false);
-                        }
-                    }
-                    else {
-                        if (car->IsPlayer() && vehCarModel::HeadlightsState || !car->IsPlayer() && vehCar::sm_DrawHeadlights)
-                        {
-                            this->DrawHeadlights(false);
-                            this->DrawExtraHeadlights(false);
-                        }
-                    }
-                    if (car->IsPlayer() && vehCarModel::FoglightsState || !car->IsPlayer() && MMSTATE->WeatherType == 2)
-                    {
-                        this->DrawFoglights();
-                    }
-                }
-                if (vehCarModel::HeadlightType == 1 || vehCarModel::HeadlightType == 2) {
-                    //MM1 headlights
-                    Matrix44::Convert(gfxRenderState::sm_World, this->getCarMatrix());
-                    gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
-
-                    if (enabledElectrics[2] || enabledElectrics[3])
-                    {
-                        if (hlight != nullptr)
-                        {
-                            if (car->IsPlayer() && vehCarModel::HeadlightsState || !car->IsPlayer() && vehCar::sm_DrawHeadlights)
-                            {
-                                hlight->Draw(shaders);
-                            }
-                        }
-                    }
-                    if (car->IsPlayer() && vehCarModel::FoglightsState || !car->IsPlayer() && MMSTATE->WeatherType == 2)
-                    {
-                        if (flight0 != nullptr)
-                        {
-                            if (breaklt0 == nullptr || (breaklt0 != nullptr && breaklt0->IsAttached))
-                            {
-                                flight0->Draw(shaders);
-                            }
-                        }
-                        if (flight1 != nullptr)
-                        {
-                            if (breaklt1 == nullptr || (breaklt1 != nullptr && breaklt1->IsAttached))
-                            {
-                                flight1->Draw(shaders);
-                            }
-                        }
-                        if (flight2 != nullptr)
-                        {
-                            if (breaklt2 == nullptr || (breaklt2 != nullptr && breaklt2->IsAttached))
-                            {
-                                flight2->Draw(shaders);
-                            }
-                        }
-                        if (flight3 != nullptr)
-                        {
-                            if (breaklt3 == nullptr || (breaklt3 != nullptr && breaklt3->IsAttached))
-                            {
-                                flight3->Draw(shaders);
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (vehCarModel::SirenType < 3) {
-                if (vehCarModel::SirenType == 0 || vehCarModel::SirenType == 2) {
-                    //MM2 siren
-                    if (siren != nullptr && siren->HasLights && siren->Active)
-                    {
-                        siren->Draw(this->getCarMatrix());
-                    }
-                }
-                if (vehCarModel::SirenType == 1 || vehCarModel::SirenType == 2) {
-                    //MM1 siren
-                    Matrix44::Convert(gfxRenderState::sm_World, this->getCarMatrix());
-                    gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
-
-                    if (siren != nullptr && siren->Active) {
-                        bool drawLEDSiren = fmod(datTimeManager::ElapsedTime, 0.1f) > 0.05f;
-
-                        if (!vehCarModel::EnableLEDSiren || drawLEDSiren) {
-                            int sirenStage = fmod(datTimeManager::ElapsedTime, 2 * vehCarModel::SirenCycle) >= vehCarModel::SirenCycle ? 1 : 0;
-                            if (sirenStage == 0 && siren0 != nullptr) {
-                                siren0->Draw(shaders);
-                            }
-                            else if (sirenStage == 1 && siren1 != nullptr) {
-                                siren1->Draw(shaders);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        AGE_API void DrawReflected(float a1) override
-                                                            { hook::Thunk<0x4CF080>::Call<void>(this, a1); }
+        AGE_API void DrawGlow() override                    { hook::Thunk<0x4CEB90>::Call<void>(this); }
+        AGE_API void DrawReflected(float a1) override       { hook::Thunk<0x4CF080>::Call<void>(this, a1); }
         AGE_API unsigned int SizeOf() override              { return hook::Thunk<0x4CDFE0>::Call<int>(this); }
 
         static void BindLua(LuaState L) {

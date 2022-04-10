@@ -30,6 +30,7 @@ namespace MM2
     };
     ASSERT_SIZEOF(phIntersectionPoint, 0x24);
 
+    struct lvlIntersectionPoint : public phIntersectionPoint {};
 
     // Lua initialization
 

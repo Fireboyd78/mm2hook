@@ -71,6 +71,11 @@ namespace MM2
         {
             return this->BillFlags;
         }
+
+        inline short getNumGlows()
+        {
+            return this->NumGlows;
+        }
     public:
         //lua
         static void BindLua(LuaState L) {

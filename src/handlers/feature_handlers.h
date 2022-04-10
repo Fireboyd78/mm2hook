@@ -323,7 +323,12 @@ public:
     void Draw(int a1);
     void DrawShadow();
     void DrawGlow();
+    void DrawHeadlights(bool rotate);
+    void DrawExtraHeadlights(bool rotate);
+    void DrawFoglights();
+    void DrawSiren(const MM2::Matrix34& carMatrix);
     void EjectOneShot();
+    bool Collide(MM2::lvlSegment& segment, MM2::lvlIntersection* intersection, int roomId, MM2::lvlInstance* ignoreInstance, ushort instanceFlags, int collideFlags, const MM2::Vector3& lightPos);
     static void Install();
 };
 
@@ -364,6 +369,8 @@ public:
     void Draw(int lod);
     void DrawShadow();
     void DrawGlow();
+    void DrawHeadlights();
+    bool Collide(MM2::lvlSegment& segment, MM2::lvlIntersection* intersection, int roomId, MM2::lvlInstance* ignoreInstance, ushort instanceFlags, int collideFlags, const MM2::Vector3& lightPos);
     static void Install();
 };
 

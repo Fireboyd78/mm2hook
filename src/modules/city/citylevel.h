@@ -6,10 +6,11 @@
 namespace MM2
 {
     // Forward declarations
-
+    class cityLevel;
 
     // External declarations
     extern class lvlInstance;
+    extern class lvlSDL;
 
     // Class definitions
     class cityLevel : public lvlLevel {
@@ -19,6 +20,7 @@ namespace MM2
         //helpers
     public:
         static hook::Type<lvlSky> Sky;
+        static hook::Type<lvlSDL> SDL;
         static hook::Type<int> timeOfDay;
 
         AGE_API cityLevel() {
@@ -41,9 +43,8 @@ namespace MM2
         AGE_API virtual void PostDraw() override                    { hook::Thunk<0x445300>::Call<void>(this); }
         AGE_API virtual void Draw(const gfxViewport& a1, uint a2) override
                                                                     { hook::Thunk<0x445400>::Call<void>(this, a1, a2); }
-
         AGE_API virtual int FindRoomId(Vector3 const& a1, int a2) override
-                                                                    { return hook::Thunk<0x446A60>::Call<int>(this, a1, a2); }
+                                                                    { return hook::Thunk<0x446A60>::Call<int>(this, &a1, a2); }
         AGE_API virtual int GetNeighborCount(int a1) override       { return hook::Thunk<0x446C20>::Call<int>(this, a1); }
         AGE_API virtual int GetNeighbors(int* a1, int a2) override  { return hook::Thunk<0x446C40>::Call<int>(this, a1, a2); }
         AGE_API virtual int GetTouchedNeighbors(int* a1, int a2, int a3, const Vector4& a4) override
@@ -52,12 +53,12 @@ namespace MM2
                                                                     { return hook::Thunk<0x446FA0>::Call<int>(this, roomId, out, outSize); }
         AGE_API virtual int GetVisitList(int* a1, int a2, Vector3 const& a3, Vector3 const& a4, int a5, int a6) override
                                                                     { return hook::Thunk<0x447030>::Call<int>(this, a1, a2, a3, a4, a5, a6); }
-        AGE_API virtual bool Collide(int a1, struct lvlSegment& a2, struct lvlIntersection& a3) override
+        AGE_API virtual bool Collide(int a1, lvlSegment& a2, lvlIntersection& a3) override
                                                                     { return false; }
         AGE_API virtual bool GetBoundSphere(Vector4& a1, int a2) override
                                                                     { return hook::Thunk<0x445310>::Call<bool>(this, a1, a2); }
-        AGE_API virtual const class lvlLevelBound* GetBound() override      
-                                                                    { return hook::Thunk<0x443930>::Call<class lvlLevelBound*>(this); }
+        AGE_API virtual const lvlLevelBound* GetBound() override
+                                                                    { return hook::Thunk<0x443930>::Call<lvlLevelBound*>(this); }
         AGE_API virtual void SetObjectDetail(int a1) override       { hook::Thunk<0x443E50>::Call<void>(this, a1); }
         AGE_API virtual float GetWaterLevel(int a1)  override       { return hook::Thunk<0x445280>::Call<float>(this, a1); }
         AGE_API virtual float GetLightingIntensity(Vector3 const& a1) override

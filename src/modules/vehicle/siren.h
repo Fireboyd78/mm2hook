@@ -5,7 +5,7 @@
 namespace MM2
 {
     // Forward declarations
-
+    class vehSiren;
 
     // External declarations
     extern class ltLight;
@@ -16,7 +16,7 @@ namespace MM2
     public:
         static float SirenRotationSpeed;
         static float SirenRotationStyle;
-    public:
+    private:
         bool HasLights;
         bool Active;
         int LightCount;
@@ -26,14 +26,22 @@ namespace MM2
         ltLensFlare* LensFlare;
         //EXTRA FIELD. The hook expands on this class, this is only possible because it's only used like a pointer in the original MM code
         Vector3 extraLightPositions[24]; //SRN0-23
-
+    public:
         //lua helpers
         inline bool getHasLights() const {
-            return HasLights;
+            return this->HasLights;
+        }
+
+        inline bool getActive() const {
+            return this->Active;
+        }
+
+        inline void setActive(bool active) {
+            this->Active = active;
         }
 
         inline int getLightCount() const {
-            return LightCount;
+            return this->LightCount;
         }
 
         inline ltLight* getLight(int index) const {
@@ -42,7 +50,7 @@ namespace MM2
                 index = 0;
             if (index >= 24)
                 index = 23;
-            return &ltLightPool[index];
+            return &this->ltLightPool[index];
         }
 
         inline Vector3 getLightPosition(int index) const {
@@ -51,7 +59,7 @@ namespace MM2
                 index = 0;
             if (index >= 24)
                 index = 23;
-            return extraLightPositions[index];
+            return this->extraLightPositions[index];
         }
 
         inline void setLightPosition(int index, Vector3 position) {
@@ -60,7 +68,17 @@ namespace MM2
                 index = 0;
             if (index >= 24)
                 index = 23;
-            extraLightPositions[index] = position;
+            this->extraLightPositions[index] = position;
+        }
+
+        inline float getRotationRate() const
+        {
+            return this->RotationRate;
+        }
+
+        inline ltLensFlare * getLensFlare()
+        {
+            return this->LensFlare;
         }
 
         ANGEL_ALLOCATOR
@@ -83,7 +101,7 @@ namespace MM2
             return hook::Thunk<0x4D6680>::Call<bool>(this);
         }
 
-        AGE_API bool AddLight(const Vector3& position, const Vector3& color)                    
+        AGE_API bool AddLight(const Vector3& position, const Vector3& color)
         { 
             if (this->ltLightPool != nullptr && this->LightCount < 24)
             {
@@ -105,55 +123,17 @@ namespace MM2
 
         AGE_API void Reset()
         {
-            this->Active = false;
+            hook::Thunk<0x4D6820>::Call<void>(this);
         }
 
         AGE_API void Update()
         {
-            float rotationAmount = vehSiren::SirenRotationSpeed;
-
-            if (this->ltLightPool != nullptr && this->Active)
-            {
-                for (int i = 0; i < this->LightCount; i++)
-                {
-                    this->ltLightPool[i].Direction.RotateY(datTimeManager::Seconds * this->RotationRate * rotationAmount);
-                }
-            }
+            hook::Thunk<0x4D6830>::Call<void>(this);
         }
 
-        AGE_API void Draw(const Matrix34& a1)
+        AGE_API void Draw(const Matrix34& carMatrix)
         {
-            if (this->ltLightPool == nullptr)
-                return;
-
-            Vector3 someCameraThing = *(Vector3*)0x685490;
-
-            ltLight::DrawGlowBegin();
-            for (int i = 0; i < this->LightCount; i++)
-            {
-                auto light = &this->ltLightPool[i];
-                auto lightPos = this->extraLightPositions[i];
-
-                float lX = lightPos.Y * a1.m10 + lightPos.Z * a1.m20 + lightPos.X * a1.m00 + a1.m30;
-                float lY = lightPos.Y * a1.m11 + lightPos.Z * a1.m21 + lightPos.X * a1.m01 + a1.m31;
-                float lZ = lightPos.Y * a1.m12 + lightPos.Z * a1.m22 + lightPos.X * a1.m02 + a1.m32;
-                light->Position = Vector3(lX, lY, lZ);
-
-                light->DrawGlow(someCameraThing);
-            }
-            ltLight::DrawGlowEnd();
-
-            this->LensFlare->DrawBegin();
-            for (int i = 0; i < this->LightCount; i++)
-            {
-                auto light = &this->ltLightPool[i];
-                auto lightPos = light->Position;
-                auto color = light->Color;
-
-                float intensity = light->ComputeIntensity(someCameraThing, 0.05f);
-                this->LensFlare->Draw(lightPos, color, intensity);
-            }
-            this->LensFlare->DrawEnd();
+            hook::Thunk<0x4D6880>::Call<void>(this, &carMatrix);
         }
 
         static void BindLua(LuaState L) {
