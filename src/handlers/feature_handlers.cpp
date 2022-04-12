@@ -4525,27 +4525,25 @@ void dgBangerInstanceHandler::DrawGlow()
             for (int i = 0; i < data->getNumGlows(); i++)
             {
                 Vector3 glowOffset = data->getGlowOffset(i);
+                Vector3 lightPos;
 
-                float lX = glowOffset.X * bangerMatrix.m00 + glowOffset.Y * bangerMatrix.m10 + glowOffset.Z * bangerMatrix.m20 + bangerMatrix.m30;
-                float lY = glowOffset.X * bangerMatrix.m01 + glowOffset.Y * bangerMatrix.m11 + glowOffset.Z * bangerMatrix.m21 + bangerMatrix.m31;
-                float lZ = glowOffset.X * bangerMatrix.m02 + glowOffset.Y * bangerMatrix.m12 + glowOffset.Z * bangerMatrix.m22 + bangerMatrix.m32;
+                lightPos.Dot(glowOffset, bangerMatrix);
 
                 if (cfgLightClippingFix.Get() >= 3)
                 {
-                    float posDiffX = lX - camPosition.X;
-                    float posDiffY = lY - camPosition.Y;
-                    float posDiffZ = lZ - camPosition.Z;
+                    Vector3 vec;
+
+                    vec.Set(lightPos);
+                    vec.Subtract(camPosition);
 
                     float invGlowScale = -ltLight::GlowScale;
-                    lX += posDiffX * invGlowScale * 0.25f;
-                    lY += posDiffY * invGlowScale * 0.25f;
-                    lZ += posDiffZ * invGlowScale * 0.25f;
+                    lightPos.AddScaled(vec, invGlowScale * 0.25f);
                 }
 
                 vglBeginBatch();
                 rglWorldIdentity();
                 vglBindTexture(dgBangerInstance::DefaultGlowTexture);
-                tglDrawParticle(Vector3(lX, lY, lZ), 1.515f, Vector4(1.f, 1.f, 1.f, 1.f));
+                tglDrawParticle(lightPos, 1.515f, Vector4(1.f, 1.f, 1.f, 1.f));
                 vglEndBatch();
             }
         }
@@ -5233,10 +5231,7 @@ void vehCarModelFeatureHandler::DrawHeadlights(bool rotate)
         auto light = model->getHeadlight(i);
         auto lightPos = model->getHeadlightPosition(i);
 
-        float lX = lightPos.Y * carMatrix.m10 + lightPos.Z * carMatrix.m20 + lightPos.X * carMatrix.m00 + carMatrix.m30;
-        float lY = lightPos.Y * carMatrix.m11 + lightPos.Z * carMatrix.m21 + lightPos.X * carMatrix.m01 + carMatrix.m31;
-        float lZ = lightPos.Y * carMatrix.m12 + lightPos.Z * carMatrix.m22 + lightPos.X * carMatrix.m02 + carMatrix.m32;
-        light->Position = Vector3(lX, lY, lZ);
+        light->Position.Dot(lightPos, carMatrix);
 
         if (rotate)
         {
@@ -5250,26 +5245,23 @@ void vehCarModelFeatureHandler::DrawHeadlights(bool rotate)
 
         if (cfgLightClippingFix.Get() == 1 || cfgLightClippingFix.Get() >= 4)
         {
+            Vector3 vec;
             lvlSegment segment;
             lvlIntersection intersection;
 
-            float posDiffX = light->Position.X - camPosition.X;
-            float posDiffY = light->Position.Y - camPosition.Y;
-            float posDiffZ = light->Position.Z - camPosition.Z;
+            vec.Set(light->Position);
+            vec.Subtract(camPosition);
+
+            float invGlowScale = -ltLight::GlowScale;
 
             segment.Set(light->Position, camPosition, 0, nullptr);
 
             if (Collide(segment, &intersection, 0, nullptr, 0x20, 0, light->Position) || Collide(segment, &intersection, 0, nullptr, 0x40, 0, light->Position))
             {
-                posDiffX = 0.f;
-                posDiffY = 0.f;
-                posDiffZ = 0.f;
+                invGlowScale = 0.f;
             }
 
-            float invGlowScale = -ltLight::GlowScale;
-            light->Position.X += posDiffX * invGlowScale;
-            light->Position.Y += posDiffY * invGlowScale;
-            light->Position.Z += posDiffZ * invGlowScale;
+            light->Position.AddScaled(vec, invGlowScale);
         }
 
         light->DrawGlow(camPosition);
@@ -5310,10 +5302,7 @@ void vehCarModelFeatureHandler::DrawExtraHeadlights(bool rotate)
         auto light = model->getExtraHeadlight(i);
         auto lightPos = model->getExtraHeadlightPosition(i);
 
-        float lX = lightPos.Y * carMatrix.m10 + lightPos.Z * carMatrix.m20 + lightPos.X * carMatrix.m00 + carMatrix.m30;
-        float lY = lightPos.Y * carMatrix.m11 + lightPos.Z * carMatrix.m21 + lightPos.X * carMatrix.m01 + carMatrix.m31;
-        float lZ = lightPos.Y * carMatrix.m12 + lightPos.Z * carMatrix.m22 + lightPos.X * carMatrix.m02 + carMatrix.m32;
-        light->Position = Vector3(lX, lY, lZ);
+        light->Position.Dot(lightPos, carMatrix);
 
         if (rotate)
         {
@@ -5327,26 +5316,23 @@ void vehCarModelFeatureHandler::DrawExtraHeadlights(bool rotate)
 
         if (cfgLightClippingFix.Get() == 1 || cfgLightClippingFix.Get() >= 4)
         {
+            Vector3 vec;
             lvlSegment segment;
             lvlIntersection intersection;
 
-            float posDiffX = light->Position.X - camPosition.X;
-            float posDiffY = light->Position.Y - camPosition.Y;
-            float posDiffZ = light->Position.Z - camPosition.Z;
+            vec.Set(light->Position);
+            vec.Subtract(camPosition);
+
+            float invGlowScale = -ltLight::GlowScale;
 
             segment.Set(light->Position, camPosition, 0, nullptr);
 
             if (Collide(segment, &intersection, 0, nullptr, 0x20, 0, light->Position) || Collide(segment, &intersection, 0, nullptr, 0x40, 0, light->Position))
             {
-                posDiffX = 0.f;
-                posDiffY = 0.f;
-                posDiffZ = 0.f;
+                invGlowScale = 0.f;
             }
 
-            float invGlowScale = -ltLight::GlowScale;
-            light->Position.X += posDiffX * invGlowScale;
-            light->Position.Y += posDiffY * invGlowScale;
-            light->Position.Z += posDiffZ * invGlowScale;
+            light->Position.AddScaled(vec, invGlowScale);
         }
 
         light->DrawGlow(camPosition);
@@ -5379,35 +5365,29 @@ void vehCarModelFeatureHandler::DrawFoglights()
             auto light = model->getFoglight(i);
             auto lightPos = model->getFoglightPosition(i);
 
-            float lX = lightPos.Y * carMatrix.m10 + lightPos.Z * carMatrix.m20 + lightPos.X * carMatrix.m00 + carMatrix.m30;
-            float lY = lightPos.Y * carMatrix.m11 + lightPos.Z * carMatrix.m21 + lightPos.X * carMatrix.m01 + carMatrix.m31;
-            float lZ = lightPos.Y * carMatrix.m12 + lightPos.Z * carMatrix.m22 + lightPos.X * carMatrix.m02 + carMatrix.m32;
-            light->Position = Vector3(lX, lY, lZ);
+            light->Position.Dot(lightPos, carMatrix);
 
             light->Direction = Vector3(-carMatrix.m20, -carMatrix.m21, -carMatrix.m22);
 
             if (cfgLightClippingFix.Get() == 1 || cfgLightClippingFix.Get() >= 4)
             {
+                Vector3 vec;
                 lvlSegment segment;
                 lvlIntersection intersection;
 
-                float posDiffX = light->Position.X - camPosition.X;
-                float posDiffY = light->Position.Y - camPosition.Y;
-                float posDiffZ = light->Position.Z - camPosition.Z;
+                vec.Set(light->Position);
+                vec.Subtract(camPosition);
+
+                float invGlowScale = -ltLight::GlowScale;
 
                 segment.Set(light->Position, camPosition, 0, nullptr);
 
                 if (Collide(segment, &intersection, 0, nullptr, 0x20, 0, light->Position) || Collide(segment, &intersection, 0, nullptr, 0x40, 0, light->Position))
                 {
-                    posDiffX = 0.f;
-                    posDiffY = 0.f;
-                    posDiffZ = 0.f;
+                    invGlowScale = 0.f;
                 }
 
-                float invGlowScale = -ltLight::GlowScale;
-                light->Position.X += posDiffX * invGlowScale;
-                light->Position.Y += posDiffY * invGlowScale;
-                light->Position.Z += posDiffZ * invGlowScale;
+                light->Position.AddScaled(vec, invGlowScale);
             }
 
             light->DrawGlow(camPosition);
@@ -5432,33 +5412,27 @@ void vehCarModelFeatureHandler::DrawSiren(const Matrix34& carMatrix)
         auto light = siren->getLight(i);
         auto lightPos = siren->getLightPosition(i);
 
-        float lX = lightPos.Y * carMatrix.m10 + lightPos.Z * carMatrix.m20 + lightPos.X * carMatrix.m00 + carMatrix.m30;
-        float lY = lightPos.Y * carMatrix.m11 + lightPos.Z * carMatrix.m21 + lightPos.X * carMatrix.m01 + carMatrix.m31;
-        float lZ = lightPos.Y * carMatrix.m12 + lightPos.Z * carMatrix.m22 + lightPos.X * carMatrix.m02 + carMatrix.m32;
-        light->Position = Vector3(lX, lY, lZ);
+        light->Position.Dot(lightPos, carMatrix);
 
         if (cfgLightClippingFix.Get() == 1 || cfgLightClippingFix.Get() >= 4)
         {
+            Vector3 vec;
             lvlSegment segment;
             lvlIntersection intersection;
 
-            float posDiffX = light->Position.X - camPosition.X;
-            float posDiffY = light->Position.Y - camPosition.Y;
-            float posDiffZ = light->Position.Z - camPosition.Z;
+            vec.Set(light->Position);
+            vec.Subtract(camPosition);
+
+            float invGlowScale = -ltLight::GlowScale;
 
             segment.Set(light->Position, camPosition, 0, nullptr);
 
             if (Collide(segment, &intersection, 0, nullptr, 0x20, 0, light->Position) || Collide(segment, &intersection, 0, nullptr, 0x40, 0, light->Position))
             {
-                posDiffX = 0.f;
-                posDiffY = 0.f;
-                posDiffZ = 0.f;
+                invGlowScale = 0.f;
             }
 
-            float invGlowScale = -ltLight::GlowScale;
-            light->Position.X += posDiffX * invGlowScale;
-            light->Position.Y += posDiffY * invGlowScale;
-            light->Position.Z += posDiffZ * invGlowScale;
+            light->Position.AddScaled(vec, invGlowScale);
         }
 
         light->DrawGlow(camPosition);
@@ -6546,19 +6520,15 @@ void aiVehicleInstanceFeatureHandler::DrawHeadlights()
     modStatic* headlight0 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 19)->GetHighLOD();
     if (headlight0 != nullptr)
     {
-        float lX = lightPos.Y * carMatrix.m10 + lightPos.Z * carMatrix.m20 + lightPos.X * carMatrix.m00 + carMatrix.m30;
-        float lY = lightPos.Y * carMatrix.m11 + lightPos.Z * carMatrix.m21 + lightPos.X * carMatrix.m01 + carMatrix.m31;
-        float lZ = lightPos.Y * carMatrix.m12 + lightPos.Z * carMatrix.m22 + lightPos.X * carMatrix.m02 + carMatrix.m32;
-        light->Position = Vector3(lX, lY, lZ);
+        light->Position.Dot(lightPos, carMatrix);
 
-        float posDiffX = light->Position.X - camPosition.X;
-        float posDiffY = light->Position.Y - camPosition.Y;
-        float posDiffZ = light->Position.Z - camPosition.Z;
+        Vector3 vec;
+
+        vec.Set(light->Position);
+        vec.Subtract(camPosition);
 
         float invGlowScale = -ltLight::GlowScale;
-        light->Position.X += posDiffX * invGlowScale * 0.1f;
-        light->Position.Y += posDiffY * invGlowScale * 0.1f;
-        light->Position.Z += posDiffZ * invGlowScale * 0.1f;
+        light->Position.AddScaled(vec, invGlowScale * 0.1f);
 
         if (cfgLightClippingFix.Get() == 2 || cfgLightClippingFix.Get() >= 4)
         {
@@ -6569,14 +6539,10 @@ void aiVehicleInstanceFeatureHandler::DrawHeadlights()
 
             if (Collide(segment, &intersection, 0, nullptr, 0x20, 0, light->Position) || Collide(segment, &intersection, 0, nullptr, 0x40, 0, light->Position))
             {
-                posDiffX *= 0.05f;
-                posDiffY *= 0.05f;
-                posDiffZ *= 0.05f;
+                invGlowScale = 0.f;
             }
 
-            light->Position.X += posDiffX * invGlowScale * 0.25f;
-            light->Position.Y += posDiffY * invGlowScale * 0.25f;
-            light->Position.Z += posDiffZ * invGlowScale * 0.25f;
+            light->Position.AddScaled(vec, invGlowScale * 0.25f);
         }
 
         light->DrawGlow(camPosition);
@@ -6585,19 +6551,16 @@ void aiVehicleInstanceFeatureHandler::DrawHeadlights()
     modStatic* headlight1 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 20)->GetHighLOD();
     if (headlight1 != nullptr)
     {
-        float lX = lightPos.Y * carMatrix.m10 + lightPos.Z * carMatrix.m20 + -lightPos.X * carMatrix.m00 + carMatrix.m30;
-        float lY = lightPos.Y * carMatrix.m11 + lightPos.Z * carMatrix.m21 + -lightPos.X * carMatrix.m01 + carMatrix.m31;
-        float lZ = lightPos.Y * carMatrix.m12 + lightPos.Z * carMatrix.m22 + -lightPos.X * carMatrix.m02 + carMatrix.m32;
-        light->Position = Vector3(lX, lY, lZ);
+        lightPos.X *= -1.f;
+        light->Position.Dot(lightPos, carMatrix);
 
-        float posDiffX = light->Position.X - camPosition.X;
-        float posDiffY = light->Position.Y - camPosition.Y;
-        float posDiffZ = light->Position.Z - camPosition.Z;
+        Vector3 vec;
+
+        vec.Set(light->Position);
+        vec.Subtract(camPosition);
 
         float invGlowScale = -ltLight::GlowScale;
-        light->Position.X += posDiffX * invGlowScale * 0.1f;
-        light->Position.Y += posDiffY * invGlowScale * 0.1f;
-        light->Position.Z += posDiffZ * invGlowScale * 0.1f;
+        light->Position.AddScaled(vec, invGlowScale * 0.1f);
 
         if (cfgLightClippingFix.Get() == 2 || cfgLightClippingFix.Get() >= 4)
         {
@@ -6608,14 +6571,10 @@ void aiVehicleInstanceFeatureHandler::DrawHeadlights()
 
             if (Collide(segment, &intersection, 0, nullptr, 0x20, 0, light->Position) || Collide(segment, &intersection, 0, nullptr, 0x40, 0, light->Position))
             {
-                posDiffX *= 0.05f;
-                posDiffY *= 0.05f;
-                posDiffZ *= 0.05f;
+                invGlowScale = 0.f;
             }
 
-            light->Position.X += posDiffX * invGlowScale * 0.25f;
-            light->Position.Y += posDiffY * invGlowScale * 0.25f;
-            light->Position.Z += posDiffZ * invGlowScale * 0.25f;
+            light->Position.AddScaled(vec, invGlowScale * 0.25f);
         }
 
         light->DrawGlow(camPosition);
