@@ -370,7 +370,7 @@ public:
     void DrawShadow();
     void DrawGlow();
     void DrawHeadlights();
-    bool Collide(MM2::lvlSegment& segment, MM2::lvlIntersection* intersection, int roomId, MM2::lvlInstance* ignoreInstance, ushort instanceFlags, int collideFlags, const MM2::Vector3& lightPos);
+    bool Collide(MM2::lvlSegment& segment, MM2::lvlIntersection* intersection, int roomId, MM2::lvlInstance* ignoreInstance, ushort instanceFlags, int collideFlags);
     static void Install();
 };
 

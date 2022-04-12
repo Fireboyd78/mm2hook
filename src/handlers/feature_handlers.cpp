@@ -5532,16 +5532,16 @@ bool vehCarModelFeatureHandler::Collide(lvlSegment& segment, lvlIntersection* in
         {
         case 411:
             roomId = 102;
-            goto LABEL_26;
+            goto LABEL_0;
         case 412:
             roomId = 122;
-            goto LABEL_26;
+            goto LABEL_0;
         case 423:
             roomId = 96;
-            goto LABEL_26;
+            goto LABEL_0;
         case 625:
             roomId = 1;
-        LABEL_26:
+        LABEL_0:
             roomInfo2 = level->GetRoomInfo(roomId);
             if ((roomInfo2->InstanceFlags & instanceFlags) != 0)
             {
@@ -6537,7 +6537,7 @@ void aiVehicleInstanceFeatureHandler::DrawHeadlights()
 
             segment.Set(light->Position, camPosition, 0, nullptr);
 
-            if (Collide(segment, &intersection, 0, nullptr, 0x20, 0, light->Position) || Collide(segment, &intersection, 0, nullptr, 0x40, 0, light->Position))
+            if (Collide(segment, &intersection, 0, nullptr, 0x20, 0) || Collide(segment, &intersection, 0, nullptr, 0x40, 0))
             {
                 invGlowScale = 0.f;
             }
@@ -6569,7 +6569,7 @@ void aiVehicleInstanceFeatureHandler::DrawHeadlights()
 
             segment.Set(light->Position, camPosition, 0, nullptr);
 
-            if (Collide(segment, &intersection, 0, nullptr, 0x20, 0, light->Position) || Collide(segment, &intersection, 0, nullptr, 0x40, 0, light->Position))
+            if (Collide(segment, &intersection, 0, nullptr, 0x20, 0) || Collide(segment, &intersection, 0, nullptr, 0x40, 0))
             {
                 invGlowScale = 0.f;
             }
@@ -6583,7 +6583,7 @@ void aiVehicleInstanceFeatureHandler::DrawHeadlights()
     ltLight::DrawGlowEnd();
 }
 
-bool aiVehicleInstanceFeatureHandler::Collide(lvlSegment& segment, lvlIntersection* intersection, int roomId, lvlInstance* ignoreInstance, ushort instanceFlags, int collideFlags, const Vector3& lightPos)
+bool aiVehicleInstanceFeatureHandler::Collide(lvlSegment& segment, lvlIntersection* intersection, int roomId, lvlInstance* ignoreInstance, ushort instanceFlags, int collideFlags)
 {
     auto segmentInfo = segment.SegmentInfo;
     int RoomId = 0;
@@ -6610,16 +6610,6 @@ bool aiVehicleInstanceFeatureHandler::Collide(lvlSegment& segment, lvlIntersecti
     auto bound = level->GetBound();
 
     bool collide = false;
-
-    Vector3 camPosition = *(Vector3*)&gfxRenderState::sm_Camera->m30;
-
-    // gather ground and building bounds
-    if (lightPos.Dist(camPosition) < 60.f)
-        collide = (*((bool(__thiscall**)(const lvlLevelBound*, lvlSegment&, lvlIntersection*, float))*getPtr<void*>(bound, 0) + 0x14))(
-            bound,
-            segment,
-            intersection,
-            intersection->IntersectionPoint.NormalizedDistance);
 
     auto startRoomInfo = level->GetRoomInfo(startRoomId);
     if ((startRoomInfo->InstanceFlags & instanceFlags) != 0) // collide in start room
@@ -6663,16 +6653,16 @@ bool aiVehicleInstanceFeatureHandler::Collide(lvlSegment& segment, lvlIntersecti
         {
         case 411:
             roomId = 102;
-            goto LABEL_26;
+            goto LABEL_0;
         case 412:
             roomId = 122;
-            goto LABEL_26;
+            goto LABEL_0;
         case 423:
             roomId = 96;
-            goto LABEL_26;
+            goto LABEL_0;
         case 625:
             roomId = 1;
-        LABEL_26:
+        LABEL_0:
             roomInfo2 = level->GetRoomInfo(roomId);
             if ((roomInfo2->InstanceFlags & instanceFlags) != 0)
             {
