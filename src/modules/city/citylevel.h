@@ -57,8 +57,7 @@ namespace MM2
                                                                     { return false; }
         AGE_API virtual bool GetBoundSphere(Vector4& a1, int a2) override
                                                                     { return hook::Thunk<0x445310>::Call<bool>(this, a1, a2); }
-        AGE_API virtual const lvlLevelBound* GetBound() override
-                                                                    { return hook::Thunk<0x443930>::Call<lvlLevelBound*>(this); }
+        AGE_API virtual const lvlLevelBound* GetBound() override    { return hook::Thunk<0x443930>::Call<lvlLevelBound*>(this); }
         AGE_API virtual void SetObjectDetail(int a1) override       { hook::Thunk<0x443E50>::Call<void>(this, a1); }
         AGE_API virtual float GetWaterLevel(int a1)  override       { return hook::Thunk<0x445280>::Call<float>(this, a1); }
         AGE_API virtual float GetLightingIntensity(Vector3 const& a1) override

@@ -5481,11 +5481,11 @@ void vehCarModelFeatureHandler::DrawSiren(const Matrix34& carMatrix)
 bool vehCarModelFeatureHandler::Collide(lvlSegment& segment, lvlIntersection* intersection, int roomId, lvlInstance* ignoreInstance, ushort instanceFlags, int collideFlags, const Vector3& lightPos)
 {
     auto segmentInfo = segment.SegmentInfo;
-    int lightRoomId = 0;
+    int RoomId = 0;
     if (!segmentInfo)
     {
-        segment.SegmentInfo = (lvlSegmentInfo*)&lightRoomId;
-        lightRoomId = roomId;
+        segment.SegmentInfo = (lvlSegmentInfo*)&RoomId;
+        RoomId = roomId;
     }
 
     auto level = *lvlLevel::Singleton;
@@ -5519,14 +5519,11 @@ bool vehCarModelFeatureHandler::Collide(lvlSegment& segment, lvlIntersection* in
     auto startRoomInfo = level->GetRoomInfo(startRoomId);
     if ((startRoomInfo->InstanceFlags & instanceFlags) != 0) // collide in start room
     {
-        short flags;
         for (lvlInstance* i = startRoomInfo->FirstInstance; i; i = i->GetNext())
         {
-            *(&flags + 1) = 0;
             if ((i->GetFlags() & instanceFlags) != 0)
             {
-                flags = i->GetFlags();
-                if ((*(int*)&flags & collideFlags) == 0 && i != ignoreInstance)
+                if ((i->GetFlags() & collideFlags) == 0 && i != ignoreInstance)
                 {
                     collide |= dgPhysManager::Instance->CollideProbe(segment, intersection, i);
                 }
@@ -5539,14 +5536,11 @@ bool vehCarModelFeatureHandler::Collide(lvlSegment& segment, lvlIntersection* in
         auto endRoomInfo = level->GetRoomInfo(endRoomId);
         if ((endRoomInfo->InstanceFlags & instanceFlags) != 0)
         {
-            short flags;
             for (lvlInstance* i = endRoomInfo->FirstInstance; i; i = i->GetNext())
             {
-                *(&flags + 1) = 0;
                 if ((i->GetFlags() & instanceFlags) != 0)
                 {
-                    flags = i->GetFlags();
-                    if ((*(int*)&flags & collideFlags) == 0 && i != ignoreInstance)
+                    if ((i->GetFlags() & collideFlags) == 0 && i != ignoreInstance)
                     {
                         collide |= dgPhysManager::Instance->CollideProbe(segment, intersection, i);
                     }
@@ -5577,14 +5571,11 @@ bool vehCarModelFeatureHandler::Collide(lvlSegment& segment, lvlIntersection* in
             roomInfo2 = level->GetRoomInfo(roomId);
             if ((roomInfo2->InstanceFlags & instanceFlags) != 0)
             {
-                short flags;
                 for (lvlInstance* i = roomInfo2->FirstInstance; i; i = i->GetNext())
                 {
-                    *(&flags + 1) = 0;
                     if ((i->GetFlags() & instanceFlags) != 0)
                     {
-                        flags = i->GetFlags();
-                        if ((*(int*)&flags & collideFlags) == 0 && i != ignoreInstance)
+                        if ((i->GetFlags() & collideFlags) == 0 && i != ignoreInstance)
                         {
                             collide |= dgPhysManager::Instance->CollideProbe(segment, intersection, i);
                         }
@@ -6636,11 +6627,11 @@ void aiVehicleInstanceFeatureHandler::DrawHeadlights()
 bool aiVehicleInstanceFeatureHandler::Collide(lvlSegment& segment, lvlIntersection* intersection, int roomId, lvlInstance* ignoreInstance, ushort instanceFlags, int collideFlags, const Vector3& lightPos)
 {
     auto segmentInfo = segment.SegmentInfo;
-    int lightRoomId = 0;
+    int RoomId = 0;
     if (!segmentInfo)
     {
-        segment.SegmentInfo = (lvlSegmentInfo*)&lightRoomId;
-        lightRoomId = roomId;
+        segment.SegmentInfo = (lvlSegmentInfo*)&RoomId;
+        RoomId = roomId;
     }
 
     auto level = *lvlLevel::Singleton;
@@ -6674,14 +6665,11 @@ bool aiVehicleInstanceFeatureHandler::Collide(lvlSegment& segment, lvlIntersecti
     auto startRoomInfo = level->GetRoomInfo(startRoomId);
     if ((startRoomInfo->InstanceFlags & instanceFlags) != 0) // collide in start room
     {
-        short flags;
         for (lvlInstance* i = startRoomInfo->FirstInstance; i; i = i->GetNext())
         {
-            *(&flags + 1) = 0;
             if ((i->GetFlags() & instanceFlags) != 0)
             {
-                flags = i->GetFlags();
-                if ((*(int*)&flags & collideFlags) == 0 && i != ignoreInstance)
+                if ((i->GetFlags() & collideFlags) == 0 && i != ignoreInstance)
                 {
                     collide |= dgPhysManager::Instance->CollideProbe(segment, intersection, i);
                 }
@@ -6694,14 +6682,11 @@ bool aiVehicleInstanceFeatureHandler::Collide(lvlSegment& segment, lvlIntersecti
         auto endRoomInfo = level->GetRoomInfo(endRoomId);
         if ((endRoomInfo->InstanceFlags & instanceFlags) != 0)
         {
-            short flags;
             for (lvlInstance* i = endRoomInfo->FirstInstance; i; i = i->GetNext())
             {
-                *(&flags + 1) = 0;
                 if ((i->GetFlags() & instanceFlags) != 0)
                 {
-                    flags = i->GetFlags();
-                    if ((*(int*)&flags & collideFlags) == 0 && i != ignoreInstance)
+                    if ((i->GetFlags() & collideFlags) == 0 && i != ignoreInstance)
                     {
                         collide |= dgPhysManager::Instance->CollideProbe(segment, intersection, i);
                     }
@@ -6732,14 +6717,11 @@ bool aiVehicleInstanceFeatureHandler::Collide(lvlSegment& segment, lvlIntersecti
             roomInfo2 = level->GetRoomInfo(roomId);
             if ((roomInfo2->InstanceFlags & instanceFlags) != 0)
             {
-                short flags;
                 for (lvlInstance* i = roomInfo2->FirstInstance; i; i = i->GetNext())
                 {
-                    *(&flags + 1) = 0;
                     if ((i->GetFlags() & instanceFlags) != 0)
                     {
-                        flags = i->GetFlags();
-                        if ((*(int*)&flags & collideFlags) == 0 && i != ignoreInstance)
+                        if ((i->GetFlags() & collideFlags) == 0 && i != ignoreInstance)
                         {
                             collide |= dgPhysManager::Instance->CollideProbe(segment, intersection, i);
                         }
