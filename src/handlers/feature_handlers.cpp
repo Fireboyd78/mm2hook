@@ -5532,33 +5532,32 @@ bool vehCarModelFeatureHandler::Collide(lvlSegment& segment, lvlIntersection* in
         {
         case 411:
             roomId = 102;
-            goto LABEL_0;
+            break;
         case 412:
             roomId = 122;
-            goto LABEL_0;
+            break;
         case 423:
             roomId = 96;
-            goto LABEL_0;
+            break;
         case 625:
             roomId = 1;
-        LABEL_0:
-            roomInfo2 = level->GetRoomInfo(roomId);
-            if ((roomInfo2->InstanceFlags & instanceFlags) != 0)
-            {
-                for (lvlInstance* i = roomInfo2->FirstInstance; i; i = i->GetNext())
-                {
-                    if ((i->GetFlags() & instanceFlags) != 0)
-                    {
-                        if ((i->GetFlags() & collideFlags) == 0 && i != ignoreInstance)
-                        {
-                            collide |= dgPhysManager::Instance->CollideProbe(segment, intersection, i);
-                        }
-                    }
-                }
-            }
             break;
         default:
             return collide;
+        }
+        roomInfo2 = level->GetRoomInfo(roomId);
+        if ((roomInfo2->InstanceFlags & instanceFlags) != 0)
+        {
+            for (lvlInstance* i = roomInfo2->FirstInstance; i; i = i->GetNext())
+            {
+                if ((i->GetFlags() & instanceFlags) != 0)
+                {
+                    if ((i->GetFlags() & collideFlags) == 0 && i != ignoreInstance)
+                    {
+                        collide |= dgPhysManager::Instance->CollideProbe(segment, intersection, i);
+                    }
+                }
+            }
         }
     }
     return collide;
@@ -6653,33 +6652,32 @@ bool aiVehicleInstanceFeatureHandler::Collide(lvlSegment& segment, lvlIntersecti
         {
         case 411:
             roomId = 102;
-            goto LABEL_0;
+            break;
         case 412:
             roomId = 122;
-            goto LABEL_0;
+            break;
         case 423:
             roomId = 96;
-            goto LABEL_0;
+            break;
         case 625:
             roomId = 1;
-        LABEL_0:
-            roomInfo2 = level->GetRoomInfo(roomId);
-            if ((roomInfo2->InstanceFlags & instanceFlags) != 0)
-            {
-                for (lvlInstance* i = roomInfo2->FirstInstance; i; i = i->GetNext())
-                {
-                    if ((i->GetFlags() & instanceFlags) != 0)
-                    {
-                        if ((i->GetFlags() & collideFlags) == 0 && i != ignoreInstance)
-                        {
-                            collide |= dgPhysManager::Instance->CollideProbe(segment, intersection, i);
-                        }
-                    }
-                }
-            }
             break;
         default:
             return collide;
+        }
+        roomInfo2 = level->GetRoomInfo(roomId);
+        if ((roomInfo2->InstanceFlags & instanceFlags) != 0)
+        {
+            for (lvlInstance* i = roomInfo2->FirstInstance; i; i = i->GetNext())
+            {
+                if ((i->GetFlags() & instanceFlags) != 0)
+                {
+                    if ((i->GetFlags() & collideFlags) == 0 && i != ignoreInstance)
+                    {
+                        collide |= dgPhysManager::Instance->CollideProbe(segment, intersection, i);
+                    }
+                }
+            }
         }
     }
     return collide;
