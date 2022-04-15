@@ -5454,21 +5454,22 @@ void vehCarModelFeatureHandler::DrawSiren(const Matrix34& carMatrix)
 
 bool vehCarModelFeatureHandler::Collide(lvlSegment& segment, lvlIntersection* intersection, int roomId, lvlInstance* ignoreInstance, ushort instanceFlags, int collideFlags, const Vector3& lightPos)
 {
-    auto segmentInfo = segment.SegmentInfo;
-    int RoomId = 0;
-    if (!segmentInfo)
+    lvlSegmentInfo segmentInfo;
+    memset(&segmentInfo, 0, sizeof(segmentInfo));
+    if (!segment.SegmentInfo)
     {
-        segment.SegmentInfo = (lvlSegmentInfo*)&RoomId;
-        RoomId = roomId;
+        segment.SegmentInfo = &segmentInfo;
+        segmentInfo.StartRoomId = roomId;
+        segmentInfo.EndRoomId = roomId;
     }
 
     auto level = *lvlLevel::Singleton;
 
-    int startRoomId = level->FindRoomId(segment.StartPos, 0);
+    int startRoomId = level->FindRoomId(segment.StartPos, segment.SegmentInfo->StartRoomId);
 
     segment.SegmentInfo->StartRoomId = startRoomId;
 
-    int endRoomId = level->FindRoomId(segment.EndPos, 0);
+    int endRoomId = level->FindRoomId(segment.EndPos, segment.SegmentInfo->EndRoomId);
 
     segment.SegmentInfo->EndRoomId = endRoomId;
 
@@ -5484,8 +5485,7 @@ bool vehCarModelFeatureHandler::Collide(lvlSegment& segment, lvlIntersection* in
 
     // gather ground and building bounds
     if (lightPos.Dist(camPosition) < 100.f)
-        collide = (*((bool(__thiscall**)(const lvlLevelBound*, lvlSegment&, lvlIntersection*, float))*getPtr<void*>(bound, 0) + 0x14))(
-            bound,
+        collide = bound->CollideProbe(
             segment,
             intersection,
             intersection->IntersectionPoint.NormalizedDistance);
@@ -6584,29 +6584,28 @@ void aiVehicleInstanceFeatureHandler::DrawHeadlights()
 
 bool aiVehicleInstanceFeatureHandler::Collide(lvlSegment& segment, lvlIntersection* intersection, int roomId, lvlInstance* ignoreInstance, ushort instanceFlags, int collideFlags)
 {
-    auto segmentInfo = segment.SegmentInfo;
-    int RoomId = 0;
-    if (!segmentInfo)
+    lvlSegmentInfo segmentInfo;
+    memset(&segmentInfo, 0, sizeof(segmentInfo));
+    if (!segment.SegmentInfo)
     {
-        segment.SegmentInfo = (lvlSegmentInfo*)&RoomId;
-        RoomId = roomId;
+        segment.SegmentInfo = &segmentInfo;
+        segmentInfo.StartRoomId = roomId;
+        segmentInfo.EndRoomId = roomId;
     }
 
     auto level = *lvlLevel::Singleton;
 
-    int startRoomId = level->FindRoomId(segment.StartPos, 0);
+    int startRoomId = level->FindRoomId(segment.StartPos, segment.SegmentInfo->StartRoomId);
 
     segment.SegmentInfo->StartRoomId = startRoomId;
 
-    int endRoomId = level->FindRoomId(segment.EndPos, 0);
+    int endRoomId = level->FindRoomId(segment.EndPos, segment.SegmentInfo->EndRoomId);
 
     segment.SegmentInfo->EndRoomId = endRoomId;
 
     intersection->IntersectionPoint.NormalizedDistance = 2.0;
 
     intersection->Poly = 0;
-
-    auto bound = level->GetBound();
 
     bool collide = false;
 

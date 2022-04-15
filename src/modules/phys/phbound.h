@@ -111,14 +111,6 @@ namespace MM2
                                                         { return hook::Thunk<0x45CFA0>::Call<float>(this, &a1, &a2, a3, a4); }
         AGE_API virtual Vector3 const& GetVertex(int a1) const
                                                         { return hook::Thunk<0x487730>::Call<Vector3 const&>(this, a1); }
-        AGE_API virtual bool TestAI(phSegment& a1, phIntersectionPoint* a2) const
-                                                        PURE;
-        AGE_API virtual int TestEdgePoint(phSegment& a1, phIntersectionPoint* a2, int a3) const
-                                                        PURE;
-        AGE_API virtual float GetEdgeCosine(int a1) const
-                                                        PURE;
-        AGE_API virtual Vector3 const& GetEdgeNormal(int a1, Vector3& a2) const
-                                                        PURE;
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginClass<phBound>("phBound")
