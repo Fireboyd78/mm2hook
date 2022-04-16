@@ -6534,6 +6534,8 @@ void aiVehicleInstanceFeatureHandler::DrawHeadlights()
             lvlSegment segment;
             lvlIntersection intersection;
 
+            light->Position.AddScaled(vec, 0.f);
+
             segment.Set(light->Position, camPosition, 0, nullptr);
 
             if (Collide(segment, &intersection, 0, nullptr, 0x20, 0) || Collide(segment, &intersection, 0, nullptr, 0x40, 0))
@@ -6565,6 +6567,8 @@ void aiVehicleInstanceFeatureHandler::DrawHeadlights()
         {
             lvlSegment segment;
             lvlIntersection intersection;
+
+            light->Position.AddScaled(vec, 0.f);
 
             segment.Set(light->Position, camPosition, 0, nullptr);
 
