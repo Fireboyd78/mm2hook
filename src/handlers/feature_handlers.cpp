@@ -6528,19 +6528,14 @@ void aiVehicleInstanceFeatureHandler::DrawHeadlights()
 
         float invGlowScale = -ltLight::GlowScale;
 
-        //move the headlight position a bit forward (made by default)
-        light->Position.AddScaled(vec, invGlowScale * 0.1f);
-
         if (cfgLightClippingFix.Get() == 2 || cfgLightClippingFix.Get() >= 4)
         {
             lvlSegment segment;
             lvlIntersection intersection;
 
-            //replace the hack above with this one
-            //by this we use the actual headlight position
-            light->Position.AddScaled(vec, 0.f);
-
             segment.Set(light->Position, camPosition, 0, nullptr);
+
+            light->Position.AddScaled(vec, invGlowScale * 0.1f);
 
             if (Collide(segment, &intersection, 0, nullptr, 0x20, 0) || Collide(segment, &intersection, 0, nullptr, 0x40, 0))
             {
@@ -6548,6 +6543,10 @@ void aiVehicleInstanceFeatureHandler::DrawHeadlights()
             }
 
             light->Position.AddScaled(vec, invGlowScale * 0.25f);
+        }
+        else
+        {
+            light->Position.AddScaled(vec, invGlowScale * 0.1f);
         }
 
         light->DrawGlow(camPosition);
@@ -6566,19 +6565,14 @@ void aiVehicleInstanceFeatureHandler::DrawHeadlights()
 
         float invGlowScale = -ltLight::GlowScale;
 
-        //move the headlight position a bit forward (made by default)
-        light->Position.AddScaled(vec, invGlowScale * 0.1f);
-
         if (cfgLightClippingFix.Get() == 2 || cfgLightClippingFix.Get() >= 4)
         {
             lvlSegment segment;
             lvlIntersection intersection;
 
-            //replace the hack above with this one
-            //by this we use the actual headlight position
-            light->Position.AddScaled(vec, 0.f);
-
             segment.Set(light->Position, camPosition, 0, nullptr);
+
+            light->Position.AddScaled(vec, invGlowScale * 0.1f);
 
             if (Collide(segment, &intersection, 0, nullptr, 0x20, 0) || Collide(segment, &intersection, 0, nullptr, 0x40, 0))
             {
@@ -6586,6 +6580,10 @@ void aiVehicleInstanceFeatureHandler::DrawHeadlights()
             }
 
             light->Position.AddScaled(vec, invGlowScale * 0.25f);
+        }
+        else
+        {
+            light->Position.AddScaled(vec, invGlowScale * 0.1f);
         }
 
         light->DrawGlow(camPosition);
