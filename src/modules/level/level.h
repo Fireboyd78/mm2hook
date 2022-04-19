@@ -14,9 +14,9 @@ namespace MM2
     extern class gfxViewport;
 
     // Class definitions
-    enum class RoomFlags : unsigned __int8
+    enum RoomFlags : unsigned __int16
     {
-        Unknown = 0x1,
+        UnhitBanger = 0x1,
         Subterranean = 0x2,
         Water = 0x4,
         Road = 0x8,
@@ -26,13 +26,12 @@ namespace MM2
         Instance = 0x80,
     };
 
-
     struct lvlRoomInfo
     {
         unsigned __int16 Flags;
         unsigned __int16 InstanceFlags;
         lvlInstance* FirstInstance;
-        lvlInstance* LastInstanceMaybe;
+        lvlInstance* StaticInstance;
         Vector4 BoundSphere;
         int Color;
         float MinY;
@@ -43,7 +42,7 @@ namespace MM2
                 .addVariable("Flags", &lvlRoomInfo::Flags, false)
                 .addVariable("InstanceFlags", &lvlRoomInfo::InstanceFlags, false)
                 .addVariable("FirstInstance", &lvlRoomInfo::FirstInstance, false)
-                .addVariable("LastInstance", &lvlRoomInfo::LastInstanceMaybe, false)
+                .addVariable("LastInstance", &lvlRoomInfo::StaticInstance, false)
                 .addVariable("BoundSphere", &lvlRoomInfo::BoundSphere, false)
                 .addVariable("Color", &lvlRoomInfo::Color, false)
                 .addVariable("MinY", &lvlRoomInfo::MinY, false)
@@ -105,10 +104,10 @@ namespace MM2
                                                                     PURE;
         AGE_API virtual int GetVisitList(int* a1, int a2, Vector3 const& a3, Vector3 const& a4, int a5, int a6)
                                                                     { return 0; }
-        AGE_API virtual bool Collide(int a1, struct lvlSegment & a2, struct lvlIntersection & a3)
+        AGE_API virtual bool Collide(int a1, lvlSegment & a2, lvlIntersection & a3)
                                                                     { return false; }
         AGE_API virtual bool GetBoundSphere(Vector4& a1, int a2)    { return false; }
-        AGE_API virtual const class lvlLevelBound* GetBound()       PURE;
+        AGE_API virtual const lvlLevelBound* GetBound()             PURE;
         AGE_API virtual void SetObjectDetail(int a1)                {}
         AGE_API virtual float GetWaterLevel(int a1)                 PURE;
         AGE_API virtual float GetLightingIntensity(Vector3 const& a1)
@@ -118,8 +117,7 @@ namespace MM2
         AGE_API virtual bool LoadInstances(const char* a1, const char* a2)
                                                                     { return hook::Thunk<0x656F0>::Call<bool>(this, a1, a2); }
         AGE_API virtual gfxTexture* GetEnvMap(int a1, Vector3 const& a2, float* a3)
-                                                                    { return nullptr; }
-                                                                    
+                                                                    { return nullptr; }                
 
         /*
             lvlLevel functions

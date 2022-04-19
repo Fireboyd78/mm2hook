@@ -34,6 +34,20 @@ namespace MM2
     extern class phForceSphere;
 
     // Class definitions
+    enum InstFlags : unsigned __int16
+    {
+        INST_FLAG_1 = 0x1,
+        INST_FLAG_2 = 0x2,
+        INST_FLAG_4 = 0x4,
+        INST_FLAG_8 = 0x8,
+        INST_FLAG_10 = 0x10,
+        INST_FLAG_20 = 0x20,
+        INST_FLAG_40 = 0x40,
+        INST_FLAG_80 = 0x80,
+        INST_FLAG_100 = 0x100,
+        INST_FLAG_200 = 0x200,
+    };
+
     class lvlInstance
     {
     private:

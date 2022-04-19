@@ -80,7 +80,7 @@ namespace MM2
                 auto siren = trailer->getSiren();
 
                 if (siren != nullptr)
-                    siren->Active = true;
+                    siren->setActive(true);
             }
 
             hook::Thunk<0x53DBF0>::Call<void>(this);
@@ -94,7 +94,7 @@ namespace MM2
                 auto siren = trailer->getSiren();
 
                 if (siren != nullptr)
-                    siren->Active = false;
+                    siren->setActive(false);
             }
 
             hook::Thunk<0x53DC40>::Call<void>(this);

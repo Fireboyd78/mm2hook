@@ -16,7 +16,7 @@ namespace MM2
 
     struct phIntersection
     {
-        phIntersectionPoint IntersectionPoint;
+        lvlIntersectionPoint IntersectionPoint;
         int PolyIndex;
         int field_28;
         int field_2C;

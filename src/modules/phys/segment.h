@@ -21,7 +21,7 @@ namespace MM2
 
     struct phSegment
     {
-        int unknown0;
+        int Flag;
         Vector3 StartPos;
         Vector3 EndPos;
     };
