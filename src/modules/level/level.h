@@ -14,7 +14,7 @@ namespace MM2
     extern class gfxViewport;
 
     // Class definitions
-    enum class RoomFlags : unsigned __int8
+    enum RoomFlags : unsigned __int16
     {
         UnhitBanger = 0x1,
         Subterranean = 0x2,

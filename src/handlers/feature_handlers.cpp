@@ -2029,7 +2029,7 @@ void BridgeFerryHandler::Draw(int lod) {
     auto shaders = geomEntry->pShaders[bangerInst->GetVariant()];
     auto model = geomEntry->GetLOD(lod);
 
-    if (bangerInst->GetFlags() & 4) {
+    if (bangerInst->GetFlags() & INST_FLAG_4) {
         if (lod < 3)
             lod += 1;
     }
@@ -4504,7 +4504,7 @@ void dgBangerInstanceHandler::DrawGlow()
 
     //prepare glow texture
     dgBangerData* data = inst->GetData();
-    gfxTexture* lastTexture = (gfxTexture*)dgBangerInstance::DefaultGlowTexture;
+    gfxTexture* lastTexture = dgBangerInstance::DefaultGlowTexture;
     bool swappedTexture = false;
 
     if (!strcmp(data->GetName(), "sp_light_red_f") && lastTexture != NULL) {
@@ -4514,7 +4514,7 @@ void dgBangerInstanceHandler::DrawGlow()
 
     //draw glows
     ltLight::DrawGlowBegin();
-    if ((inst->GetFlags() & 1) != 0)
+    if ((inst->GetFlags() & INST_FLAG_1) != 0)
     {
         Matrix34 matrix;
         Matrix34 bangerMatrix = inst->GetMatrix(&matrix);
@@ -4878,7 +4878,7 @@ void vehCarModelFeatureHandler::DrawShadow() {
     auto carMatrix = model->getCarSim()->getWorldMatrix();
     auto roomId = model->GetRoomId();
 
-    if (model->GetFlags() & 0x200)
+    if (model->GetFlags() & INST_FLAG_200)
     {
         //get our geometry id
         int geomSetId = model->GetGeomIndex();
@@ -5108,65 +5108,53 @@ void vehCarModelFeatureHandler::DrawGlow() {
     modStatic* siren1 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 10)->GetHighestLOD();
 
     //draw headlights
-    if (vehCarModel::HeadlightType < 3) {
-        if (vehCarModel::HeadlightType == 0 || vehCarModel::HeadlightType == 2) {
-            //MM2 headlights
-            if (vehCarModel::EnableHeadlightFlashing)
+    if (vehCarModel::HeadlightType == 0 || vehCarModel::HeadlightType == 2) {
+        //MM2 headlights
+        if (vehCarModel::EnableHeadlightFlashing && siren != nullptr && siren->getActive())
+        {
+            DrawHeadlights(true);
+            DrawExtraHeadlights(true);
+        }
+        else if (car->IsPlayer() ? vehCarModel::HeadlightsState : vehCar::sm_DrawHeadlights)
+        {
+            DrawHeadlights(false);
+            DrawExtraHeadlights(false);
+        }
+        if (car->IsPlayer() ? vehCarModel::FoglightsState : MMSTATE->WeatherType == 2)
+        {
+            DrawFoglights();
+        }
+    }
+    if (vehCarModel::HeadlightType == 1 || vehCarModel::HeadlightType == 2) {
+        //MM1 headlights
+        Matrix44::Convert(gfxRenderState::sm_World, model->getCarMatrix());
+        gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
+
+        if (model->getEnabledElectrics(2) || model->getEnabledElectrics(3))
+        {
+            if (hlight != nullptr)
             {
-                if (siren != nullptr && siren->getActive())
+                if (car->IsPlayer() ? vehCarModel::HeadlightsState : vehCar::sm_DrawHeadlights)
                 {
-                    DrawHeadlights(true);
-                    DrawExtraHeadlights(true);
+                    hlight->Draw(shaders);
                 }
-                else if (car->IsPlayer() && vehCarModel::HeadlightsState || !car->IsPlayer() && vehCar::sm_DrawHeadlights)
-                {
-                    DrawHeadlights(false);
-                    DrawExtraHeadlights(false);
-                }
-            }
-            else {
-                if (car->IsPlayer() && vehCarModel::HeadlightsState || !car->IsPlayer() && vehCar::sm_DrawHeadlights)
-                {
-                    DrawHeadlights(false);
-                    DrawExtraHeadlights(false);
-                }
-            }
-            if (car->IsPlayer() && vehCarModel::FoglightsState || !car->IsPlayer() && MMSTATE->WeatherType == 2)
-            {
-                DrawFoglights();
             }
         }
-        if (vehCarModel::HeadlightType == 1 || vehCarModel::HeadlightType == 2) {
-            //MM1 headlights
-            Matrix44::Convert(gfxRenderState::sm_World, model->getCarMatrix());
-            gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
-
-            if (model->getEnabledElectrics(2) || model->getEnabledElectrics(3))
+        if (car->IsPlayer() ? vehCarModel::FoglightsState : MMSTATE->WeatherType == 2)
+        {
+            for (int i = 0; i < 4; i++)
             {
-                if (hlight != nullptr)
-                {
-                    if (car->IsPlayer() && vehCarModel::HeadlightsState || !car->IsPlayer() && vehCar::sm_DrawHeadlights)
-                    {
-                        hlight->Draw(shaders);
-                    }
-                }
-            }
-            if (car->IsPlayer() && vehCarModel::FoglightsState || !car->IsPlayer() && MMSTATE->WeatherType == 2)
-            {
-                for (int i = 0; i < 4; i++)
-                {
-                    //get foglight
-                    modStatic* flight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 103 + i)->GetHighestLOD();
+                //get foglight
+                modStatic* flight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 103 + i)->GetHighestLOD();
 
-                    //get breakable foglight
-                    auto breaklt = model->getGenBreakableMgr()->Get(3 + i);
+                //get breakable foglight
+                auto breaklt = model->getGenBreakableMgr()->Get(3 + i);
 
-                    if (flight != nullptr)
+                if (flight != nullptr)
+                {
+                    if (breaklt == nullptr || breaklt->IsAttached)
                     {
-                        if (breaklt == nullptr || (breaklt != nullptr && breaklt->IsAttached))
-                        {
-                            flight->Draw(shaders);
-                        }
+                        flight->Draw(shaders);
                     }
                 }
             }
@@ -5174,30 +5162,28 @@ void vehCarModelFeatureHandler::DrawGlow() {
     }
 
     //draw sirens
-    if (vehCarModel::SirenType < 3) {
-        if (vehCarModel::SirenType == 0 || vehCarModel::SirenType == 2) {
-            //MM2 siren
-            if (siren != nullptr && siren->getHasLights() && siren->getActive())
-            {
-                DrawSiren(model->getCarMatrix());
-            }
+    if (vehCarModel::SirenType == 0 || vehCarModel::SirenType == 2) {
+        //MM2 siren
+        if (siren != nullptr && siren->getHasLights() && siren->getActive())
+        {
+            DrawSiren(model->getCarMatrix());
         }
-        if (vehCarModel::SirenType == 1 || vehCarModel::SirenType == 2) {
-            //MM1 siren
-            Matrix44::Convert(gfxRenderState::sm_World, model->getCarMatrix());
-            gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
+    }
+    if (vehCarModel::SirenType == 1 || vehCarModel::SirenType == 2) {
+        //MM1 siren
+        Matrix44::Convert(gfxRenderState::sm_World, model->getCarMatrix());
+        gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
-            if (siren != nullptr && siren->getActive()) {
-                bool drawLEDSiren = fmod(datTimeManager::ElapsedTime, 0.1f) > 0.05f;
+        if (siren != nullptr && siren->getActive()) {
+            bool drawLEDSiren = fmod(datTimeManager::ElapsedTime, 0.1f) > 0.05f;
 
-                if (!vehCarModel::EnableLEDSiren || drawLEDSiren) {
-                    int sirenStage = fmod(datTimeManager::ElapsedTime, 2 * vehCarModel::SirenCycle) >= vehCarModel::SirenCycle ? 1 : 0;
-                    if (sirenStage == 0 && siren0 != nullptr) {
-                        siren0->Draw(shaders);
-                    }
-                    else if (sirenStage == 1 && siren1 != nullptr) {
-                        siren1->Draw(shaders);
-                    }
+            if (!vehCarModel::EnableLEDSiren || drawLEDSiren) {
+                int sirenStage = fmod(datTimeManager::ElapsedTime, 2 * vehCarModel::SirenCycle) >= vehCarModel::SirenCycle ? 1 : 0;
+                if (sirenStage == 0 && siren0 != nullptr) {
+                    siren0->Draw(shaders);
+                }
+                else if (sirenStage == 1 && siren1 != nullptr) {
+                    siren1->Draw(shaders);
                 }
             }
         }
@@ -5256,7 +5242,7 @@ void vehCarModelFeatureHandler::DrawHeadlights(bool rotate)
 
             segment.Set(light->Position, camPosition, 0, nullptr);
 
-            if (Collide(segment, &intersection, 0, nullptr, 0x20, 0, light->Position) || Collide(segment, &intersection, 0, nullptr, 0x40, 0, light->Position))
+            if (Collide(segment, &intersection, 0, nullptr, SpecialBound | Warp, 0, light->Position))
             {
                 invGlowScale = 0.f;
             }
@@ -5327,7 +5313,7 @@ void vehCarModelFeatureHandler::DrawExtraHeadlights(bool rotate)
 
             segment.Set(light->Position, camPosition, 0, nullptr);
 
-            if (Collide(segment, &intersection, 0, nullptr, 0x20, 0, light->Position) || Collide(segment, &intersection, 0, nullptr, 0x40, 0, light->Position))
+            if (Collide(segment, &intersection, 0, nullptr, SpecialBound | Warp, 0, light->Position))
             {
                 invGlowScale = 0.f;
             }
@@ -5360,7 +5346,7 @@ void vehCarModelFeatureHandler::DrawFoglights()
     {
         auto breaklt = model->getGenBreakableMgr()->Get(i + 3);
 
-        if (breaklt == nullptr || (breaklt != nullptr && breaklt->IsAttached))
+        if (breaklt == nullptr || breaklt->IsAttached)
         {
             auto light = model->getFoglight(i);
             auto lightPos = model->getFoglightPosition(i);
@@ -5382,7 +5368,7 @@ void vehCarModelFeatureHandler::DrawFoglights()
 
                 segment.Set(light->Position, camPosition, 0, nullptr);
 
-                if (Collide(segment, &intersection, 0, nullptr, 0x20, 0, light->Position) || Collide(segment, &intersection, 0, nullptr, 0x40, 0, light->Position))
+                if (Collide(segment, &intersection, 0, nullptr, SpecialBound | Warp, 0, light->Position))
                 {
                     invGlowScale = 0.f;
                 }
@@ -5427,7 +5413,7 @@ void vehCarModelFeatureHandler::DrawSiren(const Matrix34& carMatrix)
 
             segment.Set(light->Position, camPosition, 0, nullptr);
 
-            if (Collide(segment, &intersection, 0, nullptr, 0x20, 0, light->Position) || Collide(segment, &intersection, 0, nullptr, 0x40, 0, light->Position))
+            if (Collide(segment, &intersection, 0, nullptr, SpecialBound | Warp, 0, light->Position))
             {
                 invGlowScale = 0.f;
             }
@@ -5524,7 +5510,7 @@ bool vehCarModelFeatureHandler::Collide(lvlSegment& segment, lvlIntersection* in
     }
 
     auto roomInfo = level->GetRoomInfo(startRoomId);  // sf warp hack
-    if ((roomInfo->Flags & 0x40) != 0) // Warp
+    if ((roomInfo->Flags & Warp) != 0)
     {
         int roomId;
         lvlRoomInfo* roomInfo2;
@@ -6460,38 +6446,34 @@ void aiVehicleInstanceFeatureHandler::DrawGlow()
     }
 
     //draw headlights
-    if (aiVehicleInstance::AmbientHeadlightStyle < 3)
+    if (aiVehicleInstance::AmbientHeadlightStyle == 0 || aiVehicleInstance::AmbientHeadlightStyle == 2)
     {
-        if (aiVehicleInstance::AmbientHeadlightStyle == 0 || aiVehicleInstance::AmbientHeadlightStyle == 2)
+        //MM2 headlights
+        if (aiMap::Instance->drawHeadlights)
         {
-            //MM2 headlights
-            if (aiMap::Instance->drawHeadlights)
-            {
-                DrawHeadlights();
-            }
+            DrawHeadlights();
         }
+    }
+    if (aiVehicleInstance::AmbientHeadlightStyle == 1 || aiVehicleInstance::AmbientHeadlightStyle == 2)
+    {
+        //MM1 headlights
+        Matrix44::Convert(gfxRenderState::sm_World, carMatrix);
+        gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
-        if (aiVehicleInstance::AmbientHeadlightStyle == 1 || aiVehicleInstance::AmbientHeadlightStyle == 2)
+        if (hlight != nullptr && aiMap::Instance->drawHeadlights)
+            hlight->Draw(shaders);
+
+        if (MMSTATE->WeatherType == 2)
         {
-            //MM1 headlights
-            Matrix44::Convert(gfxRenderState::sm_World, carMatrix);
-            gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
-
-            if (hlight != nullptr && aiMap::Instance->drawHeadlights)
-                hlight->Draw(shaders);
-
-            if (MMSTATE->WeatherType == 2)
+            for (int i = 0; i < 4; i++)
             {
-                for (int i = 0; i < 4; i++)
+                modStatic* flight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 33 + i)->GetHighestLOD();
+                if (flight != nullptr)
                 {
-                    modStatic* flight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 33 + i)->GetHighestLOD();
-                    if (flight != nullptr)
+                    auto breaklt = inst->getBreakableMgr()->Get(i + 1);
+                    if (breaklt == nullptr || breaklt->IsAttached)
                     {
-                        auto breaklt = inst->getBreakableMgr()->Get(i + 1);
-                        if (breaklt == nullptr || (breaklt != nullptr && breaklt->IsAttached))
-                        {
-                            flight->Draw(shaders);
-                        }
+                        flight->Draw(shaders);
                     }
                 }
             }
@@ -6537,7 +6519,7 @@ void aiVehicleInstanceFeatureHandler::DrawHeadlights()
 
             light->Position.AddScaled(vec, invGlowScale * 0.1f);
 
-            if (Collide(segment, &intersection, 0, nullptr, 0x20, 0) || Collide(segment, &intersection, 0, nullptr, 0x40, 0))
+            if (Collide(segment, &intersection, 0, nullptr, SpecialBound | Warp, 0))
             {
                 invGlowScale = 0.f;
             }
@@ -6574,7 +6556,7 @@ void aiVehicleInstanceFeatureHandler::DrawHeadlights()
 
             light->Position.AddScaled(vec, invGlowScale * 0.1f);
 
-            if (Collide(segment, &intersection, 0, nullptr, 0x20, 0) || Collide(segment, &intersection, 0, nullptr, 0x40, 0))
+            if (Collide(segment, &intersection, 0, nullptr, SpecialBound | Warp, 0))
             {
                 invGlowScale = 0.f;
             }
@@ -6653,7 +6635,7 @@ bool aiVehicleInstanceFeatureHandler::Collide(lvlSegment& segment, lvlIntersecti
     }
 
     auto roomInfo = level->GetRoomInfo(startRoomId);  // sf warp hack
-    if ((roomInfo->Flags & 0x40) != 0) // Warp
+    if ((roomInfo->Flags & Warp) != 0)
     {
         int roomId;
         lvlRoomInfo* roomInfo2;
