@@ -591,6 +591,8 @@ namespace MM2
         int unk_48;
     public:
         static hook::Type<float> GlowScale;
+        static hook::Type<float> GlowIntensity;
+        static hook::Type<gfxTexture*> GlowTexture;
 
         ANGEL_ALLOCATOR 
 

@@ -5201,6 +5201,25 @@ void vehCarModelFeatureHandler::DrawHeadlights(bool rotate)
     if (bothLightsBroken)
         return;
 
+    bool glowLoaded = false;
+    gfxTexture* headlightTexture;
+
+    //first time texture load
+    if (!glowLoaded) {
+        headlightTexture = gfxGetTexture("lt_glow_headlight", true);
+        glowLoaded = true;
+    }
+
+    //prepare glow texture
+    gfxTexture* lastTexture = ltLight::GlowTexture;
+    bool swappedTexture = false;
+
+    //swap texture if it exists
+    if (lastTexture != NULL && headlightTexture != NULL) {
+        swappedTexture = true;
+        ltLight::GlowTexture = headlightTexture;
+    }
+
     auto carMatrix = model->getCarMatrix();
 
     float rotationAmount = vehCarModel::HeadlightFlashingSpeed;
@@ -5253,6 +5272,11 @@ void vehCarModelFeatureHandler::DrawHeadlights(bool rotate)
         light->DrawGlow(camPosition);
     }
     ltLight::DrawGlowEnd();
+
+    //reset glow texture
+    if (swappedTexture) {
+        ltLight::GlowTexture = lastTexture;
+    }
 }
 
 void vehCarModelFeatureHandler::DrawExtraHeadlights(bool rotate)
@@ -5271,6 +5295,25 @@ void vehCarModelFeatureHandler::DrawExtraHeadlights(bool rotate)
     bool bothLightsBroken = !(model->getEnabledElectrics(2) || model->getEnabledElectrics(3));
     if (bothLightsBroken)
         return;
+
+    bool glowLoaded = false;
+    gfxTexture* headlightTexture;
+
+    //first time texture load
+    if (!glowLoaded) {
+        headlightTexture = gfxGetTexture("lt_glow_headlight", true);
+        glowLoaded = true;
+    }
+
+    //prepare glow texture
+    gfxTexture* lastTexture = ltLight::GlowTexture;
+    bool swappedTexture = false;
+
+    //swap texture if it exists
+    if (lastTexture != NULL && headlightTexture != NULL) {
+        swappedTexture = true;
+        ltLight::GlowTexture = headlightTexture;
+    }
 
     auto carMatrix = model->getCarMatrix();
 
@@ -5324,6 +5367,11 @@ void vehCarModelFeatureHandler::DrawExtraHeadlights(bool rotate)
         light->DrawGlow(camPosition);
     }
     ltLight::DrawGlowEnd();
+
+    //reset glow texture
+    if (swappedTexture) {
+        ltLight::GlowTexture = lastTexture;
+    }
 }
 
 void vehCarModelFeatureHandler::DrawFoglights()
@@ -5336,6 +5384,25 @@ void vehCarModelFeatureHandler::DrawFoglights()
     auto foglight0 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 75);
     if (foglight0->GetHighLOD() == nullptr)
         return;
+
+    bool glowLoaded = false;
+    gfxTexture* headlightTexture;
+
+    //first time texture load
+    if (!glowLoaded) {
+        headlightTexture = gfxGetTexture("lt_glow_headlight", true);
+        glowLoaded = true;
+    }
+
+    //prepare glow texture
+    gfxTexture* lastTexture = ltLight::GlowTexture;
+    bool swappedTexture = false;
+
+    //swap texture if it exists
+    if (lastTexture != NULL && headlightTexture != NULL) {
+        swappedTexture = true;
+        ltLight::GlowTexture = headlightTexture;
+    }
 
     auto carMatrix = model->getCarMatrix();
 
@@ -5380,6 +5447,11 @@ void vehCarModelFeatureHandler::DrawFoglights()
         }
     }
     ltLight::DrawGlowEnd();
+
+    //reset glow texture
+    if (swappedTexture) {
+        ltLight::GlowTexture = lastTexture;
+    }
 }
 
 void vehCarModelFeatureHandler::DrawSiren(const Matrix34& carMatrix)
@@ -5389,6 +5461,25 @@ void vehCarModelFeatureHandler::DrawSiren(const Matrix34& carMatrix)
 
     if (siren->getLight(0) == nullptr)
         return;
+
+    bool glowLoaded = false;
+    gfxTexture* sirenTexture;
+
+    //first time texture load
+    if (!glowLoaded) {
+        sirenTexture = gfxGetTexture("lt_glow_siren", true);
+        glowLoaded = true;
+    }
+
+    //prepare glow texture
+    gfxTexture* lastTexture = ltLight::GlowTexture;
+    bool swappedTexture = false;
+
+    //swap texture if it exists
+    if (lastTexture != NULL && sirenTexture != NULL) {
+        swappedTexture = true;
+        ltLight::GlowTexture = sirenTexture;
+    }
 
     Vector3 camPosition = *(Vector3*)&gfxRenderState::sm_Camera->m30;
 
@@ -5436,6 +5527,11 @@ void vehCarModelFeatureHandler::DrawSiren(const Matrix34& carMatrix)
         siren->getLensFlare()->Draw(lightPos, color, intensity);
     }
     siren->getLensFlare()->DrawEnd();
+
+    //reset glow texture
+    if (swappedTexture) {
+        ltLight::GlowTexture = lastTexture;
+    }
 }
 
 bool vehCarModelFeatureHandler::Collide(lvlSegment& segment, lvlIntersection* intersection, int roomId, lvlInstance* ignoreInstance, ushort instanceFlags, int collideFlags, const Vector3& lightPos)
@@ -6491,6 +6587,25 @@ void aiVehicleInstanceFeatureHandler::DrawHeadlights()
 
     Vector3 camPosition = *(Vector3*)&gfxRenderState::sm_Camera->m30;
 
+    bool glowLoaded = false;
+    gfxTexture* headlightTexture;
+
+    //first time texture load
+    if (!glowLoaded) {
+        headlightTexture = gfxGetTexture("lt_glow_ambient", true);
+        glowLoaded = true;
+    }
+
+    //prepare glow texture
+    gfxTexture* lastTexture = ltLight::GlowTexture;
+    bool swappedTexture = false;
+
+    //swap texture if it exists
+    if (lastTexture != NULL && headlightTexture != NULL) {
+        swappedTexture = true;
+        ltLight::GlowTexture = headlightTexture;
+    }
+
     ltLight::DrawGlowBegin();
 
     auto light = aiVehicleManager::Instance->getSharedLight();
@@ -6572,6 +6687,11 @@ void aiVehicleInstanceFeatureHandler::DrawHeadlights()
     }
 
     ltLight::DrawGlowEnd();
+
+    //reset glow texture
+    if (swappedTexture) {
+        ltLight::GlowTexture = lastTexture;
+    }
 }
 
 bool aiVehicleInstanceFeatureHandler::Collide(lvlSegment& segment, lvlIntersection* intersection, int roomId, lvlInstance* ignoreInstance, ushort instanceFlags, int collideFlags)
