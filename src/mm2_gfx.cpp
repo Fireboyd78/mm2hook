@@ -34,3 +34,5 @@ declfield(gfxRenderState::m_TouchedMasks)       = 0x5CD604;
     ltLight
 */
 declfield(ltLight::GlowScale)                   = 0x5DDE9C;
+declfield(ltLight::GlowIntensity)               = 0x5DDEA0;
+declfield(ltLight::GlowTexture)                 = 0x6B4B9C;

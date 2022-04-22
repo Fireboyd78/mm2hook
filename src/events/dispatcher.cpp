@@ -17,7 +17,6 @@ void GameEventDispatcher::onGameInit()
 {
     if (MM2Lua::IsEnabled())
         MM2Lua::OnGameInit();
-    dgBangerInstanceHandler::Reset();
 }
 
 void GameEventDispatcher::onChatMessage(char * message)

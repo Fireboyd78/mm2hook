@@ -531,6 +531,8 @@ namespace MM2 {
     declhook(0x4BBE30, _Func<float>, frand);
     declhook(0x4BBE50, _Func<float>, frand2);
 
+    declhook(0x4B31D0, _Func<void>, gfxFreeTexture);
+
     declhook(0x5CED24, _Type<void(*)(int, LPCSTR, va_list)>, Printer);
 
     declhook(0x5E0CC4, _Type<void(*)(void)>, __VtResumeSampling);

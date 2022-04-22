@@ -256,6 +256,13 @@ public:
     static void Install();
 };
 
+class ltLightHandler {
+public:
+    MM2::ltLight* Constructor();
+    static void ShutdownLights();
+    static void Install();
+};
+
 class mmSingleRaceHandler {
 public:
     void QueueCopVoice(float a1);
@@ -295,7 +302,6 @@ public:
     void DrawShadow();
     void DrawGlow();
     bool BeginGeom(const char* a1, const char* a2, int a3);
-    static void Reset();
     static void Install();
 };
 
