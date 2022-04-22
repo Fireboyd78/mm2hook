@@ -48,6 +48,7 @@ static init_handler g_feature_handlers[] = {
 
     CreateHandler<dgBangerInstanceHandler>("dgBangerInstance"),
     CreateHandler<ltLensFlareHandler>("ltLensFlare"),
+    CreateHandler<ltLightHandler>("ltLight"),
 
     CreateHandler<vehCarHandler>("vehCar"),
     CreateHandler<vehCarAudioContainerHandler>("vehCarAudioContainer"),
@@ -4055,6 +4056,92 @@ void ltLensFlareHandler::Install() {
 }
 
 /*
+    ltLightHandler
+*/
+
+gfxTexture* RedGlowTexture;
+gfxTexture* HeadlightTexture;
+gfxTexture* SirenTexture;
+gfxTexture* AmbientTexture;
+
+ltLight* ltLightHandler::Constructor()
+{
+    auto light = reinterpret_cast<ltLight*>(this);
+    light->Default();
+
+    if (!ltLight::GlowTexture)
+        ltLight::GlowTexture = gfxGetTexture("lt_glow", true);
+
+    light->HighlightTexture = gfxGetTexture("lt_highlight", true);
+
+    if (!RedGlowTexture)
+        RedGlowTexture = gfxGetTexture("s_red_glow", true);
+
+    if (!HeadlightTexture)
+        HeadlightTexture = gfxGetTexture("lt_glow_headlight", true);
+
+    if (!SirenTexture)
+        SirenTexture = gfxGetTexture("lt_glow_siren", true);
+
+    if (!AmbientTexture)
+        AmbientTexture = gfxGetTexture("lt_glow_ambient", true);
+
+    return light;
+}
+
+void ltLightHandler::ShutdownLights()
+{
+    if (ltLight::GlowTexture)
+    {
+        gfxFreeTexture((gfxTexture*)ltLight::GlowTexture);
+        ltLight::GlowTexture = NULL;
+    }
+
+    if (RedGlowTexture)
+    {
+        gfxFreeTexture(RedGlowTexture);
+        RedGlowTexture = NULL;
+    }
+
+    if (HeadlightTexture)
+    {
+        gfxFreeTexture(HeadlightTexture);
+        HeadlightTexture = NULL;
+    }
+
+    if (SirenTexture)
+    {
+        gfxFreeTexture(SirenTexture);
+        SirenTexture = NULL;
+    }
+
+    if (AmbientTexture)
+    {
+        gfxFreeTexture(AmbientTexture);
+        AmbientTexture = NULL;
+    }
+}
+
+void ltLightHandler::Install()
+{
+    InstallCallback("ltLight::ltLight", "Loads custom lt glow textures.",
+        &Constructor, {
+            cb::push(0x4CD56C),
+            cb::push(0x4D66C4),
+            cb::call(0x553D16),
+        }
+    );
+
+    InstallCallback("ltLight::ShutdownLights", "Frees custom lt glow textures.",
+        &ShutdownLights, {
+            cb::call(0x4CCFB6),
+            cb::call(0x4D6670),
+            cb::call(0x553C7D),
+        }
+    );
+}
+
+/*
     mmSingleRaceHandler
 */
 
@@ -4375,13 +4462,6 @@ void mmSingleRoamHandler::Install() {
 /*
     dgBangerInstanceHandler
 */
-gfxTexture* redGlowTexture;
-bool glowLoaded = false;
-
-void dgBangerInstanceHandler::Reset() {
-    redGlowTexture = NULL;
-    glowLoaded = false;
-}
 
 static ConfigValue<int> cfgMM1StyleShadows("MM1StyleShadows", 0);
 static ConfigValue<bool> cfgShadowTransparency("ShadowTransparency", true);
@@ -4496,12 +4576,6 @@ void dgBangerInstanceHandler::DrawGlow()
 {
     auto inst = reinterpret_cast<dgBangerInstance*>(this);
 
-    //first time texture load
-    if (!glowLoaded) {
-        redGlowTexture = gfxGetTexture("s_red_glow", true);
-        glowLoaded = true;
-    }
-
     //prepare glow texture
     dgBangerData* data = inst->GetData();
     gfxTexture* lastTexture = dgBangerInstance::DefaultGlowTexture;
@@ -4509,7 +4583,7 @@ void dgBangerInstanceHandler::DrawGlow()
 
     if (!strcmp(data->GetName(), "sp_light_red_f") && lastTexture != NULL) {
         swappedTexture = true;
-        dgBangerInstance::DefaultGlowTexture = redGlowTexture;
+        dgBangerInstance::DefaultGlowTexture = RedGlowTexture;
     }
 
     //draw glows
@@ -5201,23 +5275,14 @@ void vehCarModelFeatureHandler::DrawHeadlights(bool rotate)
     if (bothLightsBroken)
         return;
 
-    bool glowLoaded = false;
-    gfxTexture* headlightTexture;
-
-    //first time texture load
-    if (!glowLoaded) {
-        headlightTexture = gfxGetTexture("lt_glow_headlight", true);
-        glowLoaded = true;
-    }
-
     //prepare glow texture
     gfxTexture* lastTexture = ltLight::GlowTexture;
     bool swappedTexture = false;
 
     //swap texture if it exists
-    if (lastTexture != NULL && headlightTexture != NULL) {
+    if (lastTexture != NULL && HeadlightTexture != NULL) {
         swappedTexture = true;
-        ltLight::GlowTexture = headlightTexture;
+        ltLight::GlowTexture = HeadlightTexture;
     }
 
     auto carMatrix = model->getCarMatrix();
@@ -5296,23 +5361,14 @@ void vehCarModelFeatureHandler::DrawExtraHeadlights(bool rotate)
     if (bothLightsBroken)
         return;
 
-    bool glowLoaded = false;
-    gfxTexture* headlightTexture;
-
-    //first time texture load
-    if (!glowLoaded) {
-        headlightTexture = gfxGetTexture("lt_glow_headlight", true);
-        glowLoaded = true;
-    }
-
     //prepare glow texture
     gfxTexture* lastTexture = ltLight::GlowTexture;
     bool swappedTexture = false;
 
     //swap texture if it exists
-    if (lastTexture != NULL && headlightTexture != NULL) {
+    if (lastTexture != NULL && HeadlightTexture != NULL) {
         swappedTexture = true;
-        ltLight::GlowTexture = headlightTexture;
+        ltLight::GlowTexture = HeadlightTexture;
     }
 
     auto carMatrix = model->getCarMatrix();
@@ -5385,23 +5441,14 @@ void vehCarModelFeatureHandler::DrawFoglights()
     if (foglight0->GetHighLOD() == nullptr)
         return;
 
-    bool glowLoaded = false;
-    gfxTexture* headlightTexture;
-
-    //first time texture load
-    if (!glowLoaded) {
-        headlightTexture = gfxGetTexture("lt_glow_headlight", true);
-        glowLoaded = true;
-    }
-
     //prepare glow texture
     gfxTexture* lastTexture = ltLight::GlowTexture;
     bool swappedTexture = false;
 
     //swap texture if it exists
-    if (lastTexture != NULL && headlightTexture != NULL) {
+    if (lastTexture != NULL && HeadlightTexture != NULL) {
         swappedTexture = true;
-        ltLight::GlowTexture = headlightTexture;
+        ltLight::GlowTexture = HeadlightTexture;
     }
 
     auto carMatrix = model->getCarMatrix();
@@ -5462,23 +5509,14 @@ void vehCarModelFeatureHandler::DrawSiren(const Matrix34& carMatrix)
     if (siren->getLight(0) == nullptr)
         return;
 
-    bool glowLoaded = false;
-    gfxTexture* sirenTexture;
-
-    //first time texture load
-    if (!glowLoaded) {
-        sirenTexture = gfxGetTexture("lt_glow_siren", true);
-        glowLoaded = true;
-    }
-
     //prepare glow texture
     gfxTexture* lastTexture = ltLight::GlowTexture;
     bool swappedTexture = false;
 
     //swap texture if it exists
-    if (lastTexture != NULL && sirenTexture != NULL) {
+    if (lastTexture != NULL && SirenTexture != NULL) {
         swappedTexture = true;
-        ltLight::GlowTexture = sirenTexture;
+        ltLight::GlowTexture = SirenTexture;
     }
 
     Vector3 camPosition = *(Vector3*)&gfxRenderState::sm_Camera->m30;
@@ -6587,23 +6625,14 @@ void aiVehicleInstanceFeatureHandler::DrawHeadlights()
 
     Vector3 camPosition = *(Vector3*)&gfxRenderState::sm_Camera->m30;
 
-    bool glowLoaded = false;
-    gfxTexture* headlightTexture;
-
-    //first time texture load
-    if (!glowLoaded) {
-        headlightTexture = gfxGetTexture("lt_glow_ambient", true);
-        glowLoaded = true;
-    }
-
     //prepare glow texture
     gfxTexture* lastTexture = ltLight::GlowTexture;
     bool swappedTexture = false;
 
     //swap texture if it exists
-    if (lastTexture != NULL && headlightTexture != NULL) {
+    if (lastTexture != NULL && AmbientTexture != NULL) {
         swappedTexture = true;
-        ltLight::GlowTexture = headlightTexture;
+        ltLight::GlowTexture = AmbientTexture;
     }
 
     ltLight::DrawGlowBegin();
