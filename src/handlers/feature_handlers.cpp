@@ -3879,6 +3879,19 @@ void mmPlayerHandler::Update() {
     if (bustedTarget != 0) {
         if (bustedTarget >= 2) {
             if (audio->IsPolice(basename) && flagsId == 8) {
+                auto AIMAP = &aiMap::Instance;
+
+                for (int i = 0; i < AIMAP->numOpponents; i++)
+                {
+                    short flags = AIMAP->Opponent(i)->getCar()->getModel()->GetFlags();
+
+                    if ((flags >> 0xF) & 1)
+                    {
+                        siren->setActive(true);
+                        audio->StartSiren();
+                    }
+                }
+
                 if (siren != nullptr && siren->getActive())
                     BustOpp();
             }
