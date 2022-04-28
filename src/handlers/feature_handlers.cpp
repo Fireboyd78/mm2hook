@@ -3565,6 +3565,7 @@ bool playerInPursuit = false;
 bool playerInCooldown = false;
 bool enableEscapeTimer = false;
 bool invertEscapeTimer = false;
+bool collide = false;
 float cooldownTimer = 0.f;
 float cooldownTimeout = 20.f;
 float escapeTimer = 0.f;
@@ -3646,7 +3647,7 @@ void mmPlayerHandler::BustPlayer() {
 
         if (bustedTimer <= bustedTimeout) {
             if (*getPtr<WORD>(police2, 0x977A) != 0 && *getPtr<WORD>(police2, 0x977A) != 12 && *getPtr<vehCar*>(police2, 0x9774) == player->getCar()) {
-                if (playerPos.Dist(police2Pos) <= 15.f && carsim->getSpeedMPH() <= bustedMaxSpeed) {
+                if (playerPos.Dist(police2Pos) <= 15.f && carsim->getSpeedMPH() <= bustedMaxSpeed && !collide) {
                     enableBustedTimer = true;
                     invertBustedTimer = false;
                 }
@@ -3658,7 +3659,7 @@ void mmPlayerHandler::BustPlayer() {
                 }
             }
             else if (*getPtr<WORD>(police, 0x977A) != 0 && *getPtr<WORD>(police, 0x977A) != 12 && *getPtr<vehCar*>(police, 0x9774) == player->getCar()) {
-                if (playerPos.Dist(policePos) <= 15.f && carsim->getSpeedMPH() <= bustedMaxSpeed) {
+                if (playerPos.Dist(policePos) <= 15.f && carsim->getSpeedMPH() <= bustedMaxSpeed && !collide) {
                     enableBustedTimer = true;
                     invertBustedTimer = false;
                 }
@@ -3693,6 +3694,7 @@ void mmPlayerHandler::BustPlayer() {
                 AIMAP->policeForce->UnRegisterCop(*getPtr<vehCar*>(police, 0x14), *getPtr<vehCar*>(police, 0x9774));
                 *getPtr<WORD>(police, 0x977A) = 12;
                 *getPtr<WORD>(police, 0x280) = 3;
+                vehPoliceCarAudio::iNumCopsPursuingPlayer = 0;
                 enableBustedTimer = false;
                 enableResetTimer = true;
                 playerInPursuit = false;
@@ -3798,12 +3800,12 @@ void mmPlayerHandler::Cooldown() {
 
         if (*getPtr<WORD>(police2, 0x977A) != 0 && *getPtr<WORD>(police2, 0x977A) != 12 && *getPtr<vehCar*>(police2, 0x9774) == player->getCar())
         {
-            if (*getPtr<float>(police2, 0x9794) > *getPtr<float>(AIMAP->raceData, 0x98))
+            if (*getPtr<float>(police2, 0x9794) > *getPtr<float>(AIMAP->raceData, 0x98) || collide)
             {
                 enableEscapeTimer = true;
                 invertEscapeTimer = false;
             }
-            else if (*getPtr<float>(police2, 0x9794) <= (*getPtr<float>(AIMAP->raceData, 0x98) * 0.5f)) {
+            else if (*getPtr<float>(police2, 0x9794) <= (*getPtr<float>(AIMAP->raceData, 0x98) * 0.5f) && !collide) {
                 enableEscapeTimer = false;
                 invertEscapeTimer = true;
                 if (escapeTimer < 0.f)
@@ -3814,12 +3816,12 @@ void mmPlayerHandler::Cooldown() {
         }
         else if (*getPtr<WORD>(police, 0x977A) != 0 && *getPtr<WORD>(police, 0x977A) != 12 && *getPtr<vehCar*>(police, 0x9774) == player->getCar())
         {
-            if (*getPtr<float>(police, 0x9794) > *getPtr<float>(AIMAP->raceData, 0x98))
+            if (*getPtr<float>(police, 0x9794) > *getPtr<float>(AIMAP->raceData, 0x98) || collide)
             {
                 enableEscapeTimer = true;
                 invertEscapeTimer = false;
             }
-            else if (*getPtr<float>(police, 0x9794) <= (*getPtr<float>(AIMAP->raceData, 0x98) * 0.5f)) {
+            else if (*getPtr<float>(police, 0x9794) <= (*getPtr<float>(AIMAP->raceData, 0x98) * 0.5f) && !collide) {
                 enableEscapeTimer = false;
                 invertEscapeTimer = true;
                 if (escapeTimer < 0.f)
@@ -3837,6 +3839,7 @@ void mmPlayerHandler::Cooldown() {
                 AIMAP->policeForce->UnRegisterCop(police->getVehiclePhysics()->getCar(), *getPtr<vehCar*>(police, 0x9774));
                 *getPtr<WORD>(police, 0x977A) = 0;
                 *getPtr<WORD>(police, 0x280) = 3;
+                vehPoliceCarAudio::iNumCopsPursuingPlayer = 0;
             }
             playerInCooldown = false;
             playerInPursuit = false;
@@ -7938,6 +7941,21 @@ void aiPoliceOfficerFeatureHandler::Update() {
                     return;
                 }
             }
+
+            lvlSegment segment;
+            lvlIntersection intersection;
+
+            Vector3 perpPos = perpCar->getModel()->GetPosition();
+            Vector3 policePos = police->getCar()->getModel()->GetPosition();
+
+            policePos.Y += 1.f;
+
+            segment.Set(policePos, perpPos, 0, nullptr);
+
+            collide = dgPhysManager::Instance->Collide(segment, &intersection, 0, nullptr, SpecialBound, 0);
+
+            if (collide)
+                police->ApprehendPerpetrator();
         }
         else {
             DetectPerpetrator();
