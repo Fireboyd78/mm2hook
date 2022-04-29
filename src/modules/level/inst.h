@@ -40,6 +40,7 @@ namespace MM2
         INST_FLAG_2 = 0x2,
         INST_FLAG_4 = 0x4,
         INST_FLAG_8 = 0x8,
+        INST_FLAG_F = 0xF,
         INST_FLAG_10 = 0x10,
         INST_FLAG_20 = 0x20,
         INST_FLAG_40 = 0x40,

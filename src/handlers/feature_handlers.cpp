@@ -3565,7 +3565,7 @@ bool playerInPursuit = false;
 bool playerInCooldown = false;
 bool enableEscapeTimer = false;
 bool invertEscapeTimer = false;
-bool collide = false;
+bool BoundDetected = false;
 float cooldownTimer = 0.f;
 float cooldownTimeout = 20.f;
 float escapeTimer = 0.f;
@@ -3647,7 +3647,7 @@ void mmPlayerHandler::BustPlayer() {
 
         if (bustedTimer <= bustedTimeout) {
             if (*getPtr<WORD>(police2, 0x977A) != 0 && *getPtr<WORD>(police2, 0x977A) != 12 && *getPtr<vehCar*>(police2, 0x9774) == player->getCar()) {
-                if (playerPos.Dist(police2Pos) <= 15.f && carsim->getSpeedMPH() <= bustedMaxSpeed && !collide) {
+                if (playerPos.Dist(police2Pos) <= 15.f && carsim->getSpeedMPH() <= bustedMaxSpeed && !BoundDetected) {
                     enableBustedTimer = true;
                     invertBustedTimer = false;
                 }
@@ -3659,7 +3659,7 @@ void mmPlayerHandler::BustPlayer() {
                 }
             }
             else if (*getPtr<WORD>(police, 0x977A) != 0 && *getPtr<WORD>(police, 0x977A) != 12 && *getPtr<vehCar*>(police, 0x9774) == player->getCar()) {
-                if (playerPos.Dist(policePos) <= 15.f && carsim->getSpeedMPH() <= bustedMaxSpeed && !collide) {
+                if (playerPos.Dist(policePos) <= 15.f && carsim->getSpeedMPH() <= bustedMaxSpeed && !BoundDetected) {
                     enableBustedTimer = true;
                     invertBustedTimer = false;
                 }
@@ -3800,12 +3800,12 @@ void mmPlayerHandler::Cooldown() {
 
         if (*getPtr<WORD>(police2, 0x977A) != 0 && *getPtr<WORD>(police2, 0x977A) != 12 && *getPtr<vehCar*>(police2, 0x9774) == player->getCar())
         {
-            if (*getPtr<float>(police2, 0x9794) > *getPtr<float>(AIMAP->raceData, 0x98) || collide)
+            if (*getPtr<float>(police2, 0x9794) > *getPtr<float>(AIMAP->raceData, 0x98) || BoundDetected)
             {
                 enableEscapeTimer = true;
                 invertEscapeTimer = false;
             }
-            else if (*getPtr<float>(police2, 0x9794) <= (*getPtr<float>(AIMAP->raceData, 0x98) * 0.5f) && !collide) {
+            else if (*getPtr<float>(police2, 0x9794) <= (*getPtr<float>(AIMAP->raceData, 0x98) * 0.5f) && !BoundDetected) {
                 enableEscapeTimer = false;
                 invertEscapeTimer = true;
                 if (escapeTimer < 0.f)
@@ -3816,12 +3816,12 @@ void mmPlayerHandler::Cooldown() {
         }
         else if (*getPtr<WORD>(police, 0x977A) != 0 && *getPtr<WORD>(police, 0x977A) != 12 && *getPtr<vehCar*>(police, 0x9774) == player->getCar())
         {
-            if (*getPtr<float>(police, 0x9794) > *getPtr<float>(AIMAP->raceData, 0x98) || collide)
+            if (*getPtr<float>(police, 0x9794) > *getPtr<float>(AIMAP->raceData, 0x98) || BoundDetected)
             {
                 enableEscapeTimer = true;
                 invertEscapeTimer = false;
             }
-            else if (*getPtr<float>(police, 0x9794) <= (*getPtr<float>(AIMAP->raceData, 0x98) * 0.5f) && !collide) {
+            else if (*getPtr<float>(police, 0x9794) <= (*getPtr<float>(AIMAP->raceData, 0x98) * 0.5f) && !BoundDetected) {
                 enableEscapeTimer = false;
                 invertEscapeTimer = true;
                 if (escapeTimer < 0.f)
@@ -3888,7 +3888,7 @@ void mmPlayerHandler::Update() {
                 {
                     short flags = AIMAP->Opponent(i)->getCar()->getModel()->GetFlags();
 
-                    if ((flags >> 0xF) & 1)
+                    if ((flags >> INST_FLAG_F) & 1) // if opponent hit me
                     {
                         siren->setActive(true);
                         audio->StartSiren();
@@ -7952,9 +7952,9 @@ void aiPoliceOfficerFeatureHandler::Update() {
 
             segment.Set(policePos, perpPos, 0, nullptr);
 
-            collide = dgPhysManager::Instance->Collide(segment, &intersection, 0, nullptr, SpecialBound, 0);
+            BoundDetected = dgPhysManager::Instance->Collide(segment, &intersection, 0, nullptr, SpecialBound, 0);
 
-            if (collide)
+            if (BoundDetected)
                 police->ApprehendPerpetrator();
         }
         else {
