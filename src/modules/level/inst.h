@@ -40,13 +40,18 @@ namespace MM2
         INST_FLAG_2 = 0x2,
         INST_FLAG_4 = 0x4,
         INST_FLAG_8 = 0x8,
-        INST_FLAG_F = 0xF,
         INST_FLAG_10 = 0x10,
         INST_FLAG_20 = 0x20,
         INST_FLAG_40 = 0x40,
         INST_FLAG_80 = 0x80,
         INST_FLAG_100 = 0x100,
         INST_FLAG_200 = 0x200,
+        INST_FLAG_400 = 0x400,
+        INST_FLAG_800 = 0x800,
+        INST_FLAG_1000 = 0x1000,
+        INST_FLAG_2000 = 0x2000,
+        INST_FLAG_4000 = 0x4000,
+        INST_FLAG_8000 = 0x8000,
     };
 
     class lvlInstance

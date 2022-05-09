@@ -3555,6 +3555,9 @@ float bustedTimeout = 4.f;
 float bustedTimer = 0.f;
 float oppBustedTimer = 0.f;
 float resetTimer = 0.f;
+float cooldownTimer = 0.f;
+float cooldownTimeout = 20.f;
+float escapeTimer = 0.f;
 bool enableBustedTimer = false;
 bool invertBustedTimer = false;
 bool enableOppBustedTimer = false;
@@ -3565,10 +3568,6 @@ bool playerInPursuit = false;
 bool playerInCooldown = false;
 bool enableEscapeTimer = false;
 bool invertEscapeTimer = false;
-bool BoundDetected = false;
-float cooldownTimer = 0.f;
-float cooldownTimeout = 20.f;
-float escapeTimer = 0.f;
 
 int mmPlayerHandler::GetClosestCop() {
     auto player = reinterpret_cast<mmPlayer*>(this);
@@ -3646,8 +3645,18 @@ void mmPlayerHandler::BustPlayer() {
             continue;
 
         if (bustedTimer <= bustedTimeout) {
-            if (*getPtr<WORD>(police2, 0x977A) != 0 && *getPtr<WORD>(police2, 0x977A) != 12 && *getPtr<vehCar*>(police2, 0x9774) == player->getCar()) {
-                if (playerPos.Dist(police2Pos) <= 15.f && carsim->getSpeedMPH() <= bustedMaxSpeed && !BoundDetected) {
+            if (*getPtr<WORD>(police2, 0x977A) != 0 && *getPtr<WORD>(police2, 0x977A) != 12 && *getPtr<vehCar*>(police2, 0x9774) == player->getCar())
+            {
+                lvlSegment segment;
+                lvlIntersection intersection;
+
+                police2Pos.Y += 1.f;
+
+                segment.Set(playerPos, police2Pos, 0, nullptr);
+
+                bool PlayerNotInRange = dgPhysManager::Instance->Collide(segment, &intersection, 0, nullptr, SpecialBound, 0);
+
+                if (playerPos.Dist(police2Pos) <= 15.f && carsim->getSpeedMPH() <= bustedMaxSpeed && !PlayerNotInRange) {
                     enableBustedTimer = true;
                     invertBustedTimer = false;
                 }
@@ -3658,8 +3667,18 @@ void mmPlayerHandler::BustPlayer() {
                         bustedTimer = 0.f;
                 }
             }
-            else if (*getPtr<WORD>(police, 0x977A) != 0 && *getPtr<WORD>(police, 0x977A) != 12 && *getPtr<vehCar*>(police, 0x9774) == player->getCar()) {
-                if (playerPos.Dist(policePos) <= 15.f && carsim->getSpeedMPH() <= bustedMaxSpeed && !BoundDetected) {
+            else if (*getPtr<WORD>(police, 0x977A) != 0 && *getPtr<WORD>(police, 0x977A) != 12 && *getPtr<vehCar*>(police, 0x9774) == player->getCar())
+            {
+                lvlSegment segment;
+                lvlIntersection intersection;
+
+                policePos.Y += 1.f;
+
+                segment.Set(playerPos, policePos, 0, nullptr);
+
+                bool PlayerNotInRange = dgPhysManager::Instance->Collide(segment, &intersection, 0, nullptr, SpecialBound, 0);
+
+                if (playerPos.Dist(policePos) <= 15.f && carsim->getSpeedMPH() <= bustedMaxSpeed && !PlayerNotInRange) {
                     enableBustedTimer = true;
                     invertBustedTimer = false;
                 }
@@ -3773,6 +3792,7 @@ void mmPlayerHandler::BustOpp() {
 
 void mmPlayerHandler::Cooldown() {
     auto player = reinterpret_cast<mmPlayer*>(this);
+    auto playerPos = player->getCar()->getModel()->GetPosition();
     auto AIMAP = &aiMap::Instance;
 
     if (enableEscapeTimer)
@@ -3800,12 +3820,26 @@ void mmPlayerHandler::Cooldown() {
 
         if (*getPtr<WORD>(police2, 0x977A) != 0 && *getPtr<WORD>(police2, 0x977A) != 12 && *getPtr<vehCar*>(police2, 0x9774) == player->getCar())
         {
-            if (*getPtr<float>(police2, 0x9794) > *getPtr<float>(AIMAP->raceData, 0x98) || BoundDetected)
+            lvlSegment segment;
+            lvlIntersection intersection;
+
+            Vector3 police2Pos = police2->getCar()->getModel()->GetPosition();
+
+            police2Pos.Y += 1.f;
+
+            segment.Set(playerPos, police2Pos, 0, nullptr);
+
+            bool PlayerNotInRange = dgPhysManager::Instance->Collide(segment, &intersection, 0, nullptr, SpecialBound, 0);
+
+            if (PlayerNotInRange)
+                police2->ApprehendPerpetrator();
+
+            if (*getPtr<float>(police2, 0x9794) > *getPtr<float>(AIMAP->raceData, 0x98) || PlayerNotInRange)
             {
                 enableEscapeTimer = true;
                 invertEscapeTimer = false;
             }
-            else if (*getPtr<float>(police2, 0x9794) <= (*getPtr<float>(AIMAP->raceData, 0x98) * 0.5f) && !BoundDetected) {
+            else {
                 enableEscapeTimer = false;
                 invertEscapeTimer = true;
                 if (escapeTimer < 0.f)
@@ -3816,12 +3850,26 @@ void mmPlayerHandler::Cooldown() {
         }
         else if (*getPtr<WORD>(police, 0x977A) != 0 && *getPtr<WORD>(police, 0x977A) != 12 && *getPtr<vehCar*>(police, 0x9774) == player->getCar())
         {
-            if (*getPtr<float>(police, 0x9794) > *getPtr<float>(AIMAP->raceData, 0x98) || BoundDetected)
+            lvlSegment segment;
+            lvlIntersection intersection;
+
+            Vector3 policePos = police2->getCar()->getModel()->GetPosition();
+
+            policePos.Y += 1.f;
+
+            segment.Set(playerPos, policePos, 0, nullptr);
+
+            bool PlayerNotInRange = dgPhysManager::Instance->Collide(segment, &intersection, 0, nullptr, SpecialBound, 0);
+
+            if (PlayerNotInRange)
+                police->ApprehendPerpetrator();
+
+            if (*getPtr<float>(police, 0x9794) > *getPtr<float>(AIMAP->raceData, 0x98) || PlayerNotInRange)
             {
                 enableEscapeTimer = true;
                 invertEscapeTimer = false;
             }
-            else if (*getPtr<float>(police, 0x9794) <= (*getPtr<float>(AIMAP->raceData, 0x98) * 0.5f) && !BoundDetected) {
+            else {
                 enableEscapeTimer = false;
                 invertEscapeTimer = true;
                 if (escapeTimer < 0.f)
@@ -3888,7 +3936,7 @@ void mmPlayerHandler::Update() {
                 {
                     short flags = AIMAP->Opponent(i)->getCar()->getModel()->GetFlags();
 
-                    if ((flags >> INST_FLAG_F) & 1) // if opponent hit me
+                    if (flags & INST_FLAG_8000) // if opponent hit me
                     {
                         siren->setActive(true);
                         audio->StartSiren();
@@ -7941,21 +7989,6 @@ void aiPoliceOfficerFeatureHandler::Update() {
                     return;
                 }
             }
-
-            lvlSegment segment;
-            lvlIntersection intersection;
-
-            Vector3 perpPos = perpCar->getModel()->GetPosition();
-            Vector3 policePos = police->getCar()->getModel()->GetPosition();
-
-            policePos.Y += 1.f;
-
-            segment.Set(policePos, perpPos, 0, nullptr);
-
-            BoundDetected = dgPhysManager::Instance->Collide(segment, &intersection, 0, nullptr, SpecialBound, 0);
-
-            if (BoundDetected)
-                police->ApprehendPerpetrator();
         }
         else {
             DetectPerpetrator();
