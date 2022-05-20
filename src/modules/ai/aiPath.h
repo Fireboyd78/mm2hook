@@ -15,6 +15,14 @@ namespace MM2
 
     // Class definitions
 
+    enum PathFlags : unsigned __int16
+    {
+        Unknown1 = 0x1,
+        Alley = 0x2,
+        Unknown3 = 0x3,
+        Freeway = 0x4,
+    };
+
     class aiPath {
     private:
         int field_0;

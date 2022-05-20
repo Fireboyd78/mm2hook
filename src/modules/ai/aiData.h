@@ -13,12 +13,18 @@ namespace MM2
 
     class aiRaceData {
     private:
-        byte _buffer[0xC4];
+        hook::Field<0x98, float> _copChaseDistance;
+        byte _buffer[0xC0];
     public:
         aiRaceData(void)                                    DONOTCALL;
         aiRaceData(const aiRaceData &&)                     DONOTCALL;
 
         virtual ~aiRaceData(void) DONOTCALL;
+
+        inline float getCopChaseDistance()
+        {
+            return _copChaseDistance.get(this);
+        }
     };
 
     ASSERT_SIZEOF(aiRaceData, 0xC8);

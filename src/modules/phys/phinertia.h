@@ -13,15 +13,15 @@ namespace MM2
 
     class phInertialCS {
     private:
-        byte _buffer[0x1AD];
-    protected:
         hook::Field<0xC, float> _mass;
         hook::Field<0x2C, float> _maxVelocity;
         hook::Field<0x54, Matrix34> _matrix;
         hook::Field<0x9C, Vector3> _force;
         hook::Field<0x84, Vector3> _velocity;
         hook::Field<0x3C, Vector3> _scaledVelocity;
+        hook::Field<0x48, Vector3> _angularVelocity;
         hook::Field<0xA8, Vector3> _torque;
+        byte _buffer[0x1AC];
     public:
         AGE_API phInertialCS() {
             scoped_vtable x(this);
@@ -55,7 +55,22 @@ namespace MM2
 
         inline void SetVelocity(Vector3 velocity) {
             _velocity.set(this, velocity);
-            _scaledVelocity.set(this, velocity * this->GetMass());
+        }
+
+        inline Vector3 GetScaledVelocity(void) const {
+            return _scaledVelocity.get(this);
+        }
+
+        inline void SetScaledVelocity(Vector3 velocity) {
+            _scaledVelocity.set(this, velocity);
+        }
+
+        inline Vector3 GetAngularVelocity(void) const {
+            return _angularVelocity.get(this);
+        }
+
+        inline void SetAngularVelocity(Vector3 velocity) {
+            _angularVelocity.set(this, velocity);
         }
 
         inline Matrix34 * GetMatrix(void) const {

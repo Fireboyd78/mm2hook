@@ -936,14 +936,14 @@ void aiRouteRacerHandler::BustOpp() {
         if (*getPtr<int>(car, 0xEC) != 0 && curDamage <= maxDamage)
             continue;
 
-        if (*getPtr<WORD>(police, 0x977A) != 0 && *getPtr<WORD>(police, 0x977A) != 12) {
-            if (*getPtr<vehCar*>(police, 0x9774) == opponent->getCar()) {
-                if (*getPtr<int>(this, 0x27C) != 3) {
+        if (police->InPersuit() && !police->Destroyed()) {
+            if (police->getFollowedCar() == opponent->getCar()) {
+                if (opponent->getState() != 3) {
                     if (opponentPos.Dist(policePos) <= 15.f) {
                         if (carsim->getSpeedMPH() <= aiOppBustedMaxSpeed) {
                             aiOppBustedTimer += datTimeManager::Seconds;
                             if (aiOppBustedTimer > aiOppBustedTimeout) {
-                                *getPtr<int>(this, 0x27C) = 3;
+                                opponent->setState(3);
                             }
                         }
                         else {
@@ -951,7 +951,7 @@ void aiRouteRacerHandler::BustOpp() {
                         }
                     }
                 }
-                if (*getPtr<int>(this, 0x27C) == 3) {
+                if (opponent->getState() == 3) {
                     if (opponent->Finished()) {
                         police->StopSiren();
                     }
@@ -959,9 +959,9 @@ void aiRouteRacerHandler::BustOpp() {
                         if (policeAud != nullptr)
                             policeAud->StopSiren();
                     }
-                    AIMAP->policeForce->UnRegisterCop(*getPtr<vehCar*>(police, 0x14), *getPtr<vehCar*>(police, 0x9774));
-                    *getPtr<WORD>(police, 0x977A) = 0;
-                    *getPtr<WORD>(police, 0x280) = 3;
+                    AIMAP->policeForce->UnRegisterCop(police->getCar(), police->getFollowedCar());
+                    police->setPoliceState(0);
+                    police->setState(3);
                 }
             }
         }
