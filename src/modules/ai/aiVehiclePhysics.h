@@ -31,10 +31,12 @@ namespace MM2
 
     class aiVehiclePhysics : public aiVehicle {
     private:
-        byte _buffer[0x976C];
-    protected:
-        static hook::Field<0x10, vehCar> _vehCar;
-        static hook::Field<0x27C, unsigned short> _state;
+        hook::Field<0x10, vehCar> _vehCar;
+        hook::Field<0x27C, short> _state;
+        hook::Field<0x9690, float> _brake;
+        hook::Field<0x9694, float> _throttle;
+        hook::Field<0x9698, float> _steering;
+        byte _buffer[0x9764];
     public:
         aiVehiclePhysics(void)                              DONOTCALL;
         aiVehiclePhysics(const aiVehiclePhysics &&)         DONOTCALL;
@@ -44,9 +46,29 @@ namespace MM2
             return _vehCar.ptr(this);
         }
 
-        inline unsigned short getState()
+        inline short getState()
         {
             return _state.get(this);
+        }
+
+        inline void setState(int state)
+        {
+            _state.set(this, state);
+        }
+
+        inline float getBrake()
+        {
+            return _brake.get(this);
+        }
+
+        inline float getThrottle()
+        {
+            return _throttle.get(this);
+        }
+
+        inline float getSteering()
+        {
+            return _steering.get(this);
         }
 
         AGE_API void DriveRoute(int a1)                     { hook::Thunk<0x55A8F0>::Call<void>(this, a1); }

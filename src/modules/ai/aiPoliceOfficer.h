@@ -25,10 +25,15 @@ namespace MM2
     private:
         hook::Field<0x04, aiVehiclePhysics> _physics;
         hook::Field<0x9774, vehCar*> _followedCar;
-        hook::Field<0x9778, unsigned short> _id;
-        hook::Field<0x977A, unsigned short> _policeState;
-        hook::Field<0x977E, unsigned short> _apprehendState;
-        byte _buffer[0x986B];
+        hook::Field<0x9778, short> _id;
+        hook::Field<0x977A, short> _policeState;
+        hook::Field<0x977C, short> _lastPoliceState;
+        hook::Field<0x977E, short> _apprehendState;
+        hook::Field<0x9794, float> _followCarDistance;
+        hook::Field<0x9798, short> _flagCount;
+        hook::Field<0x9792, short> _componentType;
+        hook::Field<0x97A4, short> _componentId;
+        byte _buffer[0x9866];
     public:
         aiPoliceOfficer(void)                               DONOTCALL;
         aiPoliceOfficer(const aiPoliceOfficer &&)           DONOTCALL;
@@ -38,17 +43,22 @@ namespace MM2
             return _physics.ptr(this);
         }
 
-        inline int getId()
+        inline short getId()
         {
             return _id.get(this);
         }
 
-        inline int getState()
+        inline short getState()
         {
             return getVehiclePhysics()->getState();
         }
 
-        inline int getApprehendState()
+        inline void setState(int state)
+        {
+            getVehiclePhysics()->setState(state);
+        }
+
+        inline short getApprehendState()
         {
             return _apprehendState.get(this);
         }
@@ -56,6 +66,11 @@ namespace MM2
         inline vehCar * getFollowedCar()
         {
             return _followedCar.get(this);
+        }
+
+        inline void setFollowedCar(vehCar* car)
+        {
+            _followedCar.set(this, car);
         }
 
         inline vehCar * getCar()
@@ -66,9 +81,59 @@ namespace MM2
         /// <summary>
         /// The state from aiPoliceForce::State
         /// </summary>        
-        inline int getPoliceState()
+        inline short getPoliceState()
         {
             return _policeState.get(this);
+        }
+
+        inline void setPoliceState(int state)
+        {
+            _policeState.set(this, state);
+        }
+
+        inline bool InPersuit()
+        {
+            return _policeState.get(this) != 0;
+        }
+
+        inline bool Destroyed()
+        {
+            return _policeState.get(this) == 12;
+        }
+
+        inline short getLastPoliceState()
+        {
+            return _lastPoliceState.get(this);
+        }
+
+        inline void setLastPoliceState(int state)
+        {
+            _lastPoliceState.set(this, state);
+        }
+
+        inline float getFollowCarDistance()
+        {
+            return _followCarDistance.get(this);
+        }
+
+        inline void setFollowCarDistance(float distance)
+        {
+            _followCarDistance.set(this, distance);
+        }
+
+        inline short getFlagCount()
+        {
+            return _flagCount.get(this);
+        }
+
+        inline short getComponentType()
+        {
+            return _componentType.get(this);
+        }
+
+        inline short getComponentId()
+        {
+            return _componentId.get(this);
         }
 
         AGE_API void Reset()                                { hook::Thunk<0x53DAA0>::Call<void>(this); }
