@@ -161,10 +161,10 @@ public:
 
 class mmHudMapFeatureHandler {
 public:
-    void DrawColoredTri(unsigned int color, const MM2::Matrix34 &a2);
-    void DrawWhiteTri(const MM2::Matrix34 &a1);
-    void DrawLightOrangeTri(const MM2::Matrix34 &a1);
-    void DrawLightGreenTri(const MM2::Matrix34 &a1);
+    void DrawColoredTri(unsigned int color, const MM2::Matrix34 &matrix);
+    void DrawWhiteTri(const MM2::Matrix34 &matrix);
+    void DrawLightOrangeTri(const MM2::Matrix34 &matrix);
+    void DrawLightGreenTri(const MM2::Matrix34 &matrix);
     void DrawIcon(int iconType, const MM2::Matrix34 &matrix);
     void DrawNfsMwPlayerIcon(const MM2::Matrix34 &matrix);
     void DrawNfsMwOpponentIcon(const MM2::Matrix34 &matrix);
@@ -175,17 +175,10 @@ public:
     static void Install();
 };
 
-struct OppIconInfo {
-    int color;
-    char buffer[0x24];
-};
-
-ASSERT_SIZEOF(OppIconInfo, 0x28);
-
 class mmIconsHandler {
 public:
-    void RegisterOpponents(OppIconInfo *icons, int count, void *a3);
-    void RegisterOpponents_Blitz(OppIconInfo *icons, int count, void *a3);
+    void RegisterOpponents(MM2::OppIconInfo *icons, int count, void *a3);
+    void RegisterOpponentsBlitz(MM2::OppIconInfo *icons, int count, void *a3);
 
     static void Install();
 };
