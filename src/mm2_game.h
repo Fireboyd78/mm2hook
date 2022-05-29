@@ -27,6 +27,7 @@ namespace MM2
     extern class dgPhysEntity;
     extern class mmPopup;
     extern class vehCar;
+    extern class mmText;
 
     extern class camAICS;
     extern class camCarCS;
@@ -1368,12 +1369,189 @@ namespace MM2
         }
     };
 
+    struct OppIconInfo {
+        int Color;
+        bool Enabled;
+        Matrix34* Matrix;
+        int field_C;
+        mmText* Text;
+        int field_14;
+        int field_18;
+        int field_1C;
+        gfxBitmap* Bitmap;
+        int field_24;
+    };
+    ASSERT_SIZEOF(OppIconInfo, 0x28);
+
+    class mmWaypointInstance : public lvlInstance {
+    private:
+        Vector3 Scale;
+        Matrix34 Matrix;
+        BOOL HasBeenDrawn;
+        bool Visible;
+        int ShaderSet;
+    public:
+        /*
+            lvlInstance virtuals
+        */
+
+        virtual AGE_API const Vector3 & GetPosition() override                     { return hook::Thunk<0x43F520>::Call<Vector3 const&>(this); }
+        virtual AGE_API const Matrix34 & GetMatrix(Matrix34 *a1) override          { return hook::Thunk<0x43F530>::Call<Matrix34 const&>(this, a1); }
+        virtual AGE_API void SetMatrix(const Matrix34 &a1) override                { hook::Thunk<0x43F550>::Call<void>(this, &a1); }
+        virtual AGE_API void SetVariant(int a1) override                           { hook::Thunk<0x43FC60>::Call<void>(this, a1); }
+    };
+    ASSERT_SIZEOF(mmWaypointInstance, 0x5C);
+
+    class mmWaypointObject : public asNode {
+    private:
+        int field_18;
+        int WaypointType;
+        int HitFlag;
+        int field_24;
+        int HitRoom;
+        mmWaypointInstance* WaypointInstance;
+        Vector2 RightGatePt;
+        Vector2 LeftGatePt;
+        Vector3 Position;
+        float Heading;
+        int HeadingType;
+        float Radius;
+        int field_58;
+    public:
+        /*
+            asNode virtuals
+        */
+
+        AGE_API void Update() override                      { hook::Thunk<0x43E060>::Call<void>(this); }
+        AGE_API void Reset() override                       { hook::Thunk<0x43E020>::Call<void>(this); }
+    };
+    ASSERT_SIZEOF(mmWaypointObject, 0x5C);
+
+    class mmWaypoints : public asNode {
+    private:
+        int field_18;
+        int field_1C;
+        int field_20;
+        mmWaypointObject** WaypointObjects;
+        int field_28;
+        int CurrentGoalWayPt;
+        int WaypointCount;
+        int field_34;
+        int field_38;
+        int field_3C;
+        int field_40;
+        int field_44;
+        int field_48;
+        int field_4C;
+        int field_50;
+        int field_54;
+        int field_58;
+        int field_5C;
+        int field_60;
+        int field_64;
+        int field_68;
+        int field_6C;
+        int field_70;
+        int field_74;
+        int field_78;
+        int field_7C;
+        int field_80;
+        mmPlayer* Player;
+        AudSoundBase* WaypointSound;
+        AudSoundBase* LastWaypointSound;
+    public:
+        /*
+            asNode virtuals
+        */
+
+        AGE_API void Cull() override                        { hook::Thunk<0x435240>::Call<void>(this); }
+        AGE_API void Update() override                      { hook::Thunk<0x435280>::Call<void>(this); }
+        AGE_API void Reset() override                       { hook::Thunk<0x4357E0>::Call<void>(this); }
+    };
+    ASSERT_SIZEOF(mmWaypoints, 0x90);
+
     class mmHudMap : public asNode {
+    private:
+        mmWaypoints* Waypoints;
+        BOOL ShowWaypoints;
+        Vector3* GoldLocation;
+        Vector3* BankLocation;
+        Vector3* HideoutLocation;
+        int field_2C;
+        mmPlayer* Player;
+        OppIconInfo* IconInfo;
+        BOOL ShowAllCops;
+        bool MapOnLeft;
+        bool MapMissing;
+        int LastNonFSMapMode;
+        int MapMode;
+        Matrix34* PlayerMatrix;
+        float ApproachRate;
+        float ZoomLevel;
+        float ZoomInDist;
+        float ZoomOutDist;
+        float ZoonInDistFS;
+        float ZoomOutDistFS;
+        float IconScale;
+        float IconScaleMin;
+        float IconScaleMax;
+        float IconScaleMinFS;
+        float IconScaleMaxFS;
+        Vector3 BackgroundColor;
+        Vector2 Size;
+        Vector2 Position;
+        int Viewport;
+        asMeshSetForm* HudmapModel;
+        byte gap[32];
+        short NumOpponents;
+        asMeshSetForm* HudmapSquareModel;
+        asMeshSetForm* HudmapTriModel;
     protected:
         AGE_API int GetCurrentMapMode()                     { return hook::Thunk<0x42EF20>::Call<int>(this); }
         AGE_API int GetNextMapMode()                        { return hook::Thunk<0x42EF00>::Call<int>(this); }
         AGE_API void SetMapMode(int a1)                     { hook::Thunk<0x42EF30>::Call<void>(this, a1); }
     public:
+
+        inline mmPlayer * GetPlayer()
+        {
+            return this->Player;
+        }
+
+        inline Matrix34 * GetPlayerMatrix()
+        {
+            return this->PlayerMatrix;
+        }
+
+        inline BOOL GetShowAllCops()
+        {
+            return this->ShowAllCops;
+        }
+
+        inline void SetShowAllCops(BOOL state)
+        {
+            this->ShowAllCops = state;
+        }
+
+        inline float GetIconScale()
+        {
+            return this->IconScale;
+        }
+
+        inline void SetIconScale(float scale)
+        {
+            this->IconScale = scale;
+        }
+
+        inline OppIconInfo * GetOppIconInfo(int num)
+        {
+            return &this->IconInfo[num];
+        }
+
+        inline short GetNumOpponents()
+        {
+            return this->NumOpponents;
+        }
+
         AGE_API void Activate()                             { hook::Thunk<0x42EEE0>::Call<void>(this); }
         AGE_API void Deactivate()                           { hook::Thunk<0x42EEF0>::Call<void>(this); }
         AGE_API void SetOrient(bool a1)                     { hook::Thunk<0x42FA40>::Call<void>(this, a1); }
@@ -1387,12 +1565,11 @@ namespace MM2
             asNode virtuals
         */
 
-        AGE_API void Cull() override                { hook::Thunk<0x42F1B0>::Call<void>(this); }
-        AGE_API void Update() override              { hook::Thunk<0x42F1A0>::Call<void>(this); }
-        AGE_API void Reset() override               { hook::Thunk<0x42EE90>::Call<void>(this); }
-        AGE_API void FileIO(datParser &parser) override 
-                                                    { hook::Thunk<0x42FA60>::Call<void>(this, &parser); }
-        AGE_API char * GetClassName() override      { return hook::Thunk<0x42FD60>::Call<char*>(this); }
+        AGE_API void Cull() override                        { hook::Thunk<0x42F1B0>::Call<void>(this); }
+        AGE_API void Update() override                      { hook::Thunk<0x42F1A0>::Call<void>(this); }
+        AGE_API void Reset() override                       { hook::Thunk<0x42EE90>::Call<void>(this); }
+        AGE_API void FileIO(datParser &parser) override     { hook::Thunk<0x42FA60>::Call<void>(this, &parser); }
+        AGE_API char * GetClassName() override              { return hook::Thunk<0x42FD60>::Call<char*>(this); }
 
         static void BindLua(LuaState L) {
             LuaBinding(L).beginExtendClass<mmHudMap, asNode>("mmHudMap")
@@ -1410,12 +1587,13 @@ namespace MM2
             .endClass();  
         }
     };
+    ASSERT_SIZEOF(mmHudMap, 0xC8);
 
     class mmPlayer : public asNode {
     private:
         byte _buffer[0x23A4];
 
-        AGE_API camCarCS * GetCurrentCameraPtr()             { return hook::Thunk<0x4048E0>::Call<camCarCS*>(this); }
+        AGE_API camCarCS * GetCurrentCameraPtr()            { return hook::Thunk<0x4048E0>::Call<camCarCS*>(this); }
 
     protected:
         hook::Field<0x2C, vehCar> _car;
