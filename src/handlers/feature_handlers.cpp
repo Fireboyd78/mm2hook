@@ -3837,7 +3837,7 @@ void mmPlayerHandler::Cooldown() {
                 enableEscapeTimer = true;
                 invertEscapeTimer = false;
             }
-            else {
+            else if (police2->getFollowCarDistance() <= (AIMAP->raceData->getCopChaseDistance() * 0.5f)) {
                 enableEscapeTimer = false;
                 invertEscapeTimer = true;
                 if (escapeTimer < 0.f)
@@ -3867,7 +3867,7 @@ void mmPlayerHandler::Cooldown() {
                 enableEscapeTimer = true;
                 invertEscapeTimer = false;
             }
-            else {
+            else if (police->getFollowCarDistance() <= (AIMAP->raceData->getCopChaseDistance() * 0.5f)) {
                 enableEscapeTimer = false;
                 invertEscapeTimer = true;
                 if (escapeTimer < 0.f)
@@ -8001,7 +8001,7 @@ void aiPoliceOfficerFeatureHandler::Update() {
 
         if (aiPoliceOfficer::FlyingCopFix)
         {
-            if (police->getVehiclePhysics()->getThrottle() == 1.f && carsim->getSpeed() < 50.f) // this is how it's implemented in MM1
+            if (police->getVehiclePhysics()->getThrottle() == 1.f && carsim->getSpeed() < 50.f && !playerInCooldown)
             {
                 carsim->getICS()->SetVelocity(carsim->getICS()->GetVelocity() * 1.01f);
             }
@@ -8036,6 +8036,9 @@ void aiPoliceOfficerFeatureHandler::Update() {
 
     if (!police->InPersuit())
         police->setState(3);
+
+    if (playerInCooldown && vehPhysics->getThrottle() == 1.f && carsim->getSpeed() > 5.f)
+        carsim->getEngine()->setThrottleInput(0.6f);
 
     if (player != nullptr)
     {
