@@ -139,28 +139,20 @@ namespace MM2
         AGE_API void Reset()                                { hook::Thunk<0x53DAA0>::Call<void>(this); }
         AGE_API void StartSiren()
         {
-            auto trailer = this->getVehiclePhysics()->getCar()->getTrailer();
+            auto trailer = this->getCar()->getTrailer();
 
-            if (trailer != nullptr) {
-                auto siren = trailer->getSiren();
-
-                if (siren != nullptr)
-                    siren->setActive(true);
-            }
+            if (trailer != nullptr)
+                trailer->setSirenState(true);
 
             hook::Thunk<0x53DBF0>::Call<void>(this);
         }
 
         AGE_API void StopSiren()
         {
-            auto trailer = this->getVehiclePhysics()->getCar()->getTrailer();
+            auto trailer = this->getCar()->getTrailer();
 
-            if (trailer != nullptr) {
-                auto siren = trailer->getSiren();
-
-                if (siren != nullptr)
-                    siren->setActive(false);
-            }
+            if (trailer != nullptr)
+                trailer->setSirenState(false);
 
             hook::Thunk<0x53DC40>::Call<void>(this);
         }

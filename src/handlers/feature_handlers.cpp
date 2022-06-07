@@ -674,10 +674,7 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
 
                         // toggle trailer siren lights
                         if (trailer != nullptr) {
-                            auto trailerSiren = trailer->getSiren();
-
-                            if (trailerSiren != nullptr)
-                                trailerSiren->setActive(!trailerSiren->getActive());
+                            trailer->setSirenState(!trailer->getSirenState());
                         }
                     }
                 }
@@ -1820,24 +1817,16 @@ void mmGameHandler::UpdateHorn(bool a1) {
                     siren->setActive(false);
                     audio->StopSiren();
 
-                    if (trailer != nullptr) {
-                        auto trailerSiren = trailer->getSiren();
-
-                        if (trailerSiren != nullptr)
-                            trailerSiren->setActive(false);
-                    }
+                    if (trailer != nullptr)
+                        trailer->setSirenState(false);
                 }
                 else
                 {
                     siren->setActive(true);
                     audio->StartSiren();
 
-                    if (trailer != nullptr) {
-                        auto trailerSiren = trailer->getSiren();
-
-                        if (trailerSiren != nullptr)
-                            trailerSiren->setActive(true);
-                    }
+                    if (trailer != nullptr)
+                        trailer->setSirenState(true);
                 }
             }
         }
@@ -4941,6 +4930,11 @@ void vehCarHandler::Update() {
     hook::Thunk<0x42C690>::Call<void>(this);
 }
 
+void vehCarHandler::Reset() {
+    auto car = reinterpret_cast<vehCar*>(this);
+    car->Reset();
+}
+
 void vehCarHandler::Install(void) {
     enableWaterSplashSoundCached = cfgEnableWaterSplashSound.Get();
     enableExplosionSoundCached = cfgEnableExplosionSound.Get();
@@ -4971,6 +4965,39 @@ void vehCarHandler::Install(void) {
     InstallVTableHook("vehCar::Update",
         &Update, {
             0x5B0BB8,
+        }
+    );
+
+    InstallCallback("vehCar::Reset", "Use our reset for vehicle initialization.",
+        &Reset, {
+            cb::call(0x404B87), // mmPlayer::Reset
+            cb::call(0x413502), // mmGame::InitOtherPlayers
+            cb::call(0x413631), // mmGame::CollideAIOpponents
+            cb::call(0x4165BC), // mmSingleStunt::InitGameObjects
+            cb::call(0x41B1CE), // mmSingleBlitz::InitGameObjects
+            cb::call(0x41C8F6), // mmSingleCircuit::InitGameObjects
+            cb::call(0x41E372), // mmSingleRace::InitGameObjects
+            cb::call(0x41FB93), // mmSingleRoam::InitGameObjects
+            cb::call(0x41FC81), // mmSingleRoam::InitOtherPlayers
+            cb::call(0x420365), // mmMultiBlitz::InitGameObjects
+            cb::call(0x420647), // mmMultiBlitz::InitNetworkPlayers
+            cb::call(0x420780), // mmMultiBlitz::InitNetworkPlayers
+            cb::call(0x421F8E), // mmMultiCircuit::InitGameObjects
+            cb::call(0x422237), // mmMultiCircuit::InitNetworkPlayers
+            cb::call(0x422370), // mmMultiCircuit::InitNetworkPlayers
+            cb::call(0x423CE9), // mmMultiCR::InitGameObjects
+            cb::call(0x4241F2), // mmMultiCR::InitNetworkPlayers
+            cb::call(0x4277FB), // mmMultiRoam::InitGameObjects
+            cb::call(0x4279E6), // mmMultiRoam::InitNetworkPlayers
+            cb::call(0x427B43), // mmMultiRoam::InitNetworkPlayers
+            cb::call(0x4285E9), // mmMultiRace::InitGameObjects
+            cb::call(0x42887C), // mmMultiRace::InitNetworkPlayers
+            cb::call(0x4289D0), // mmMultiRace::InitNetworkPlayers
+            cb::call(0x43981D), // mmGameMulti::SystemMessageCB
+            cb::call(0x439C75), // mmGameMulti::GameMessageCB
+            cb::call(0x439E23), // mmGameMulti::GameMessageCB
+            cb::call(0x43A63F), // mmGameMulti::Reset
+            cb::call(0x5597C6), // aiVehiclePhysics::Reset
         }
     );
 
@@ -6973,18 +7000,12 @@ void vehTrailerFeatureHandler::Update() {
 }
 
 void vehTrailerFeatureHandler::Reset() {
-    auto trailer = reinterpret_cast<vehTrailer*>(this);
-    auto siren = trailer->getSiren();
-
-    if (siren != nullptr)
-        siren->setActive(false);
-
     //call original
     hook::Thunk<0x4D79C0>::Call<void>(this);
 }
 
 void vehTrailerFeatureHandler::Install() {
-    InstallPatch({ 0xA0, 0x11 }, {
+    InstallPatch({ 0x40, 0x11 }, {
         0x42BFD6 + 1, // Change size of vehTrailer on allocation
     });
 
@@ -7252,7 +7273,6 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
 
     //get vars
     auto trailer = inst->getTrailer();
-    auto siren = trailer->getSiren();
     auto carsim = trailer->getTrailerJoint()->getCarSim();
     float brakeInput = carsim->getBrake();
     int gear = carsim->getTransmission()->getGear();
@@ -7378,7 +7398,7 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
     }
 
     //draw siren
-    if (siren != nullptr && siren->getActive()) {
+    if (trailer->getSirenState()) {
         int sirenStage = fmod(datTimeManager::ElapsedTime, 2 * vehCarModel::SirenCycle) >= vehCarModel::SirenCycle ? 1 : 0;
         if (sirenStage == 0 && siren0 != nullptr) {
             siren0->Draw(shaders);

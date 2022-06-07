@@ -308,6 +308,7 @@ public:
     void PlayExplosion();
     void Splash();
     void Update();
+    void Reset();
 
     static void Install(void);
 };
