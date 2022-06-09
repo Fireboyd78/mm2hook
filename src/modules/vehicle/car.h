@@ -83,7 +83,15 @@ namespace MM2
             return _stuck.get(this);
         }
 
-        AGE_API void Reset()                                { hook::Thunk<0x42C330>::Call<void>(this); }
+        AGE_API void Reset()
+        {
+            auto trailer = this->getTrailer();
+
+            if (trailer != nullptr)
+                trailer->setSirenState(false);
+
+            hook::Thunk<0x42C330>::Call<void>(this);
+        }
 
         AGE_API void ClearDamage()                          { hook::Thunk<0x42C450>::Call<void>(this); }
         AGE_API bool IsPlayer()                             { return hook::Thunk<0x42C890>::Call<bool>(this); }

@@ -160,7 +160,7 @@ namespace MM2
         lvlTrackManager TrackBR;
         //EXTRA FIELDS. The hook expands on this class, this is only possible because it's only used like a pointer in the original MM code
         int VehType;
-        vehSiren Siren;
+        bool SirenState;
     public:
         inline dgTrailerJoint * getTrailerJoint(void) {
             return &this->TrailerJoint;
@@ -266,8 +266,12 @@ namespace MM2
             this->VehType = type;
         }
 
-        inline vehSiren * getSiren() {
-            return &this->Siren;
+        inline bool getSirenState() {
+            return this->SirenState;
+        }
+
+        inline void setSirenState(bool state) {
+            this->SirenState = state;
         }
 
         AGE_API vehTrailer()                                            { hook::Thunk<0x4D6F40>::Call<void>(this); }
@@ -319,7 +323,7 @@ namespace MM2
                 .endClass();
         }
     };
-    ASSERT_SIZEOF(vehTrailer, 0x1038 + 0x4 + 0x164); //+2 extra fields
+    ASSERT_SIZEOF(vehTrailer, 0x1038 + 0x4 + 0x4); //+2 extra fields
 
     // Lua initialization
 
