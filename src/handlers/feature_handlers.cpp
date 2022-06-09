@@ -7005,7 +7005,7 @@ void vehTrailerFeatureHandler::Reset() {
 }
 
 void vehTrailerFeatureHandler::Install() {
-    InstallPatch({ 0x40, 0x11 }, {
+    InstallPatch({ 0x40, 0x10 }, {
         0x42BFD6 + 1, // Change size of vehTrailer on allocation
     });
 
