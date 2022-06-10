@@ -30,21 +30,14 @@ bool vehCarModel::EnableLEDSiren = false;
 bool vehCarModel::MWStyleTotaledCar = false;
 bool vehCarModel::PartReflections = false;
 bool vehCarModel::WheelReflections = false;
-int vehCarModel::SirenType = 0;
-int vehCarModel::HeadlightType = 0;
-float vehCarModel::SirenCycle = 0.25f;
-float vehCarModel::HeadlightFlashingSpeed = 42.411503f;
-
-bool vehCarModel::HeadlightsState = false;
-bool vehCarModel::HazardLightsState = false;
-bool vehCarModel::LeftSignalLightState = false;
-bool vehCarModel::RightSignalLightState = false;
-bool vehCarModel::FoglightsState = false;
-
 bool vehCarModel::MM1StyleTransmission = true;
 bool vehCarModel::BreakableRenderTweak = false;
 bool vehCarModel::WheelWobble = true;
 bool vehCarModel::MM1StyleWobble = false;
+int vehCarModel::SirenType = 0;
+int vehCarModel::HeadlightType = 0;
+float vehCarModel::SirenCycle = 0.25f;
+float vehCarModel::HeadlightFlashingSpeed = 42.411503f;
 
 /*
     vehBreakableMgr

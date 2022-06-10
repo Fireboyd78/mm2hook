@@ -222,6 +222,7 @@ public:
 
 class mmPlayerHandler {
 public:
+    void ControlTrailerJoint();
     void Zoink();
     void Update();
     void Reset();

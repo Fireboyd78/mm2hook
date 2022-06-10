@@ -25,18 +25,28 @@ namespace MM2
     // Class definitions
 
     class vehCar : public dgPhysEntity {
-        byte _buffer[0x25C];
-    protected:
-        hook::Field<0xC0, vehCarDamage *> _damage;
-        hook::Field<0xB8, vehCarSim *> _sim; // size: ~0x1560
-        hook::Field<0xBC, vehCarModel *> _model;
-        hook::Field<0xE0, vehSplash *> _splash;
-        hook::Field<0x254, vehCarAudioContainer *> _audio;
-        hook::Field<0xD8, vehTrailer *> _trailer;
-        hook::Field<0xC8, vehSiren *> _siren;
-        hook::Field<0xC4, vehWheelPtx *> _wheelPtx;
-        hook::Field<0xD0, vehGyro *> _gyro;
-        hook::Field<0xCC, vehStuck*> _stuck;
+    private:
+        void* Input;
+        vehCarSim* CarSim;
+        vehCarModel* CarModel;
+        vehCarDamage* CarDamage;
+        vehWheelPtx* WheelPtx;
+        vehSiren* Siren;
+        vehStuck* Stuck;
+        vehGyro* Gyro;
+        int field_D4;
+        vehTrailer* Trailer;
+        void* Driver;
+        vehSplash* Splash;
+        void* Feedback;
+        int SomeFlags;
+        int field_EC;
+        gfxTexture* TireTrackTexture;
+        lvlTrackManager WHL0TrackManager;
+        lvlTrackManager WHL1TrackManager;
+        lvlTrackManager WHL2TrackManager;
+        lvlTrackManager WHL3TrackManager;
+        vehCarAudioContainer* CarAudioContainer;
     public:
         AGE_API vehCar(BOOL a1)                             { hook::Thunk<0x42BAB0>::Call<void>(this, a1); }
         AGE_API ~vehCar()                                   { hook::Thunk<0x42BCC0>::Call<void>(this); }
@@ -44,55 +54,46 @@ namespace MM2
         static hook::Type<bool> sm_DrawHeadlights;
 
         inline vehCarDamage * getCarDamage(void) const {
-            return _damage.get(this);
+            return this->CarDamage;
         };
 
         inline vehCarSim * getCarSim(void) const {
-            return _sim.get(this);
+            return this->CarSim;
         }
 
         inline vehCarModel * getModel(void) const {
-            return _model.get(this);
+            return this->CarModel;
         }
 
         inline vehSplash * getSplash(void) const {
-            return _splash.get(this);
+            return this->Splash;
         }
 
         inline vehCarAudioContainer * getAudio(void) const {
-            return _audio.get(this);
+            return this->CarAudioContainer;
         }
 
         inline vehTrailer * getTrailer(void) const {
-            return _trailer.get(this);
+            return this->Trailer;
         }
 
         inline vehSiren * getSiren(void) const {
-            return _siren.get(this);
+            return this->Siren;
         }
 
         inline vehWheelPtx * getWheelPtx(void) const {
-            return _wheelPtx.get(this);
+            return this->WheelPtx;
         }
 
         inline vehGyro * getGyro(void) const {
-            return _gyro.get(this);
+            return this->Gyro;
         }
 
         inline vehStuck* getStuck(void) const {
-            return _stuck.get(this);
+            return this->Stuck;
         }
 
-        AGE_API void Reset()
-        {
-            auto trailer = this->getTrailer();
-
-            if (trailer != nullptr)
-                trailer->setSirenState(false);
-
-            hook::Thunk<0x42C330>::Call<void>(this);
-        }
-
+        AGE_API void Reset()                                { hook::Thunk<0x42C330>::Call<void>(this); }
         AGE_API void ClearDamage()                          { hook::Thunk<0x42C450>::Call<void>(this); }
         AGE_API bool IsPlayer()                             { return hook::Thunk<0x42C890>::Call<bool>(this); }
         AGE_API void Init(char const *a1, int a2, int a3, bool a4, bool a5)
@@ -137,6 +138,7 @@ namespace MM2
             .endClass();
         }
     };
+    ASSERT_SIZEOF(vehCar, 0x258);
 
     // Lua initialization
 
