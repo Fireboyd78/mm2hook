@@ -137,26 +137,8 @@ namespace MM2
         }
 
         AGE_API void Reset()                                { hook::Thunk<0x53DAA0>::Call<void>(this); }
-        AGE_API void StartSiren()
-        {
-            auto trailer = this->getCar()->getTrailer();
-
-            if (trailer != nullptr)
-                trailer->setSirenState(true);
-
-            hook::Thunk<0x53DBF0>::Call<void>(this);
-        }
-
-        AGE_API void StopSiren()
-        {
-            auto trailer = this->getCar()->getTrailer();
-
-            if (trailer != nullptr)
-                trailer->setSirenState(false);
-
-            hook::Thunk<0x53DC40>::Call<void>(this);
-        }
-
+        AGE_API void StartSiren()                           { hook::Thunk<0x53DBF0>::Call<void>(this); }
+        AGE_API void StopSiren()                            { hook::Thunk<0x53DC40>::Call<void>(this); }
         AGE_API void DetectPerpetrator()                    { hook::Thunk<0x53DFD0>::Call<void>(this); }
         AGE_API void FollowPerpetrator()                    { hook::Thunk<0x53E410>::Call<void>(this); }
         AGE_API void ApprehendPerpetrator()                 { hook::Thunk<0x53E580>::Call<void>(this); }

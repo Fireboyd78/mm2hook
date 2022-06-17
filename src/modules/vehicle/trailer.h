@@ -2,7 +2,6 @@
 #include <modules\vehicle.h>
 #include <modules\phys.h>
 #include "carsim.h"
-#include "siren.h"
 
 namespace MM2
 {
@@ -47,8 +46,11 @@ namespace MM2
 
             if (this->BeginGeom(basename, "trailer", 0xD))
             {
+                gfxForceLVERTEX = true;
                 lvlInstance::AddGeom(basename, "shadow", 0);
                 lvlInstance::AddGeom(basename, "tlight", 0);
+                gfxForceLVERTEX = false;
+
                 lvlInstance::AddGeom(basename, "twhl0", 5);
                 lvlInstance::AddGeom(basename, "twhl1", 4);
                 lvlInstance::AddGeom(basename, "twhl2", 0);
@@ -56,6 +58,7 @@ namespace MM2
                 lvlInstance::AddGeom(basename, "trailer_hitch", 0);
 
                 //NEW MM2HOOK OBJECTS
+                gfxForceLVERTEX = true;
                 lvlInstance::AddGeom(basename, "rlight", 0);
                 lvlInstance::AddGeom(basename, "blight", 0);
                 lvlInstance::AddGeom(basename, "hlight", 0);
@@ -63,6 +66,7 @@ namespace MM2
                 lvlInstance::AddGeom(basename, "slight1", 0);
                 lvlInstance::AddGeom(basename, "siren0", 0);
                 lvlInstance::AddGeom(basename, "siren1", 0);
+                gfxForceLVERTEX = false;
 
                 lvlInstance::AddGeom(basename, "twhl4", 0);
                 lvlInstance::AddGeom(basename, "twhl5", 0);
@@ -74,8 +78,11 @@ namespace MM2
                 lvlInstance::AddGeom(basename, "tswhl4", 0);
                 lvlInstance::AddGeom(basename, "tswhl5", 0);
 
+                gfxForceLVERTEX = true;
                 lvlInstance::AddGeom(basename, "tslight0", 0);
                 lvlInstance::AddGeom(basename, "tslight1", 0);
+                lvlInstance::AddGeom(basename, "flight", 0);
+                gfxForceLVERTEX = false;
 
                 this->EndGeom();
                 hasGeometry = true;
@@ -158,9 +165,6 @@ namespace MM2
         lvlTrackManager TrackFR;
         lvlTrackManager TrackBL;
         lvlTrackManager TrackBR;
-        //EXTRA FIELDS. The hook expands on this class, this is only possible because it's only used like a pointer in the original MM code
-        int VehType;
-        bool SirenState;
     public:
         inline dgTrailerJoint * getTrailerJoint(void) {
             return &this->TrailerJoint;
@@ -258,22 +262,6 @@ namespace MM2
             return nullptr;
         }
 
-        inline int getVehType() {
-            return this->VehType;
-        }
-
-        inline void setVehType(int type) {
-            this->VehType = type;
-        }
-
-        inline bool getSirenState() {
-            return this->SirenState;
-        }
-
-        inline void setSirenState(bool state) {
-            this->SirenState = state;
-        }
-
         AGE_API vehTrailer()                                            { hook::Thunk<0x4D6F40>::Call<void>(this); }
         AGE_API ~vehTrailer()                                           { hook::Thunk<0x4D71A0>::Call<void>(this); }
 
@@ -323,7 +311,7 @@ namespace MM2
                 .endClass();
         }
     };
-    ASSERT_SIZEOF(vehTrailer, 0x1038 + 0x4 + 0x4); //+2 extra fields
+    ASSERT_SIZEOF(vehTrailer, 0x1038);
 
     // Lua initialization
 

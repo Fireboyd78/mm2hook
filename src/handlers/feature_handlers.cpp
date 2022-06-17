@@ -379,8 +379,6 @@ struct TimeWeatherInfo {
 
         aiMap::Instance->drawHeadlights = ShowHeadlights;
         vehCar::sm_DrawHeadlights = ShowHeadlights;
-        vehCarModel::HeadlightsState = ShowHeadlights;
-        vehCarModel::FoglightsState = MMSTATE->WeatherType == 2;
 
         g_FlatColorIntensity = FlatColorIntensity;
         g_WeatherFriction = WeatherFriction;
@@ -582,11 +580,12 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
         if (gamePtr != NULL)
         {
             auto popup = gamePtr->getPopup();
+            auto model = gamePtr->getPlayer()->getCar()->getModel();
 
             if (popup != NULL) {
                 if (!popup->IsEnabled()) {
                     // toggle vehicle headlights
-                    vehCarModel::HeadlightsState = !vehCarModel::HeadlightsState;
+                    model->setHeadlightsState(!model->getHeadlightsState());
                 }
             }
         }
@@ -600,13 +599,14 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
         if (gamePtr != NULL)
         {
             auto popup = gamePtr->getPopup();
+            auto model = gamePtr->getPlayer()->getCar()->getModel();
 
             if (popup != NULL) {
                 if (!popup->IsEnabled()) {
                     // toggle hazard lights
-                    vehCarModel::HazardLightsState = !vehCarModel::HazardLightsState;
-                    vehCarModel::LeftSignalLightState = false;
-                    vehCarModel::RightSignalLightState = false;
+                    model->setHazardLightsState(!model->getHazardLightsState());
+                    model->setLeftSignalLightState(false);
+                    model->setRightSignalLightState(false);
                 }
             }
         }
@@ -620,13 +620,14 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
         if (gamePtr != NULL)
         {
             auto popup = gamePtr->getPopup();
+            auto model = gamePtr->getPlayer()->getCar()->getModel();
 
             if (popup != NULL) {
                 if (!popup->IsEnabled()) {
                     // toggle left signal
-                    vehCarModel::LeftSignalLightState = !vehCarModel::LeftSignalLightState;
-                    vehCarModel::HazardLightsState = false;
-                    vehCarModel::RightSignalLightState = false;
+                    model->setLeftSignalLightState(!model->getLeftSignalLightState());
+                    model->setHazardLightsState(false);
+                    model->setRightSignalLightState(false);
                 }
             }
         }
@@ -640,13 +641,14 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
         if (gamePtr != NULL)
         {
             auto popup = gamePtr->getPopup();
+            auto model = gamePtr->getPlayer()->getCar()->getModel();
 
             if (popup != NULL) {
                 if (!popup->IsEnabled()) {
                     // toggle right signal
-                    vehCarModel::RightSignalLightState = !vehCarModel::RightSignalLightState;
-                    vehCarModel::HazardLightsState = false;
-                    vehCarModel::LeftSignalLightState = false;
+                    model->setRightSignalLightState(!model->getRightSignalLightState());
+                    model->setHazardLightsState(false);
+                    model->setLeftSignalLightState(false);
                 }
             }
         }
@@ -662,7 +664,6 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
             auto popup = gamePtr->getPopup();
             auto car = gamePtr->getPlayer()->getCar();
             auto siren = car->getSiren();
-            auto trailer = car->getTrailer();
             char *vehName = car->getCarDamage()->GetName();
             int flagsId = VehicleListPtr->GetVehicleInfo(vehName)->GetFlags();
 
@@ -671,11 +672,6 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
                     // toggle siren lights
                     if (siren != nullptr && siren->getHasLights() || flagsId == 8) {
                         siren->setActive(!siren->getActive());
-
-                        // toggle trailer siren lights
-                        if (trailer != nullptr) {
-                            trailer->setSirenState(!trailer->getSirenState());
-                        }
                     }
                 }
             }
@@ -717,11 +713,12 @@ bool gfxPipelineHandler::HandleKeyPress(DWORD vKey)
         if (gamePtr != NULL)
         {
             auto popup = gamePtr->getPopup();
+            auto model = gamePtr->getPlayer()->getCar()->getModel();
 
             if (popup != NULL) {
                 if (!popup->IsEnabled()) {
                     // toggle foglights
-                    vehCarModel::FoglightsState = !vehCarModel::FoglightsState;
+                    model->setFoglightsState(!model->getFoglightsState());
                 }
             }
         }
@@ -1780,7 +1777,6 @@ void mmGameHandler::UpdateHorn(bool a1) {
     auto siren = car->getSiren();
     auto audio = car->getAudio();
     auto model = car->getModel();
-    auto trailer = car->getTrailer();
     auto lightbar0 = model->getGenBreakableMgr()->Get(1);
     auto lightbar1 = model->getGenBreakableMgr()->Get(2);
 
@@ -1816,17 +1812,11 @@ void mmGameHandler::UpdateHorn(bool a1) {
                 if (siren->getActive()) {
                     siren->setActive(false);
                     audio->StopSiren();
-
-                    if (trailer != nullptr)
-                        trailer->setSirenState(false);
                 }
                 else
                 {
                     siren->setActive(true);
                     audio->StartSiren();
-
-                    if (trailer != nullptr)
-                        trailer->setSirenState(true);
                 }
             }
         }
@@ -3885,6 +3875,39 @@ void mmPlayerHandler::Cooldown() {
         cooldownTimer = 0.f;
 }
 
+void mmPlayerHandler::ControlTrailerJoint()
+{
+    auto player = reinterpret_cast<mmPlayer*>(this);
+    auto trailer = player->getCar()->getTrailer();
+    auto trailerJoint = trailer->getTrailerJoint();
+    auto carHitchOffset = trailer->getCarHitchOffset();
+    auto trailerHitchOffset = trailer->getTrailerHitchOffset();
+    auto carMatrix = trailerJoint->getCarSim()->getICS()->GetMatrix();
+    auto trailerMatrix = trailer->getICS()->GetMatrix();
+
+    Vector3 carHitchPos;
+    Vector3 trailerHitchPos;
+
+    carHitchPos.Dot(carHitchOffset, *carMatrix);
+    trailerHitchPos.Dot(trailerHitchOffset, *trailerMatrix);
+
+    if (!trailerJoint->IsBroken())
+    {
+        if ((ioKeyboard::GetKeyState(DIK_LCONTROL) || ioKeyboard::GetKeyState(DIK_RCONTROL)) && ioKeyboard::GetKeyState(DIK_B))
+        {
+            trailerJoint->BreakJoint();
+        }
+    }
+
+    if (carHitchPos.Dist(trailerHitchPos) <= 0.75f)
+    {
+        if ((ioKeyboard::GetKeyState(DIK_LCONTROL) || ioKeyboard::GetKeyState(DIK_RCONTROL)) && ioKeyboard::GetKeyState(DIK_N))
+        {
+            trailerJoint->UnbreakJoint();
+        }
+    }
+}
+
 static ConfigValue<bool> cfgMm1StyleFlipOver("MM1StyleFlipOver", false);
 bool mm1StyleFlipOver = false;
 
@@ -3894,6 +3917,7 @@ void mmPlayerHandler::Update() {
     auto audio = car->getAudio();
     auto siren = car->getSiren();
     auto carsim = car->getCarSim();
+    auto trailer = car->getTrailer();
     auto engine = carsim->getEngine();
     auto basename = player->getCar()->getCarDamage()->GetName();
     auto flagsId = VehicleListPtr->GetVehicleInfo(basename)->GetFlags();
@@ -3991,16 +4015,15 @@ void mmPlayerHandler::Update() {
         car->getStuck()->setStuckTime(0.f);
     }
 
+    if (trailer != nullptr) {
+        ControlTrailerJoint();
+    }
+
     //call original
     hook::Thunk<0x405760>::Call<void>(this);
 }
 
 void mmPlayerHandler::Reset() {
-    // deactivate signal lights if they're active
-    vehCarModel::HazardLightsState = false;
-    vehCarModel::LeftSignalLightState = false;
-    vehCarModel::RightSignalLightState = false;
-
     // disable and reset timers
     enableBustedTimer = false;
     enableOppBustedTimer = false;
@@ -4768,7 +4791,6 @@ const phBound * vehCarHandler::GetModelBound(int a1) {
 
 void vehCarHandler::InitCarAudio(LPCSTR vehName, int vehType) {
     auto car = reinterpret_cast<vehCar*>(this);
-    auto trailer = car->getTrailer();
     int flagsId = VehicleListPtr->GetVehicleInfo(vehName)->GetFlags();
 
     // debug if enabled
@@ -4794,10 +4816,6 @@ void vehCarHandler::InitCarAudio(LPCSTR vehName, int vehType) {
         Displayf("%s has semidata, but is not in the vehtypes file. Adding it.", vehName);
         string_buf<128> semiBuffer("%s,ENDOFDATA", vehName);
         vehCarAudioContainer::RegisterSemiNames(NULL, (LPCSTR)semiBuffer);
-    }
-
-    if (trailer != nullptr) {
-        trailer->setVehType(vehType);
     }
 
     //pass back to original function
@@ -4932,6 +4950,14 @@ void vehCarHandler::Update() {
 
 void vehCarHandler::Reset() {
     auto car = reinterpret_cast<vehCar*>(this);
+    auto model = car->getModel();
+
+    model->setHeadlightsState(vehCar::sm_DrawHeadlights);
+    model->setHazardLightsState(false);
+    model->setLeftSignalLightState(false);
+    model->setRightSignalLightState(false);
+    model->setFoglightsState(MMSTATE->WeatherType == 2);
+
     car->Reset();
 }
 
@@ -5172,17 +5198,18 @@ void vehCarModelFeatureHandler::DrawGlow() {
     modStatic* tslight1 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 102)->GetHighestLOD();
 
     //check signal clock
-    bool drawSignal = fmod(datTimeManager::ElapsedTime, 1.f) > 0.5f;
+    float randValue = (irand2(model) % 8) * 0.001f;
+    bool drawSignal = fmod(datTimeManager::ElapsedTime, 1.f + randValue) > 0.5f + randValue;
 
     //draw stuff!
-    if (drawSignal && car->IsPlayer()) {
-        if (vehCarModel::LeftSignalLightState || vehCarModel::HazardLightsState) {
+    if (drawSignal) {
+        if (model->getLeftSignalLightState() || model->getHazardLightsState()) {
             if (slight0 != nullptr)
                 slight0->Draw(shaders);
             if (tslight0 != nullptr)
                 tslight0->Draw(shaders);
         }
-        if (vehCarModel::RightSignalLightState || vehCarModel::HazardLightsState) {
+        if (model->getRightSignalLightState() || model->getHazardLightsState()) {
             if (slight1 != nullptr)
                 slight1->Draw(shaders);
             if (tslight1 != nullptr)
@@ -5190,46 +5217,24 @@ void vehCarModelFeatureHandler::DrawGlow() {
         }
     }
 
-    //draw taillight signals for player
-    if (car->IsPlayer()) {
-        if (!vehCarModel::LeftSignalLightState && !vehCarModel::HazardLightsState) {
-            if (tslight0 != nullptr) {
-                //draw brake copy
-                if (carsim->getBrake() > 0.1)
-                    tslight0->Draw(shaders);
-                //draw headlight copy
-                if (vehCarModel::HeadlightsState)
-                    tslight0->Draw(shaders);
-            }
-        }
-        if (!vehCarModel::RightSignalLightState && !vehCarModel::HazardLightsState) {
-            if (tslight1 != nullptr) {
-                //draw brake copy
-                if (carsim->getBrake() > 0.1)
-                    tslight1->Draw(shaders);
-                //draw headlight copy
-                if (vehCarModel::HeadlightsState)
-                    tslight1->Draw(shaders);
-            }
-        }
-    }
-
-    //draw taillight signals for cops and opponents
-    if (!car->IsPlayer()) {
+    //draw taillight signals
+    if (!model->getLeftSignalLightState() && !model->getHazardLightsState()) {
         if (tslight0 != nullptr) {
             //draw brake copy
             if (carsim->getBrake() > 0.1)
                 tslight0->Draw(shaders);
             //draw headlight copy
-            if (vehCar::sm_DrawHeadlights)
+            if (model->getHeadlightsState())
                 tslight0->Draw(shaders);
         }
+    }
+    if (!model->getRightSignalLightState() && !model->getHazardLightsState()) {
         if (tslight1 != nullptr) {
             //draw brake copy
             if (carsim->getBrake() > 0.1)
                 tslight1->Draw(shaders);
             //draw headlight copy
-            if (vehCar::sm_DrawHeadlights)
+            if (model->getHeadlightsState())
                 tslight1->Draw(shaders);
         }
     }
@@ -5244,7 +5249,7 @@ void vehCarModelFeatureHandler::DrawGlow() {
             if (carsim->getBrake() > 0.1)
                 tlight->Draw(shaders);
             //draw headlight copy
-            if (car->IsPlayer() && vehCarModel::HeadlightsState || !car->IsPlayer() && vehCar::sm_DrawHeadlights)
+            if (model->getHeadlightsState())
                 tlight->Draw(shaders);
         }
 
@@ -5276,12 +5281,12 @@ void vehCarModelFeatureHandler::DrawGlow() {
             DrawHeadlights(true);
             DrawExtraHeadlights(true);
         }
-        else if (car->IsPlayer() ? vehCarModel::HeadlightsState : vehCar::sm_DrawHeadlights)
+        else if (model->getHeadlightsState())
         {
             DrawHeadlights(false);
             DrawExtraHeadlights(false);
         }
-        if (car->IsPlayer() ? vehCarModel::FoglightsState : MMSTATE->WeatherType == 2)
+        if (model->getFoglightsState())
         {
             DrawFoglights();
         }
@@ -5295,13 +5300,13 @@ void vehCarModelFeatureHandler::DrawGlow() {
         {
             if (hlight != nullptr)
             {
-                if (car->IsPlayer() ? vehCarModel::HeadlightsState : vehCar::sm_DrawHeadlights)
+                if (model->getHeadlightsState())
                 {
                     hlight->Draw(shaders);
                 }
             }
         }
-        if (car->IsPlayer() ? vehCarModel::FoglightsState : MMSTATE->WeatherType == 2)
+        if (model->getFoglightsState())
         {
             for (int i = 0; i < 4; i++)
             {
@@ -5336,10 +5341,10 @@ void vehCarModelFeatureHandler::DrawGlow() {
         gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
 
         if (siren != nullptr && siren->getActive()) {
-            bool drawLEDSiren = fmod(datTimeManager::ElapsedTime, 0.1f) > 0.05f;
+            bool drawLEDSiren = fmod(datTimeManager::ElapsedTime, 0.1f + randValue) > 0.05f + randValue;
 
             if (!vehCarModel::EnableLEDSiren || drawLEDSiren) {
-                int sirenStage = fmod(datTimeManager::ElapsedTime, 2 * vehCarModel::SirenCycle) >= vehCarModel::SirenCycle ? 1 : 0;
+                int sirenStage = fmod(datTimeManager::ElapsedTime, 2 * (vehCarModel::SirenCycle + randValue)) >= (vehCarModel::SirenCycle + randValue) ? 1 : 0;
                 if (sirenStage == 0 && siren0 != nullptr) {
                     siren0->Draw(shaders);
                 }
@@ -5776,11 +5781,11 @@ void vehCarModelFeatureHandler::EjectOneShot() {
 }
 
 void vehCarModelFeatureHandler::Install() {
-    InstallPatch({ 0x58, 0x1 }, {
+    InstallPatch({ 0x60, 0x1 }, {
         0x42BB6E + 1, // Change size of vehCarModel on allocation
     });
 
-    InstallPatch({ 0x58, 0x1 }, {
+    InstallPatch({ 0x60, 0x1 }, {
         0x4CDFE0 + 1, // Change size of vehCarModel on SizeOf
     });
 
@@ -6971,30 +6976,6 @@ void aiVehicleInstanceFeatureHandler::Install()
 */
 
 void vehTrailerFeatureHandler::Update() {
-    auto trailer = reinterpret_cast<vehTrailer*>(this);
-    auto trailerJoint = trailer->getTrailerJoint();
-    auto carHitchOffset = trailer->getCarHitchOffset();
-    auto trailerHitchOffset = trailer->getTrailerHitchOffset();
-    auto carMatrix = trailerJoint->getCarSim()->getICS()->GetMatrix();
-    auto trailerMatrix = trailer->getICS()->GetMatrix();
-
-    float carHitchOffsetX = carMatrix->m00 * carHitchOffset.X + carMatrix->m10 * carHitchOffset.Y + carMatrix->m20 * carHitchOffset.Z + carMatrix->m30;
-    float carHitchOffsetY = carMatrix->m01 * carHitchOffset.X + carMatrix->m11 * carHitchOffset.Y + carMatrix->m21 * carHitchOffset.Z + carMatrix->m31;
-    float carHitchOffsetZ = carMatrix->m02 * carHitchOffset.X + carMatrix->m12 * carHitchOffset.Y + carMatrix->m22 * carHitchOffset.Z + carMatrix->m32;
-
-    Vector3 carHitchPos = Vector3(carHitchOffsetX, carHitchOffsetY, carHitchOffsetZ);
-
-    float trailerHitchOffsetX = trailerMatrix->m00 * trailerHitchOffset.X + trailerMatrix->m10 * trailerHitchOffset.Y + trailerMatrix->m20 * trailerHitchOffset.Z + trailerMatrix->m30;
-    float trailerHitchOffsetY = trailerMatrix->m01 * trailerHitchOffset.X + trailerMatrix->m11 * trailerHitchOffset.Y + trailerMatrix->m21 * trailerHitchOffset.Z + trailerMatrix->m31;
-    float trailerHitchOffsetZ = trailerMatrix->m02 * trailerHitchOffset.X + trailerMatrix->m12 * trailerHitchOffset.Y + trailerMatrix->m22 * trailerHitchOffset.Z + trailerMatrix->m32;
-    
-    Vector3 trailerHitchPos = Vector3(trailerHitchOffsetX, trailerHitchOffsetY, trailerHitchOffsetZ);
-
-    if ((ioKeyboard::GetKeyState(DIK_LCONTROL) || ioKeyboard::GetKeyState(DIK_RCONTROL)) && ioKeyboard::GetKeyState(DIK_N)) {
-        if (carHitchPos.Dist(trailerHitchPos) <= 0.75f)
-            trailerJoint->UnbreakJoint();
-    }
-
     //call original
     hook::Thunk<0x4D7B00>::Call<void>(this);
 }
@@ -7005,10 +6986,6 @@ void vehTrailerFeatureHandler::Reset() {
 }
 
 void vehTrailerFeatureHandler::Install() {
-    InstallPatch({ 0x40, 0x10 }, {
-        0x42BFD6 + 1, // Change size of vehTrailer on allocation
-    });
-
     InstallCallback("vehTrailer::Init", "Reads TWHL4/5 MTX files",
         &vehTrailer::Init, {
             cb::call(0x42C023),
@@ -7026,6 +7003,11 @@ void vehTrailerFeatureHandler::Install() {
             0x5B2F34,
         }
     );
+
+    // Disable Angel's trailer break key
+    InstallPatch({ 0xEB }, {
+        0x5932E2 // dgTrailerJoint::Update
+    });
 }
 
 /*
@@ -7274,6 +7256,7 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
     //get vars
     auto trailer = inst->getTrailer();
     auto carsim = trailer->getTrailerJoint()->getCarSim();
+    auto model = reinterpret_cast<vehCarModel*>(carsim->getInstance());
     float brakeInput = carsim->getBrake();
     int gear = carsim->getTransmission()->getGear();
     int geomSet = inst->GetGeomIndex() - 1;
@@ -7298,6 +7281,7 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
     modStatic* siren1 = lvlInstance::GetGeomTableEntry(geomSet + 14)->GetHighestLOD();
     modStatic* tslight0 = lvlInstance::GetGeomTableEntry(geomSet + 23)->GetHighestLOD();
     modStatic* tslight1 = lvlInstance::GetGeomTableEntry(geomSet + 24)->GetHighestLOD();
+    modStatic* flight = lvlInstance::GetGeomTableEntry(geomSet + 25)->GetHighestLOD();
 
     //draw rlight
     if (rlight != nullptr && gear == 0) {
@@ -7312,7 +7296,7 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
     //draw tlight
     if (tlight != nullptr) {
         //draw night copy
-        if (vehCarModel::HeadlightsState && trailer->getVehType() == 2 || vehCar::sm_DrawHeadlights && trailer->getVehType() != 2)
+        if (model->getHeadlightsState())
             tlight->Draw(shaders);
 
         //draw brake input copy
@@ -7323,21 +7307,23 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
 
     //draw hlight
     if (hlight != nullptr) {
-        if (vehCarModel::HeadlightsState && trailer->getVehType() == 2 || vehCar::sm_DrawHeadlights && trailer->getVehType() != 2)
+        if (model->getHeadlightsState())
             hlight->Draw(shaders);
     }
 
     //check signal clock
-    bool drawSignal = fmod(datTimeManager::ElapsedTime, 1.f) > 0.5f;
+    float randValue = (irand2(model) % 8) * 0.001f;
+    bool drawSignal = fmod(datTimeManager::ElapsedTime, 1.f + randValue) > 0.5f + randValue;
+
     //draw stuff!
-    if (drawSignal && trailer->getVehType() == 2) {
-        if (vehCarModel::LeftSignalLightState || vehCarModel::HazardLightsState) {
+    if (drawSignal) {
+        if (model->getLeftSignalLightState() || model->getHazardLightsState()) {
             if (slight0 != nullptr)
                 slight0->Draw(shaders);
             if (tslight0 != nullptr)
                 tslight0->Draw(shaders);
         }
-        if (vehCarModel::RightSignalLightState || vehCarModel::HazardLightsState) {
+        if (model->getRightSignalLightState() || model->getHazardLightsState()) {
             if (slight1 != nullptr)
                 slight1->Draw(shaders);
             if (tslight1 != nullptr)
@@ -7345,39 +7331,11 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
         }
     }
 
-    //draw taillight signals for player
-    if (trailer->getVehType() == 2) {
-        if (!vehCarModel::LeftSignalLightState && !vehCarModel::HazardLightsState) {
-            if (tslight0 != nullptr) {
-                //draw night copy
-                if (vehCarModel::HeadlightsState)
-                    tslight0->Draw(shaders);
-
-                //draw brake input copy
-                if (brakeInput > 0.1) {
-                    tslight0->Draw(shaders);
-                }
-            }
-        }
-        if (!vehCarModel::RightSignalLightState && !vehCarModel::HazardLightsState) {
-            if (tslight1 != nullptr) {
-                //draw night copy
-                if (vehCarModel::HeadlightsState)
-                    tslight1->Draw(shaders);
-
-                //draw brake input copy
-                if (brakeInput > 0.1) {
-                    tslight1->Draw(shaders);
-                }
-            }
-        }
-    }
-
-    //draw taillight signals for cops and opponents
-    if (trailer->getVehType() != 2) {
+    //draw taillight signals
+    if (!model->getLeftSignalLightState() && !model->getHazardLightsState()) {
         if (tslight0 != nullptr) {
             //draw night copy
-            if (vehCar::sm_DrawHeadlights)
+            if (model->getHeadlightsState())
                 tslight0->Draw(shaders);
 
             //draw brake input copy
@@ -7385,9 +7343,11 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
                 tslight0->Draw(shaders);
             }
         }
+    }
+    if (!model->getRightSignalLightState() && !model->getHazardLightsState()) {
         if (tslight1 != nullptr) {
             //draw night copy
-            if (vehCar::sm_DrawHeadlights)
+            if (model->getHeadlightsState())
                 tslight1->Draw(shaders);
 
             //draw brake input copy
@@ -7398,14 +7358,24 @@ void vehTrailerInstanceFeatureHandler::DrawGlow() {
     }
 
     //draw siren
-    if (trailer->getSirenState()) {
-        int sirenStage = fmod(datTimeManager::ElapsedTime, 2 * vehCarModel::SirenCycle) >= vehCarModel::SirenCycle ? 1 : 0;
-        if (sirenStage == 0 && siren0 != nullptr) {
-            siren0->Draw(shaders);
+    if (model->getCar()->getSiren()->getActive()) {
+        bool drawLEDSiren = fmod(datTimeManager::ElapsedTime, 0.1f + randValue) > 0.05f + randValue;
+
+        if (!vehCarModel::EnableLEDSiren || drawLEDSiren) {
+            int sirenStage = fmod(datTimeManager::ElapsedTime, 2 * (vehCarModel::SirenCycle + randValue)) >= (vehCarModel::SirenCycle + randValue) ? 1 : 0;
+            if (sirenStage == 0 && siren0 != nullptr) {
+                siren0->Draw(shaders);
+            }
+            else if (sirenStage == 1 && siren1 != nullptr) {
+                siren1->Draw(shaders);
+            }
         }
-        else if (sirenStage == 1 && siren1 != nullptr) {
-            siren1->Draw(shaders);
-        }
+    }
+
+    //draw flight
+    if (flight != nullptr) {
+        if (model->getFoglightsState())
+            flight->Draw(shaders);
     }
 }
 

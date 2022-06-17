@@ -39,13 +39,6 @@ namespace MM2
         static bool BreakableRenderTweak;
         static bool WheelWobble;
         static bool MM1StyleWobble;
-
-        //light states
-        static bool HeadlightsState;
-        static bool HazardLightsState;
-        static bool LeftSignalLightState;
-        static bool RightSignalLightState;
-        static bool FoglightsState;
     private:
         bool enabledElectrics[4]; //0/1 are back, 2/3 are front
         vehCar* car;
@@ -93,6 +86,11 @@ namespace MM2
         Vector3 extraHeadlightPositions[2];
         ltLight* foglights[4]; //FOGLIGHT0-3
         Vector3 foglightPositions[4];
+        bool HeadlightsState;
+        bool HazardLightsState;
+        bool LeftSignalLightState;
+        bool RightSignalLightState;
+        bool FoglightsState;
     public:
         AGE_API vehCarModel() {
             scoped_vtable x(this);
@@ -179,6 +177,56 @@ namespace MM2
         inline Vector3 getFoglightPosition(int num)
         {
             return this->foglightPositions[num];
+        }
+
+        inline bool getHeadlightsState()
+        {
+            return this->HeadlightsState;
+        }
+
+        inline void setHeadlightsState(bool state)
+        {
+            this->HeadlightsState = state;
+        }
+
+        inline bool getHazardLightsState()
+        {
+            return this->HazardLightsState;
+        }
+
+        inline void setHazardLightsState(bool state)
+        {
+            this->HazardLightsState = state;
+        }
+
+        inline bool getLeftSignalLightState()
+        {
+            return this->LeftSignalLightState;
+        }
+
+        inline void setLeftSignalLightState(bool state)
+        {
+            this->LeftSignalLightState = state;
+        }
+
+        inline bool getRightSignalLightState()
+        {
+            return this->RightSignalLightState;
+        }
+
+        inline void setRightSignalLightState(bool state)
+        {
+            this->RightSignalLightState = state;
+        }
+
+        inline bool getFoglightsState()
+        {
+            return this->FoglightsState;
+        }
+
+        inline void setFoglightsState(bool state)
+        {
+            this->FoglightsState = state;
         }
 
         AGE_API void GetSurfaceColor(modStatic* model, Vector3* outVector)
@@ -1063,7 +1111,7 @@ namespace MM2
             //draw plight
             if (lod >= 1)
             {
-                if (car->IsPlayer() && vehCarModel::HeadlightsState || !car->IsPlayer() && vehCar::sm_DrawHeadlights)
+                if (this->HeadlightsState)
                     //plighton
                     DrawPart(lod, 53, this->getCarMatrix(), shaders, vehCarModel::PartReflections);
                 else
@@ -1493,7 +1541,7 @@ namespace MM2
         }
     };
 
-    ASSERT_SIZEOF(vehCarModel, 0xCC + 0xC + 0xC + 0xC + 0xC + 0x4 + 0x18 + 0x10 + 0x30); //+8 extra fields
+    ASSERT_SIZEOF(vehCarModel, 0xCC + 0x30 + 0x4 + 0x18 + 0x10 + 0x30 + 0x8); //+13 extra fields
 
     // Lua initialization
 
