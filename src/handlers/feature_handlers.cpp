@@ -1584,6 +1584,7 @@ hook::Type<float> bridgeSpeed(0x5DBFA4);
 hook::Type<float> bridgeAngle(0x5DBFA8);
 
 bool playerCanFly = false;
+bool postalEnabled = false;
 float boneScale = 1.f;
 
 void mmGameHandler::SendChatMessage(char *message) {
@@ -1676,6 +1677,9 @@ void mmGameHandler::SendChatMessage(char *message) {
         }
         if (!strcmp(message, "/tiny")) {
             boneScale = boneScale == 1.f ? 0.2f : 1.f;
+        }
+        if (!strcmp(message, "/postal")) {
+            postalEnabled = !postalEnabled;
         }
 
         //send to dispatcher
@@ -1770,6 +1774,44 @@ static float horn_holdTime = 0.f;
 static float horn_sirenThreshold = 0.15f;
 static bool lastHornButtonState = false;
 
+char launchPropName[128] = "sp_mailbox_f";
+float launchPropSpeed = 25.f;
+
+void mmGameHandler::LaunchProp() {
+    auto game = reinterpret_cast<mmGame*>(this);
+    auto player = game->getPlayer();
+    auto car = player->getCar();
+    auto carInst = car->GetInst();
+
+    Matrix34 matrix = Matrix34();
+    gfxRenderState::sm_Camera->ToMatrix34(matrix);
+    auto camPos = matrix.GetRow(3);
+    auto camFwd = matrix.GetRow(2);
+    matrix.SetRow(3, camPos - camFwd * 6.f);
+
+    auto reqBanger = dgUnhitBangerInstance::RequestBanger(launchPropName, 0);
+    reqBanger->Init(launchPropName, matrix, 0);
+
+    // this is how car breakables work
+    auto banger = dgBangerManager::GetInstance()->GetBanger();
+    banger->SetBangerType(reqBanger->GetBangerType());
+    banger->SetGeomIndex(reqBanger->GetGeomIndex());
+    banger->SetVariant(reqBanger->GetVariant());
+    banger->SetMatrix(matrix);
+    lvlLevel::Singleton->MoveToRoom(banger, lvlLevel::Singleton->FindRoomId(camPos, 0));
+
+    //make active and throw!
+    auto active = banger->AttachEntity();
+    if (active != nullptr)
+    {
+        auto carVel = carInst->GetVelocity();
+        auto bangerICS = active->GetICS();
+        auto launchedVel = carVel + (camFwd * bangerICS->GetMass() * launchPropSpeed);
+        bangerICS->SetScaledVelocity(launchedVel * -1.f);
+        bangerICS->SetAngularVelocity(launchedVel);
+    }
+}
+
 void mmGameHandler::UpdateHorn(bool a1) {
     auto game = reinterpret_cast<mmGame*>(this);
     auto player = game->getPlayer();
@@ -1794,6 +1836,9 @@ void mmGameHandler::UpdateHorn(bool a1) {
     if (buttonPressedThisFrame)
     {
         horn_lastPressTime = datTimeManager::ElapsedTime;
+
+        if (postalEnabled)
+            LaunchProp();
     }
     else if (buttonReleasedThisFrame)
     {
@@ -1846,6 +1891,10 @@ void mmGameHandler::UpdateHorn(bool a1) {
 }
 
 void mmGameHandler::Install() {
+    HookConfig::GetProperty("LaunchPropName", launchPropName, sizeof(launchPropName));
+    ConfigValue<float> cfgLaunchPropSpeed("LaunchPropSpeed", 25.f);
+    launchPropSpeed = cfgLaunchPropSpeed.Get();
+
     InstallPatch("Increases chat buffer size.", { 60 }, {
         0x4E68B5,
         0x4E68B9,
@@ -1997,105 +2046,8 @@ void BridgeFerryHandler::Cull(int lod) {
 }
 
 void BridgeFerryHandler::Draw(int lod) {
-    auto bangerInst = reinterpret_cast<dgUnhitYBangerInstance*>(this);
-    auto treeInst = *dgTreeRenderer::Instance;
-    auto data = bangerInst->GetData();
-
-    int billFlags = data->getBillFlags();
-    int geomSetId = bangerInst->GetGeomIndex();
-    int geomSetIdOffset = geomSetId - 1;
-
-    auto geomEntry = lvlInstance::GetGeomTableEntry(geomSetIdOffset);
-    auto shaders = geomEntry->pShaders[bangerInst->GetVariant()];
-    auto model = geomEntry->GetLOD(lod);
-
-    if (bangerInst->GetFlags() & INST_FLAG_4) {
-        if (lod < 3)
-            lod += 1;
-    }
-
-    if (billFlags & 512 && treeInst != nullptr) {
-        treeInst->AddTree(bangerInst, lod);
-    }
-    else {
-        Matrix34 dummyMatrix;
-        Matrix44::Convert(gfxRenderState::sm_World, bangerInst->GetMatrix(&dummyMatrix));
-        gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
-        RSTATE->SetBlendSet(0, 0x80);
-
-        if (model != nullptr) {
-            if (data->getBillFlags() >= 0) {
-                /*auto texture = shaders->Texture;
-                if (texture != nullptr && strstr(texture->Name, "_glass")) {
-                    bool zWriteEnable = (&RSTATE->Data)->ZWriteEnable;
-                    if ((&RSTATE->Data)->ZWriteEnable != 0)
-                    {
-                        (&RSTATE->Data)->ZWriteEnable = 0;
-                        gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
-                    }
-
-                    model->Draw(shaders);
-
-                    if ((&RSTATE->Data)->ZWriteEnable != zWriteEnable)
-                    {
-                        (&RSTATE->Data)->ZWriteEnable = zWriteEnable;
-                        gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
-                    }
-                }*/
-                if (strstr(data->GetName(), "_tree")) {
-                    bool lighting = (&RSTATE->Data)->Lighting;
-                    if ((&RSTATE->Data)->Lighting != 0)
-                    {
-                        (&RSTATE->Data)->Lighting = 0;
-                        gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
-                    }
-
-                    model->Draw(shaders);
-
-                    if ((&RSTATE->Data)->Lighting != lighting)
-                    {
-                        (&RSTATE->Data)->Lighting = lighting;
-                        gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
-                    }
-                }
-                else {
-                    model->Draw(shaders);
-                }
-            }
-            else {
-                int alphaRef = (&RSTATE->Data)->AlphaRef;
-                if ((&RSTATE->Data)->AlphaRef != dgBangerInstance::getRefAlpha())
-                {
-                    (&RSTATE->Data)->AlphaRef = dgBangerInstance::getRefAlpha();
-                    gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
-                }
-
-                gfxRenderState::m_TouchedMask = gfxRenderState::m_TouchedMasks[0];
-
-                if ((&RSTATE->Data)->Lighting == true)
-                {
-                    (&RSTATE->Data)->Lighting = false;
-                    gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
-                }
-
-                model->Draw(shaders);
-
-                gfxRenderState::m_TouchedMask = gfxRenderState::m_TouchedMasks[1];
-
-                if ((&RSTATE->Data)->Lighting == false)
-                {
-                    (&RSTATE->Data)->Lighting = true;
-                    gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
-                }
-
-                if ((&RSTATE->Data)->AlphaRef != alphaRef)
-                {
-                    (&RSTATE->Data)->AlphaRef = alphaRef;
-                    gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
-                }
-            }
-        }
-    }
+    //call original
+    hook::Thunk<0x4415E0>::Call<void>(this, lod);
 }
 
 void BridgeFerryHandler::Install() {

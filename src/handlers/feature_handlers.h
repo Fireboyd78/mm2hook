@@ -140,6 +140,7 @@ public:
     void InitWeather(void);
     void UpdateSteeringBrakes(void);
     void UpdateHorn(bool a1);
+    void LaunchProp();
 
     static void Install();
 };
