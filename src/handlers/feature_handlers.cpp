@@ -2047,7 +2047,7 @@ void BridgeFerryHandler::Cull(int lod) {
 
 void BridgeFerryHandler::Draw(int lod) {
     //call original
-    hook::Thunk<0x4415E0>::Call<void>(this, lod);
+    hook::Thunk<0x4415E0>::Call<void>(this, lod); // dgBangerInstance::Draw
 }
 
 void BridgeFerryHandler::Install() {
