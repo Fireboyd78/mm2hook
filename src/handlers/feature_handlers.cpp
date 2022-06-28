@@ -1833,6 +1833,17 @@ void mmGameHandler::UpdateHorn(bool a1) {
     //button state updating
     bool buttonReleasedThisFrame = a1 != lastHornButtonState && !a1;
     bool buttonPressedThisFrame = a1 != lastHornButtonState && a1;
+
+    if (!cfgGtaStyleHornSiren.Get())
+    {
+        if (buttonPressedThisFrame && postalEnabled)
+            LaunchProp();
+
+        lastHornButtonState = a1;
+
+        return game->UpdateHorn(a1);
+    }
+
     if (buttonPressedThisFrame)
     {
         horn_lastPressTime = datTimeManager::ElapsedTime;
@@ -1931,14 +1942,12 @@ void mmGameHandler::Install() {
     }
 
     horn_sirenThreshold = cfgHornSirenThreshold.Get();
-    if (cfgGtaStyleHornSiren.Get()) {
-        InstallCallback("mmGame::UpdateHorn", "Implements GTA-style horn/siren",
-            &UpdateHorn, {
-                cb::call(0x413F22),
-                cb::call(0x414691),
-            }
-        );
-    }
+    InstallCallback("mmGame::UpdateHorn", "Implements GTA-style horn/siren",
+        &UpdateHorn, {
+            cb::call(0x413F22),
+            cb::call(0x414691),
+        }
+    );
 }
 
 /*
