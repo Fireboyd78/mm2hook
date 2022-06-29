@@ -73,6 +73,7 @@ namespace MM2
 
         AGE_API void InitWeather(void)                      { hook::Thunk<0x413370>::Call<void>(this); }
         AGE_API void SetIconsState(void)                    { hook::Thunk<0x414BB0>::Call<void>(this); }
+        AGE_API void UpdateHorn(bool a1)                    { hook::Thunk<0x4145B0>::Call<void>(this, a1); }
 
         /*
             asNode virtuals
