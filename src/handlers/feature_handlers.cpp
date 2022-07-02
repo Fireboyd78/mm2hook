@@ -1776,6 +1776,7 @@ static bool lastHornButtonState = false;
 
 char launchPropName[128] = "sp_mailbox_f";
 float launchPropSpeed = 25.f;
+float launchPropHeight = 1.f;
 
 void mmGameHandler::LaunchProp() {
     auto game = reinterpret_cast<mmGame*>(this);
@@ -1788,6 +1789,7 @@ void mmGameHandler::LaunchProp() {
     auto camPos = matrix.GetRow(3);
     auto camFwd = matrix.GetRow(2);
     matrix.SetRow(3, camPos - camFwd * 6.f);
+    matrix.m31 += launchPropHeight;
 
     auto reqBanger = dgUnhitBangerInstance::RequestBanger(launchPropName, 0);
     reqBanger->Init(launchPropName, matrix, 0);
@@ -1904,7 +1906,9 @@ void mmGameHandler::UpdateHorn(bool a1) {
 void mmGameHandler::Install() {
     HookConfig::GetProperty("LaunchPropName", launchPropName, sizeof(launchPropName));
     ConfigValue<float> cfgLaunchPropSpeed("LaunchPropSpeed", 25.f);
+    ConfigValue<float> cfgLaunchPropHeight("LaunchPropHeight", 1.f);
     launchPropSpeed = cfgLaunchPropSpeed.Get();
+    launchPropHeight = cfgLaunchPropHeight.Get();
 
     InstallPatch("Increases chat buffer size.", { 60 }, {
         0x4E68B5,
