@@ -17,7 +17,7 @@ namespace MM2
         int Type;
     public:
         AGE_API mmInfoBase()                                     { hook::Thunk<0x528230>::Call<void>(this); }
-        AGE_API ~mmInfoBase()                                    { hook::Thunk<0x41AB90>::Call<void>(this); }
+        virtual AGE_API ~mmInfoBase()                            { hook::Thunk<0x41AB90>::Call<void>(this); }
 
         AGE_API int Load(char* a1)                               { return hook::Thunk<0x528260>::Call<int>(this, a1); }
         AGE_API int Save(char* a1)                               { return hook::Thunk<0x528310>::Call<int>(this, a1); }
