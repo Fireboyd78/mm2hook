@@ -5909,79 +5909,10 @@ void vehCarModelFeatureHandler::Install() {
     vehWheelHandler
 */
 
-const char* vehWheelHandler::VehNameRemap(const char* basename) {
-    char* playerName = MMCURRPLAYER->GetName();
-
-    if (MMSTATE->GameMode == Cruise && !MMSTATE->unk_EC)
-    {
-        if (!strcmp(playerName, "va2siter") && !strcmp(basename, "vpdb7"))
-            return "va_2siter_s";
-
-        if (!strcmp(playerName, "va2sitersport") && !strcmp(basename, "vpdb7"))
-            return "va_2sitersport_l";
-
-        if (!strcmp(playerName, "vabus") && !strcmp(basename, "vpbus"))
-            return "va_bus_f";
-
-        if (!strcmp(playerName, "vacab") && !strcmp(basename, "vpcab"))
-            return "va_cab_l";
-
-        if (!strcmp(playerName, "vacompact") && !strcmp(basename, "vpbug"))
-            return "va_compact_s";
-
-        if (!strcmp(playerName, "vacooper") && !strcmp(basename, "vpcoop"))
-            return "va_cooper_l";
-
-        if (!strcmp(playerName, "vaddbus") && !strcmp(basename, "vpddbus"))
-            return "va_ddbus_l";
-
-        if (!strcmp(playerName, "vadiesels") && !strcmp(basename, "vpbus"))
-            return "va_diesels_s";
-
-        if (!strcmp(playerName, "vaeuro") && !strcmp(basename, "vpdune"))
-            return "va_euro_l";
-
-        if (!strcmp(playerName, "vaeurocargo") && !strcmp(basename, "vp4x4"))
-            return "va_eurocargo_l";
-
-        if (!strcmp(playerName, "vaeurovan") && !strcmp(basename, "vpford"))
-            return "va_eurovan_f";
-
-        if (!strcmp(playerName, "valargesuv") && !strcmp(basename, "vpbullet"))
-            return "va_largesuv_s";
-
-        if (!strcmp(playerName, "valimo") && !strcmp(basename, "vpcaddie"))
-            return "va_limo_f";
-
-        if (!strcmp(playerName, "vaminivan") && !strcmp(basename, "vpford"))
-            return "va_minivan_s";
-
-        if (!strcmp(playerName, "vapickup") && !strcmp(basename, "vpford"))
-            return "va_pickup_f";
-
-        if (!strcmp(playerName, "vasedans") && !strcmp(basename, "vpbug"))
-            return "va_sedans_s";
-
-        if (!strcmp(playerName, "vasmallsuv") && !strcmp(basename, "vpbug"))
-            return "va_smallsuv_s";
-
-        if (!strcmp(playerName, "vataxi") && !strcmp(basename, "vpmustang99"))
-            return "va_taxi_f";
-
-        if (!strcmp(playerName, "vaultrasport") && !strcmp(basename, "vppanoz"))
-            return "va_ultrasport_l";
-
-        if (!strcmp(playerName, "vawedelivertruck") && !strcmp(basename, "vpford"))
-            return "va_wedelivertruck_f";
-    }
-
-    return basename;
-}
-
 void vehWheelHandler::Init(vehCarSim* carSimPtr, const char* vehicleBasename, const char* wheelName, Vector3 centerOfGravity, phInertialCS* inertialCs, int wheelCount, int flags)
 {
     auto wheel = reinterpret_cast<vehWheel*>(this);
-    wheel->Init(carSimPtr, VehNameRemap(vehicleBasename), wheelName, centerOfGravity, inertialCs, wheelCount, flags);
+    wheel->Init(carSimPtr, vehCarModelFeatureHandler::VehNameRemap(vehicleBasename), wheelName, centerOfGravity, inertialCs, wheelCount, flags);
 }
 
 void vehWheelHandler::Update()

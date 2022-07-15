@@ -322,7 +322,7 @@ public:
 
 class vehCarModelFeatureHandler {
 public:
-    const char* VehNameRemap(const char* basename);
+    static const char* VehNameRemap(const char* basename);
     void Init(MM2::vehCar* car, const char* basename, int variant);
     void InitBound(const char* basename, bool useGeometry);
     void Draw(int a1);
@@ -339,7 +339,6 @@ public:
 
 class vehWheelHandler {
 public:
-    const char* VehNameRemap(const char* basename);
     void Init(MM2::vehCarSim* carSimPtr, const char* vehicleBasename, const char* wheelName, MM2::Vector3 centerOfGravity, MM2::phInertialCS* inertialCs, int wheelCount, int flags);
     void Update();
     static void Install();
