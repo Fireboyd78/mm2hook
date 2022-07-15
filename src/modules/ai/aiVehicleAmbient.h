@@ -27,6 +27,8 @@ namespace MM2
         aiVehicleAmbient(void)                              DONOTCALL;
         aiVehicleAmbient(const aiVehicleAmbient &&)         DONOTCALL;
 
+        AGE_API void Init(char* vehName, int index)         { hook::Thunk<0x551380>::Call<void>(this, vehName, index); }
+
         void Update(void) override                          FORWARD_THUNK;
         void Reset(void) override                           FORWARD_THUNK;
         int Type(void) override                             FORWARD_THUNK;

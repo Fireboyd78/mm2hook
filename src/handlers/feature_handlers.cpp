@@ -81,6 +81,7 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<pedestrianInstanceHandler>("pedestrianInstanceHandler"),
 
     CreateHandler<aiVehicleInstanceFeatureHandler>("aiVehicleInstance"),
+    CreateHandler<aiVehicleAmbientFeatureHandler>("aiVehicleAmbient"),
     CreateHandler<aiPoliceOfficerFeatureHandler>("aiPoliceOfficer"),
 
     CreateHandler<MMDMusicManagerHandler>("MMDMusicManager"),
@@ -5020,6 +5021,85 @@ void vehBreakableMgrHandler::Install() {
     vehCarModelFeatureHandler
 */
 
+const char* vehCarModelFeatureHandler::VehNameRemap(const char* basename) {
+    char* playerName = MMCURRPLAYER->GetName();
+
+    if (MMSTATE->GameMode == Cruise && !MMSTATE->unk_EC)
+    {
+        if (!strcmp(playerName, "va2siter") && !strcmp(basename, "vpdb7"))
+            return "va_2siter_s";
+
+        if (!strcmp(playerName, "va2sitersport") && !strcmp(basename, "vpdb7"))
+            return "va_2sitersport_l";
+
+        if (!strcmp(playerName, "vabus") && !strcmp(basename, "vpbus"))
+            return "va_bus_f";
+
+        if (!strcmp(playerName, "vacab") && !strcmp(basename, "vpcab"))
+            return "va_cab_l";
+
+        if (!strcmp(playerName, "vacompact") && !strcmp(basename, "vpbug"))
+            return "va_compact_s";
+
+        if (!strcmp(playerName, "vacooper") && !strcmp(basename, "vpcoop"))
+            return "va_cooper_l";
+
+        if (!strcmp(playerName, "vaddbus") && !strcmp(basename, "vpddbus"))
+            return "va_ddbus_l";
+
+        if (!strcmp(playerName, "vadiesels") && !strcmp(basename, "vpbus"))
+            return "va_diesels_s";
+
+        if (!strcmp(playerName, "vaeuro") && !strcmp(basename, "vpdune"))
+            return "va_euro_l";
+
+        if (!strcmp(playerName, "vaeurocargo") && !strcmp(basename, "vp4x4"))
+            return "va_eurocargo_l";
+
+        if (!strcmp(playerName, "vaeurovan") && !strcmp(basename, "vpford"))
+            return "va_eurovan_f";
+
+        if (!strcmp(playerName, "valargesuv") && !strcmp(basename, "vpbullet"))
+            return "va_largesuv_s";
+
+        if (!strcmp(playerName, "valimo") && !strcmp(basename, "vpcaddie"))
+            return "va_limo_f";
+
+        if (!strcmp(playerName, "vaminivan") && !strcmp(basename, "vpford"))
+            return "va_minivan_s";
+
+        if (!strcmp(playerName, "vapickup") && !strcmp(basename, "vpford"))
+            return "va_pickup_f";
+
+        if (!strcmp(playerName, "vasedans") && !strcmp(basename, "vpbug"))
+            return "va_sedans_s";
+
+        if (!strcmp(playerName, "vasmallsuv") && !strcmp(basename, "vpbug"))
+            return "va_smallsuv_s";
+
+        if (!strcmp(playerName, "vataxi") && !strcmp(basename, "vpmustang99"))
+            return "va_taxi_f";
+
+        if (!strcmp(playerName, "vaultrasport") && !strcmp(basename, "vppanoz"))
+            return "va_ultrasport_l";
+
+        if (!strcmp(playerName, "vawedelivertruck") && !strcmp(basename, "vpford"))
+            return "va_wedelivertruck_f";
+    }
+
+    return basename;
+}
+
+void vehCarModelFeatureHandler::Init(vehCar* car, const char* basename, int variant) {
+    auto model = reinterpret_cast<vehCarModel*>(this);
+    model->Init(car, VehNameRemap(basename), variant);
+}
+
+void vehCarModelFeatureHandler::InitBound(const char* basename, bool useGeometry) {
+    auto model = reinterpret_cast<vehCarModel*>(this);
+    model->InitBound(VehNameRemap(basename), useGeometry);
+}
+
 void vehCarModelFeatureHandler::Draw(int a1) {
     auto model = reinterpret_cast<vehCarModel*>(this);
     model->vehCarModel::Draw(a1);
@@ -5755,8 +5835,14 @@ void vehCarModelFeatureHandler::Install() {
     });
 
     InstallCallback("vehCarModel::Init", "Use rewritten vehCarModel init.",
-        &vehCarModel::Init, {
+        &Init, {
             cb::call(0x42BE86),
+        }
+    );
+
+    InstallCallback("vehCarModel::Init", "Use rewritten vehCarModel init bound.",
+        &InitBound, {
+            cb::call(0x42BE96),
         }
     );
 
@@ -5823,6 +5909,81 @@ void vehCarModelFeatureHandler::Install() {
     vehWheelHandler
 */
 
+const char* vehWheelHandler::VehNameRemap(const char* basename) {
+    char* playerName = MMCURRPLAYER->GetName();
+
+    if (MMSTATE->GameMode == Cruise && !MMSTATE->unk_EC)
+    {
+        if (!strcmp(playerName, "va2siter") && !strcmp(basename, "vpdb7"))
+            return "va_2siter_s";
+
+        if (!strcmp(playerName, "va2sitersport") && !strcmp(basename, "vpdb7"))
+            return "va_2sitersport_l";
+
+        if (!strcmp(playerName, "vabus") && !strcmp(basename, "vpbus"))
+            return "va_bus_f";
+
+        if (!strcmp(playerName, "vacab") && !strcmp(basename, "vpcab"))
+            return "va_cab_l";
+
+        if (!strcmp(playerName, "vacompact") && !strcmp(basename, "vpbug"))
+            return "va_compact_s";
+
+        if (!strcmp(playerName, "vacooper") && !strcmp(basename, "vpcoop"))
+            return "va_cooper_l";
+
+        if (!strcmp(playerName, "vaddbus") && !strcmp(basename, "vpddbus"))
+            return "va_ddbus_l";
+
+        if (!strcmp(playerName, "vadiesels") && !strcmp(basename, "vpbus"))
+            return "va_diesels_s";
+
+        if (!strcmp(playerName, "vaeuro") && !strcmp(basename, "vpdune"))
+            return "va_euro_l";
+
+        if (!strcmp(playerName, "vaeurocargo") && !strcmp(basename, "vp4x4"))
+            return "va_eurocargo_l";
+
+        if (!strcmp(playerName, "vaeurovan") && !strcmp(basename, "vpford"))
+            return "va_eurovan_f";
+
+        if (!strcmp(playerName, "valargesuv") && !strcmp(basename, "vpbullet"))
+            return "va_largesuv_s";
+
+        if (!strcmp(playerName, "valimo") && !strcmp(basename, "vpcaddie"))
+            return "va_limo_f";
+
+        if (!strcmp(playerName, "vaminivan") && !strcmp(basename, "vpford"))
+            return "va_minivan_s";
+
+        if (!strcmp(playerName, "vapickup") && !strcmp(basename, "vpford"))
+            return "va_pickup_f";
+
+        if (!strcmp(playerName, "vasedans") && !strcmp(basename, "vpbug"))
+            return "va_sedans_s";
+
+        if (!strcmp(playerName, "vasmallsuv") && !strcmp(basename, "vpbug"))
+            return "va_smallsuv_s";
+
+        if (!strcmp(playerName, "vataxi") && !strcmp(basename, "vpmustang99"))
+            return "va_taxi_f";
+
+        if (!strcmp(playerName, "vaultrasport") && !strcmp(basename, "vppanoz"))
+            return "va_ultrasport_l";
+
+        if (!strcmp(playerName, "vawedelivertruck") && !strcmp(basename, "vpford"))
+            return "va_wedelivertruck_f";
+    }
+
+    return basename;
+}
+
+void vehWheelHandler::Init(vehCarSim* carSimPtr, const char* vehicleBasename, const char* wheelName, Vector3 centerOfGravity, phInertialCS* inertialCs, int wheelCount, int flags)
+{
+    auto wheel = reinterpret_cast<vehWheel*>(this);
+    wheel->Init(carSimPtr, VehNameRemap(vehicleBasename), wheelName, centerOfGravity, inertialCs, wheelCount, flags);
+}
+
 void vehWheelHandler::Update()
 {
     //call original
@@ -5832,7 +5993,7 @@ void vehWheelHandler::Update()
 void vehWheelHandler::Install()
 {
     InstallCallback("vehWheel::Init", "Use rewritten vehWheel init.",
-        &vehWheel::Init, {
+        &Init, {
             cb::call(0x4CBC0A),
             cb::call(0x4CBC41),
             cb::call(0x4CBC7D),
@@ -6154,6 +6315,37 @@ void pedestrianInstanceHandler::Install()
 }
 
 /*
+    aiVehicleAmbientFeatureHandler
+*/
+
+bool BackwardsCheat = false;
+
+void aiVehicleAmbientFeatureHandler::Init(char* vehName, int index)
+{
+    auto ambient = reinterpret_cast<aiVehicleAmbient*>(this);
+    auto player = &MMCURRPLAYER;
+
+    BackwardsCheat = (player != nullptr && !strcmp(player->GetName(), "amizdA eoJ"));
+
+    if (player != nullptr && !strcmp(player->GetName(), "Big Bus Party"))
+        vehName = (!strcmp(MMSTATE->CityName, "london")) ? "va_ddbus_l" : "va_bus_f";
+
+    if (player != nullptr && !strcmp(player->GetName(), "Tiny Tim"))
+        vehName = "va_compact_s";
+
+    ambient->Init(vehName, index);
+}
+
+void aiVehicleAmbientFeatureHandler::Install()
+{
+    InstallCallback("aiVehicleAmbient::Init", "Implements MM1 player save cheats.",
+        &Init, {
+            cb::call(0x5356EC),
+        }
+    );
+}
+
+/*
     aiVehicleInstanceFeatureHandler
 */
 
@@ -6310,6 +6502,9 @@ void aiVehicleInstanceFeatureHandler::Draw(int lod)
     auto spline = inst->getSpline();
     auto carMatrix = spline->GetMatrix();
 
+    if (BackwardsCheat)
+        carMatrix.Rotate(carMatrix.GetRow(1), 3.14f);
+
     //get our geometry id
     int geomSetId = inst->GetGeomIndex();
     int geomSetIdOffset = geomSetId - 1;
@@ -6449,6 +6644,9 @@ void aiVehicleInstanceFeatureHandler::Draw(int lod)
     }
 
     inst->setLOD(lod + 1);
+
+    if (BackwardsCheat)
+        carMatrix.Rotate(carMatrix.GetRow(1), 3.14f);
 }
 
 void aiVehicleInstanceFeatureHandler::DrawShadow()
@@ -6467,6 +6665,9 @@ void aiVehicleInstanceFeatureHandler::DrawShadow()
 
     //get shadow
     modStatic* shadow = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 1)->GetHighLOD();
+
+    if (BackwardsCheat)
+        vehicleMatrix.Rotate(vehicleMatrix.GetRow(1), 3.14f);
 
     if (shadow != nullptr)
     {
@@ -6546,6 +6747,9 @@ void aiVehicleInstanceFeatureHandler::DrawShadow()
             gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
         }
     }
+
+    if (BackwardsCheat)
+        vehicleMatrix.Rotate(vehicleMatrix.GetRow(1), 3.14f);
 }
 
 void aiVehicleInstanceFeatureHandler::DrawGlow()
@@ -6553,6 +6757,9 @@ void aiVehicleInstanceFeatureHandler::DrawGlow()
     auto inst = reinterpret_cast<aiVehicleInstance*>(this);
     auto spline = inst->getSpline();
     auto carMatrix = spline->GetMatrix();
+
+    if (BackwardsCheat)
+        carMatrix.Rotate(carMatrix.GetRow(1), 3.14f);
 
     //setup renderer
     Matrix44::Convert(gfxRenderState::sm_World, carMatrix);
@@ -6670,6 +6877,9 @@ void aiVehicleInstanceFeatureHandler::DrawGlow()
             }
         }
     }
+
+    if (BackwardsCheat)
+        carMatrix.Rotate(carMatrix.GetRow(1), 3.14f);
 }
 
 void aiVehicleInstanceFeatureHandler::DrawHeadlights()

@@ -140,6 +140,7 @@
     <ClInclude Include="src\mm2_effects.h" />
     <ClInclude Include="src\events\dispatcher.h" />
     <ClInclude Include="src\mm2_particle.h" />
+    <ClInclude Include="src\mm2_player.h" />
     <ClInclude Include="src\mm2_replay.h" />
     <ClInclude Include="src\modules\ai.h" />
     <ClInclude Include="src\modules\ai\aiBanger.h" />
@@ -378,6 +379,7 @@
     <ClCompile Include="src\mm2_effects.cpp" />
     <ClCompile Include="src\events\dispatcher.cpp" />
     <ClCompile Include="src\mm2_particle.cpp" />
+    <ClCompile Include="src\mm2_player.cpp" />
     <ClCompile Include="src\mm2_replay.cpp" />
     <ClCompile Include="src\modules\ai.cpp" />
     <ClCompile Include="src\modules\banger.cpp" />

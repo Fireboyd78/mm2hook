@@ -834,6 +834,8 @@ namespace MM2
             }
         }
         
+        AGE_API void InitBound(char const* vehName, bool useGeometry)               { hook::Thunk<0x4CDA20>::Call<void>(this, vehName, useGeometry); }
+
         // We made this matrix to draw car body with wobble angling
         Matrix34 getCarMatrix()
         {
