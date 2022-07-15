@@ -954,6 +954,9 @@
     <ClInclude Include="src\modules\ai\aiGoal.h">
       <Filter>Source Files\modules\ai</Filter>
     </ClInclude>
+    <ClInclude Include="src\mm2_player.h">
+      <Filter>Source Files\mm2</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\lua\lapi.c">
@@ -1278,6 +1281,9 @@
       <Filter>Source Files\implot</Filter>
     </ClCompile>
     <ClCompile Include="src\mm2_common.cpp">
+      <Filter>Source Files\mm2</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mm2_player.cpp">
       <Filter>Source Files\mm2</Filter>
     </ClCompile>
   </ItemGroup>

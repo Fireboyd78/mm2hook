@@ -322,6 +322,9 @@ public:
 
 class vehCarModelFeatureHandler {
 public:
+    static const char* VehNameRemap(const char* basename);
+    void Init(MM2::vehCar* car, const char* basename, int variant);
+    void InitBound(const char* basename, bool useGeometry);
     void Draw(int a1);
     void DrawShadow();
     void DrawGlow();
@@ -336,6 +339,7 @@ public:
 
 class vehWheelHandler {
 public:
+    void Init(MM2::vehCarSim* carSimPtr, const char* vehicleBasename, const char* wheelName, MM2::Vector3 centerOfGravity, MM2::phInertialCS* inertialCs, int wheelCount, int flags);
     void Update();
     static void Install();
 };
@@ -373,6 +377,12 @@ public:
     void DrawGlow();
     void DrawHeadlights();
     bool Collide(MM2::lvlSegment& segment, MM2::lvlIntersection* intersection, int roomId, MM2::lvlInstance* ignoreInstance, ushort instanceFlags, int collideFlags);
+    static void Install();
+};
+
+class aiVehicleAmbientFeatureHandler {
+public:
+    void Init(char* vehName, int index);
     static void Install();
 };
 

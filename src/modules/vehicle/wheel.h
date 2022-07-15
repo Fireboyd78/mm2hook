@@ -34,9 +34,17 @@ namespace MM2
         float SuspensionExtent;
         float SuspensionFactor;
         float SuspensionDampCoef;
-        byte _buffer0[0xD8];
+        int WheelCount;
+        lvlSegment Segment;
+        lvlIntersection Intersection;
+        lvlSegmentInfo SegmentInfo;
+        lvlInstance* Instance;
         BOOL IsGrounded;
-        byte _buffer1[0x34];
+        Vector3 WheelSpaceVelocity;
+        float MotorAdjustedForwardVelocity;
+        Vector3 SidewaysDirection;
+        Vector3 LastSurfaceNormal;
+        Vector3 RearwardsDirection;
         Vector3 LastHitPosition;
         Vector3 Center;
         float Radius;
@@ -48,7 +56,7 @@ namespace MM2
         float MaterialDepth;
         float MaterialHeight;
         float MaterialWidth;
-        byte _buffer2[0x4];
+        float BumpDepth;
         float AccumulatedRotation;
         float InputBrakeAmount;
         float BrakeCoefLoaded;
@@ -56,7 +64,7 @@ namespace MM2
         float SteerAmount;
         float TargetSuspensionTravel;
         float CurrentSuspensionForce;
-        byte _buffer3[0x4];
+        float SuspensionForceCopy;
         float SuspensionCompressionRate;
         float SuspensionForceTwo_;
         float SuspensionMaxForce;
@@ -65,8 +73,8 @@ namespace MM2
         float WobbleAmount;
         float CamberAmount;
         float LastSlippage;
-        __int16 MajorlySlipping;
-        __int8 LastGroundedStatus;
+        short MajorlySlipping;
+        char LastGroundedStatus;
         bool BottomedOut;
         float CurrentTireDispLat;
         float CurrentTireDispLong;
@@ -83,7 +91,7 @@ namespace MM2
         float SlidingFric;
         float DispLimitLatLoaded;
         float DampCoefLatLoaded;
-        byte _buffer5[0x4];
+        float InvSquaredOptimumSlipPercent;
         lvlMaterial *CurrentPhysicsMaterial;
     public:
         static hook::Type<float> WeatherFriction;
@@ -164,13 +172,13 @@ namespace MM2
     public:
         AGE_API vehWheel()                                     { hook::Thunk<0x4D2190>::Call<void>(this); }
 
-        AGE_API void Init(vehCarSim* carSimPtr, const char* vehicleBasename, const char* wheelName, Vector3 centerOfGravity, phInertialCS* inertialCs, int a6, int a7)
+        AGE_API void Init(vehCarSim* carSimPtr, const char* vehicleBasename, const char* wheelName, Vector3 centerOfGravity, phInertialCS* inertialCs, int wheelCount, int flags)
         {
             Matrix34 outMatrix;
 
             this->m_CarSimPtr = carSimPtr;
-            this->WheelFlags |= a7;
-            *getPtr<int>(this, 0x94) = a6;
+            this->WheelFlags |= flags;
+            this->WheelCount = wheelCount;
             this->m_InertialCSPtr = inertialCs;
 
             if (GetPivot(outMatrix, vehicleBasename, wheelName)) {

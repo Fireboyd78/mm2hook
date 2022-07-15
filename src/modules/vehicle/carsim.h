@@ -34,7 +34,7 @@ namespace MM2
         Vector3 ResetPosition;
         Vector3 InertiaBoxCopy; //Copied on Init, used for aiVehiclePlayer distance calculations
         Vector3 InertiaBox;
-        int unknown564;
+        int WheelCount;
         float BoundFriction;
         float BoundElasticity;
         int BoundPtr;
@@ -181,6 +181,10 @@ namespace MM2
             return this->SpeedInMph;
         };
 
+        inline int getWheelCount(void) {
+            return this->WheelCount;
+        }
+
         inline Vector3 getResetPosition(void) {
             return this->ResetPosition;
         }
@@ -238,7 +242,7 @@ namespace MM2
         AGE_API vehCarSim()                                 { hook::Thunk<0x4CB660>::Call<void>(this); }
         AGE_API ~vehCarSim()                                { hook::Thunk<0x4CB8E0>::Call<void>(this); }
 
-        AGE_API void Init(const char* basename, int colliderPtr, vehCarModel* carModelPtr)
+        AGE_API void Init(const char* basename, phCollider* colliderPtr, vehCarModel* carModelPtr)
         {
             //Call original 
             hook::Thunk<0x4CBB80>::Call<void>(this, basename, colliderPtr, carModelPtr);
