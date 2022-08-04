@@ -695,43 +695,24 @@ namespace MM2
             //load foglights
             if (this->GetGeomIndex() != 0)
             {
-                auto foglight0Entry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 75);
-                auto foglight1Entry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 76);
-                auto foglight2Entry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 77);
-                auto foglight3Entry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 78);
-
-                if (foglight0Entry->GetHighLOD() != nullptr)
+                auto foglightEntry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 75);
+                if (foglightEntry->GetHighLOD() != nullptr)
                 {
                     foglights = new ltLight[4];
-                    Matrix34 outMatrix;
 
-                    GetPivot(outMatrix, basename, "foglight0");
-                    foglights[0].Color = Vector3(1.f, 1.f, 1.f);
-                    foglights[0].Type = 1;
-                    foglights[0].SpotExponent = 3.f;
-                    this->GetSurfaceColor(foglight0Entry->GetHighLOD(), &foglights[0].Color);
-                    this->foglightPositions[0] = Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32);
+                    for (int i = 0; i < 4; i++)
+                    {
+                        auto foglight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 75 + i);
+                        Matrix34 outMatrix;
 
-                    GetPivot(outMatrix, basename, "foglight1");
-                    foglights[1].Color = Vector3(1.f, 1.f, 1.f);
-                    foglights[1].Type = 1;
-                    foglights[1].SpotExponent = 3.f;
-                    this->GetSurfaceColor(foglight1Entry->GetHighLOD(), &foglights[1].Color);
-                    this->foglightPositions[1] = Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32);
-
-                    GetPivot(outMatrix, basename, "foglight2");
-                    foglights[2].Color = Vector3(1.f, 1.f, 1.f);
-                    foglights[2].Type = 1;
-                    foglights[2].SpotExponent = 3.f;
-                    this->GetSurfaceColor(foglight2Entry->GetHighLOD(), &foglights[2].Color);
-                    this->foglightPositions[2] = Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32);
-
-                    GetPivot(outMatrix, basename, "foglight3");
-                    foglights[3].Color = Vector3(1.f, 1.f, 1.f);
-                    foglights[3].Type = 1;
-                    foglights[3].SpotExponent = 3.f;
-                    this->GetSurfaceColor(foglight3Entry->GetHighLOD(), &foglights[3].Color);
-                    this->foglightPositions[3] = Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32);
+                        string_buf<16> buffer("foglight%d", i);
+                        GetPivot(outMatrix, basename, buffer);
+                        foglights[i].Color = Vector3(1.f, 1.f, 1.f);
+                        foglights[i].Type = 1;
+                        foglights[i].SpotExponent = 3.f;
+                        this->GetSurfaceColor(foglight->GetHighLOD(), &foglights[i].Color);
+                        this->foglightPositions[i] = Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32);
+                    }
                 }
             }
 
