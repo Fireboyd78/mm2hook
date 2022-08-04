@@ -5574,10 +5574,6 @@ void vehCarModelFeatureHandler::DrawFoglights()
     int geomSetId = model->GetGeomIndex();
     int geomSetIdOffset = geomSetId - 1;
 
-    auto foglight0 = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 75);
-    if (foglight0->GetHighLOD() == nullptr)
-        return;
-
     //prepare glow texture
     gfxTexture* lastTexture = ltLight::GlowTexture;
     bool swappedTexture = false;
@@ -5595,6 +5591,10 @@ void vehCarModelFeatureHandler::DrawFoglights()
     ltLight::DrawGlowBegin();
     for (int i = 0; i < 4; i++)
     {
+        auto foglight = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 75 + i);
+        if (foglight->GetHighLOD() == nullptr)
+            continue;
+
         auto breaklt = model->getGenBreakableMgr()->Get(i + 3);
 
         if (breaklt == nullptr || breaklt->IsAttached)
@@ -5826,11 +5826,11 @@ void vehCarModelFeatureHandler::EjectOneShot() {
 }
 
 void vehCarModelFeatureHandler::Install() {
-    InstallPatch({ 0x60, 0x1 }, {
+    InstallPatch({ 0x54, 0x1 }, {
         0x42BB6E + 1, // Change size of vehCarModel on allocation
     });
 
-    InstallPatch({ 0x60, 0x1 }, {
+    InstallPatch({ 0x54, 0x1 }, {
         0x4CDFE0 + 1, // Change size of vehCarModel on SizeOf
     });
 

@@ -84,7 +84,7 @@ namespace MM2
         Vector3 fndr5offset;
         ltLight* extraHeadlights; //HEADLIGHT2-3
         Vector3 extraHeadlightPositions[2];
-        ltLight* foglights[4]; //FOGLIGHT0-3
+        ltLight* foglights; //FOGLIGHT0-3
         Vector3 foglightPositions[4];
         bool HeadlightsState;
         bool HazardLightsState;
@@ -166,12 +166,15 @@ namespace MM2
             return this->extraHeadlightPositions[num];
         }
 
-        inline ltLight* getFoglight(int num)
+        inline ltLight* getFoglight(int index)
         {
-            if (num < 0 || num >= 4)
-                return nullptr;
+            //cap index
+            if (index < 0)
+                index = 0;
+            if (index >= 4)
+                index = 3;
 
-            return this->foglights[num];
+            return &this->foglights[index];
         }
 
         inline Vector3 getFoglightPosition(int num)
@@ -692,22 +695,43 @@ namespace MM2
             //load foglights
             if (this->GetGeomIndex() != 0)
             {
-                for (int i = 0; i < 4; i++)
-                {
-                    auto foglightEntry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 75 + i);
-                    if (foglightEntry->GetHighLOD() == nullptr)
-                        continue;
+                auto foglight0Entry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 75);
+                auto foglight1Entry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 76);
+                auto foglight2Entry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 77);
+                auto foglight3Entry = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 78);
 
+                if (foglight0Entry->GetHighLOD() != nullptr)
+                {
+                    foglights = new ltLight[4];
                     Matrix34 outMatrix;
 
-                    string_buf<16> buffer("foglight%d", i);
-                    GetPivot(outMatrix, basename, buffer);
-                    foglights[i] = new ltLight();
-                    foglights[i]->Color = Vector3(1.f, 1.f, 1.f);
-                    foglights[i]->Type = 1;
-                    foglights[i]->SpotExponent = 3.f;
-                    this->GetSurfaceColor(foglightEntry->GetHighLOD(), &foglights[i]->Color);
-                    this->foglightPositions[i] = Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32);
+                    GetPivot(outMatrix, basename, "foglight0");
+                    foglights[0].Color = Vector3(1.f, 1.f, 1.f);
+                    foglights[0].Type = 1;
+                    foglights[0].SpotExponent = 3.f;
+                    this->GetSurfaceColor(foglight0Entry->GetHighLOD(), &foglights[0].Color);
+                    this->foglightPositions[0] = Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32);
+
+                    GetPivot(outMatrix, basename, "foglight1");
+                    foglights[1].Color = Vector3(1.f, 1.f, 1.f);
+                    foglights[1].Type = 1;
+                    foglights[1].SpotExponent = 3.f;
+                    this->GetSurfaceColor(foglight1Entry->GetHighLOD(), &foglights[1].Color);
+                    this->foglightPositions[1] = Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32);
+
+                    GetPivot(outMatrix, basename, "foglight2");
+                    foglights[2].Color = Vector3(1.f, 1.f, 1.f);
+                    foglights[2].Type = 1;
+                    foglights[2].SpotExponent = 3.f;
+                    this->GetSurfaceColor(foglight2Entry->GetHighLOD(), &foglights[2].Color);
+                    this->foglightPositions[2] = Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32);
+
+                    GetPivot(outMatrix, basename, "foglight3");
+                    foglights[3].Color = Vector3(1.f, 1.f, 1.f);
+                    foglights[3].Type = 1;
+                    foglights[3].SpotExponent = 3.f;
+                    this->GetSurfaceColor(foglight3Entry->GetHighLOD(), &foglights[3].Color);
+                    this->foglightPositions[3] = Vector3(outMatrix.m30, outMatrix.m31, outMatrix.m32);
                 }
             }
 
@@ -1543,7 +1567,7 @@ namespace MM2
         }
     };
 
-    ASSERT_SIZEOF(vehCarModel, 0xCC + 0x30 + 0x4 + 0x18 + 0x10 + 0x30 + 0x8); //+13 extra fields
+    ASSERT_SIZEOF(vehCarModel, 0xCC + 0x30 + 0x4 + 0x18 + 0x4 + 0x30 + 0x8); //+13 extra fields
 
     // Lua initialization
 
