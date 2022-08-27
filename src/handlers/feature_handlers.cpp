@@ -30,8 +30,8 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<gizFerryHandler>("gizFerry"),
     CreateHandler<gizParkedCarMgrHandler>("gizParkedCarMgr"),
 
-    CreateHandler<mmHudMapFeatureHandler>("mmHudMapFeatureHandler"),
-    CreateHandler<mmIconsHandler>("mmIconsHandler"),
+    CreateHandler<mmHudMapFeatureHandler>("mmHudMap"),
+    CreateHandler<mmIconsFeatureHandler>("mmIcons"),
     CreateHandler<mmDashViewHandler>("mmDashView"),
     CreateHandler<mmExternalViewHandler>("mmExternalView"),
     CreateHandler<mmDirSndHandler>("mmDirSnd"),
@@ -45,6 +45,7 @@ static init_handler g_feature_handlers[] = {
     CreateHandler<mmSingleCircuitHandler>("mmSingleCircuit"),
     CreateHandler<mmSingleStuntHandler>("mmSingleStunt"),
     CreateHandler<mmSingleRoamHandler>("mmSingleRoam"),
+    CreateHandler<mmTextNodeHandler>("mmTextNode"),
 
     CreateHandler<dgBangerInstanceHandler>("dgBangerInstance"),
     CreateHandler<ltLensFlareHandler>("ltLensFlare"),
@@ -2103,6 +2104,29 @@ static ConfigValue<int> cfgPoliceTriOutlineColor     ("PoliceTriOutlineColor",  
 static ConfigValue<int> cfgOpponentTriColor          ("OpponentTriColor",          7);
 static ConfigValue<int> cfgOpponentTriOutlineColor   ("OpponentTriOutlineColor",   0);
 
+static ConfigValue<bool> cfgBlacknWhiteCnRTeams("BlacknWhiteCnRTeams", false);
+
+unsigned int HudmapIconColors[16] = {
+    0xFF000000, // Black
+    0xFFFF0000, // Bright Red
+    0xFF0000EF, // Blue
+    0xFF00EF00, // Green
+    0xFFEF0000, // Red
+    0xFFFFFF00, // Yellow
+    0xFFFF5A00, // Orange
+    0xFFB400FF, // Purple
+    0xFF00FFFF, // Cyan
+    0xFFFF0390, // Pink
+
+    // Custom Colors
+    0xFFFFFFFF, // White
+    0xFFFDBF72, // Light Orange
+    0xFFC0EC42, // Light Green
+    0xFF000099, // Dark Blue
+    0xFF990000, // Dark Red
+    0xFF555555, // Grey
+};
+
 void mmHudMapFeatureHandler::DrawColoredTri(unsigned int color, const Matrix34 &matrix) {
     rglEnableDisable(RGL_DEPTH_TEST, false);
     Matrix44::Convert(gfxRenderState::sm_World, matrix);
@@ -2117,54 +2141,10 @@ void mmHudMapFeatureHandler::DrawColoredTri(unsigned int color, const Matrix34 &
     rglEnableDisable(RGL_DEPTH_TEST, true);
 }
 
-void mmHudMapFeatureHandler::DrawWhiteTri(const Matrix34 &matrix) {
-    rglEnableDisable(RGL_DEPTH_TEST, false);
-    Matrix44::Convert(gfxRenderState::sm_World, matrix);
-    gfxRenderState::m_Touched |= 0x88;
-    vglBindTexture(0);
-    vglBegin(DRAWMODE_TRIANGLELIST, 0);
-    vglCurrentColor = 0xFFFFFFFF;
-    vglVertex(0.f, 0.f, -1.f);
-    vglVertex(-0.69999999f, 0.f, 1.f);
-    vglVertex(0.69999999f, 0.f, 1.f);
-    vglEnd();
-    rglEnableDisable(RGL_DEPTH_TEST, true);
-}
-
-void mmHudMapFeatureHandler::DrawLightOrangeTri(const Matrix34 &matrix) {
-    rglEnableDisable(RGL_DEPTH_TEST, false);
-    Matrix44::Convert(gfxRenderState::sm_World, matrix);
-    gfxRenderState::m_Touched |= 0x88;
-    vglBindTexture(0);
-    vglBegin(DRAWMODE_TRIANGLELIST, 0);
-    vglCurrentColor = 0xFFFDBF72;
-    vglVertex(0.f, 0.f, -1.f);
-    vglVertex(-0.69999999f, 0.f, 1.f);
-    vglVertex(0.69999999f, 0.f, 1.f);
-    vglEnd();
-    rglEnableDisable(RGL_DEPTH_TEST, true);
-}
-
-void mmHudMapFeatureHandler::DrawLightGreenTri(const Matrix34 &matrix) {
-    rglEnableDisable(RGL_DEPTH_TEST, false);
-    Matrix44::Convert(gfxRenderState::sm_World, matrix);
-    gfxRenderState::m_Touched |= 0x88;
-    vglBindTexture(0);
-    vglBegin(DRAWMODE_TRIANGLELIST, 0);
-    vglCurrentColor = 0xFFC0EC42;
-    vglVertex(0.f, 0.f, -1.f);
-    vglVertex(-0.69999999f, 0.f, 1.f);
-    vglVertex(0.69999999f, 0.f, 1.f);
-    vglEnd();
-    rglEnableDisable(RGL_DEPTH_TEST, true);
-}
-
-hook::Type<unsigned int> HudmapIconColors(0x5C4740);
-hook::Type<Vector3> YAXIS(0x6A3B28);
-Matrix34 mtx;
-
-void mmHudMapFeatureHandler::DrawIcon(int iconType, const Matrix34 &matrix) {
+void mmHudMapFeatureHandler::DrawIcon(int iconType, const Matrix34& matrix) {
     auto hudmap = reinterpret_cast<mmHudMap*>(this);
+
+    Matrix34 mtx;
     mtx.Set(matrix);
 
     mtx.SetRow(1, YAXIS);
@@ -2173,38 +2153,7 @@ void mmHudMapFeatureHandler::DrawIcon(int iconType, const Matrix34 &matrix) {
     mtx.m31 += 15.f;
     mtx.Scale(hudmap->GetIconScale());
 
-    uint color = *HudmapIconColors[iconType];
-
-    if (iconType >= 0)
-        DrawColoredTri(color, mtx);
-    if (iconType < 0)
-        DrawWhiteTri(mtx);
-}
-
-void mmHudMapFeatureHandler::DrawNfsMwPlayerIcon(const Matrix34 &matrix) {
-    auto hudmap = reinterpret_cast<mmHudMap*>(this);
-    mtx.Set(matrix);
-
-    mtx.SetRow(1, YAXIS);
-    mtx.Normalize();
-
-    mtx.m31 += 15.f;
-    mtx.Scale(hudmap->GetIconScale());
-
-    DrawLightOrangeTri(mtx);
-}
-
-void mmHudMapFeatureHandler::DrawNfsMwOpponentIcon(const Matrix34 &matrix) {
-    auto hudmap = reinterpret_cast<mmHudMap*>(this);
-    mtx.Set(matrix);
-
-    mtx.SetRow(1, YAXIS);
-    mtx.Normalize();
-
-    mtx.m31 += 15.f;
-    mtx.Scale(hudmap->GetIconScale());
-
-    DrawLightGreenTri(mtx);
+    DrawColoredTri(HudmapIconColors[iconType], mtx);
 }
 
 void mmHudMapFeatureHandler::DrawPlayer() {
@@ -2214,154 +2163,253 @@ void mmHudMapFeatureHandler::DrawPlayer() {
     auto audio = car->getAudio();
     auto siren = car->getSiren();
     char *vehName = car->getCarDamage()->GetName();
-    bool elapsedTime1 = fmod(datTimeManager::ElapsedTime, 0.15f) > 0.1f;
-    bool elapsedTime2 = fmod(datTimeManager::ElapsedTime, 0.125f) > 0.1f;
-    bool elapsedTime3 = fmod(datTimeManager::ElapsedTime, 0.5f) > 0.25f;
+    bool flashFrequency1 = fmod(datTimeManager::ElapsedTime, 0.09375f) > 0.03125f;
+    bool flashFrequency2 = fmod(datTimeManager::ElapsedTime, 0.09375f) > 0.0625f;
+    bool flashFrequency3 = fmod(datTimeManager::ElapsedTime, 0.5f) > 0.25f;
 
     // draw triangle outline
     auto playerMtx = hudmap->GetPlayerMatrix();
     float scaleAmount = hudmap->GetIconScale() * 1.3f;
     float iconScale = hudmap->GetIconScale();
-    hudmap->SetIconScale(scaleAmount);
 
-    if (hudMapColorStyle == 0) {
-        DrawIcon(0, *playerMtx);
+    if (MMSTATE->Multiplayer && MMSTATE->CnRMode)
+    {
+        hudmap->SetIconScale(scaleAmount);
+        DrawIcon(Black, *playerMtx);
         hudmap->SetIconScale(iconScale);
-        DrawIcon(5, *playerMtx);
+
+        if (cfgBlacknWhiteCnRTeams.Get())
+        {
+            if (MMSTATE->CnRTeam)
+            {
+                DrawIcon(Black, *playerMtx);
+            }
+            else {
+                DrawIcon(White, *playerMtx);
+            }
+        }
+        else {
+            if (MMSTATE->CnRTeam)
+            {
+                DrawIcon(Red, *playerMtx);
+            }
+            else {
+                DrawIcon(Blue, *playerMtx);
+            }
+        }
     }
-    if (hudMapColorStyle == 1) {
-        if (audio->IsPolice(vehName)) {
-            DrawIcon(2, *playerMtx);
+    else {
+        // MM2
+        if (hudMapColorStyle == 0)
+        {
+            hudmap->SetIconScale(scaleAmount);
+            DrawIcon(Black, *playerMtx);
             hudmap->SetIconScale(iconScale);
-            DrawIcon(1, *playerMtx);
+            DrawIcon(Yellow, *playerMtx);
         }
-        else {
-            DrawIcon(-1, *playerMtx);
+        // MM1
+        if (hudMapColorStyle == 1)
+        {
+            if (audio->IsPolice(vehName))
+            {
+                hudmap->SetIconScale(scaleAmount);
+                DrawIcon(Blue, *playerMtx);
+                hudmap->SetIconScale(iconScale);
+                DrawIcon(BrightRed, *playerMtx);
+            }
+            else {
+                if (hudmap->GetMapMode() == HalfScreen)
+                {
+                    hudmap->SetIconScale(iconScale * 1.34f);
+                }
+                else {
+                    hudmap->SetIconScale(iconScale * 1.37f);
+                }
+                DrawIcon(Black, *playerMtx);
+                hudmap->SetIconScale(scaleAmount);
+                DrawIcon(White, *playerMtx);
+                hudmap->SetIconScale(iconScale);
+                DrawIcon(Black, *playerMtx);
+            }
+        }
+        // NFSHP2
+        if (hudMapColorStyle == 2)
+        {
+            hudmap->SetIconScale(scaleAmount);
+            DrawIcon(Black, *playerMtx);
             hudmap->SetIconScale(iconScale);
-            DrawIcon(0, *playerMtx);
-        }
-    }
-    if (hudMapColorStyle == 2) {
-        DrawIcon(0, *playerMtx);
-        hudmap->SetIconScale(iconScale);
-        if (audio->IsPolice(vehName)) {
-            DrawIcon(2, *playerMtx);
-            if (siren != nullptr && siren->getActive()) {
-                if (elapsedTime3)
-                    DrawIcon(1, *playerMtx);
+
+            if (audio->IsPolice(vehName))
+            {
+                DrawIcon(Blue, *playerMtx);
+
+                if (siren != nullptr && siren->getActive())
+                {
+                    if (flashFrequency3)
+                        DrawIcon(BrightRed, *playerMtx);
+                }
+            }
+            else {
+                DrawIcon(Yellow, *playerMtx);
             }
         }
-        else {
-            DrawIcon(5, *playerMtx);
-        }
-    }
-    if (hudMapColorStyle == 3) {
-        DrawIcon(0, *playerMtx);
-        hudmap->SetIconScale(iconScale);
-        if (audio->IsPolice(vehName)) {
-            if (siren != nullptr && siren->getActive()) {
-                DrawIcon(2, *playerMtx);
-                if (elapsedTime1)
-                    DrawIcon(1, *playerMtx);
-                if (elapsedTime2)
-                    DrawIcon(-1, *playerMtx);
+        // NFSMW
+        if (hudMapColorStyle == 3)
+        {
+            hudmap->SetIconScale(scaleAmount);
+            DrawIcon(Black, *playerMtx);
+            hudmap->SetIconScale(iconScale);
+
+            if (audio->IsPolice(vehName))
+            {
+                DrawIcon(White, *playerMtx);
+
+                if (siren != nullptr && siren->getActive())
+                {
+                    if (flashFrequency1)
+                        DrawIcon(Blue, *playerMtx);
+
+                    if (flashFrequency2)
+                        DrawIcon(BrightRed, *playerMtx);
+                }
             }
-            if (siren != nullptr && !siren->getActive()) {
-                DrawIcon(-1, *playerMtx);
-            }
-        }
-        else {
-            DrawNfsMwPlayerIcon(*playerMtx);
-        }
-    }
-    if (hudMapColorStyle == 4) {
-        DrawIcon(0, *playerMtx);
-        hudmap->SetIconScale(iconScale);
-        if (audio->IsPolice(vehName)) {
-            if (siren != nullptr && siren->getActive()) {
-                DrawIcon(2, *playerMtx);
-                if (elapsedTime1)
-                    DrawIcon(1, *playerMtx);
-                if (elapsedTime2)
-                    DrawIcon(-1, *playerMtx);
-            }
-            if (siren != nullptr && !siren->getActive()) {
-                DrawIcon(4, *playerMtx);
+            else {
+                DrawIcon(LightOrange, *playerMtx);
             }
         }
-        else {
-            DrawIcon(8, *playerMtx);
+        // NFSC
+        if (hudMapColorStyle == 4)
+        {
+            hudmap->SetIconScale(scaleAmount);
+            DrawIcon(Black, *playerMtx);
+            hudmap->SetIconScale(iconScale);
+
+            if (audio->IsPolice(vehName))
+            {
+                DrawIcon(Red, *playerMtx);
+
+                if (siren != nullptr && siren->getActive())
+                {
+                    if (flashFrequency1)
+                        DrawIcon(Blue, *playerMtx);
+
+                    if (flashFrequency2)
+                        DrawIcon(White, *playerMtx);
+                }
+            }
+            else {
+                DrawIcon(Cyan, *playerMtx);
+            }
         }
-    }
-    if (hudMapColorStyle >= 5) {
-        DrawIcon(playerTriOutlineColor, *playerMtx);
-        hudmap->SetIconScale(iconScale);
-        DrawIcon(playerTriColor, *playerMtx);
+        // Custom
+        if (hudMapColorStyle >= 5)
+        {
+            hudmap->SetIconScale(scaleAmount);
+            DrawIcon(playerTriOutlineColor, *playerMtx);
+            hudmap->SetIconScale(iconScale);
+            DrawIcon(playerTriColor, *playerMtx);
+        }
     }
 }
 
 void mmHudMapFeatureHandler::DrawCops() {
     auto hudmap = reinterpret_cast<mmHudMap*>(this);
     auto AIMAP = &aiMap::Instance;
-    bool elapsedTime1 = fmod(datTimeManager::ElapsedTime, 0.15f) > 0.1f;
-    bool elapsedTime2 = fmod(datTimeManager::ElapsedTime, 0.125f) > 0.1f;
-    bool elapsedTime3 = fmod(datTimeManager::ElapsedTime, 0.5f) > 0.25f;
-    BOOL ShowAllCops = hudmap->GetShowAllCops();
+    bool flashFrequency1 = fmod(datTimeManager::ElapsedTime, 0.09375f) > 0.03125f;
+    bool flashFrequency2 = fmod(datTimeManager::ElapsedTime, 0.09375f) > 0.0625f;
+    bool flashFrequency3 = fmod(datTimeManager::ElapsedTime, 0.5f) > 0.25f;
 
-    for (int i = 0; i < AIMAP->numCops; i++) {
+    for (int i = 0; i < AIMAP->numCops; i++)
+    {
         auto police = AIMAP->Police(i);
         auto policeMtx = police->getCar()->getCarSim()->getICS()->GetMatrix();
-        short policeState = police->getPoliceState();
 
-        // check if the cop in pursuit
-        if (policeState || ShowAllCops) {
+        if (police->InPersuit() || hudmap->GetShowAllCops())
+        {
             // draw triangle outline
             float scaleAmount = hudmap->GetIconScale() * 1.3f;
             float iconScale = hudmap->GetIconScale();
-            hudmap->SetIconScale(scaleAmount);
 
-            if (hudMapColorStyle == 0) {
-                DrawIcon(0, *policeMtx);
+            // MM2
+            if (hudMapColorStyle == 0)
+            {
+                hudmap->SetIconScale(scaleAmount);
+                DrawIcon(Black, *policeMtx);
                 hudmap->SetIconScale(iconScale);
-                DrawIcon(1, *policeMtx);
+
+                if (police->Destroyed())
+                    DrawIcon(DarkRed, *policeMtx);
+                else
+                    DrawIcon(BrightRed, *policeMtx);
             }
-            if (hudMapColorStyle == 1) {
-                DrawIcon(2, *policeMtx);
+            // MM1
+            if (hudMapColorStyle == 1)
+            {
+                hudmap->SetIconScale(scaleAmount);
+
+                if (police->Destroyed()) {
+                    DrawIcon(DarkBlue, *policeMtx);
+                    hudmap->SetIconScale(iconScale);
+                    DrawIcon(DarkRed, *policeMtx);
+                }
+                else {
+                    DrawIcon(Blue, *policeMtx);
+                    hudmap->SetIconScale(iconScale);
+                    DrawIcon(BrightRed, *policeMtx);
+                }
+            }
+            // NFSHP2
+            if (hudMapColorStyle == 2)
+            {
+                hudmap->SetIconScale(scaleAmount);
+                DrawIcon(Black, *policeMtx);
                 hudmap->SetIconScale(iconScale);
-                DrawIcon(1, *policeMtx);
+                DrawIcon(Blue, *policeMtx);
+
+                if (police->InPersuit() && !police->Destroyed())
+                {
+                    if (flashFrequency3)
+                        DrawIcon(BrightRed, *policeMtx);
+                }
             }
-            if (hudMapColorStyle == 2) {
-                DrawIcon(0, *policeMtx);
+            // NFSMW
+            if (hudMapColorStyle == 3)
+            {
+                hudmap->SetIconScale(scaleAmount);
+                DrawIcon(Black, *policeMtx);
                 hudmap->SetIconScale(iconScale);
-                DrawIcon(2, *policeMtx);
-                if (elapsedTime3)
-                    DrawIcon(1, *policeMtx);
-                if (policeState == 12 || policeState == 0)
-                    DrawIcon(2, *policeMtx);
+                DrawIcon(White, *policeMtx);
+
+                if (police->InPersuit() && !police->Destroyed())
+                {
+                    if (flashFrequency1)
+                        DrawIcon(Blue, *policeMtx);
+
+                    if (flashFrequency2)
+                        DrawIcon(BrightRed, *policeMtx);
+                }
             }
-            if (hudMapColorStyle == 3) {
-                DrawIcon(0, *policeMtx);
+            // NFSC
+            if (hudMapColorStyle == 4)
+            {
+                hudmap->SetIconScale(scaleAmount);
+                DrawIcon(Black, *policeMtx);
                 hudmap->SetIconScale(iconScale);
-                DrawIcon(2, *policeMtx);
-                if (elapsedTime1)
-                    DrawIcon(1, *policeMtx);
-                if (elapsedTime2)
-                    DrawIcon(-1, *policeMtx);
-                if (policeState == 12 || policeState == 0)
-                    DrawIcon(-1, *policeMtx);
+                DrawIcon(Red, *policeMtx);
+
+                if (police->InPersuit() && !police->Destroyed())
+                {
+                    if (flashFrequency1)
+                        DrawIcon(Blue, *policeMtx);
+
+                    if (flashFrequency2)
+                        DrawIcon(White, *policeMtx);
+                }
             }
-            if (hudMapColorStyle == 4) {
-                DrawIcon(0, *policeMtx);
-                hudmap->SetIconScale(iconScale);
-                DrawIcon(2, *policeMtx);
-                if (elapsedTime1)
-                    DrawIcon(1, *policeMtx);
-                if (elapsedTime2)
-                    DrawIcon(-1, *policeMtx);
-                if (policeState == 12 || policeState == 0)
-                    DrawIcon(4, *policeMtx);
-            }
-            if (hudMapColorStyle >= 5) {
+            // Custom
+            if (hudMapColorStyle >= 5)
+            {
+                hudmap->SetIconScale(scaleAmount);
                 DrawIcon(policeTriOutlineColor, *policeMtx);
                 hudmap->SetIconScale(iconScale);
                 DrawIcon(policeTriColor, *policeMtx);
@@ -2374,64 +2422,122 @@ void mmHudMapFeatureHandler::DrawOpponents() {
     auto hudmap = reinterpret_cast<mmHudMap*>(this);
     auto AIMAP = &aiMap::Instance;
 
-    for (int i = 0; i < hudmap->GetNumOpponents(); i++) {
+    for (int i = 0; i < hudmap->GetNumOpponents(); i++)
+    {
         auto oppIconInfo = hudmap->GetOppIconInfo(i);
         auto opponentMtx = oppIconInfo->Matrix;
 
-        if (oppIconInfo->Enabled && opponentMtx) {
+        if (oppIconInfo->Enabled && opponentMtx)
+        {
             // draw triangle outline
             float scaleAmount = hudmap->GetIconScale() * 1.3f;
             float iconScale = hudmap->GetIconScale();
-            hudmap->SetIconScale(scaleAmount);
 
-            // check if we're in multiplayer
-            if (MMSTATE->unk_EC) {
-                DrawIcon(0, *opponentMtx);
+            if (MMSTATE->Multiplayer)
+            {
+                hudmap->SetIconScale(scaleAmount);
+                DrawIcon(Black, *opponentMtx);
                 hudmap->SetIconScale(iconScale);
-                DrawIcon(i + 2, *opponentMtx);
-            } 
+
+                if (oppIconInfo->Color == 0xFF0000EF)
+                {   
+                    DrawIcon(Blue, *opponentMtx);
+                }
+                if (oppIconInfo->Color == 0xFF00EF00)
+                {
+                    DrawIcon(Green, *opponentMtx);
+                }
+                if (oppIconInfo->Color == 0xFFEF0000)
+                {
+                    DrawIcon(Red, *opponentMtx);
+                }
+                if (oppIconInfo->Color == 0xFFFFFF00)
+                {
+                    DrawIcon(Yellow, *opponentMtx);
+                }
+                if (oppIconInfo->Color == 0xFFFF5A00)
+                {
+                    DrawIcon(Orange, *opponentMtx);
+                }
+                if (oppIconInfo->Color == 0xFFB400FF)
+                {
+                    DrawIcon(Purple, *opponentMtx);
+                }
+                if (oppIconInfo->Color == 0xFF00FFFF)
+                {
+                    DrawIcon(Cyan, *opponentMtx);
+                }
+                if (oppIconInfo->Color == 0xFFFF0390)
+                {
+                    DrawIcon(Pink, *opponentMtx);
+                }
+                if (oppIconInfo->Color == 0xFFFFFFFF)
+                {
+                    DrawIcon(White, *opponentMtx);
+                }
+            }
             else {
                 auto opponent = AIMAP->Opponent(i);
                 auto car = opponent->getCar();
                 auto curDamage = car->getCarDamage()->getCurDamage();
                 auto maxDamage = car->getCarDamage()->getMaxDamage();
 
-                if (curDamage <= maxDamage) {
-                    if (hudMapColorStyle == 0) {
-                        DrawIcon(0, *opponentMtx);
+                if (curDamage <= maxDamage)
+                {
+                    // MM2
+                    if (hudMapColorStyle == 0)
+                    {
+                        hudmap->SetIconScale(scaleAmount);
+                        DrawIcon(Black, *opponentMtx);
                         hudmap->SetIconScale(iconScale);
-                        DrawIcon(7, *opponentMtx);
+                        DrawIcon(Purple, *opponentMtx);
                     }
-                    if (hudMapColorStyle == 1) {
-                        DrawIcon(0, *opponentMtx);
+                    // MM1
+                    if (hudMapColorStyle == 1)
+                    {
+                        hudmap->SetIconScale(scaleAmount);
+                        DrawIcon(Black, *opponentMtx);
                         hudmap->SetIconScale(iconScale);
                         DrawIcon(i + 2, *opponentMtx);
                     }
-                    if (hudMapColorStyle == 2) {
-                        DrawIcon(0, *opponentMtx);
+                    // NFSHP2
+                    if (hudMapColorStyle == 2)
+                    {
+                        hudmap->SetIconScale(scaleAmount);
+                        DrawIcon(Black, *opponentMtx);
                         hudmap->SetIconScale(iconScale);
-                        DrawIcon(3, *opponentMtx);
+                        DrawIcon(Green, *opponentMtx);
                     }
-                    if (hudMapColorStyle == 3) {
-                        DrawIcon(0, *opponentMtx);
+                    // NFSMW
+                    if (hudMapColorStyle == 3)
+                    {
+                        hudmap->SetIconScale(scaleAmount);
+                        DrawIcon(Black, *opponentMtx);
                         hudmap->SetIconScale(iconScale);
-                        DrawNfsMwOpponentIcon(*opponentMtx);
+                        DrawIcon(LightGreen, *opponentMtx);
                     }
-                    if (hudMapColorStyle == 4) {
-                        DrawIcon(0, *opponentMtx);
+                    // NFSC
+                    if (hudMapColorStyle == 4)
+                    {
+                        hudmap->SetIconScale(scaleAmount);
+                        DrawIcon(Black, *opponentMtx);
                         hudmap->SetIconScale(iconScale);
-                        DrawIcon(6, *opponentMtx);
+                        DrawIcon(Orange, *opponentMtx);
                     }
-                    if (hudMapColorStyle >= 5) {
+                    // Custom
+                    if (hudMapColorStyle >= 5)
+                    {
+                        hudmap->SetIconScale(scaleAmount);
                         DrawIcon(opponentTriOutlineColor, *opponentMtx);
                         hudmap->SetIconScale(iconScale);
                         DrawIcon(opponentTriColor, *opponentMtx);
                     }
                 }
                 else {
-                    DrawIcon(0, *opponentMtx);
+                    hudmap->SetIconScale(scaleAmount);
+                    DrawIcon(Black, *opponentMtx);
                     hudmap->SetIconScale(iconScale);
-                    DrawIcon(16, *opponentMtx);
+                    DrawIcon(Grey, *opponentMtx);
                 }
             }
         }
@@ -2483,101 +2589,118 @@ static ConfigValue<int> cfgOpponentIconStyle           ("OpponentIconStyle",    
 static ConfigValue<int> cfgOpponentIconColor           ("OpponentIconColor",           5);
 static ConfigValue<int> cfgBlitzIconColor              ("BlitzIconColor",              6);
 
-unsigned int IconColors[8] = {
+unsigned int IconColors[11] = {
     0xFF0000EF, // Blue
     0xFF00EF00, // Green
     0xFFEF0000, // Red
     0xFFFFFF00, // Yellow
     0xFFFF5A00, // Orange
     0xFFB400FF, // Purple
-    0xFF00FFFF, // Aqua
+    0xFF00FFFF, // Cyan
     0xFFFF0390, // Pink
+
+    // Custom Colors
+    0xFFFFFFFF, // White
+    0xFF000000, // Black
+    0xFFC0EC42, // Light Green
 };
 
-unsigned int SemiTransIconColors[8] = {
+unsigned int SemiTransIconColors[11] = {
     0x800000EF, // Blue
     0x8000EF00, // Green
     0x80EF0000, // Red
     0x80FFFF00, // Yellow
     0x80FF5A00, // Orange
     0x80B400FF, // Purple
-    0x8000FFFF, // Aqua
+    0x8000FFFF, // Cyan
     0x80FF0390, // Pink
+
+    // Custom Colors
+    0x80FFFFFF, // White
+    0x80000000, // Black
+    0x80C0EC42, // Light Green
 };
 
-void mmIconsHandler::RegisterOpponents(OppIconInfo *icons, int count, void *a3) {
+void mmIconsFeatureHandler::RegisterOpponents(OppIconInfo *icon, int count, void *font) {
+    auto icons = reinterpret_cast<mmIcons*>(this);
+
     for (int i = 0; i < count; i++) {
         if (opponentIconTransparency) {
             if (opponentIconStyle == 0) {
-                icons[i].Color = SemiTransIconColors[5];
+                icon[i].Color = SemiTransIconColors[5];
             }
             if (opponentIconStyle == 1) {
-                icons[i].Color = SemiTransIconColors[i];
+                icon[i].Color = SemiTransIconColors[i];
             }
             if (opponentIconStyle == 2) {
-                icons[i].Color = SemiTransIconColors[1];
+                icon[i].Color = SemiTransIconColors[1];
             }
             if (opponentIconStyle == 3) {
-                icons[i].Color = 0x80C0EC42; // semi-transparent Light Green
+                icon[i].Color = SemiTransIconColors[10];
             }
             if (opponentIconStyle == 4) {
-                icons[i].Color = SemiTransIconColors[4];
+                icon[i].Color = SemiTransIconColors[4];
             }
             if (opponentIconStyle >= 5) {
-                icons[i].Color = SemiTransIconColors[opponentIconColor];
+                icon[i].Color = SemiTransIconColors[opponentIconColor];
             }
         }
         else {
             if (opponentIconStyle == 0) {
-                icons[i].Color = IconColors[5];
+                icon[i].Color = IconColors[5];
             }
             if (opponentIconStyle == 1) {
-                icons[i].Color = IconColors[i];
+                icon[i].Color = IconColors[i];
             }
             if (opponentIconStyle == 2) {
-                icons[i].Color = IconColors[1];
+                icon[i].Color = IconColors[1];
             }
             if (opponentIconStyle == 3) {
-                icons[i].Color = 0xFFC0EC42; // Light Green
+                icon[i].Color = IconColors[10];
             }
             if (opponentIconStyle == 4) {
-                icons[i].Color = IconColors[4];
+                icon[i].Color = IconColors[4];
             }
             if (opponentIconStyle >= 5) {
-                icons[i].Color = IconColors[opponentIconColor];
+                icon[i].Color = IconColors[opponentIconColor];
             }
         }
     }
 
-    //call original
-    hook::Thunk<0x4322F0>::Call<void>(this, icons, count, a3);
+    icons->RegisterOpponents(icon, count, font);
 }
 
-void mmIconsHandler::RegisterOpponentsBlitz(OppIconInfo *icons, int count, void *a3) {
+void mmIconsFeatureHandler::RegisterOpponentsBlitz(OppIconInfo *icon, int count, void *font) {
+    auto icons = reinterpret_cast<mmIcons*>(this);
+
     for (int i = 0; i < count; i++) {
         if (blitzIconTransparency) {
             if (blitzIconMultiColor) {
-                icons[i].Color = SemiTransIconColors[i];
+                icon[i].Color = SemiTransIconColors[i];
             }
             if (!blitzIconMultiColor) {
-                icons[i].Color = SemiTransIconColors[blitzIconColor];
+                icon[i].Color = SemiTransIconColors[blitzIconColor];
             }
         }
         if (!blitzIconTransparency) {
             if (blitzIconMultiColor) {
-                icons[i].Color = IconColors[i];
+                icon[i].Color = IconColors[i];
             }
             if (!blitzIconMultiColor) {
-                icons[i].Color = IconColors[blitzIconColor];
+                icon[i].Color = IconColors[blitzIconColor];
             }
         }
     }
 
-    //call original
-    hook::Thunk<0x4322F0>::Call<void>(this, icons, count, a3);
+    icons->RegisterOpponents(icon, count, font);
 }
 
-void mmIconsHandler::Install() {
+void mmIconsFeatureHandler::RegisterOpponentsMulti(OppIconInfo* icon, int count, void *font) {
+    auto icons = reinterpret_cast<mmIcons*>(this);
+    icons->RegisterOpponents(icon, count, font);
+}
+
+void mmIconsFeatureHandler::Install() {
     opponentIconStyle = cfgOpponentIconStyle.Get();
     opponentIconColor = cfgOpponentIconColor.Get();
     opponentIconTransparency = cfgOpponentIconTransparency.Get();
@@ -2596,6 +2719,239 @@ void mmIconsHandler::Install() {
             cb::call(0x41B065), // mmSingleBlitz::Init
         }
     );
+
+    InstallCallback("mmIcons::RegisterOpponents [mmGameMulti]",
+        &RegisterOpponentsMulti, {
+            cb::call(0x43AED3), // mmGameMulti::RegisterMapNetObjects
+        }
+    );
+    
+    // move down place icon position (X Matrix)
+    InstallPatch({ 0x78, 0x5, 0x5B, 0x0 }, {
+       0x4326B6 + 2, // mmIcons::Cull
+    });
+
+    // move down place icon position (Y Matrix)
+    InstallPatch({ 0x78, 0x5, 0x5B, 0x0 }, {
+       0x432746 + 2, // mmIcons::Cull
+    });
+
+    // move down place icon position (Z Matrix)
+    InstallPatch({ 0x78, 0x5, 0x5B, 0x0 }, {
+       0x4327D6 + 2, // mmIcons::Cull
+    });
+
+    // move down place icon position (W Matrix)
+    InstallPatch({ 0x78, 0x5, 0x5B, 0x0 }, {
+       0x432865 + 2, // mmIcons::Cull
+    });
+
+    /*
+        Set gold icon value to 10
+    */
+
+    // Opp Icon Gold
+    InstallPatch({ 10 }, {
+       0x42559E + 6, // mmMultiCR::OppStealGold
+    });
+
+    // Opp Icon Blank
+    InstallPatch({ 11 }, {
+       0x432622 + 4, // mmIcons::Cull
+    });
+
+    // Opp Icon Blank
+    InstallPatch({ 11 }, {
+       0x4267E5 + 6, // mmMultiCR::GameMessage
+    });
+
+    // Opp Icon Blank
+    InstallPatch({ 11 }, {
+       0x426908 + 7, // mmMultiCR::GameMessage
+    });
+
+    // Opp Icon Blank
+    InstallPatch({ 11 }, {
+       0x43AE69 + 3, // mmGameMulti::RegisterMapNetObjects
+    });
+
+    // Opp Icon Blank
+    InstallPatch({ 11 }, {
+       0x43AF11 + 6, // mmGameMulti::DeactivateMapNetObject
+    });
+
+    if (!cfgBlacknWhiteCnRTeams.Get())
+        return;
+
+    /*
+        mmMultiCR::InitNetworkPlayers
+    */
+
+    // Black
+    InstallPatch({ 0x20, 0x20, 0x20, 0xFF }, {
+       0x42433D + 3,
+    });
+
+    // White
+    InstallPatch({ 0xFF, 0xFF, 0xFF, 0xFF }, {
+       0x424358 + 3,
+    });
+
+    /*
+        mmMultiCR::GameMessage
+    */
+
+    // Black
+    InstallPatch({ 0x20, 0x20, 0x20, 0xFF }, {
+       0x4269AF + 7,
+    });
+
+    // White
+    InstallPatch({ 0xFF, 0xFF, 0xFF, 0xFF }, {
+       0x4269D6 + 7,
+    });
+
+    // Black
+    InstallPatch({ 0x0, 0x0, 0x0, 0xFF }, {
+       0x426BDA + 7,
+    });
+
+    // White
+    InstallPatch({ 0xFF, 0xFF, 0xFF, 0xFF }, {
+       0x426C01 + 7,
+    });
+
+    /*
+        mmCRHUD::SetName
+    */
+
+    // Black
+    InstallPatch({ 0x0, 0x3E }, {
+       0x437F81 + 5,
+    });
+
+    // Black
+    InstallPatch({ 0x3E }, {
+       0x437F8B + 6,
+    });
+
+    // Black
+    InstallPatch({ 0x3E }, {
+       0x437F92 + 6,
+    });
+
+    // White
+    InstallPatch({ 0x80, 0x3F }, {
+       0x437FB2 + 5,
+    });
+
+    // White
+    InstallPatch({ 0x80, 0x3F }, {
+       0x437FB9 + 5,
+    });
+}
+
+/*
+    mmTextNodeHandler
+*/
+
+void mmTextNodeHandler::GetTextDimensionsWhite(void const* a1, char const* a2, float& a3, float& a4)
+{
+    auto textNode = reinterpret_cast<mmTextNode*>(this);
+
+    if (MMSTATE->CnRMode == 2)
+        a2 = "WHITE";
+
+    textNode->GetTextDimensions(a1, a2, a3, a4);
+}
+
+void mmTextNodeHandler::GetTextDimensionsBlack(void const* a1, char const* a2, float& a3, float& a4)
+{
+    auto textNode = reinterpret_cast<mmTextNode*>(this);
+
+    if (MMSTATE->CnRMode == 2)
+        a2 = "BLACK";
+
+    textNode->GetTextDimensions(a1, a2, a3, a4);
+}
+
+void mmTextNodeHandler::AddTextWhite(void const* a1, char const* a2, int a3, float a4, float a5)
+{
+    auto textNode = reinterpret_cast<mmTextNode*>(this);
+
+    if (MMSTATE->CnRMode == 2)
+        a2 = "WHITE";
+
+    textNode->AddText(a1, a2, a3, a4, a5);
+}
+
+void mmTextNodeHandler::AddTextBlack(void const* a1, char const* a2, int a3, float a4, float a5)
+{
+    auto textNode = reinterpret_cast<mmTextNode*>(this);
+
+    if (MMSTATE->CnRMode == 2)
+        a2 = "BLACK";
+
+    textNode->AddText(a1, a2, a3, a4, a5);
+}
+
+void mmTextNodeHandler::Install()
+{
+    if (!cfgBlacknWhiteCnRTeams.Get())
+        return;
+
+    InstallCallback("mmTextNode::GetTextDimensions[White]", "Replaces Blue text dimension with White.",
+        &GetTextDimensionsWhite, {
+            cb::call(0x4377F1),
+        }
+    );
+
+    InstallCallback("mmTextNode::GetTextDimensions[Black]", "Replaces Red text dimension with Black.",
+        &GetTextDimensionsBlack, {
+            cb::call(0x43783D),
+        }
+    );
+
+    InstallCallback("mmTextNode::AddText[White]", "Replaces Blue text with White.",
+        &AddTextWhite, {
+            cb::call(0x437885),
+        }
+    );
+
+    InstallCallback("mmTextNode::AddText[Black]", "Replaces Red text with Black.",
+        &AddTextBlack, {
+            cb::call(0x43789E),
+        }
+    );
+
+    /*
+        mmCRHUD::Init
+    */
+
+    // White
+    InstallPatch({ 0x80, 0x3F }, {
+       0x4378C3 + 5,
+    });
+
+    // White
+    InstallPatch({ 0x80, 0x3F }, {
+       0x4378CA + 5,
+    });
+
+    // Black
+    InstallPatch({ 0x0, 0x3E }, {
+       0x4378F8 + 5,
+    });
+
+    // Black
+    InstallPatch({ 0x3E }, {
+       0x4378FF + 6,
+    });
+
+    // Black
+    InstallPatch({ 0x3E }, {
+       0x437906 + 6,
+    });
 }
 
 /*
@@ -5024,7 +5380,7 @@ void vehBreakableMgrHandler::Install() {
 const char* vehCarModelFeatureHandler::VehNameRemap(const char* basename) {
     char* playerName = MMCURRPLAYER->GetName();
 
-    if (MMSTATE->GameMode == Cruise && !MMSTATE->unk_EC)
+    if (MMSTATE->GameMode == Cruise && !MMSTATE->Multiplayer)
     {
         if (!strcmp(playerName, "va2siter") && !strcmp(basename, "vpdb7"))
             return "va_2siter_s";

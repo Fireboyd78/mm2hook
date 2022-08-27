@@ -48,4 +48,52 @@ namespace MM2
 
     // Allocated by vehCarModel::Init @ 0x4CD408, size 0x24
     ASSERT_SIZEOF(fxTexelDamage, 0x24);
+
+
+    class mmText {
+    public:
+        BYTE byte0;
+        BYTE byte1;
+
+        static AGE_API gfxBitmap* CreateFitBitmap(char const* text, void const* font, int color, int bgColor)
+        {
+            return hook::StaticThunk<0x532310>::Call<gfxBitmap*>(text, font, color, bgColor);
+        }
+    };
+
+    class mmTextData {
+    public:
+        Vector2 Pos;
+        uint32_t Flags;
+        HFONT Font;
+        char Text[256];
+    };
+
+    class mmTextNode : public asNode {
+    public:
+        Vector2 Pos;
+        uint32_t EntryCount;
+        uint32_t MaxEntries;
+        uint32_t DrawBits;
+        mmText dword2C;
+        mmTextData* pTextEntries;
+        gfxBitmap* Bitmap;
+        BOOL bModified;
+        uint32_t dword3C;
+        uint32_t dword40;
+        uint8_t byte44;
+        uint32_t FGColor;
+        uint32_t BGColor;
+        uint32_t HiglightColor;
+
+        AGE_API void GetTextDimensions(void const* a1, char const* a2, float& a3, float& a4)
+        {
+            hook::Thunk<0x532B10>::Call<void>(this, a1, a2, &a3, &a4);
+        }
+
+        AGE_API void AddText(void const* a1, char const* a2, int a3, float a4, float a5)
+        {
+            hook::Thunk<0x532C70>::Call<void>(this, a1, a2, a3, a4, a5);
+        }
+    };
 }

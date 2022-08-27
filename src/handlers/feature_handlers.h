@@ -163,12 +163,7 @@ public:
 class mmHudMapFeatureHandler {
 public:
     void DrawColoredTri(unsigned int color, const MM2::Matrix34 &matrix);
-    void DrawWhiteTri(const MM2::Matrix34 &matrix);
-    void DrawLightOrangeTri(const MM2::Matrix34 &matrix);
-    void DrawLightGreenTri(const MM2::Matrix34 &matrix);
     void DrawIcon(int iconType, const MM2::Matrix34 &matrix);
-    void DrawNfsMwPlayerIcon(const MM2::Matrix34 &matrix);
-    void DrawNfsMwOpponentIcon(const MM2::Matrix34 &matrix);
     void DrawPlayer();
     void DrawCops();
     void DrawOpponents();
@@ -176,11 +171,21 @@ public:
     static void Install();
 };
 
-class mmIconsHandler {
+class mmIconsFeatureHandler {
 public:
-    void RegisterOpponents(MM2::OppIconInfo *icons, int count, void *a3);
-    void RegisterOpponentsBlitz(MM2::OppIconInfo *icons, int count, void *a3);
+    void RegisterOpponents(MM2::OppIconInfo *icons, int count, void *font);
+    void RegisterOpponentsBlitz(MM2::OppIconInfo *icons, int count, void *font);
+    void RegisterOpponentsMulti(MM2::OppIconInfo *icons, int count, void *font);
 
+    static void Install();
+};
+
+class mmTextNodeHandler {
+public:
+    void GetTextDimensionsWhite(void const* a1, char const* a2, float& a3, float& a4);
+    void GetTextDimensionsBlack(void const* a1, char const* a2, float& a3, float& a4);
+    void AddTextWhite(void const* a1, char const* a2, int a3, float a4, float a5);
+    void AddTextBlack(void const* a1, char const* a2, int a3, float a4, float a5);
     static void Install();
 };
 
