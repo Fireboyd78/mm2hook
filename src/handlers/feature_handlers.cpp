@@ -2141,7 +2141,7 @@ void mmHudMapFeatureHandler::DrawColoredTri(unsigned int color, const Matrix34 &
     rglEnableDisable(RGL_DEPTH_TEST, true);
 }
 
-void mmHudMapFeatureHandler::DrawIcon(int iconType, const Matrix34& matrix) {
+void mmHudMapFeatureHandler::DrawIcon(int iconColor, const Matrix34& matrix) {
     auto hudmap = reinterpret_cast<mmHudMap*>(this);
 
     Matrix34 mtx;
@@ -2153,7 +2153,7 @@ void mmHudMapFeatureHandler::DrawIcon(int iconType, const Matrix34& matrix) {
     mtx.m31 += 15.f;
     mtx.Scale(hudmap->GetIconScale());
 
-    DrawColoredTri(HudmapIconColors[iconType], mtx);
+    DrawColoredTri(HudmapIconColors[iconColor], mtx);
 }
 
 void mmHudMapFeatureHandler::DrawPlayer() {
@@ -2175,26 +2175,26 @@ void mmHudMapFeatureHandler::DrawPlayer() {
     if (MMSTATE->Multiplayer && MMSTATE->CnRMode)
     {
         hudmap->SetIconScale(scaleAmount);
-        DrawIcon(Black, *playerMtx);
+        DrawIcon(mmHudMap::Black, *playerMtx);
         hudmap->SetIconScale(iconScale);
 
         if (cfgBlacknWhiteCnRTeams.Get())
         {
             if (MMSTATE->CnRTeam)
             {
-                DrawIcon(Black, *playerMtx);
+                DrawIcon(mmHudMap::Black, *playerMtx);
             }
             else {
-                DrawIcon(White, *playerMtx);
+                DrawIcon(mmHudMap::White, *playerMtx);
             }
         }
         else {
             if (MMSTATE->CnRTeam)
             {
-                DrawIcon(Red, *playerMtx);
+                DrawIcon(mmHudMap::Red, *playerMtx);
             }
             else {
-                DrawIcon(Blue, *playerMtx);
+                DrawIcon(mmHudMap::Blue, *playerMtx);
             }
         }
     }
@@ -2203,9 +2203,9 @@ void mmHudMapFeatureHandler::DrawPlayer() {
         if (hudMapColorStyle == 0)
         {
             hudmap->SetIconScale(scaleAmount);
-            DrawIcon(Black, *playerMtx);
+            DrawIcon(mmHudMap::Black, *playerMtx);
             hudmap->SetIconScale(iconScale);
-            DrawIcon(Yellow, *playerMtx);
+            DrawIcon(mmHudMap::Yellow, *playerMtx);
         }
         // MM1
         if (hudMapColorStyle == 1)
@@ -2213,92 +2213,92 @@ void mmHudMapFeatureHandler::DrawPlayer() {
             if (audio->IsPolice(vehName))
             {
                 hudmap->SetIconScale(scaleAmount);
-                DrawIcon(Blue, *playerMtx);
+                DrawIcon(mmHudMap::Blue, *playerMtx);
                 hudmap->SetIconScale(iconScale);
-                DrawIcon(BrightRed, *playerMtx);
+                DrawIcon(mmHudMap::BrightRed, *playerMtx);
             }
             else {
-                if (hudmap->GetMapMode() == HalfScreen)
+                if (hudmap->GetMapMode() == mmHudMap::HalfScreen)
                 {
                     hudmap->SetIconScale(iconScale * 1.34f);
                 }
                 else {
                     hudmap->SetIconScale(iconScale * 1.37f);
                 }
-                DrawIcon(Black, *playerMtx);
+                DrawIcon(mmHudMap::Black, *playerMtx);
                 hudmap->SetIconScale(scaleAmount);
-                DrawIcon(White, *playerMtx);
+                DrawIcon(mmHudMap::White, *playerMtx);
                 hudmap->SetIconScale(iconScale);
-                DrawIcon(Black, *playerMtx);
+                DrawIcon(mmHudMap::Black, *playerMtx);
             }
         }
         // NFSHP2
         if (hudMapColorStyle == 2)
         {
             hudmap->SetIconScale(scaleAmount);
-            DrawIcon(Black, *playerMtx);
+            DrawIcon(mmHudMap::Black, *playerMtx);
             hudmap->SetIconScale(iconScale);
 
             if (audio->IsPolice(vehName))
             {
-                DrawIcon(Blue, *playerMtx);
+                DrawIcon(mmHudMap::Blue, *playerMtx);
 
                 if (siren != nullptr && siren->getActive())
                 {
                     if (flashFrequency3)
-                        DrawIcon(BrightRed, *playerMtx);
+                        DrawIcon(mmHudMap::BrightRed, *playerMtx);
                 }
             }
             else {
-                DrawIcon(Yellow, *playerMtx);
+                DrawIcon(mmHudMap::Yellow, *playerMtx);
             }
         }
         // NFSMW
         if (hudMapColorStyle == 3)
         {
             hudmap->SetIconScale(scaleAmount);
-            DrawIcon(Black, *playerMtx);
+            DrawIcon(mmHudMap::Black, *playerMtx);
             hudmap->SetIconScale(iconScale);
 
             if (audio->IsPolice(vehName))
             {
-                DrawIcon(White, *playerMtx);
+                DrawIcon(mmHudMap::White, *playerMtx);
 
                 if (siren != nullptr && siren->getActive())
                 {
                     if (flashFrequency1)
-                        DrawIcon(Blue, *playerMtx);
+                        DrawIcon(mmHudMap::Blue, *playerMtx);
 
                     if (flashFrequency2)
-                        DrawIcon(BrightRed, *playerMtx);
+                        DrawIcon(mmHudMap::BrightRed, *playerMtx);
                 }
             }
             else {
-                DrawIcon(LightOrange, *playerMtx);
+                DrawIcon(mmHudMap::LightOrange, *playerMtx);
             }
         }
         // NFSC
         if (hudMapColorStyle == 4)
         {
             hudmap->SetIconScale(scaleAmount);
-            DrawIcon(Black, *playerMtx);
+            DrawIcon(mmHudMap::Black, *playerMtx);
             hudmap->SetIconScale(iconScale);
 
             if (audio->IsPolice(vehName))
             {
-                DrawIcon(Red, *playerMtx);
+                DrawIcon(mmHudMap::Red, *playerMtx);
 
                 if (siren != nullptr && siren->getActive())
                 {
                     if (flashFrequency1)
-                        DrawIcon(Blue, *playerMtx);
+                        DrawIcon(mmHudMap::Blue, *playerMtx);
 
                     if (flashFrequency2)
-                        DrawIcon(White, *playerMtx);
+                        DrawIcon(mmHudMap::White, *playerMtx);
                 }
             }
             else {
-                DrawIcon(Cyan, *playerMtx);
+                DrawIcon(mmHudMap::Cyan, *playerMtx);
             }
         }
         // Custom
@@ -2334,13 +2334,13 @@ void mmHudMapFeatureHandler::DrawCops() {
             if (hudMapColorStyle == 0)
             {
                 hudmap->SetIconScale(scaleAmount);
-                DrawIcon(Black, *policeMtx);
+                DrawIcon(mmHudMap::Black, *policeMtx);
                 hudmap->SetIconScale(iconScale);
 
                 if (police->Destroyed())
-                    DrawIcon(DarkRed, *policeMtx);
+                    DrawIcon(mmHudMap::DarkRed, *policeMtx);
                 else
-                    DrawIcon(BrightRed, *policeMtx);
+                    DrawIcon(mmHudMap::BrightRed, *policeMtx);
             }
             // MM1
             if (hudMapColorStyle == 1)
@@ -2348,62 +2348,62 @@ void mmHudMapFeatureHandler::DrawCops() {
                 hudmap->SetIconScale(scaleAmount);
 
                 if (police->Destroyed()) {
-                    DrawIcon(DarkBlue, *policeMtx);
+                    DrawIcon(mmHudMap::DarkBlue, *policeMtx);
                     hudmap->SetIconScale(iconScale);
-                    DrawIcon(DarkRed, *policeMtx);
+                    DrawIcon(mmHudMap::DarkRed, *policeMtx);
                 }
                 else {
-                    DrawIcon(Blue, *policeMtx);
+                    DrawIcon(mmHudMap::Blue, *policeMtx);
                     hudmap->SetIconScale(iconScale);
-                    DrawIcon(BrightRed, *policeMtx);
+                    DrawIcon(mmHudMap::BrightRed, *policeMtx);
                 }
             }
             // NFSHP2
             if (hudMapColorStyle == 2)
             {
                 hudmap->SetIconScale(scaleAmount);
-                DrawIcon(Black, *policeMtx);
+                DrawIcon(mmHudMap::Black, *policeMtx);
                 hudmap->SetIconScale(iconScale);
-                DrawIcon(Blue, *policeMtx);
+                DrawIcon(mmHudMap::Blue, *policeMtx);
 
                 if (police->InPersuit() && !police->Destroyed())
                 {
                     if (flashFrequency3)
-                        DrawIcon(BrightRed, *policeMtx);
+                        DrawIcon(mmHudMap::BrightRed, *policeMtx);
                 }
             }
             // NFSMW
             if (hudMapColorStyle == 3)
             {
                 hudmap->SetIconScale(scaleAmount);
-                DrawIcon(Black, *policeMtx);
+                DrawIcon(mmHudMap::Black, *policeMtx);
                 hudmap->SetIconScale(iconScale);
-                DrawIcon(White, *policeMtx);
+                DrawIcon(mmHudMap::White, *policeMtx);
 
                 if (police->InPersuit() && !police->Destroyed())
                 {
                     if (flashFrequency1)
-                        DrawIcon(Blue, *policeMtx);
+                        DrawIcon(mmHudMap::Blue, *policeMtx);
 
                     if (flashFrequency2)
-                        DrawIcon(BrightRed, *policeMtx);
+                        DrawIcon(mmHudMap::BrightRed, *policeMtx);
                 }
             }
             // NFSC
             if (hudMapColorStyle == 4)
             {
                 hudmap->SetIconScale(scaleAmount);
-                DrawIcon(Black, *policeMtx);
+                DrawIcon(mmHudMap::Black, *policeMtx);
                 hudmap->SetIconScale(iconScale);
-                DrawIcon(Red, *policeMtx);
+                DrawIcon(mmHudMap::Red, *policeMtx);
 
                 if (police->InPersuit() && !police->Destroyed())
                 {
                     if (flashFrequency1)
-                        DrawIcon(Blue, *policeMtx);
+                        DrawIcon(mmHudMap::Blue, *policeMtx);
 
                     if (flashFrequency2)
-                        DrawIcon(White, *policeMtx);
+                        DrawIcon(mmHudMap::White, *policeMtx);
                 }
             }
             // Custom
@@ -2436,44 +2436,44 @@ void mmHudMapFeatureHandler::DrawOpponents() {
             if (MMSTATE->Multiplayer)
             {
                 hudmap->SetIconScale(scaleAmount);
-                DrawIcon(Black, *opponentMtx);
+                DrawIcon(mmHudMap::Black, *opponentMtx);
                 hudmap->SetIconScale(iconScale);
 
                 if (oppIconInfo->Color == 0xFF0000EF)
                 {   
-                    DrawIcon(Blue, *opponentMtx);
+                    DrawIcon(mmHudMap::Blue, *opponentMtx);
                 }
                 if (oppIconInfo->Color == 0xFF00EF00)
                 {
-                    DrawIcon(Green, *opponentMtx);
+                    DrawIcon(mmHudMap::Green, *opponentMtx);
                 }
                 if (oppIconInfo->Color == 0xFFEF0000)
                 {
-                    DrawIcon(Red, *opponentMtx);
+                    DrawIcon(mmHudMap::Red, *opponentMtx);
                 }
                 if (oppIconInfo->Color == 0xFFFFFF00)
                 {
-                    DrawIcon(Yellow, *opponentMtx);
+                    DrawIcon(mmHudMap::Yellow, *opponentMtx);
                 }
                 if (oppIconInfo->Color == 0xFFFF5A00)
                 {
-                    DrawIcon(Orange, *opponentMtx);
+                    DrawIcon(mmHudMap::Orange, *opponentMtx);
                 }
                 if (oppIconInfo->Color == 0xFFB400FF)
                 {
-                    DrawIcon(Purple, *opponentMtx);
+                    DrawIcon(mmHudMap::Purple, *opponentMtx);
                 }
                 if (oppIconInfo->Color == 0xFF00FFFF)
                 {
-                    DrawIcon(Cyan, *opponentMtx);
+                    DrawIcon(mmHudMap::Cyan, *opponentMtx);
                 }
                 if (oppIconInfo->Color == 0xFFFF0390)
                 {
-                    DrawIcon(Pink, *opponentMtx);
+                    DrawIcon(mmHudMap::Pink, *opponentMtx);
                 }
                 if (oppIconInfo->Color == 0xFFFFFFFF)
                 {
-                    DrawIcon(White, *opponentMtx);
+                    DrawIcon(mmHudMap::White, *opponentMtx);
                 }
             }
             else {
@@ -2488,15 +2488,15 @@ void mmHudMapFeatureHandler::DrawOpponents() {
                     if (hudMapColorStyle == 0)
                     {
                         hudmap->SetIconScale(scaleAmount);
-                        DrawIcon(Black, *opponentMtx);
+                        DrawIcon(mmHudMap::Black, *opponentMtx);
                         hudmap->SetIconScale(iconScale);
-                        DrawIcon(Purple, *opponentMtx);
+                        DrawIcon(mmHudMap::Purple, *opponentMtx);
                     }
                     // MM1
                     if (hudMapColorStyle == 1)
                     {
                         hudmap->SetIconScale(scaleAmount);
-                        DrawIcon(Black, *opponentMtx);
+                        DrawIcon(mmHudMap::Black, *opponentMtx);
                         hudmap->SetIconScale(iconScale);
                         DrawIcon(i + 2, *opponentMtx);
                     }
@@ -2504,25 +2504,25 @@ void mmHudMapFeatureHandler::DrawOpponents() {
                     if (hudMapColorStyle == 2)
                     {
                         hudmap->SetIconScale(scaleAmount);
-                        DrawIcon(Black, *opponentMtx);
+                        DrawIcon(mmHudMap::Black, *opponentMtx);
                         hudmap->SetIconScale(iconScale);
-                        DrawIcon(Green, *opponentMtx);
+                        DrawIcon(mmHudMap::Green, *opponentMtx);
                     }
                     // NFSMW
                     if (hudMapColorStyle == 3)
                     {
                         hudmap->SetIconScale(scaleAmount);
-                        DrawIcon(Black, *opponentMtx);
+                        DrawIcon(mmHudMap::Black, *opponentMtx);
                         hudmap->SetIconScale(iconScale);
-                        DrawIcon(LightGreen, *opponentMtx);
+                        DrawIcon(mmHudMap::LightGreen, *opponentMtx);
                     }
                     // NFSC
                     if (hudMapColorStyle == 4)
                     {
                         hudmap->SetIconScale(scaleAmount);
-                        DrawIcon(Black, *opponentMtx);
+                        DrawIcon(mmHudMap::Black, *opponentMtx);
                         hudmap->SetIconScale(iconScale);
-                        DrawIcon(Orange, *opponentMtx);
+                        DrawIcon(mmHudMap::Orange, *opponentMtx);
                     }
                     // Custom
                     if (hudMapColorStyle >= 5)
@@ -2535,9 +2535,9 @@ void mmHudMapFeatureHandler::DrawOpponents() {
                 }
                 else {
                     hudmap->SetIconScale(scaleAmount);
-                    DrawIcon(Black, *opponentMtx);
+                    DrawIcon(mmHudMap::Black, *opponentMtx);
                     hudmap->SetIconScale(iconScale);
-                    DrawIcon(Grey, *opponentMtx);
+                    DrawIcon(mmHudMap::Grey, *opponentMtx);
                 }
             }
         }
@@ -2754,7 +2754,7 @@ void mmIconsFeatureHandler::Install() {
     InstallPatch({ 0x8C }, {
        0x432422 + 1, // mmIcons::Cull
     });
-    
+
     // Cull loop
     InstallPatch({ 0x8E }, {
        0x4328E2 + 1, // mmIcons::Cull

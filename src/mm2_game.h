@@ -1496,32 +1496,6 @@ namespace MM2
     };
     ASSERT_SIZEOF(mmWaypoints, 0x90);
 
-    enum HudmapIconColor {
-        Black,
-        BrightRed,
-        Blue,
-        Green,
-        Red,
-        Yellow,
-        Orange,
-        Purple,
-        Cyan,
-        Pink,
-        White,
-        LightOrange,
-        LightGreen,
-        DarkBlue,
-        DarkRed,
-        Grey,
-    };
-
-    enum HudmapMode {
-        Off,
-        Small,
-        HalfScreen,
-        FullScreen,
-    };
-
     class mmHudMap : public asNode {
     private:
         mmWaypoints* Waypoints;
@@ -1563,6 +1537,31 @@ namespace MM2
         AGE_API int GetNextMapMode()                        { return hook::Thunk<0x42EF00>::Call<int>(this); }
         AGE_API void SetMapMode(int a1)                     { hook::Thunk<0x42EF30>::Call<void>(this, a1); }
     public:
+        enum IconColor {
+            Black,
+            BrightRed,
+            Blue,
+            Green,
+            Red,
+            Yellow,
+            Orange,
+            Purple,
+            Cyan,
+            Pink,
+            White,
+            LightOrange,
+            LightGreen,
+            DarkBlue,
+            DarkRed,
+            Grey,
+        };
+
+        enum MapMode {
+            Off,
+            Small,
+            HalfScreen,
+            FullScreen,
+        };
 
         inline mmPlayer * GetPlayer()
         {

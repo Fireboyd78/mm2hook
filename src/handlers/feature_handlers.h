@@ -163,7 +163,7 @@ public:
 class mmHudMapFeatureHandler {
 public:
     void DrawColoredTri(unsigned int color, const MM2::Matrix34 &matrix);
-    void DrawIcon(int iconType, const MM2::Matrix34 &matrix);
+    void DrawIcon(int iconColor, const MM2::Matrix34 &matrix);
     void DrawPlayer();
     void DrawCops();
     void DrawOpponents();
