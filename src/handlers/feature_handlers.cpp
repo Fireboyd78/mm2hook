@@ -2747,6 +2747,20 @@ void mmIconsFeatureHandler::Install() {
     });
 
     /*
+        Fix last place icon rendering
+    */
+
+    // Cull loop
+    InstallPatch({ 0x8C }, {
+       0x432422 + 1, // mmIcons::Cull
+    });
+    
+    // Cull loop
+    InstallPatch({ 0x8E }, {
+       0x4328E2 + 1, // mmIcons::Cull
+    });
+
+    /*
         Set gold icon value to 10
     */
 
