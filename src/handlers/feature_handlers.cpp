@@ -2776,6 +2776,11 @@ void mmIconsFeatureHandler::Install() {
 
     // Opp Icon Blank
     InstallPatch({ 11 }, {
+       0x41AF92 + 4, // mmSingleBlitz::InitHUD
+    });
+
+    // Opp Icon Blank
+    InstallPatch({ 11 }, {
        0x4267E5 + 6, // mmMultiCR::GameMessage
     });
 
