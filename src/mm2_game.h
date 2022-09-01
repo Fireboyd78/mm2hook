@@ -1374,15 +1374,40 @@ namespace MM2
         int Color;
         bool Enabled;
         Matrix34* Matrix;
-        int field_C;
-        mmText* Text;
-        int field_14;
-        int field_18;
-        int field_1C;
+        int Place;
+        char Text[16];
         gfxBitmap* Bitmap;
-        int field_24;
+        float Scale;
     };
     ASSERT_SIZEOF(OppIconInfo, 0x28);
+
+    class mmIcons : public asNode {
+    private:
+        gfxTexture* IconTexture;
+        Matrix44 TriangleMtx;
+        Matrix44 IconMtx;
+        int OpponentCount;
+        float MinDistance;
+        float MaxDistance;
+        Matrix34* Transform;
+        OppIconInfo* IconInfo;
+        float field_B0;
+        int IconMode;
+        int field_B8;
+    public:
+        AGE_API void Init(Matrix34* camViewMtx, float minDist, float maxDist, int a4)
+                                                                    { hook::Thunk<0x432290>::Call<void>(this, camViewMtx, minDist, maxDist, a4); }
+        AGE_API void RegisterOpponents(OppIconInfo* icon, int count, void* font)
+                                                                    { hook::Thunk<0x4322F0>::Call<void>(this, icon, count, font); }
+
+        /*
+            asNode virtuals
+        */
+
+        virtual AGE_API void Cull() override                        { hook::Thunk<0x4323D0>::Call<void>(this); }
+        virtual AGE_API void Update() override                      { hook::Thunk<0x432390>::Call<void>(this); }
+    };
+    ASSERT_SIZEOF(mmIcons, 0xBC);
 
     class mmWaypointInstance : public lvlInstance {
     private:
@@ -1512,6 +1537,31 @@ namespace MM2
         AGE_API int GetNextMapMode()                        { return hook::Thunk<0x42EF00>::Call<int>(this); }
         AGE_API void SetMapMode(int a1)                     { hook::Thunk<0x42EF30>::Call<void>(this, a1); }
     public:
+        enum IconColor {
+            Black,
+            BrightRed,
+            Blue,
+            Green,
+            Red,
+            Yellow,
+            Orange,
+            Purple,
+            Cyan,
+            Pink,
+            White,
+            LightOrange,
+            LightGreen,
+            DarkBlue,
+            DarkRed,
+            Grey,
+        };
+
+        enum MapMode {
+            Off,
+            Small,
+            HalfScreen,
+            FullScreen,
+        };
 
         inline mmPlayer * GetPlayer()
         {
@@ -1551,6 +1601,11 @@ namespace MM2
         inline short GetNumOpponents()
         {
             return this->NumOpponents;
+        }
+
+        inline int GetMapMode()
+        {
+            return this->MapMode;
         }
 
         AGE_API void Activate()                             { hook::Thunk<0x42EEE0>::Call<void>(this); }

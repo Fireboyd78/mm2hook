@@ -364,7 +364,7 @@ namespace MM2 {
         int VehicleId;
 
         int InputDevice;
-        int unk_EC; // seems heavily tied into multiplayer, but also has singleplayer uses?
+        int Multiplayer; // if Zero that means we're in singleplayer otherwise we're in multiplayer
 
         BOOL CopsChaseAI; // cops will chase after opponents
         int unk_F4; // unused
@@ -546,6 +546,10 @@ namespace MM2 {
     declhook(0x6B4C24, _Type<int>, audDebug);
 
     declhook(0x6A3AC0, _Type<int>, gRandSeed);
+
+    declhook(0x6A3B18, _Type<Vector3>, XAXIS);
+    declhook(0x6A3B28, _Type<Vector3>, YAXIS);
+    declhook(0x6A3B38, _Type<Vector3>, ZAXIS);
 
     template<>
     void luaAddModule<module_common>(LuaState L) {
