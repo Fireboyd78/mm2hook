@@ -13,105 +13,155 @@ namespace MM2
 
     class phInertialCS {
     private:
-        hook::Field<0xC, float> _mass;
-        hook::Field<0x2C, float> _maxVelocity;
-        hook::Field<0x54, Matrix34> _matrix;
-        hook::Field<0x9C, Vector3> _force;
-        hook::Field<0x84, Vector3> _velocity;
-        hook::Field<0x3C, Vector3> _scaledVelocity;
-        hook::Field<0x48, Vector3> _angularVelocity;
-        hook::Field<0xA8, Vector3> _torque;
-        byte _buffer[0x1AC];
+        int field_0;
+        int field_4;
+        bool Active;
+        float Mass;
+        float InvMass;
+        Vector3 AngInertia;
+        Vector3 InvAngInertia;
+        float MaxVelocity;
+        float field_30;
+        float field_34;
+        float field_38;
+        Vector3 ScaledVelocity;
+        Vector3 AngularVelocity;
+        Matrix34 Matrix;
+        Vector3 Velocity;
+        Vector3 Acceleration;
+        Vector3 Force;
+        Vector3 Torque;
+        Vector3 field_B4;
+        Vector3 field_C0;
+        bool Oversample;
+        Vector3 Force2;
+        Vector3 Torque2;
+        Vector3 NetPush;
+        Vector3 NetTurn;
+        Vector3 TotalAppliedPush;
+        Vector3 LastTotalAppliedPush;
+        bool IsBeingPushed;
+        int field_11C;
+        Matrix34 field_120;
+        Matrix34 field_150;
+        Matrix34 field_180;
+        float field_1B0;
     public:
-        AGE_API phInertialCS() {
+        AGE_API phInertialCS()
+        {
             scoped_vtable x(this);
             hook::Thunk<0x475DE0>::Call<void>(this);
         }
 
         //props
-        inline float GetMass(void) const {
-            return _mass.get(this);
+        inline float GetMass(void)
+        {
+            return this->Mass;
         }
 
-        inline void SetMass(float mass) {
-            _mass.set(this, mass);
+        inline void SetMass(float mass)
+        {
+            this->Mass =  mass;
         }
 
-        inline float GetMaxVelocity(void) const {
-            return _maxVelocity.get(this);
+        inline float GetMaxVelocity(void)
+        {
+            return this->MaxVelocity;
         }
 
-        inline void SetMaxVelocity(float velocity) {
-            _maxVelocity.set(this, velocity);
+        inline void SetMaxVelocity(float velocity)
+        {
+            this->MaxVelocity = velocity;
         }
 
-        inline Vector3 GetPosition(void) const {
+        inline Vector3 GetPosition(void)
+        {
             return this->GetMatrix()->GetRow(3);
         }
 
-        inline Vector3 GetVelocity(void) const {
-            return _velocity.get(this);
+        inline Vector3 GetVelocity(void)
+        {
+            return this->Velocity;
         }
 
-        inline void SetVelocity(Vector3 velocity) {
-            _velocity.set(this, velocity);
+        inline void SetVelocity(Vector3 velocity)
+        {
+            this->Velocity = velocity;
         }
 
-        inline Vector3 GetScaledVelocity(void) const {
-            return _scaledVelocity.get(this);
+        inline Vector3 GetScaledVelocity(void)
+        {
+            return this->ScaledVelocity;
         }
 
-        inline void SetScaledVelocity(Vector3 velocity) {
-            _scaledVelocity.set(this, velocity);
+        inline void SetScaledVelocity(Vector3 velocity)
+        {
+            this->ScaledVelocity = velocity;
         }
 
-        inline Vector3 GetAngularVelocity(void) const {
-            return _angularVelocity.get(this);
+        inline Vector3 GetAngularVelocity(void)
+        {
+            return this->AngularVelocity;
         }
 
-        inline void SetAngularVelocity(Vector3 velocity) {
-            _angularVelocity.set(this, velocity);
+        inline void SetAngularVelocity(Vector3 velocity)
+        {
+            this->AngularVelocity = velocity;
         }
 
-        inline Matrix34 * GetMatrix(void) const {
-            return _matrix.ptr(this);
+        inline Matrix34 * GetMatrix(void)
+        {
+            return &this->Matrix;
         }
 
-        inline void SetPosition(Vector3 *position) const {
-            auto mtx = GetMatrix();
-            mtx->m30 = position->X;
-            mtx->m31 = position->Y;
-            mtx->m32 = position->Z;
+        inline void SetPosition(Vector3 position)
+        {
+            GetMatrix()->SetRow(3, position);
         }
 
-        inline void SetMatrix(Matrix34 matrix) const {
+        inline void SetMatrix(Matrix34 matrix)
+        {
             GetMatrix()->Set(matrix);
         }
 
-        inline Vector3 GetForce(void) const {
-            return _force.get(this);
+        inline Vector3 GetForce(void)
+        {
+            return this->Force;
         }
 
-        inline void AddForce(Vector3 force) {
-            auto current = GetForce();
-            SetForce(current + force);
+        inline void AddForce(Vector3 force)
+        {
+            SetForce(GetForce() + force);
         }
 
-        inline void SetForce(Vector3 force) const {
-            _force.set(this, force);
+        inline void SetForce(Vector3 force)
+        {
+            this->Force = force;
         }
 
-        inline Vector3 GetTorque(void) const {
-            return _torque.get(this);
+        inline Vector3 GetTorque(void)
+        {
+            return this->Torque;
         }
 
-        inline void AddTorque(Vector3 torque) {
-            auto current = GetTorque();
-            SetTorque(current + torque);
+        inline void AddTorque(Vector3 torque)
+        {
+            SetTorque(GetTorque() + torque);
         }
 
-        inline void SetTorque(Vector3 torque) const {
-            _torque.set(this, torque);
+        inline void SetTorque(Vector3 torque)
+        {
+            this->Torque = torque;
+        }
+
+        inline Vector3 GetTotalAppliedPush()
+        {
+            return this->TotalAppliedPush;
+        }
+
+        inline void SetTotalAppliedPush(Vector3 push)
+        {
+            this->TotalAppliedPush = push;
         }
 
         //members (not all here yet!)

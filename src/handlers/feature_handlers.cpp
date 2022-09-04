@@ -5113,12 +5113,14 @@ void dgBangerInstanceHandler::Install()
 static ConfigValue<bool> cfgVehicleDebug("VehicleDebug", "vehicleDebug", false);
 static ConfigValue<bool> cfgEnableWaterSplashSound("WaterSplashSound", true);
 static ConfigValue<bool> cfgEnableExplosionSound("ExplosionSound", true);
+static ConfigValue<bool> cfgMM1StyleBurnout("MM1StyleBurnout", false);
 bool enableWaterSplashSoundCached = true;
 bool enableExplosionSoundCached = true;
+bool fricValueChanged;
 
-void vehCarHandler::InitCar(LPCSTR vehName, int a2, int a3, bool a4, bool a5) {
-    Displayf("Initializing vehicle (\"%s\", %d, %d, %s, %s)", vehName, a2, a3, bool_str(a4), bool_str(a5));
-    get<vehCar>()->Init(vehName, a2, a3, a4, a5);
+void vehCarHandler::Init(LPCSTR vehName, int variant, int colliderId, bool useGeometry, bool loadTrailer) {
+    get<vehCar>()->Init(vehName, variant, colliderId, useGeometry, loadTrailer);
+    fricValueChanged = false;
 }
 
 const phBound * vehCarHandler::GetModelBound(int a1) {
@@ -5130,7 +5132,7 @@ const phBound * vehCarHandler::GetModelBound(int a1) {
     return result;
 }
 
-void vehCarHandler::InitCarAudio(LPCSTR vehName, int vehType) {
+void vehCarHandler::InitAudio(LPCSTR vehName, int vehType) {
     auto car = reinterpret_cast<vehCar*>(this);
     int flagsId = VehicleListPtr->GetVehicleInfo(vehName)->GetFlags();
 
@@ -5289,6 +5291,59 @@ void vehCarHandler::Update() {
     hook::Thunk<0x42C690>::Call<void>(this);
 }
 
+void vehCarHandler::PreUpdate() {
+    auto car = reinterpret_cast<vehCar*>(this);
+    auto carSim = car->getCarSim();
+    auto engine = carSim->getEngine();
+    auto ICS = carSim->getICS();
+
+    if ((car->GetFlags() & 2) == 0)
+    {
+        switch (car->GetDriveDisableMode())
+        {
+        case 1:
+            if (!fricValueChanged)
+            {
+                vehWheel::WeatherFriction.set(vehWheel::WeatherFriction.get() * 0.15f);
+                fricValueChanged = true;
+            }
+            if (!car->IsPlayer())
+                engine->setThrottleInput(1.f);
+            ICS->SetVelocity(Vector3(0.f, ICS->GetVelocity().Y, 0.f));
+            ICS->SetForce(Vector3(0.f, ICS->GetForce().Y, 0.f));
+            ICS->SetTotalAppliedPush(Vector3(0.f, ICS->GetTotalAppliedPush().Y, 0.f));
+            carSim->getTransmission()->SetGearChangeTimer(0.f);
+            break;
+        case 2:
+            carSim->setBrake(1.f);
+            engine->setThrottleInput(0.f);
+            carSim->setSteering(0.f);
+            carSim->setHandbrake(0.f);
+            break;
+        case 3:
+            carSim->setBrake(1.f);
+            engine->setThrottleInput(0.f);
+            carSim->setSteering(0.f);
+            carSim->setHandbrake(0.f);
+            break;
+        }
+    }
+    else {
+        if (fricValueChanged)
+        {
+            vehWheel::WeatherFriction.set(vehWheel::WeatherFriction.get() / 0.15f);
+            fricValueChanged = false;
+        }
+    }
+
+    auto wheelPtx = car->getWheelPtx();
+    if (wheelPtx != nullptr)
+    {
+        if (wheelPtx->isActive())
+            lvlLevel::Singleton->SetPtxHeight(*wheelPtx->GetParticles());
+    }
+}
+
 void vehCarHandler::Reset() {
     auto car = reinterpret_cast<vehCar*>(this);
     auto model = car->getModel();
@@ -5305,8 +5360,18 @@ void vehCarHandler::Reset() {
 void vehCarHandler::Install(void) {
     enableWaterSplashSoundCached = cfgEnableWaterSplashSound.Get();
     enableExplosionSoundCached = cfgEnableExplosionSound.Get();
+    InstallCallback("vehCar::Init",
+        &Init, {
+            cb::call(0x4039DE), // mmPlayer::ReInit
+            cb::call(0x403BDD), // mmPlayer::Init
+            cb::call(0x43C536), // mmNetObject::Init
+            cb::call(0x43C6A2), // mmNetObject::ReInit
+            cb::call(0x55942D), // aiVehiclePhysics::Init
+        }
+    );
+
     InstallCallback("vehCar::InitAudio", "Enables debugging for vehicle initialization, and automatic vehtypes handling.",
-        &InitCarAudio, {
+        &InitAudio, {
             cb::call(0x55943A), // aiVehiclePhysics::Init
             cb::call(0x404090), // mmPlayer::Init
             cb::call(0x43C540), // mmNetObject::Init
@@ -5315,7 +5380,7 @@ void vehCarHandler::Install(void) {
 
     if (cfgVehicleDebug) {
         InstallCallback("vehCar::InitAudio", "Enables debugging for vehicle initialization.",
-            &InitCarAudio, {
+            &InitAudio, {
                 cb::call(0x55943A), // aiVehiclePhysics::Init
                 cb::call(0x404090), // mmPlayer::Init
                 cb::call(0x43C540), // mmNetObject::Init
@@ -5325,6 +5390,14 @@ void vehCarHandler::Install(void) {
         InstallVTableHook("vehCarModel::GetBound",
             &GetModelBound, {
                 0x5B2D14
+            }
+        );
+    }
+
+    if (cfgMM1StyleBurnout.Get()) {
+        InstallVTableHook("vehCar::PreUpdate",
+            &PreUpdate, {
+                0x5B0BB4,
             }
         );
     }
