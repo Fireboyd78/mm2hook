@@ -16,10 +16,15 @@ namespace MM2
     // Class definitions
     class vehWheelPtx : public asNode {
     private:
-        vehCarSim* m_CarSimPtr;
-        asParticles m_Particles;
-        float m_PtxTimers[2];
+        vehCarSim* CarSim;
+        asParticles Particles;
+        float PtxTimers[2];
     public:
+        inline asParticles * GetParticles()
+        {
+            return &this->Particles;
+        }
+
         AGE_API vehWheelPtx()                                  { hook::Thunk<0x4D1C00>::Call<void>(this); }
         AGE_API ~vehWheelPtx()                                 { hook::Thunk<0x4D1C60>::Call<void>(this); }
 
