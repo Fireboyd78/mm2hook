@@ -315,6 +315,7 @@ public:
     void PlayExplosion();
     void Splash();
     void Update();
+    void PreUpdate();
     void Reset();
 
     static void Install(void);
