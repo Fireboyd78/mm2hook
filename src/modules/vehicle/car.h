@@ -39,8 +39,8 @@ namespace MM2
         void* Driver;
         vehSplash* Splash;
         void* Feedback;
-        int SomeFlags;
-        int field_EC;
+        int Flags;
+        int DriveDisableMode;
         gfxTexture* TireTrackTexture;
         lvlTrackManager WHL0TrackManager;
         lvlTrackManager WHL1TrackManager;
@@ -91,6 +91,14 @@ namespace MM2
 
         inline vehStuck* getStuck(void) const {
             return this->Stuck;
+        }
+
+        inline int GetFlags() {
+            return this->Flags;
+        }
+
+        inline int GetDriveDisableMode() {
+            return this->DriveDisableMode;
         }
 
         AGE_API void Reset()                                { hook::Thunk<0x42C330>::Call<void>(this); }
