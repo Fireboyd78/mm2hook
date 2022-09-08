@@ -5117,6 +5117,7 @@ bool enableWaterSplashSoundCached = true;
 bool enableExplosionSoundCached = true;
 
 void vehCarHandler::Init(LPCSTR vehName, int variant, int colliderId, bool useGeometry, bool loadTrailer) {
+    Displayf("Initializing vehicle (\"%s\", %d, %d, %s, %s)", vehName, variant, colliderId, bool_str(useGeometry), bool_str(loadTrailer));
     get<vehCar>()->Init(vehName, variant, colliderId, useGeometry, loadTrailer);
 }
 
