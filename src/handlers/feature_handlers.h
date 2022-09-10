@@ -307,9 +307,9 @@ public:
 
 class vehCarHandler : handler_t {
 public:
-    void InitCar(LPCSTR vehName, int a2, int a3, bool a4, bool a5);
-    void InitCarAudio(LPCSTR vehName, int vehType);
-    const MM2::phBound * GetModelBound(int a1);
+    void Init(LPCSTR vehName, int variant, int colliderId, bool useGeometry, bool loadTrailer);
+    void InitAudio(LPCSTR vehName, int vehType);
+    const MM2::phBound * GetModelBound(int boundType);
 
     void MM1StyleTransmission();
     void PlayExplosion();

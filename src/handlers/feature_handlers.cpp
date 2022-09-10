@@ -5116,21 +5116,21 @@ static ConfigValue<bool> cfgEnableExplosionSound("ExplosionSound", true);
 bool enableWaterSplashSoundCached = true;
 bool enableExplosionSoundCached = true;
 
-void vehCarHandler::InitCar(LPCSTR vehName, int a2, int a3, bool a4, bool a5) {
-    Displayf("Initializing vehicle (\"%s\", %d, %d, %s, %s)", vehName, a2, a3, bool_str(a4), bool_str(a5));
-    get<vehCar>()->Init(vehName, a2, a3, a4, a5);
+void vehCarHandler::Init(LPCSTR vehName, int variant, int colliderId, bool useGeometry, bool loadTrailer) {
+    Displayf("Initializing vehicle (\"%s\", %d, %d, %s, %s)", vehName, variant, colliderId, bool_str(useGeometry), bool_str(loadTrailer));
+    get<vehCar>()->Init(vehName, variant, colliderId, useGeometry, loadTrailer);
 }
 
-const phBound * vehCarHandler::GetModelBound(int a1) {
-    auto result = hook::Thunk<0x4648C0>::Call<const phBound *>(this, a1);
+const phBound * vehCarHandler::GetModelBound(int boundType) {
+    auto result = hook::Thunk<0x4648C0>::Call<const phBound *>(this, boundType);
 
     if (result == NULL)
-        Errorf(">>> COULD NOT RETRIEVE VEHICLE BOUND (%d) !!! <<<", a1);
+        Errorf(">>> COULD NOT RETRIEVE VEHICLE BOUND (%d) !!! <<<", boundType);
 
     return result;
 }
 
-void vehCarHandler::InitCarAudio(LPCSTR vehName, int vehType) {
+void vehCarHandler::InitAudio(LPCSTR vehName, int vehType) {
     auto car = reinterpret_cast<vehCar*>(this);
     int flagsId = VehicleListPtr->GetVehicleInfo(vehName)->GetFlags();
 
@@ -5306,7 +5306,7 @@ void vehCarHandler::Install(void) {
     enableWaterSplashSoundCached = cfgEnableWaterSplashSound.Get();
     enableExplosionSoundCached = cfgEnableExplosionSound.Get();
     InstallCallback("vehCar::InitAudio", "Enables debugging for vehicle initialization, and automatic vehtypes handling.",
-        &InitCarAudio, {
+        &InitAudio, {
             cb::call(0x55943A), // aiVehiclePhysics::Init
             cb::call(0x404090), // mmPlayer::Init
             cb::call(0x43C540), // mmNetObject::Init
@@ -5315,7 +5315,7 @@ void vehCarHandler::Install(void) {
 
     if (cfgVehicleDebug) {
         InstallCallback("vehCar::InitAudio", "Enables debugging for vehicle initialization.",
-            &InitCarAudio, {
+            &InitAudio, {
                 cb::call(0x55943A), // aiVehiclePhysics::Init
                 cb::call(0x404090), // mmPlayer::Init
                 cb::call(0x43C540), // mmNetObject::Init
