@@ -5113,7 +5113,7 @@ void dgBangerInstanceHandler::Install()
 static ConfigValue<bool> cfgVehicleDebug("VehicleDebug", "vehicleDebug", false);
 static ConfigValue<bool> cfgEnableWaterSplashSound("WaterSplashSound", true);
 static ConfigValue<bool> cfgEnableExplosionSound("ExplosionSound", true);
-static ConfigValue<bool> cfgMM1StyleBurnout("MM1StyleBurnout", false);
+static ConfigValue<bool> cfgNFSMWStyleBurnout("NFSMWStyleBurnout", false);
 bool enableWaterSplashSoundCached = true;
 bool enableExplosionSoundCached = true;
 bool fricValueChanged;
@@ -5395,7 +5395,7 @@ void vehCarHandler::Install(void) {
         );
     }
 
-    if (cfgMM1StyleBurnout.Get()) {
+    if (cfgNFSMWStyleBurnout.Get()) {
         InstallVTableHook("vehCar::PreUpdate",
             &PreUpdate, {
                 0x5B0BB4,
