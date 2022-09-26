@@ -2210,27 +2210,18 @@ void mmHudMapFeatureHandler::DrawPlayer() {
         // MM1
         if (hudMapColorStyle == 1)
         {
-            if (audio->IsPolice(vehName))
+            if (hudmap->GetMapMode() == mmHudMap::HalfScreen)
             {
-                hudmap->SetIconScale(scaleAmount);
-                DrawIcon(mmHudMap::Blue, *playerMtx);
-                hudmap->SetIconScale(iconScale);
-                DrawIcon(mmHudMap::BrightRed, *playerMtx);
+                hudmap->SetIconScale(iconScale * 1.34f);
             }
             else {
-                if (hudmap->GetMapMode() == mmHudMap::HalfScreen)
-                {
-                    hudmap->SetIconScale(iconScale * 1.34f);
-                }
-                else {
-                    hudmap->SetIconScale(iconScale * 1.37f);
-                }
-                DrawIcon(mmHudMap::Black, *playerMtx);
-                hudmap->SetIconScale(scaleAmount);
-                DrawIcon(mmHudMap::White, *playerMtx);
-                hudmap->SetIconScale(iconScale);
-                DrawIcon(mmHudMap::Black, *playerMtx);
+                hudmap->SetIconScale(iconScale * 1.37f);
             }
+            DrawIcon(mmHudMap::Black, *playerMtx);
+            hudmap->SetIconScale(scaleAmount);
+            DrawIcon(mmHudMap::White, *playerMtx);
+            hudmap->SetIconScale(iconScale);
+            DrawIcon(mmHudMap::Black, *playerMtx);
         }
         // NFSHP2
         if (hudMapColorStyle == 2)
