@@ -5581,7 +5581,27 @@ void vehCarModelFeatureHandler::DrawShadow() {
             }
         }
 
-        if (MMSTATE->TimeOfDay == 3 || MMSTATE->WeatherType != 0 ||
+        modStatic* headlightshadow = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 112)->GetHighLOD();
+
+        if (headlightshadow != nullptr)
+        {
+            if (model->getHeadlightsState())
+            {
+                Matrix34 shadowMatrix;
+
+                if (lvlInstance::ComputeShadowMatrix(&shadowMatrix, roomId, carMatrix))
+                {
+                    RSTATE->SetBlendSet(0, 0x80);
+
+                    Matrix44::Convert(gfxRenderState::sm_World, shadowMatrix);
+                    gfxRenderState::m_Touched = gfxRenderState::m_Touched | 0x88;
+
+                    headlightshadow->Draw(shaders);
+                }
+            }
+        }
+
+        if (MMSTATE->TimeOfDay == 3 || MMSTATE->WeatherType != 0 || cfgMM1StyleShadows.Get() < 3 ||
             lvlLevel::Singleton->GetRoomInfo(model->GetRoomId())->Flags & static_cast<int>(RoomFlags::Subterranean))
             return;
 
@@ -6298,13 +6318,11 @@ void vehCarModelFeatureHandler::Install() {
         }
     );
 
-    if (cfgMM1StyleShadows.Get() >= 3) {
-        InstallVTableHook("vehCarModel::DrawShadow",
-            &DrawShadow, {
-                0x5B2CE0,
-            }
-        );
-    }
+    InstallVTableHook("vehCarModel::DrawShadow",
+        &DrawShadow, {
+            0x5B2CE0,
+        }
+    );
 
     InstallVTableHook("vehCarModel::DrawGlow",
         &DrawGlow, {
@@ -6786,6 +6804,8 @@ bool aiVehicleInstanceFeatureHandler::InitVehicleGeom(const char* basename, cons
         inst->AddGeom(basename, "breaklt2", 0);
         inst->AddGeom(basename, "breaklt3", 0);
 
+        inst->AddGeom(basename, "glass", 0);
+
         inst->EndGeom();
     }
 
@@ -6999,18 +7019,41 @@ void aiVehicleInstanceFeatureHandler::Draw(int lod)
     //draw pop-up headlights
     if (lod >= 2)
     {
-        modStatic* plighton = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 23)->GetHighLOD();
+        modStatic* plighton = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 23)->GetLOD(lod);
         if (plighton != nullptr)
         {
             if (aiMap::Instance->drawHeadlights)
-                DrawPart(plighton, carMatrix, shaders, vehCarModel::PartReflections);
+                DrawPart(plighton, carMatrix, shaders, lod == 3);
         }
 
-        modStatic* plightoff = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 24)->GetHighLOD();
+        modStatic* plightoff = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 24)->GetLOD(lod);
         if (plightoff != nullptr)
         {
             if (!aiMap::Instance->drawHeadlights)
-                DrawPart(plightoff, carMatrix, shaders, vehCarModel::PartReflections);
+                DrawPart(plightoff, carMatrix, shaders, lod == 3);
+        }
+    }
+
+    //draw glass
+    if (lod >= 1)
+    {
+        modStatic* glass = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 41)->GetLOD(lod);
+        if (glass != nullptr)
+        {
+            bool zWriteEnable = RSTATE->Data.ZWriteEnable;
+            if (RSTATE->Data.ZWriteEnable != false)
+            {
+                RSTATE->Data.ZWriteEnable = false;
+                gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+            }
+
+            DrawPart(glass, carMatrix, shaders, lod == 3);
+
+            if (RSTATE->Data.ZWriteEnable != zWriteEnable)
+            {
+                RSTATE->Data.ZWriteEnable = zWriteEnable;
+                gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+            }
         }
     }
 
