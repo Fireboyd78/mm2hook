@@ -561,6 +561,12 @@ namespace MM2
                 lvlInstance::AddGeom(basename, "breaklt2", 0);
                 lvlInstance::AddGeom(basename, "breaklt3", 0);
 
+                lvlInstance::AddGeom(basename, "glass", 0);
+
+                gfxForceLVERTEX = true;
+                lvlInstance::AddGeom(basename, "headlight_shadow", 0);
+                gfxForceLVERTEX = false;
+
                 //add variants
                 //supports up to 32 paintjobs
                 for (int i = 0; i < 32; i++)
@@ -797,7 +803,7 @@ namespace MM2
             InitBreakable(this->genBreakableMgr, basename, "breaklt2", 109, 5);
             InitBreakable(this->genBreakableMgr, basename, "breaklt3", 110, 6);
             
-            int variantGeomId = this->variant + 111;
+            int variantGeomId = this->variant + 113;
             string_buf<16> buffer("variant%d", this->variant);
             InitBreakable(this->genBreakableMgr, basename, buffer, variantGeomId, 0);
 
@@ -1120,10 +1126,10 @@ namespace MM2
             {
                 if (this->HeadlightsState)
                     //plighton
-                    DrawPart(lod, 53, this->getCarMatrix(), shaders, vehCarModel::PartReflections);
+                    DrawPart(lod, 53, this->getCarMatrix(), shaders, lod == 3);
                 else
                     //plightoff
-                    DrawPart(lod, 54, this->getCarMatrix(), shaders, vehCarModel::PartReflections);
+                    DrawPart(lod, 54, this->getCarMatrix(), shaders, lod == 3);
             }
 
             Matrix34 dummyWhl4Matrix = Matrix34();
@@ -1508,6 +1514,29 @@ namespace MM2
                     }
                     else {
                         DrawPart(lod, 52, dummyWhl5Matrix, shaders, vehCarModel::WheelReflections);
+                    }
+                }
+            }
+
+            //draw glass
+            if (lod >= 1)
+            {
+                auto glassModel = lvlInstance::GetGeomTableEntry(geomSetIdOffset + 111)->GetLOD(lod);
+                if (glassModel != nullptr)
+                {
+                    bool zWriteEnable = RSTATE->Data.ZWriteEnable;
+                    if (RSTATE->Data.ZWriteEnable != false)
+                    {
+                        RSTATE->Data.ZWriteEnable = false;
+                        gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
+                    }
+
+                    DrawPart(lod, 111, this->getCarMatrix(), shaders, lod == 3);
+
+                    if (RSTATE->Data.ZWriteEnable != zWriteEnable)
+                    {
+                        RSTATE->Data.ZWriteEnable = zWriteEnable;
+                        gfxRenderState::m_Touched = gfxRenderState::m_Touched | 1;
                     }
                 }
             }
